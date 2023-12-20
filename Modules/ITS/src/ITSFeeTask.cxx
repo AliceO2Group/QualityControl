@@ -51,6 +51,9 @@ ITSFeeTask::~ITSFeeTask()
   delete mRDHSummary;
   delete mRDHSummaryCumulative;
   delete mTrailerCount;
+  delete mCalibrationWordCount;
+  delete mCalibStage;
+  delete mCalibLoop;
   delete mActiveLanes;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
@@ -134,7 +137,7 @@ void ITSFeeTask::createFeePlots()
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
   getObjectsManager()->startPublishing(mFlag1Check);                              // mFlag1Check
 
-  mDecodingCheck = new TH2I("DecodingCheck", "Error in parsing data", NFees, 0, NFees, 8, 0, 8); // 0: DataFormat not recognized, 1: DDW index != 0, 2: DDW wrong identifier, 3: IHW wrong identifier
+  mDecodingCheck = new TH2I("DecodingCheck", "Error in parsing data", NFees, 0, NFees, 5, 0, 5); // 0: DataFormat not recognized, 1: DDW index != 0, 2: DDW wrong identifier, 3: IHW wrong identifier, 4: CDW wrong version -- adapt y range!
   getObjectsManager()->startPublishing(mDecodingCheck);
 
   mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
@@ -151,6 +154,18 @@ void ITSFeeTask::createFeePlots()
 
   mActiveLanes = new TH2I("ActiveLanes", "Number of lanes enabled in IHW", NFees, 0, NFees, NLanesMax, 0, NLanesMax);
   getObjectsManager()->startPublishing(mActiveLanes);
+
+  mCalibrationWordCount = new TH1I("CalibrationWordCount", "Calibration Data Word count", NFees, 0, NFees);
+
+  mCalibStage = new TH2I("CalibStage", "Stage in calib scan (chip row number)", NFees, 0, NFees, 512, 0, 512);
+
+  mCalibLoop = new TH2I("CalibLoop", "Calib loop (register value)", NFees, 0, NFees, 256, 0, 256);
+
+  if (mDecodeCDW) {
+    getObjectsManager()->startPublishing(mCalibrationWordCount);
+    getObjectsManager()->startPublishing(mCalibLoop);
+    getObjectsManager()->startPublishing(mCalibStage);
+  }
 }
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -206,7 +221,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mRDHSummary) {
-    setAxisTitle(mRDHSummary, "FEEId", "");
+    setAxisTitle(mRDHSummary, "QC FEEId", "");
     mRDHSummary->SetStats(0);
     for (int idf = 0; idf < mRDHDetField.size(); idf++) {
       mRDHSummary->GetYaxis()->SetBinLabel(idf + 1, mRDHDetField.at(idf).second);
@@ -215,7 +230,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mRDHSummaryCumulative) {
-    setAxisTitle(mRDHSummaryCumulative, "FEEId", "");
+    setAxisTitle(mRDHSummaryCumulative, "QC FEEId", "");
     mRDHSummaryCumulative->SetStats(0);
     for (int idf = 0; idf < mRDHDetField.size(); idf++) {
       mRDHSummaryCumulative->GetYaxis()->SetBinLabel(idf + 1, mRDHDetField.at(idf).second);
@@ -224,7 +239,7 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mTrailerCount) {
-    setAxisTitle(mTrailerCount, "FEEid", "Estimated ROF frequenccy");
+    setAxisTitle(mTrailerCount, "QC FEEId", "Estimated ROF frequenccy");
     mTrailerCount->SetStats(0);
     mTrailerCount->GetYaxis()->SetBinLabel(3, "11 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(6, "45 kHz");
@@ -234,16 +249,28 @@ void ITSFeeTask::setPlotsFormat()
     mTrailerCount->GetYaxis()->SetBinLabel(20, "202 kHz");
   }
 
+  if (mCalibrationWordCount) {
+    setAxisTitle(mCalibrationWordCount, "QC FEEId", "Number of decoded CDWs");
+  }
+
+  if (mCalibStage) {
+    setAxisTitle(mCalibStage, "QC FEEId", "Chip row number");
+  }
+
+  if (mCalibLoop) {
+    setAxisTitle(mCalibLoop, "QC FEEId", "DAC register value");
+  }
+
   if (mActiveLanes) {
-    setAxisTitle(mActiveLanes, "FEEid", "Number of enabled lanes");
+    setAxisTitle(mActiveLanes, "QC FEEId", "Number of enabled lanes");
   }
 
   for (int i = 0; i < NFlags; i++) {
     if (mLaneStatus[i]) {
-      setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
+      setAxisTitle(mLaneStatus[i], "QC FEEId", "Lane");
       mLaneStatus[i]->SetStats(0);
       drawLayerName(mLaneStatus[i]);
-      setAxisTitle(mLaneStatusCumulative[i], "FEEID", "Lane");
+      setAxisTitle(mLaneStatusCumulative[i], "QC FEEId", "Lane");
       mLaneStatusCumulative[i]->SetStats(0);
       drawLayerName(mLaneStatusCumulative[i]);
     }
@@ -324,15 +351,15 @@ void ITSFeeTask::setPlotsFormat()
   }
 
   if (mFlag1Check) {
-    setAxisTitle(mFlag1Check, "FEEID", "Flag");
+    setAxisTitle(mFlag1Check, "QC FEEId", "Flag");
   }
 
   if (mDecodingCheck) {
-    setAxisTitle(mDecodingCheck, "FEEID", "Error ID");
+    setAxisTitle(mDecodingCheck, "QC FEEId", "Error ID");
   }
 
   if (mPayloadSize) {
-    setAxisTitle(mPayloadSize, "FEEID", "Avg. Payload size");
+    setAxisTitle(mPayloadSize, "QC FEEId", "Avg. Payload size");
     mPayloadSize->SetStats(0);
     drawLayerName(mPayloadSize);
   }
@@ -396,36 +423,63 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           mRDHSummary->Fill(ifee, ibin);
           mRDHSummaryCumulative->Fill(ifee, ibin);
           TString description = mRDHDetField.at(ibin).second;
-          if (description == "ClockEvt")
+          if (description == "ClockEvt") {
             clockEvt = true;
-          if (description == "TriggerRamp")
+          }
+          if (description == "TriggerRamp") {
             RampOngoing = true;
-          if (description == "Recovery")
+          }
+          if (description == "Recovery") {
             RampOngoing = RecoveryOngoing = true;
+          }
         }
       }
     }
 
     // Operations at any page inside the enabled orbit:
-    //   - decoding identifier of each payload word and increasing counter of TDTs
-    if (mPayloadParseEvery_n_HBF_per_TF > 0) {
-      if ((nStops[ifee] % mPayloadParseEvery_n_HBF_per_TF == 0) && (mTimeFrameId % mPayloadParseEvery_n_TF == 0)) {
-        int dataformat = (int)o2::raw::RDHUtils::getDataFormat(rdh);
-        if (dataformat != 0 && dataformat != 2) {
-          mDecodingCheck->Fill(ifee, 0);
-        }
-        auto const* payload = it.data();
-        size_t payloadSize = it.size();
-        int PayloadPerGBTW = (dataformat < 2) ? 16 : 10;
-        const uint16_t* gbtw_bb; // identifier and byte before
+    //   - decoding identifier of each payload word and increasing counter of TDTs (if enabled)
+    //   - decoding identifier of each payload word and decode full CDWs (if enabled)
 
-        for (int32_t ip = PayloadPerGBTW; ip <= payloadSize; ip += PayloadPerGBTW) {
-          gbtw_bb = (const uint16_t*)&payload[ip - 2];
-          if ((*gbtw_bb & 0xff01) == 0xf001) // checking that it is a TDT (0xf0) with packet_done (0x<any>1)
-            TDTcounter[ifee]++;
-        }
+    bool doLookForTDT = (mPayloadParseEvery_n_HBF_per_TF > 0) && (nStops[ifee] % mPayloadParseEvery_n_HBF_per_TF == 0) && (mTimeFrameId % mPayloadParseEvery_n_TF == 0);
+
+    if (doLookForTDT || mDecodeCDW) {
+      int dataformat = (int)o2::raw::RDHUtils::getDataFormat(rdh);
+      if (dataformat != 0 && dataformat != 2) {
+        mDecodingCheck->Fill(ifee, 0);
       }
-    }
+      auto const* payload = it.data();
+      size_t payloadSize = it.size();
+      int PayloadPerGBTW = (dataformat < 2) ? 16 : 10;
+      const uint16_t* gbtw_bb; // identifier and byte before
+
+      for (int32_t ip = PayloadPerGBTW; ip <= payloadSize; ip += PayloadPerGBTW) {
+        gbtw_bb = (const uint16_t*)&payload[ip - 2];
+        if (doLookForTDT && (*gbtw_bb & 0xff01) == 0xf001) { // checking that it is a TDT (0xf0) with packet_done (0x<any>1)
+          TDTcounter[ifee]++;
+        }
+        if (mDecodeCDW && (*gbtw_bb & 0xff00) == 0xf800) { // chedking that it is a CDW (0xf8)
+          const CalibrationWordUserField* cdw;
+          try {
+            cdw = reinterpret_cast<const CalibrationWordUserField*>(&payload[ip - PayloadPerGBTW]);
+          } catch (const std::runtime_error& error) {
+            ILOG(Error, Support) << "Error during reading of calibration data word: " << error.what() << ENDM;
+            return;
+          }
+          if (cdw->userField2.content.cdwver != 1) {
+            mDecodingCheck->Fill(ifee, 4);
+          }
+
+          mCalibrationWordCount->Fill(ifee);
+          mCalibStage->Fill(ifee, (int)(cdw->userField0.content.rowid));
+          mCalibLoop->Fill(ifee, (int)(cdw->userField1.content.loopvalue));
+
+        } // if mDecodeCDW and it is CDW
+
+      } // loop payload
+
+    } // if doLookForTDT || mDecodeCDW
+
+    //
 
     // Operations at the first page of each orbit
     //  - decoding ITS header work and fill histogram with number of active lanes
@@ -435,7 +489,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         try {
           ihw = reinterpret_cast<const GBTITSHeaderWord*>(it.data());
         } catch (const std::runtime_error& error) {
-          ILOG(Error, Support) << "Error during reading its header data: " << error.what() << ENDM;
+          ILOG(Error, Support) << "Error during reading of its header data: " << error.what() << ENDM;
           return;
         }
 
@@ -516,12 +570,12 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     //  - fill histogram with packet_done TDTs counted so far and reset counter
     if ((int)(o2::raw::RDHUtils::getStop(rdh))) {
       // fill trailer count histo and reset counters
-      if (mPayloadParseEvery_n_HBF_per_TF > 0) {
-        if ((nStops[ifee] % mPayloadParseEvery_n_HBF_per_TF == 0) && (mTimeFrameId % mPayloadParseEvery_n_TF == 0)) {
-          if (!RampOngoing && !clockEvt)
-            mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
-          TDTcounter[ifee] = 0;
+      if (doLookForTDT) {
+
+        if (!RampOngoing && !clockEvt) {
+          mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
         }
+        TDTcounter[ifee] = 0;
       }
       nStops[ifee]++;
       for (int i = 0; i < mTriggerType.size(); i++) {
@@ -588,8 +642,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mProcessingTime2->Fill(difference < 120000 ? difference : 120001);
-  if (mTimeFrameId < 10000)
+  if (mTimeFrameId < 10000) {
     mProcessingTime->SetBinContent(mTimeFrameId, difference);
+  }
 }
 
 void ITSFeeTask::getParameters()
@@ -600,6 +655,7 @@ void ITSFeeTask::getParameters()
   mPayloadParseEvery_n_HBF_per_TF = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "PayloadParsingEvery_n_HBFperTF", mPayloadParseEvery_n_HBF_per_TF);
   mPayloadParseEvery_n_TF = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "PayloadParsingEvery_n_TF", mPayloadParseEvery_n_TF);
   mEnableIHWReading = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "EnableIHWReading", mEnableIHWReading);
+  mDecodeCDW = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "DecodeCDW", mDecodeCDW);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
