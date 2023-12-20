@@ -54,7 +54,15 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
   ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
-  BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(&s));
+  BOOST_REQUIRE(objectsManager.getMonitorObject("content") != nullptr);
+
+  TObjString s2("content");
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(&s2));
+  auto mo2 = objectsManager.getMonitorObject("content");
+  BOOST_REQUIRE(mo2 != nullptr);
+  BOOST_REQUIRE(mo2->getObject() != &s);
+  BOOST_REQUIRE(mo2->getObject() == &s2);
 }
 
 BOOST_AUTO_TEST_CASE(is_being_published_test)
@@ -66,7 +74,7 @@ BOOST_AUTO_TEST_CASE(is_being_published_test)
   TObjString s("content");
   BOOST_CHECK(!objectsManager.isBeingPublished("content"));
   objectsManager.startPublishing(&s);
-  BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(&s));
   BOOST_CHECK(objectsManager.isBeingPublished("content"));
 }
 

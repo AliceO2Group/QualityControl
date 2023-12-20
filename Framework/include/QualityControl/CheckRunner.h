@@ -174,7 +174,6 @@ class CheckRunner : public framework::Task
   void initDatabase();
   void initMonitoring();
   void initServiceDiscovery();
-  void initInfologger(framework::InitContext& iCtx);
   void initLibraries();
 
   /**

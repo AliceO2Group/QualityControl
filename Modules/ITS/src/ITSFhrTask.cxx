@@ -21,8 +21,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-#include "CCDB/BasicCCDBManager.h"
-#include "CCDB/CCDBTimeStampUtils.h"
 #include "Framework/TimingInfo.h"
 
 #include "Common/Utils.h"
@@ -90,7 +88,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize ITSFhrTask" << ENDM;
   getParameters();
-
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm (IB 3x);mm (IB 3x)");
   mGeneralOccupancy->SetName("General/General_Occupancy");
@@ -311,7 +308,8 @@ void ITSFhrTask::createOccupancyPlots() // create general plots like error, trig
     double Maxtmp[nDim] = { (double)(nBins[0] * (nChipsPerHic[mLayer] / 2) * (nHicPerStave[mLayer] / 2)), (double)(nBins[1] * 2 * NSubStave[mLayer]) };
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {
       mStaveHitmap[istave] = new THnSparseI(Form("Occupancy/Layer%d/Stave%d/Layer%dStave%dHITMAP", mLayer, istave, mLayer, istave), Form("Hits on Layer %d, Stave %d", mLayer, istave), nDim, nBinstmp, Min, Maxtmp);
-      getObjectsManager()->startPublishing(mStaveHitmap[istave]);
+      if (mCutTFForSparse > 0)
+        getObjectsManager()->startPublishing(mStaveHitmap[istave]);
     }
     mDeadChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dDeadChipPos", mLayer, mLayer), Form("DeadChipPos on Layer %d", mLayer), nHicPerStave[mLayer] * 7 * 0.5, -0.5 * mLength[mLayer], 0.5 * mLength[mLayer], NStaves[mLayer] * 4, -180, 180);
     mAliveChipPos = new TH2D(Form("Occupancy/Layer%d/Layer%dAliveChipPos", mLayer, mLayer), Form("AliveChipPos on Layer %d", mLayer), nHicPerStave[mLayer] * 7 * 0.5, -0.5 * mLength[mLayer], 0.5 * mLength[mLayer], NStaves[mLayer] * 4, -180, 180);
@@ -718,7 +716,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-  mAverageProcessTime += difference;
   mTFCount++;
 }
 
@@ -744,7 +741,6 @@ void ITSFhrTask::getParameters()
 
 void ITSFhrTask::endOfCycle()
 {
-  ILOG(Debug, Support) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
@@ -761,8 +757,6 @@ void ITSFhrTask::resetGeneralPlots()
 
 void ITSFhrTask::resetOccupancyPlots()
 {
-  memset(mHitNumberOfChip, 0, sizeof(mHitNumberOfChip));
-  memset(mErrors, 0, sizeof(mErrors));
   mChipStaveOccupancy->Reset();
   mChipStaveEventHitCheck->Reset();
   mOccupancyPlot->Reset();
@@ -786,7 +780,6 @@ void ITSFhrTask::reset()
 {
   resetGeneralPlots();
   resetOccupancyPlots();
-
   mGeneralOccupancy->Reset("content");
   mGeneralNoisyPixel->Reset("content");
   mDecoder->clearStat();
@@ -802,6 +795,7 @@ void ITSFhrTask::reset()
         mHitnumberLane[istave][ichip] = 0;
         mOccupancyLane[istave][ichip] = 0;
         mHitPixelID_InStave[istave][0][ichip].clear();
+        mChipStat[istave][ichip] = 0;
       }
     }
   } else {
@@ -818,11 +812,12 @@ void ITSFhrTask::reset()
         mOccupancyLane[istave][2 * ihic + 1] = 0;
         for (int ichip = 0; ichip < nChipsPerHic[mLayer]; ichip++) {
           mHitPixelID_InStave[istave][ihic][ichip].clear();
+          mChipStat[istave][ihic * nChipsPerHic[mLayer] + ichip] = 0;
         }
       }
     }
   }
-
+  std::fill(&mNoisyPixelNumber[0][0], &mNoisyPixelNumber[0][0] + 7 * 48, 0);
   ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 

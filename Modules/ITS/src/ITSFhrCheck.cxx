@@ -22,7 +22,6 @@
 
 #include <fairlogger/Logger.h>
 #include <TH1.h>
-#include <TList.h>
 #include <TPaveText.h>
 #include <TLatex.h>
 #include <TH2Poly.h>
@@ -42,12 +41,20 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     if (mo->getName() == "General/ErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast ErrorPlots to TH1D*" << ENDM;
+        continue;
+      }
       if (h->GetMaximum() > 0) {
         result.set(Quality::Bad);
         result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD:Decoding error(s) detected;");
       }
     } else if (mo->getName() == "General/General_Occupancy") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast General_Occupancy to TH2Polly*" << ENDM;
+        continue;
+      }
       result.addMetadata("Gen_Occu_IB", "good");
       result.addMetadata("Gen_Occu_OB", "good");
       result.addMetadata("Gen_Occu_empty", "good");
@@ -110,6 +117,10 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
     } else if (mo->getName() == "General/Noisy_Pixel") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast NoisyPixel to TH2Polly*" << ENDM;
+        continue;
+      }
       result.addMetadata("Noi_Pix", "good");
       for (int ibin = 0; ibin < h->GetNumberOfBins(); ++ibin) {
         if (h->GetBinContent(ibin) == 0) {
@@ -139,6 +150,10 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     TString objectName = mo->getName();
     if (objectName.Contains("ChipStave")) {
       auto* h = dynamic_cast<TH2D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast ChipStave to TH2D*" << ENDM;
+        continue;
+      }
       TString layerString = TString(objectName(15, 1).Data());
       int layer = layerString.Atoi();
       result.addMetadata(Form("Layer%d", layer), "good");
@@ -179,6 +194,10 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   int textColor;
   if (mo->getName() == "General/ErrorPlots") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast ErrorPlots to TH1D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       text[0] = new TLatex(0.05, 0.95, "#bf{Quality::Good}");
       text[1] = new TLatex(0.2, 0.4, "There is no Error found");
@@ -206,6 +225,10 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
   } else if (mo->getName() == "General/General_Occupancy") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast General_Occupancy to TH2Poly*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality GOOD";
       textColor = kGreen;
@@ -260,6 +283,10 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
   } else if (mo->getName() == "General/Noisy_Pixel") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast Noisy_Pixel to TH2Poly*" << ENDM;
+      return;
+    }
     if (strcmp(checkResult.getMetadata("Noi_Pix").c_str(), "good") == 0) {
       text[0] = new TLatex(0, 0, "Quality::Good");
       text[0]->SetTextAlign(23);
@@ -295,6 +322,10 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     TString layerString = TString(objectName(15, 1).Data());
     int layer = layerString.Atoi();
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast ChipStave to TH2D*" << ENDM;
+      return;
+    }
     if (strcmp(checkResult.getMetadata(Form("Layer%d", layer)).c_str(), "good") == 0) {
       text[0] = new TLatex(0.5, 0.6, "Quality::Good");
       text[0]->SetNDC();

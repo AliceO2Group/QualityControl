@@ -11,7 +11,7 @@
 
 ///
 /// \file   ITSTPCMatchingTask.h
-/// \author My Name
+/// \author Chiara Zampolli
 ///
 
 #ifndef QC_MODULE_GLO_ITSTPCMATCHINGTASK_H
@@ -27,8 +27,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::glo
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \brief ITS-TPC Matching QC task
+/// \author Chiara Zampolli
 class ITSTPCMatchingTask final : public TaskInterface
 {
  public:

@@ -154,9 +154,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", true);
     auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
     auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
+    auto rotateMaxBytes = configTree.get<u_long>("qc.config.infologger.filterRotateMaxBytes", 0);
+    auto rotateMaxFiles = configTree.get<u_int>("qc.config.infologger.filterRotateMaxFiles", 0);
+    std::string debugInDiscardFile = configTree.get<std::string>("qc.config.infologger.debugInDiscardFile", "false");
+    auto debugInDiscardFileBool = debugInDiscardFile == "true";
     ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
     ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
-    ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), 0, 0, 0, true /*Do not store Debug messages in file*/);
+    ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), rotateMaxBytes, rotateMaxFiles, 0, !debugInDiscardFileBool /*Do not store Debug messages in file*/);
 
     std::string id = "runQC";
     for (size_t i = 0; i < config.argc(); i++) {

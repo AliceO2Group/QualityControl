@@ -11,7 +11,7 @@
 
 ///
 /// \file   MeanVertexPostProcessing.h
-/// \author My Name
+/// \author Chiara Zampolli
 ///
 
 #ifndef QUALITYCONTROL_MEANVERTEXPOSTPROCESSING_H

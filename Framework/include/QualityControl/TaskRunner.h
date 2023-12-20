@@ -25,6 +25,7 @@
 #include <Framework/CompletionPolicy.h>
 #include <Framework/DataTakingContext.h>
 #include <Headers/DataHeader.h>
+#include <Framework/ServiceRegistryRef.h>
 // QC
 #include "QualityControl/TaskRunnerConfig.h"
 
@@ -93,7 +94,7 @@ class TaskRunner : public framework::Task
   void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj) override;
 
   /// \brief TaskRunner's completion policy callback
-  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs, std::vector<framework::InputSpec> const&, framework::ServiceRegistryRef&);
 
   std::string getDeviceName() const { return mTaskConfig.deviceName; };
   const framework::Inputs& getInputsSpecs() const { return mTaskConfig.inputSpecs; };
@@ -125,7 +126,6 @@ class TaskRunner : public framework::Task
   /// \brief Checks if all the expected data inputs are present in the provided InputRecord
   static bool isDataReady(const framework::InputRecord& inputs);
   void refreshConfig(framework::InitContext& iCtx);
-  void initInfologger(framework::InitContext& iCtx);
   void printTaskConfig() const;
   void startOfActivity();
   void endOfActivity();
@@ -144,6 +144,7 @@ class TaskRunner : public framework::Task
   Activity mActivity;
 
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
+  void registerToBookkeeping();
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;

@@ -24,7 +24,6 @@
 #include "QualityControl/Reductor.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 
-#include <TList.h>
 #include <TObject.h>
 #include <TLegendEntry.h>
 #include <TCanvas.h>
@@ -33,8 +32,6 @@
 #include <TMultiGraph.h>
 #include <TFile.h>
 #include <TDatime.h>
-#include <map>
-#include <string>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>

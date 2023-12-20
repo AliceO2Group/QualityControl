@@ -40,9 +40,11 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
   const float cutMindEdxTot = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMindEdxTot");
   const float cutAbsEta = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutAbsEta");
   const int cutMinNCluster = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "cutMinNCluster");
+  const float cutPtForDCAr = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutPtForDCAr", 1.5); // min pt cut only for the DCA
+  const float samplingFractionDCAr = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "samplingFractionDCAr", 0.1);
 
   // set track cuts defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
-  mQCTracks.setTrackCuts(cutAbsEta, cutMinNCluster, cutMindEdxTot);
+  mQCTracks.setTrackCuts(cutAbsEta, cutMinNCluster, cutMindEdxTot, cutPtForDCAr, samplingFractionDCAr);
 
   mQCTracks.initializeHistograms();
   // pass map of vectors of histograms to be beutified!

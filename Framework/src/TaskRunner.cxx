@@ -117,30 +117,9 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
   }
 }
 
-void TaskRunner::initInfologger(InitContext& iCtx)
-{
-  // TODO : the method should be merged with the other, similar, methods in *Runners
-
-  AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
-  }
-
-  mTaskConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mTaskConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init("task/" + mTaskConfig.taskName,
-                     mTaskConfig.infologgerDiscardParameters,
-                     il,
-                     ilContext);
-  QcInfoLogger::setDetector(mTaskConfig.detectorName);
-}
-
 void TaskRunner::init(InitContext& iCtx)
 {
-  initInfologger(iCtx);
+  core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.taskName, mTaskConfig.detectorName);
   ILOG(Info, Devel) << "Initializing TaskRunner" << ENDM;
 
   refreshConfig(iCtx);
@@ -243,7 +222,7 @@ void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
   mTask->finaliseCCDB(matcher, obj);
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs, std::vector<framework::InputSpec> const&, ServiceRegistryRef&)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
@@ -359,6 +338,11 @@ void TaskRunner::start(ServiceRegistryRef services)
   mNoMoreCycles = false;
   mCycleNumber = 0;
 
+  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_AT_START")) {
+    // until we are sure it works, we have to turn it on
+    registerToBookkeeping();
+  }
+
   try {
     startOfActivity();
     startCycle();
@@ -455,16 +439,6 @@ void TaskRunner::startOfActivity()
   mCollector->setRunNumber(mActivity.mId);
   mTask->startOfActivity(mActivity);
   mObjectsManager->updateServiceDiscovery();
-
-  // register ourselves to the BK
-  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
-    ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
-    try {
-      Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
-    } catch (std::runtime_error& error) {
-      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
-    }
-  }
 }
 
 void TaskRunner::endOfActivity()
@@ -493,16 +467,39 @@ void TaskRunner::startCycle()
   mCycleOn = true;
 }
 
+void TaskRunner::registerToBookkeeping()
+{
+  // register ourselves to the BK at the first cycle
+  ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
+  try {
+    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+    if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES")) {
+      ILOG(Debug, Devel) << "O2_QC_REGISTER_IN_BK_X_TIMES set to " << gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES") << ENDM;
+      int iterations = std::stoi(gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES"));
+      for (int i = 1; i < iterations; i++) { // start at 1 because we already did it once
+        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+      }
+    }
+  } catch (std::runtime_error& error) {
+    ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
+  }
+}
+
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
   ILOG(Debug, Support) << "Finish cycle " << mCycleNumber << ENDM;
   // in the async context we print only info/ops logs, it's easier to temporarily elevate this log
   ((mDeploymentMode == DeploymentMode::Grid) ? ILOG(Info, Ops) : ILOG(Info, Devel)) //
-    << "According to new validity rules, the objects validity is "
+    << "The objects validity is "
     << "(" << mTimekeeper->getValidity().getMin() << ", " << mTimekeeper->getValidity().getMax() << "), "
     << "(" << mTimekeeper->getSampleTimespan().getMin() << ", " << mTimekeeper->getSampleTimespan().getMax() << "), "
     << "(" << mTimekeeper->getTimerangeIdRange().getMin() << ", " << mTimekeeper->getTimerangeIdRange().getMax() << ")" << ENDM;
   mTask->endOfCycle();
+
+  if (mCycleNumber == 0 && gSystem->Getenv("O2_QC_REGISTER_IN_BK")) {
+    // until we are sure it works, we have to turn it on
+    registerToBookkeeping();
+  }
 
   // this stays until we move to using mTimekeeper.
   auto nowMs = getCurrentTimestamp();
@@ -578,8 +575,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   outputs.snapshot(
     Output{ concreteOutput.origin,
             concreteOutput.description,
-            concreteOutput.subSpec,
-            mTaskConfig.moSpec.lifetime },
+            concreteOutput.subSpec },
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();

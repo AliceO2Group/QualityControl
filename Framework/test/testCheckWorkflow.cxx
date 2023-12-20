@@ -30,7 +30,7 @@ void customize(std::vector<CompletionPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
   quality_control::customizeInfrastructure(policies);
 
-  auto matcher = [](framework::DeviceSpec const& device) {
+  auto matcher = [](auto const& device) {
     return device.name.find(receiverName) != std::string::npos;
   };
 
@@ -110,7 +110,7 @@ class Receiver : public framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName) });
+      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName), Lifetime::Sporadic });
     }
     return inputs;
   }

@@ -21,9 +21,6 @@
 #include "ITSMFTReconstruction/DecodingStat.h"
 
 #include <fairlogger/Logger.h>
-#include <TList.h>
-#include <TH2.h>
-#include <iostream>
 #include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
@@ -41,17 +38,17 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
   }
   std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
   if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
-    LOG(error) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
+    ILOG(Error, Support) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
     doFlatCheck = true;
   }
   std::vector<float> vDecErrorLimitsRatio = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimitsRatio", ""));
   if (vDecErrorLimitsRatio.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
-    LOG(error) << "Incorrect vector with DecodingError limits Ratio, check .json" << ENDM;
+    ILOG(Error, Support) << "Incorrect vector with DecodingError limits Ratio, check .json" << ENDM;
     doFlatCheck = true;
   }
   std::vector<int> vDecErrorType = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorType", ""));
   if (vDecErrorType.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
-    LOG(error) << "Incorrect vector with DecodingError Type, check .json" << ENDM;
+    ILOG(Error, Support) << "Incorrect vector with DecodingError Type, check .json" << ENDM;
     doFlatCheck = true;
   }
 
@@ -61,6 +58,10 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     if (mo->getName() == "General/ChipErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast ChipError plots to TH1D*" << ENDM;
+        continue;
+      }
       if (h->GetMaximum() > 200)
         result.set(Quality::Bad);
     }
@@ -68,6 +69,10 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     if (mo->getName() == "General/LinkErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast LinkErrorPlots to TH1D*" << ENDM;
+        continue;
+      }
 
       if (doFlatCheck) {
         if (h->GetMaximum() > 200)
@@ -133,6 +138,10 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
   int textColor;
   if ((mo->getName() == "General/LinkErrorPlots") || (mo->getName() == "General/ChipErrorPlots")) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast LinkErrorPlots to TH1D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;

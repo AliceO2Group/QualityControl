@@ -13,6 +13,8 @@
 #include <DataFormatsParameters/ECSDataAdapters.h>
 #include <iostream>
 #include <boost/property_tree/ptree.hpp>
+#include <string_view>
+#include <vector>
 
 namespace o2::quality_control::core
 {
@@ -55,16 +57,39 @@ const std::unordered_map<std::string, std::string>& CustomParameters::getAllDefa
 
 std::string CustomParameters::at(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
-  return mCustomParameters.at(runType).at(beamType).at(key);
+  auto optionalResult = atOptional(key, runType, beamType); // just reuse the logic we developed in atOptional
+  if (!optionalResult.has_value()) {
+    return mCustomParameters.at(runType).at(beamType).at(key); // we know we will get a out_of_range exception
+  }
+  return optionalResult.value();
+}
+
+std::string CustomParameters::at(const std::string& key, const Activity& activity) const
+{
+  // Get the proper parameter for the given activity
+  const int runType = activity.mType; // get the type for this run
+  // convert it to a string (via a string_view as this is what we get from O2)
+  const std::string_view runTypeStringView = o2::parameters::GRPECS::RunTypeNames[runType];
+  const std::string runTypeString{ runTypeStringView };
+  // get the param
+  return at(key, runTypeString, activity.mBeamType);
 }
 
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
-  try {
-    return mCustomParameters.at(runType).at(beamType).at(key);
-  } catch (const std::out_of_range& exc) {
-    return {};
+  std::optional<std::string> result = std::nullopt;
+  const std::vector<std::string> runTypes = { runType, std::string("default") };
+  const std::vector<std::string> beamTypes = { beamType, std::string("default") };
+  for (const auto& rt : runTypes) {
+    for (const auto& bt : beamTypes) {
+      try {
+        result = mCustomParameters.at(rt).at(bt).at(key);
+        return result;
+      } catch (const std::out_of_range& exc) { // ignored on purpose
+      }
+    }
   }
+  return result;
 }
 
 std::optional<std::string> CustomParameters::atOptional(const std::string& key, const Activity& activity) const

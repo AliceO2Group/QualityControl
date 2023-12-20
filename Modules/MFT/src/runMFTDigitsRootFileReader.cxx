@@ -109,8 +109,8 @@ class MFTDigitsRootFileReader : public o2::framework::Task
     std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*digitsInROF));
 
     // fill in the message
-    pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0, Lifetime::Timeframe }, *digitsInROF);
-    pc.outputs().snapshot(Output{ "MFT", "DIGITSROF", 0, Lifetime::Timeframe }, *oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0 }, *digitsInROF);
+    pc.outputs().snapshot(Output{ "MFT", "DIGITSROF", 0 }, *oneROFvec);
 
     // update the ROF counter
     mCurrentROF++;

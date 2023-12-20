@@ -6,7 +6,9 @@ target_sources(O2QcHMPID PRIVATE src/HmpidTask.cxx
                                  src/HmpidTaskDigits.cxx
                                  src/HmpidTaskClusters.cxx
                                  src/HmpidRawChecks.cxx
-                                 src/Helpers.cxx)
+                                 src/Helpers.cxx
+                                 src/HmpidTaskMatches.cxx
+                                 )
 
 target_include_directories(
   O2QcHMPID
@@ -15,7 +17,9 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(O2QcHMPID PUBLIC O2QualityControl O2::HMPIDReconstruction
-                                                        O2::DataFormatsHMP)
+                                                        O2::DataFormatsHMP
+                                                        O2::DataFormatsGlobalTracking
+                                                        O2::ReconstructionDataFormats)
 
 get_target_property(O2_INCLUDE_DIRS O2::CommonDataFormat INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(ROOT_INCLUDE_DIRS ROOT::Core INTERFACE_INCLUDE_DIRECTORIES)
@@ -35,6 +39,7 @@ add_root_dictionary(O2QcHMPID
                     include/HMPID/HmpidTaskClusters.h
                     include/HMPID/HmpidRawChecks.h
                     include/HMPID/Helpers.h
+                    include/HMPID/HmpidTaskMatches.h
                     LINKDEF include/HMPID/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/HMPID

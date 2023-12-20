@@ -35,8 +35,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::glo
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \brief Vertexing QC Task
+/// \author Chiara Zampolli
 class VertexingQcTask final : public TaskInterface
 {
  public:

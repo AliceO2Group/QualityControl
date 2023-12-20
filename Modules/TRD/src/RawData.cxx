@@ -177,16 +177,12 @@ void RawData::buildHistograms()
 
 void RawData::initialize(o2::framework::InitContext& /*ctx*/)
 {
-
   ILOG(Debug, Devel) << "initialize TRD RawData QC" << ENDM;
   if (auto param = mCustomParameters.find("fillHeaderVersionHist"); param != mCustomParameters.end()) {
     mCheckDigitHCHeaderVersion = std::stoi(param->second);
   }
-
   buildHistograms();
   ILOG(Info, Support) << "TRD RawData QC histograms built" << ENDM;
-
-  // ILOG(Warning, Support) << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
 }
 
 void RawData::startOfActivity(const Activity& activity)
@@ -202,7 +198,6 @@ void RawData::startOfCycle()
 
 void RawData::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
   auto rawdatastats = ctx.inputs().get<o2::trd::TRDDataCountersPerTimeFrame*>("rawstats");
   mStats->AddBinContent(1, 1);                             // count number of TFs seen
   mStats->AddBinContent(2, rawdatastats->mNTriggersTotal); // count total number of triggers seen
@@ -307,7 +302,6 @@ void RawData::endOfActivity(const Activity& /*activity*/)
 void RawData::reset()
 {
   // clean all the monitor objects here
-
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   resetHistograms();
 }

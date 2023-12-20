@@ -149,7 +149,7 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
-  initInfoLogger(iCtx);
+  core::initInfologger(iCtx, mRunnerConfig.infologgerDiscardParameters, "aggregator");
   refreshConfig(iCtx);
   QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
   Bookkeeping::getInstance().init(mRunnerConfig.bookkeepingUrl);
@@ -240,14 +240,7 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   auto validFrom = getCurrentTimestamp();
   try {
     for (auto& qo : qualityObjects) {
-      if (getenv("O2_QC_OLD_VALIDITY")) {
-        auto tmpValidity = qo->getValidity();
-        qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-        mDatabase->storeQO(qo);
-        qo->setValidity(tmpValidity);
-      } else {
-        mDatabase->storeQO(qo);
-      }
+      mDatabase->storeQO(qo);
     }
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);
@@ -311,26 +304,6 @@ void AggregatorRunner::initAggregators()
   }
 
   reorderAggregators();
-}
-
-void AggregatorRunner::initInfoLogger(InitContext& iCtx)
-{
-  // TODO : the method should be merged with the other, similar, methods in *Runners
-
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
-
-  mRunnerConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mRunnerConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init("aggregator",
-                     mRunnerConfig.infologgerDiscardParameters,
-                     il,
-                     ilContext);
 }
 
 void AggregatorRunner::initLibraries()

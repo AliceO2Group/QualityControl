@@ -10,31 +10,35 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   RawData.h
-/// \author Sean Murray
+/// \file   TrackClusters.h
+/// \author Laura Serksnyte
 ///
 
-#ifndef QC_MODULE_TRD_TRDRAWDATA_H
-#define QC_MODULE_TRD_TRDRAWDATA_H
+#ifndef QC_MODULE_TPC_TRACKCLUSTERS_H
+#define QC_MODULE_TPC_TRACKCLUSTERS_H
 
+// O2 includes
+#include "TPCQC/TrackClusters.h"
+
+// QC includes
 #include "QualityControl/TaskInterface.h"
-#include "DataFormatsTRD/RawDataStats.h"
-#include <array>
 
-class TH1F;
-class TH2F;
-class TProfile;
+// ROOT includes
+#include <TRandom3.h>
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::trd
+namespace o2::quality_control_modules::tpc
 {
 
-class RawData final : public TaskInterface
+/// \brief Quality Control task for the shared clusters and crossed rows distribution
+class TrackClusters : public TaskInterface
 {
  public:
-  RawData() = default;
-  ~RawData() override;
+  /// \brief Constructor
+  TrackClusters();
+  /// \brief Destructor
+  ~TrackClusters() = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -45,25 +49,12 @@ class RawData final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
 
-  void buildHistograms();
-  void resetHistograms();
-
  private:
-  TH1F* mStats = nullptr;
-  TH1F* mDataAcceptance = nullptr;
-  TH2F* mDataVolumePerHalfChamber = nullptr;
-  TH2F* mDataVolumePerSector = nullptr;
-  TH1F* mTimeFrameTime = nullptr;
-  TH1F* mTrackletParsingTime = nullptr;
-  TH1F* mDigitParsingTime = nullptr;
-  TH1F* mDataVersionsMajor = nullptr;
-  TH1F* mParsingErrors = nullptr;
-  TProfile* mDataVolumePerSectorProf = nullptr;
-  std::array<TH2F*, 10> mLinkErrors;
-  std::array<TH2F*, o2::trd::ParsingErrors::TRDLastParsingError> mParsingErrors2d;
-  bool mCheckDigitHCHeaderVersion = false;
+  o2::tpc::qc::TrackClusters mQCTrackClusters{}; ///< TPC QC class from o2
+  TRandom3* mRandomGenerator;
+  float mSamplingFraction;
 };
 
-} // namespace o2::quality_control_modules::trd
+} // namespace o2::quality_control_modules::tpc
 
-#endif // QC_MODULE_TRD_TRDRAWDATA_H
+#endif // QC_MODULE_TPC_TRACKCLUSTERS_H

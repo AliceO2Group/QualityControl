@@ -212,7 +212,7 @@ void CheckRunner::refreshConfig(InitContext& iCtx)
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
-    initInfologger(iCtx);
+    core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, createCheckRunnerFacility(mDeviceName));
     refreshConfig(iCtx);
     Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
@@ -377,21 +377,13 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
   ILOG(Debug, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      if (getenv("O2_QC_OLD_VALIDITY")) {
-        auto tmpValidity = qo->getValidity();
-        qo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-        mDatabase->storeQO(qo);
-        qo->setValidity(tmpValidity);
-      } else {
-        mDatabase->storeQO(qo);
-      }
+      mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
       mNumberQOStored++;
     }
-
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);
-      ILOG(Info, Devel) << "New validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Info, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -403,21 +395,14 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   ILOG(Debug, Devel) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      if (getenv("O2_QC_OLD_VALIDITY")) {
-        auto tmpValidity = mo->getValidity();
-        mo->setValidity(ValidityInterval{ static_cast<unsigned long>(validFrom), validFrom + 10ull * 365 * 24 * 60 * 60 * 1000 });
-        mDatabase->storeMO(mo);
-        mo->setValidity(tmpValidity);
-      } else {
-        mDatabase->storeMO(mo);
-      }
+      mDatabase->storeMO(mo);
 
       mTotalNumberMOStored++;
       mNumberMOStored++;
     }
     if (!monitorObjects.empty()) {
       auto& mo = monitorObjects.at(0);
-      ILOG(Info, Devel) << "New validity of MO '" << mo->GetName() << "' is (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Info, Devel) << "Validity of MO '" << mo->GetName() << "' is (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -435,7 +420,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
     auto outputSpec = correspondingCheck.getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
-      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, *qo);
     mTotalQOSent++;
   }
 }
@@ -497,26 +482,6 @@ void CheckRunner::initServiceDiscovery()
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
 }
 
-void CheckRunner::initInfologger(framework::InitContext& iCtx)
-{
-  // TODO : the method should be merged with the other, similar, methods in *Runners
-
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
-
-  mConfig.infologgerDiscardParameters.discardFile = templateILDiscardFile(mConfig.infologgerDiscardParameters.discardFile, iCtx);
-  QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
-                     mConfig.infologgerDiscardParameters,
-                     il,
-                     ilContext);
-}
-
 void CheckRunner::initLibraries()
 {
   std::set<std::string> moduleNames;
@@ -568,11 +533,12 @@ void CheckRunner::stop()
 
 void CheckRunner::reset()
 {
-  ILOG(Info, Devel) << "Reset" << ENDM;
-
   try {
     mCollector.reset();
     mActivity = make_shared<Activity>();
+    for (auto& [checkName, check] : mChecks) {
+      check.reset();
+    }
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() : "

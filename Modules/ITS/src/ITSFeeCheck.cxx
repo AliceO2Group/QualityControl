@@ -22,9 +22,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <fairlogger/Logger.h>
-#include <TList.h>
 #include <TH2.h>
-#include <iostream>
 #include "Common/Utils.h"
 
 namespace o2::quality_control_modules::its
@@ -42,6 +40,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
         result = Quality::Good;
         auto* h = dynamic_cast<TH2I*>(mo->getObject());
+        if (h == nullptr) {
+          ILOG(Error, Support) << "could not cast LaneStatusFlag to TH2I*" << ENDM;
+          continue;
+        }
         if (h->GetMaximum() > 0) {
           result.set(Quality::Bad);
         }
@@ -49,6 +51,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if (mo->getName() == Form("LaneStatus/laneStatusOverviewFlag%s", mLaneStatusFlag[iflag].c_str())) {
         result.set(Quality::Good);
         auto* hp = dynamic_cast<TH2Poly*>(mo->getObject());
+        if (hp == nullptr) {
+          ILOG(Error, Support) << "could not cast TrailerCount to THPollyF*" << ENDM;
+          continue;
+        }
         badStaveIB = false;
         badStaveML = false;
         badStaveOL = false;
@@ -116,6 +122,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast LaneStatusSummaryGlobal to TH1D*" << ENDM;
+        continue;
+      }
       result.addMetadata("SummaryGlobal", "good");
       maxfractionbadlanes = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "maxfractionbadlanes", maxfractionbadlanes);
       if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
@@ -135,6 +145,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     if (mo->getName() == "TriggerVsFeeid") {
       result.set(Quality::Good);
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast TriggerVsFeeid to TH2I*" << ENDM;
+        continue;
+      }
 
       std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbinstrg", skipbinstrg));
       std::vector<int> skipfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipfeeids", skipfeeids));
@@ -208,6 +222,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
     if (mo->getName() == "PayloadSize") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast PayloadSize to TH2F*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckTechnicals", "good");
       result.addMetadata("CheckTechnicalsFeeid", "good");
@@ -234,6 +252,10 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
     if (mo->getName() == "TrailerCount") {
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast TrailerCount to TH2I*" << ENDM;
+        continue;
+      }
       result.set(Quality::Good);
       result.addMetadata("CheckROFRate", "good");
       expectedROFperOrbit = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "expectedROFperOrbit", expectedROFperOrbit);
@@ -274,6 +296,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   for (int iflag = 0; iflag < NFlags; iflag++) {
     if (mo->getName() == Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[iflag].c_str())) {
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast LaneSatusFlag to TH2I*" << ENDM;
+        continue;
+      }
       if (checkResult == Quality::Good) {
         status = "Quality::GOOD";
         textColor = kGreen;
@@ -292,6 +318,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
     if (mo->getName() == Form("LaneStatus/laneStatusOverviewFlag%s", mLaneStatusFlag[iflag].c_str())) {
       auto* hp = dynamic_cast<TH2Poly*>(mo->getObject());
+      if (hp == nullptr) {
+        ILOG(Error, Support) << "could not cast LaneSatusOverview to THPolly*" << ENDM;
+        continue;
+      }
       if (checkResult == Quality::Good) {
         status = "Quality::GOOD";
         textColor = kGreen;
@@ -362,6 +392,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   } // end flags
   if (mo->getName() == "LaneStatusSummary/LaneStatusSummaryGlobal") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast LaneSatutsSummaryGlobal to TH1D*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -389,6 +423,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   }
   if (mo->getName() == Form("RDHSummary")) {
     auto* h = dynamic_cast<TH2I*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast RDHSummary to TH2I*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -409,6 +447,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   // trigger plot
   if (mo->getName() == "TriggerVsFeeid") {
     auto* h = dynamic_cast<TH2I*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast TriggerVsFeeId to TH2I*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -441,6 +483,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   // payload size plot
   if (mo->getName() == "PayloadSize") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast PayloadSize to TH2F*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
@@ -476,6 +522,10 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
   if (mo->getName() == "TrailerCount") {
     auto* h = dynamic_cast<TH2I*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast TrailerCount to TH2F*" << ENDM;
+      return;
+    }
     if (checkResult == Quality::Good) {
       status = "Quality::GOOD";
       textColor = kGreen;
