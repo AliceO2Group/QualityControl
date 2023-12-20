@@ -98,7 +98,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
     }
   }
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -151,7 +151,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
     }
   }
 
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has active tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -320,7 +320,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     }
   }
 
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -400,7 +400,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
   }
 
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -624,7 +624,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
-void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
+void InfrastructureGenerator::generateCheckRunner(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec, bool hasActiveTasks)
 {
   typedef std::vector<CheckConfig> CheckConfigs;
 
@@ -636,9 +636,11 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     }
   }
 
-  const auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
-  const DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs);
-  workflow.emplace_back(spec);
+  if(checkConfigs.size() > 0 || hasActiveTasks) { // add only if we have active checks or tasks
+    const auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
+    const DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs);
+    workflow.emplace_back(spec);
+  }
 }
 
 void InfrastructureGenerator::throwIfAggNamesClashCheckNames(const InfrastructureSpec& infrastructureSpec)

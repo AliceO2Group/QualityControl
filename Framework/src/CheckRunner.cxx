@@ -288,7 +288,7 @@ void CheckRunner::sendPeriodicMonitoring()
 
 QualityObjectsType CheckRunner::check()
 {
-  ILOG(Debug, Devel) << "check(): Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
+  ILOG(Debug, Devel) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
                      << ENDM;
 
   QualityObjectsType allQOs;
