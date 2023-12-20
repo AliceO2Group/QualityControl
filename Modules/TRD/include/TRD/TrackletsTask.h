@@ -20,6 +20,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
 #include "TRDQC/StatusHelper.h"
+#include "TRD/TRDHelpers.h"
 
 class TH1F;
 class TH2F;
@@ -45,18 +46,6 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void drawTrdLayersGrid(TH2F* hist);
-  void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
-  void drawChamberStatus();
-
-  // Auxiliary functions
-  bool isHalfChamberMasked(int hcId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber)
-  {
-    // List here the chamber status to not be masked, anything different returns true
-    int GoodStatus[] = { 0, 3 }; // Make sure to match the same array in DigitsTask.h
-    int hcStatus = (*ptrChamber)[hcId / 2];
-    return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcStatus) == std::end(GoodStatus));
-  }
 
  private:
   // settings
@@ -72,7 +61,12 @@ class TrackletsTask final : public TaskInterface
   TH2F* mTrackletsPerHC2D = nullptr;
   TH1F* mTrackletsPerTimeFrame = nullptr;
   TH1F* mTriggersPerTimeFrame = nullptr;
-  std::array<TH2F*, 6> mLayers;
+  // std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayersTracklets;
+  std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers;
+
+  // Plotting variables
+  TRDHelpers mTRDHelpers; // Auxiliary functions for TRD
+  int mUnitsPerSection;   // Units for each section in layers plots
 
   // data to pull from CCDB
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;

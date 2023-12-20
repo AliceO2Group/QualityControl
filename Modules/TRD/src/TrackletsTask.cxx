@@ -117,14 +117,15 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
 
   // Build tracklet layers
+  mUnitsPerSection = 8;
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
-    mLayers[iLayer] = new TH2F(Form("TrackletsPerMCM_Layer%i", iLayer), Form("Tracklet count per MCM in layer %i;glb pad row;glb MCM col", iLayer),
-                               76, -0.5, 75.5, 144, -0.5, 143.5);
+    mLayers[iLayer].reset(new TH2F(Form("TrackletsPerMCM_Layer%i", iLayer), Form("Tracklet count per MCM in layer %i;glb pad row;glb MCM col", iLayer),
+                                   76, -0.5, 75.5, mUnitsPerSection * 18, -0.5, mUnitsPerSection * 18 - 0.5));
     mLayers[iLayer]->SetStats(0);
-    drawTrdLayersGrid(mLayers[iLayer]);
-    getObjectsManager()->startPublishing(mLayers[iLayer]);
+    mTRDHelpers.drawTrdLayersGrid(mLayers[iLayer].get(), mUnitsPerSection);
+    getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
-    getObjectsManager()->setDisplayHint(mLayers[iLayer], "logz");
+    getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
   }
 }
 
@@ -139,12 +140,13 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (!mChamberStatus) {
     auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("chamberStatus");
     mChamberStatus = ptr.get();
-  }
-
-  if (mChamberStatus != nullptr) {
-    drawChamberStatus();
-  } else {
-    ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
+    // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
+    if (mChamberStatus) {
+      mTRDHelpers.drawChamberStatusOn2D(mTrackletsPerHC2D, mChamberStatus);
+      mTRDHelpers.drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
+    } else {
+      ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
+    }
   }
 
   // Fill histograms
@@ -179,122 +181,6 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTrackletQ[2]->Fill(trklt.getQ2());
       mLayers[layer]->Fill(rowGlb, colGlb);
     }
-  }
-}
-
-void TrackletsTask::drawChamberStatus()
-{
-  // LB: draw in mTrackletsPerHC2D
-  TLine* line[6];
-  std::pair<int, int> x, y;
-  for (int iHC = 0; iHC < MAXCHAMBER * 2; ++iHC) {
-    if (isHalfChamberMasked(iHC, mChamberStatus)) {
-      int stackLayer = Helper::getStack(iHC / 2) * NLAYER + Helper::getLayer(iHC / 2);
-      int sectorSide = (iHC / NHCPERSEC) * 2 + (iHC % 2);
-      x.first = sectorSide;
-      x.second = sectorSide + 1;
-      y.first = stackLayer;
-      y.second = stackLayer + 1;
-
-      line[0] = new TLine(x.first, y.first, x.second, y.second);
-      line[1] = new TLine(x.second, y.first, x.first, y.second);
-      line[2] = new TLine(x.first, y.first, x.second, y.first);
-      line[3] = new TLine(x.first, y.second, x.second, y.second);
-      line[4] = new TLine(x.first, y.first, x.first, y.second);
-      line[5] = new TLine(x.second, y.first, x.second, y.second);
-      for (int i = 0; i < 6; ++i) {
-        line[i]->SetLineColor(kBlack);
-        line[i]->SetLineWidth(3);
-        mTrackletsPerHC2D->GetListOfFunctions()->Add(line[i]);
-      }
-    }
-  }
-
-  // LB: draw in mLayers elements
-  for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      for (int iStack = 0; iStack < 5; ++iStack) {
-        int rowMax = (iStack == 2) ? 12 : 16;
-        for (int side = 0; side < 2; ++side) {
-          int det = iSec * 30 + iStack * 6 + iLayer;
-          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
-          int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
-          int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
-          if (isHalfChamberMasked(hcid, mChamberStatus)) {
-            drawHashOnLayers(iLayer, hcid, rowstart, rowend);
-          }
-        }
-      }
-    }
-  }
-}
-
-void TrackletsTask::drawTrdLayersGrid(TH2F* hist)
-{
-  TLine* line;
-  for (int i = 0; i < 5; ++i) {
-    switch (i) {
-      case 0:
-        line = new TLine(15.5, 0, 15.5, 143.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 1:
-        line = new TLine(31.5, 0, 31.5, 143.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 2:
-        line = new TLine(43.5, 0, 43.5, 143.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 3:
-        line = new TLine(59.5, 0, 59.5, 143.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-    }
-  }
-
-  for (int iSec = 1; iSec < 18; ++iSec) {
-    float yPos = iSec * 8 - 0.5;
-    line = new TLine(-0.5, yPos, 75.5, yPos);
-    line->SetLineStyle(kDashed);
-    line->SetLineColor(kBlack);
-    hist->GetListOfFunctions()->Add(line);
-  }
-}
-
-void TrackletsTask::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend)
-{
-  // Draw a simple box in with a X on it
-  std::pair<float, float> topright, bottomleft; // coordinates of box
-  TLine* boxlines[6];
-  int det = hcid / 2;
-  int side = hcid % 2;
-  int sec = hcid / 60;
-
-  bottomleft.first = rowstart - 0.5;
-  bottomleft.second = (sec * 2 + side) * 4 - 0.5;
-  topright.first = rowend - 0.5;
-  topright.second = (sec * 2 + side) * 4 + 4 - 0.5;
-
-  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second); // bottom
-  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);     // top
-  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second); // left
-  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);     // right
-  boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);   // backslash
-  boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);   // forwardslash
-
-  for (int line = 0; line < 6; ++line) {
-    boxlines[line]->SetLineColor(kBlack);
-    boxlines[line]->SetLineWidth(3);
-    mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
   }
 }
 
