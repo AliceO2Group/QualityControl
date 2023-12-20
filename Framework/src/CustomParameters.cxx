@@ -171,9 +171,9 @@ std::string& CustomParameters::operator[](const std::string& key)
   return mCustomParameters.at("default").at("default").at(key);
 }
 
-void CustomParameters::populateCustomParameters(const boost::property_tree::ptree& csTree)
+void CustomParameters::populateCustomParameters(const boost::property_tree::ptree& tree)
 {
-  for (const auto& [runtype, subTreeRunType] : csTree) {
+  for (const auto& [runtype, subTreeRunType] : tree) {
     for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
       for (const auto& [key, value] : subTreeBeamType) {
         set(key, value.get_value<std::string>(), runtype, beamtype);
