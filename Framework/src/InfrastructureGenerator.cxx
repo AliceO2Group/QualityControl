@@ -636,7 +636,7 @@ void InfrastructureGenerator::generateCheckRunner(framework::WorkflowSpec& workf
     }
   }
 
-  if(checkConfigs.size() > 0 || hasActiveTasks) { // add only if we have active checks or tasks
+  if (checkConfigs.size() > 0 || hasActiveTasks) { // add only if we have active checks or tasks
     const auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
     const DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs);
     workflow.emplace_back(spec);
