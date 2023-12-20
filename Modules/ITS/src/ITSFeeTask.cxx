@@ -450,10 +450,11 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto const* payload = it.data();
       size_t payloadSize = it.size();
       int PayloadPerGBTW = (dataformat < 2) ? 16 : 10;
+      int PaddingBytes = PayloadPerGBTW - 10;
       const uint16_t* gbtw_bb; // identifier and byte before
 
       for (int32_t ip = PayloadPerGBTW; ip <= payloadSize; ip += PayloadPerGBTW) {
-        gbtw_bb = (const uint16_t*)&payload[ip - 2];
+        gbtw_bb = (const uint16_t*)&payload[ip - PaddingBytes - 2];
         if (doLookForTDT && (*gbtw_bb & 0xff01) == 0xf001) { // checking that it is a TDT (0xf0) with packet_done (0x<any>1)
           TDTcounter[ifee]++;
         }
@@ -465,13 +466,14 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
             ILOG(Error, Support) << "Error during reading of calibration data word: " << error.what() << ENDM;
             return;
           }
-          if (cdw->userField2.content.cdwver != 1) {
-            mDecodingCheck->Fill(ifee, 4);
-          }
 
           mCalibrationWordCount->Fill(ifee);
-          mCalibStage->Fill(ifee, (int)(cdw->userField0.content.rowid));
-          mCalibLoop->Fill(ifee, (int)(cdw->userField1.content.loopvalue));
+          if (cdw->userField2.content.cdwver == 1) {
+            mCalibStage->Fill(ifee, (int)(cdw->userField0.content.rowid));
+            mCalibLoop->Fill(ifee, (int)(cdw->userField1.content.loopvalue));
+          } else { // TODO: add compatibility to older versions of CDW
+            mDecodingCheck->Fill(ifee, 4);
+          }
 
         } // if mDecodeCDW and it is CDW
 
