@@ -151,7 +151,8 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mChamberStatus = ptr.get();
     // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
     if (mChamberStatus) {
-      TRDHelpers::drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
+      // LB: no half chamber distribution map for Digits, pass it as null pointer
+      TRDHelpers::drawChamberStatusOnMapAndLayers(mChamberStatus, nullptr, mLayers, mUnitsPerSection);
     } else {
       ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
     }

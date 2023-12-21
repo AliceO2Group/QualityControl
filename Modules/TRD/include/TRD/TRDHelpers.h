@@ -33,12 +33,9 @@ class TRDHelpers
   ~TRDHelpers() = default;
 
   static void drawTrdLayersGrid(TH2F* hist, int unitspersection);
-  static void drawChamberStatusOn2D(std::shared_ptr<TH2F> hist, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber);
-  static void drawChamberStatusOnLayers(std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber, int unitspersection);
-
-  static void drawHashOnLayers(int layer, int hcid, int hcstat, int rowstart, int rowend, int unitspersection, std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers);
+  static void drawChamberStatusOnMapAndLayers(const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> hcdist, std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers, int unitspersection);
+  static void drawChamberStatusMask(int hcstat, std::pair<float, float> x, std::pair<float, float> y, std::shared_ptr<TH2F> hist);
   static bool isHalfChamberMasked(int hcid, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber);
-  static void setBoxChamberStatus(int hcstat, TLine* box[], std::shared_ptr<TH2F> hist);
  
  private:
   // Chamber status values definitions, used for masking

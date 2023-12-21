@@ -143,8 +143,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mChamberStatus = ptr.get();
     // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
     if (mChamberStatus) {
-      TRDHelpers::drawChamberStatusOn2D(mTrackletsPerHC2D, mChamberStatus);
-      TRDHelpers::drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
+      TRDHelpers::drawChamberStatusOnMapAndLayers(mChamberStatus, mTrackletsPerHC2D, mLayers, mUnitsPerSection);
     } else {
       ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
     }

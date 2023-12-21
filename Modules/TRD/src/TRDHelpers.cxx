@@ -26,86 +26,63 @@ namespace o2::quality_control_modules::trd
 {
 bool TRDHelpers::isHalfChamberMasked(int hcid, const std::array<int, MAXCHAMBER>* ptrChamber)
 {
-  // LB: defined as array in case other chamber status values are set as not masked
+  // LB: defined as array in case other chamber status values should be set as not masked
   int GoodStatus[] = { mConfiguredChamberStatus };
   int hcstat = (*ptrChamber)[hcid / 2];
   return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcstat) == std::end(GoodStatus));
 }
 
-void TRDHelpers::drawChamberStatusOn2D(std::shared_ptr<TH2F> hist, const std::array<int, MAXCHAMBER>* ptrChamber)
+void TRDHelpers::drawChamberStatusOnMapAndLayers(const std::array<int, MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> hcdist, std::array<std::shared_ptr<TH2F>, NLAYER> mLayers, int unitspersection)
 {
-  TLine* boxlines[6];
-  std::pair<int, int> x, y;
+  std::pair<float, float> x, y;
   for (int hcid = 0; hcid < MAXCHAMBER * 2; ++hcid) {
     if (isHalfChamberMasked(hcid, ptrChamber)) {
-      int stackLayer = Helper::getStack(hcid / 2) * NLAYER + Helper::getLayer(hcid / 2);
-      int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
-      x.first = sectorSide;
-      x.second = sectorSide + 1;
-      y.first = stackLayer;
-      y.second = stackLayer + 1;
+      // Chamber properties
+      int hcstat = (*ptrChamber)[hcid / 2];
+      int side = hcid % 2;
+      int sec = hcid / NHCPERSEC;
+      int stack = Helper::getStack(hcid / 2);
+      int layer = Helper::getLayer(hcid / 2);
+      
+      if (hcdist) {
+        // Coordinates for half chamber distribution
+        int stackLayer = stack * NLAYER + layer;
+        int sectorSide = sec * 2 + side;
+        x.first = sectorSide;
+        x.second = sectorSide + 1;
+        y.first = stackLayer;
+        y.second = stackLayer + 1;
 
-      boxlines[0] = new TLine(x.first, y.first, x.second, y.second);
-      boxlines[1] = new TLine(x.second, y.first, x.first, y.second);
-      boxlines[2] = new TLine(x.first, y.first, x.second, y.first);
-      boxlines[3] = new TLine(x.first, y.second, x.second, y.second);
-      boxlines[4] = new TLine(x.first, y.first, x.first, y.second);
-      boxlines[5] = new TLine(x.second, y.first, x.second, y.second);
-
-      setBoxChamberStatus((*ptrChamber)[hcid / 2], boxlines, hist);
-    }
-  }
-}
-
-void TRDHelpers::drawChamberStatusOnLayers(std::array<std::shared_ptr<TH2F>, NLAYER> mLayers, const std::array<int, MAXCHAMBER>* ptrChamber, int unitspersection)
-{
-  for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
-    for (int iSec = 0; iSec < 18; ++iSec) {
-      for (int iStack = 0; iStack < 5; ++iStack) {
-        int rowMax = (iStack == 2) ? 12 : 16;
-        for (int side = 0; side < 2; ++side) {
-          int det = iSec * 30 + iStack * 6 + iLayer;
-          int hcid = (side == 0) ? det * 2 : det * 2 + 1;
-          int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
-          int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
-          if (isHalfChamberMasked(hcid, ptrChamber)) {
-            int hcstat = (*ptrChamber)[hcid / 2];
-            std::cout << "Leonardo hcid / 2 " << hcid / 2 << std::endl;
-            std::cout << "Leonardo hcstat " << hcstat << std::endl;
-            drawHashOnLayers(iLayer, hcid, hcstat, rowstart, rowend, unitspersection, mLayers);
-          }
-        }
+        drawChamberStatusMask(hcstat, x, y, hcdist);
+      }
+      
+      if (mLayers[layer]) { 
+        // Chamber stack of type C0 or C1 condition
+        int rowstart = FIRSTROW[stack];
+        int rowend = stack == 2 ? rowstart + NROWC0 : rowstart + NROWC1;
+        
+        // Coordinates for layer map	
+        x.first = rowstart - 0.5;
+        x.second = rowend - 0.5;
+        y.first = (sec * 2 + side) * (unitspersection / 2) - 0.5;
+        y.second = y.first + (unitspersection / 2);
+        
+        drawChamberStatusMask(hcstat, x, y, mLayers[layer]);
       }
     }
   }
 }
 
-void TRDHelpers::drawHashOnLayers(int layer, int hcid, int hcstat, int rowstart, int rowend, int unitspersection, std::array<std::shared_ptr<TH2F>, NLAYER> mLayers)
+void TRDHelpers::drawChamberStatusMask(int hcstat, std::pair<float, float> x, std::pair<float, float> y, std::shared_ptr<TH2F> hist)
 {
-  // Draw a simple box in with a X on it
-  std::pair<float, float> topright, bottomleft; // coordinates of box
-  TLine* boxlines[6];
-  int det = hcid / 2;
-  int side = hcid % 2;
-  int sec = hcid / 60;
-
-  bottomleft.first = rowstart - 0.5;
-  bottomleft.second = (sec * 2 + side) * (unitspersection / 2) - 0.5;
-  topright.first = rowend - 0.5;
-  topright.second = (sec * 2 + side + 1) * (unitspersection / 2) - 0.5;
-
-  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second); // bottom
-  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);     // top
-  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second); // left
-  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);     // right
-  boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);   // backslash
-  boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);   // forwardslash
-
-  setBoxChamberStatus(hcstat, boxlines, mLayers[layer]);
-}
-
-void TRDHelpers::setBoxChamberStatus(int hcstat, TLine* box[], std::shared_ptr<TH2F> hist)
-{
+  TLine* box[6];
+  box[0] = new TLine(x.first, y.first, x.second, y.first); // bottom
+  box[1] = new TLine(x.first, y.second, x.second, y.second); // top
+  box[2] = new TLine(x.first, y.first, x.first, y.second); // left
+  box[3] = new TLine(x.second, y.first, x.second, y.second);     // right
+  box[4] = new TLine(x.first, y.second, x.second, y.first);   // backslash
+  box[5] = new TLine(x.first, y.first, x.second, y.second);   // forwardslash
+  
   for (int line = 0; line < 6; ++line) {
     if (hcstat == mEmptyChamberStatus) {
       box[line]->SetLineColor(kGray + 1);
