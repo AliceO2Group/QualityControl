@@ -16,7 +16,6 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TLine.h>
-
 #include "TRD/TRDHelpers.h"
 #include "DataFormatsTRD/HelperMethods.h"
 
@@ -25,39 +24,35 @@ using Helper = o2::trd::HelperMethods;
 
 namespace o2::quality_control_modules::trd
 {
-bool TRDHelpers::isHalfChamberMasked(int hcId, const std::array<int, MAXCHAMBER>* ptrChamber)
+bool TRDHelpers::isHalfChamberMasked(int hcid, const std::array<int, MAXCHAMBER>* ptrChamber)
 {
-  // List here the chamber status to not be masked, anything different returns true
-  int GoodStatus[] = { 0, 2, 3, 4, 5 };
-  int hcStatus = (*ptrChamber)[hcId / 2];
-  return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcStatus) == std::end(GoodStatus));
+  // LB: defined as array in case other chamber status values are set as not masked
+  int GoodStatus[] = { mConfiguredChamberStatus };
+  int hcstat = (*ptrChamber)[hcid / 2];
+  return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcstat) == std::end(GoodStatus));
 }
 
-void TRDHelpers::drawChamberStatusOn2D(TH2F* hist, const std::array<int, MAXCHAMBER>* ptrChamber)
+void TRDHelpers::drawChamberStatusOn2D(std::shared_ptr<TH2F> hist, const std::array<int, MAXCHAMBER>* ptrChamber)
 {
-  TLine* line[6];
+  TLine* boxlines[6];
   std::pair<int, int> x, y;
-  for (int iHC = 0; iHC < MAXCHAMBER * 2; ++iHC) {
-    if (isHalfChamberMasked(iHC, ptrChamber)) {
-      int stackLayer = Helper::getStack(iHC / 2) * NLAYER + Helper::getLayer(iHC / 2);
-      int sectorSide = (iHC / NHCPERSEC) * 2 + (iHC % 2);
+  for (int hcid = 0; hcid < MAXCHAMBER * 2; ++hcid) {
+    if (isHalfChamberMasked(hcid, ptrChamber)) {
+      int stackLayer = Helper::getStack(hcid / 2) * NLAYER + Helper::getLayer(hcid / 2);
+      int sectorSide = (hcid / NHCPERSEC) * 2 + (hcid % 2);
       x.first = sectorSide;
       x.second = sectorSide + 1;
       y.first = stackLayer;
       y.second = stackLayer + 1;
 
-      line[0] = new TLine(x.first, y.first, x.second, y.second);
-      line[1] = new TLine(x.second, y.first, x.first, y.second);
-      line[2] = new TLine(x.first, y.first, x.second, y.first);
-      line[3] = new TLine(x.first, y.second, x.second, y.second);
-      line[4] = new TLine(x.first, y.first, x.first, y.second);
-      line[5] = new TLine(x.second, y.first, x.second, y.second);
+      boxlines[0] = new TLine(x.first, y.first, x.second, y.second);
+      boxlines[1] = new TLine(x.second, y.first, x.first, y.second);
+      boxlines[2] = new TLine(x.first, y.first, x.second, y.first);
+      boxlines[3] = new TLine(x.first, y.second, x.second, y.second);
+      boxlines[4] = new TLine(x.first, y.first, x.first, y.second);
+      boxlines[5] = new TLine(x.second, y.first, x.second, y.second);
 
-      for (int i = 0; i < 6; ++i) {
-        line[i]->SetLineColor(kBlack);
-        line[i]->SetLineWidth(3);
-        hist->GetListOfFunctions()->Add(line[i]);
-      }
+      setBoxChamberStatus((*ptrChamber)[hcid / 2], boxlines, hist);
     }
   }
 }
@@ -74,11 +69,53 @@ void TRDHelpers::drawChamberStatusOnLayers(std::array<std::shared_ptr<TH2F>, NLA
           int rowstart = iStack < 3 ? iStack * 16 : 44 + (iStack - 3) * 16;                 // pad row within whole sector
           int rowend = iStack < 3 ? rowMax + iStack * 16 : rowMax + 44 + (iStack - 3) * 16; // pad row within whole sector
           if (isHalfChamberMasked(hcid, ptrChamber)) {
-            drawHashOnLayers(iLayer, hcid, rowstart, rowend, unitspersection, mLayers);
+            int hcstat = (*ptrChamber)[hcid / 2];
+            std::cout << "Leonardo hcid / 2 " << hcid / 2 << std::endl;
+            std::cout << "Leonardo hcstat " << hcstat << std::endl;
+            drawHashOnLayers(iLayer, hcid, hcstat, rowstart, rowend, unitspersection, mLayers);
           }
         }
       }
     }
+  }
+}
+
+void TRDHelpers::drawHashOnLayers(int layer, int hcid, int hcstat, int rowstart, int rowend, int unitspersection, std::array<std::shared_ptr<TH2F>, NLAYER> mLayers)
+{
+  // Draw a simple box in with a X on it
+  std::pair<float, float> topright, bottomleft; // coordinates of box
+  TLine* boxlines[6];
+  int det = hcid / 2;
+  int side = hcid % 2;
+  int sec = hcid / 60;
+
+  bottomleft.first = rowstart - 0.5;
+  bottomleft.second = (sec * 2 + side) * (unitspersection / 2) - 0.5;
+  topright.first = rowend - 0.5;
+  topright.second = (sec * 2 + side + 1) * (unitspersection / 2) - 0.5;
+
+  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second); // bottom
+  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);     // top
+  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second); // left
+  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);     // right
+  boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);   // backslash
+  boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);   // forwardslash
+
+  setBoxChamberStatus(hcstat, boxlines, mLayers[layer]);
+}
+
+void TRDHelpers::setBoxChamberStatus(int hcstat, TLine* box[], std::shared_ptr<TH2F> hist)
+{
+  for (int line = 0; line < 6; ++line) {
+    if (hcstat == mEmptyChamberStatus) {
+      box[line]->SetLineColor(kGray + 1);
+    } else if (hcstat == mErrorChamberStatus) {
+      box[line]->SetLineColor(kRed);
+    } else {
+      box[line]->SetLineColor(kBlack);
+    }
+    box[line]->SetLineWidth(2);
+    hist->GetListOfFunctions()->Add(box[line]);
   }
 }
 
@@ -122,33 +159,4 @@ void TRDHelpers::drawTrdLayersGrid(TH2F* hist, int unitspersection)
     hist->GetListOfFunctions()->Add(line);
   }
 }
-
-void TRDHelpers::drawHashOnLayers(int layer, int hcid, int rowstart, int rowend, int unitspersection, std::array<std::shared_ptr<TH2F>, NLAYER> mLayers)
-{
-  // Draw a simple box in with a X on it
-  std::pair<float, float> topright, bottomleft; // coordinates of box
-  TLine* boxlines[6];
-  int det = hcid / 2;
-  int side = hcid % 2;
-  int sec = hcid / 60;
-
-  bottomleft.first = rowstart - 0.5;
-  bottomleft.second = (sec * 2 + side) * (unitspersection / 2) - 0.5;
-  topright.first = rowend - 0.5;
-  topright.second = (sec * 2 + side + 1) * (unitspersection / 2) - 0.5;
-
-  boxlines[0] = new TLine(bottomleft.first, bottomleft.second, topright.first, bottomleft.second); // bottom
-  boxlines[1] = new TLine(bottomleft.first, topright.second, topright.first, topright.second);     // top
-  boxlines[2] = new TLine(bottomleft.first, bottomleft.second, bottomleft.first, topright.second); // left
-  boxlines[3] = new TLine(topright.first, bottomleft.second, topright.first, topright.second);     // right
-  boxlines[4] = new TLine(topright.first, bottomleft.second, bottomleft.first, topright.second);   // backslash
-  boxlines[5] = new TLine(bottomleft.first, bottomleft.second, topright.first, topright.second);   // forwardslash
-
-  for (int line = 0; line < 6; ++line) {
-    boxlines[line]->SetLineColor(kBlack);
-    boxlines[line]->SetLineWidth(3);
-    mLayers[layer]->GetListOfFunctions()->Add(boxlines[line]);
-  }
-}
-
 } // namespace o2::quality_control_modules::trd
