@@ -456,6 +456,7 @@ install(PROGRAMS script/o2-qc-functional-test.sh
 set(TEST_FILES
   "testSharedConfig.json"
   "testEmptyConfig.json"
+  "testOnlyTaskConfig.json"
   "testCheckWorkflow.json"
   "testTrendingTask.json"
   "testWorkflow.json"

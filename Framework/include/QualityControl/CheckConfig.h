@@ -38,7 +38,6 @@ struct CheckConfig {
   UpdatePolicyType policyType = UpdatePolicyType::OnAny;
   std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var
   bool allObjects = false;
-  bool allowBeautify = false;
   framework::Inputs inputSpecs{};
   framework::OutputSpec qoSpec{ "XXX", "INVALID" };
   std::string conditionUrl{};

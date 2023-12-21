@@ -98,7 +98,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
     }
   }
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -151,7 +151,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
     }
   }
 
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has active tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -320,7 +320,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     }
   }
 
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -400,7 +400,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
   }
 
-  generateCheckRunners(workflow, infrastructureSpec);
+  generateCheckRunner(workflow, infrastructureSpec, workflow.size() > 0 /* has tasks */);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -624,118 +624,23 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
-void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
+void InfrastructureGenerator::generateCheckRunner(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec, bool hasActiveTasks)
 {
-  // todo have a look if this complex procedure can be simplified.
-  // todo also make well defined and scoped functions to make it more readable and clearer.
-  typedef std::vector<std::string> InputNames;
   typedef std::vector<CheckConfig> CheckConfigs;
-  std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
-  std::map<InputNames, CheckConfigs> checksMap;                   // all the Checks defined in the config mapped keyed by their sorted inputNames
-  std::map<InputNames, InputNames> storeVectorMap;
 
-  // todo: avoid code repetition
-  for (const auto& taskSpec : infrastructureSpec.tasks) {
-    if (taskSpec.active) {
-      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
-      tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-      bool movingWindowsEnabled = !taskSpec.movingWindows.empty();
-      bool synchronousRemote = taskSpec.location == TaskLocationSpec::Local && (infrastructureSpec.workflowType == WorkflowType::Remote || infrastructureSpec.workflowType == WorkflowType::FullChain);
-      bool asynchronousRemote = infrastructureSpec.workflowType == WorkflowType::RemoteBatch;
-      if (movingWindowsEnabled && (synchronousRemote || asynchronousRemote)) {
-        InputSpec taskMovingWindowOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName, true), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
-        tasksOutputMap.insert({ DataSpecUtils::label(taskMovingWindowOutput), taskMovingWindowOutput });
-      }
-    }
-  }
-
-  for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
-    if (ppTaskSpec.active) {
-      InputSpec ppTaskOutput{ ppTaskSpec.taskName,
-                              PostProcessingDevice::createPostProcessingDataOrigin(ppTaskSpec.detectorName),
-                              PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName),
-                              Lifetime::Sporadic };
-      tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
-    }
-  }
-
-  for (const auto& externalTaskSpec : infrastructureSpec.externalTasks) {
-    if (externalTaskSpec.active) {
-      auto query = externalTaskSpec.query;
-      Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
-      for (const auto& taskOutput : inputs) {
-        tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-      }
-    }
-  }
-
-  // Instantiate Checks based on the configuration and build a map of checks (keyed by their inputs names)
+  CheckConfigs checkConfigs; // all the checkConfigs
   for (const auto& checkSpec : infrastructureSpec.checks) {
-    ILOG(Debug, Devel) << ">> Check name : " << checkSpec.checkName << ENDM;
     if (checkSpec.active) {
       auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
-      InputNames inputNames;
-
-      for (const auto& inputSpec : checkConfig.inputSpecs) {
-        inputNames.push_back(DataSpecUtils::label(inputSpec));
-      }
-      // Create a grouping key - sorted vector of stringified InputSpecs //todo: consider std::set, which is sorted
-      std::sort(inputNames.begin(), inputNames.end());
-      // Group checks
-      checksMap[inputNames].push_back(checkConfig);
+      checkConfigs.push_back(checkConfig);
     }
   }
 
-  // For every Task output, find a Check to store the MOs in the database.
-  // If none is found we create a sink device.
-  for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
-    (void)inputSpec;
-    bool isStored = false;
-    // Look for this task as input in the Checks' inputs, if we found it then we are done
-    for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
-      (void)checks;
-
-      if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
-        storeVectorMap[inputNames].push_back(label);
-        break;
-      }
-    }
-    if (!isStored) { // fixme: statement is always true
-      // If there is no Check for a given input, create a candidate for a sink device
-      InputNames singleEntry{ label };
-      // Init empty Check vector to appear in the next step
-      checksMap[singleEntry];
-      storeVectorMap[singleEntry].push_back(label);
-    }
-  }
-
-  // Create CheckRunners: 1 per set of inputs
-  std::vector<framework::OutputSpec> checkRunnerOutputs;
-  auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
-  for (auto& [inputNames, checkConfigs] : checksMap) {
-    // Logging
-    ILOG(Debug, Devel) << ">> Inputs (" << inputNames.size() << "): ";
-    for (const auto& name : inputNames)
-      ILOG(Debug, Devel) << name << " ";
-    ILOG(Debug, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
-    for (const auto& checkConfig : checkConfigs)
-      ILOG(Debug, Devel) << checkConfig.name << " ";
-    ILOG(Debug, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
-    for (const auto& input : storeVectorMap[inputNames])
-      ILOG(Debug, Devel) << input << " ";
-    ILOG(Debug, Devel) << ENDM;
-
-    DataProcessorSpec spec = checkConfigs.empty()
-                               ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
-                               : CheckRunnerFactory::create(checkRunnerConfig, checkConfigs, storeVectorMap[inputNames]);
+  if (checkConfigs.size() > 0 || hasActiveTasks) { // add only if we have active checks or tasks
+    const auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
+    const DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs);
     workflow.emplace_back(spec);
-    checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
   }
-
-  ILOG(Debug, Devel) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
-  for (const auto& output : checkRunnerOutputs)
-    ILOG(Debug, Devel) << DataSpecUtils::describe(output) << " ";
-  ILOG(Debug, Devel) << ENDM;
 }
 
 void InfrastructureGenerator::throwIfAggNamesClashCheckNames(const InfrastructureSpec& infrastructureSpec)

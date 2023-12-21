@@ -43,17 +43,7 @@ class CheckRunnerFactory
   CheckRunnerFactory() = default;
   virtual ~CheckRunnerFactory() = default;
 
-  static framework::DataProcessorSpec create(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs, std::vector<std::string> storeVector = {});
-
-  /*
-   * \brief Create a CheckRunner sink DPL device.
-   * 
-   * The purpose of this device is to receive and store the MO from task.
-   *
-   * @param input InputSpec with the content to store
-   * @param configurationSource
-   */
-  static framework::DataProcessorSpec createSinkDevice(const CheckRunnerConfig& checkRunnerConfig, const o2::framework::InputSpec& input);
+  static framework::DataProcessorSpec create(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs);
 
   static CheckRunnerConfig extractConfig(const core::CommonSpec&);
 
