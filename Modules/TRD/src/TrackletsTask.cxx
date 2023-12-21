@@ -58,26 +58,26 @@ void TrackletsTask::buildHistograms()
   for (int iBin = 0; iBin <= nLogBins; ++iBin) {
     xBins[iBin] = TMath::Power(10, xBinLogMin + iBin * logBinWidth);
   }
-  mTrackletSlope = new TH1F("trackletslope", "Tracklet inclination in natural units;pads per time bin;counts", 100, -0.15, 0.15);
-  getObjectsManager()->startPublishing(mTrackletSlope);
+  mTrackletSlope.reset(new TH1F("trackletslope", "Tracklet inclination in natural units;pads per time bin;counts", 100, -0.15, 0.15));
+  getObjectsManager()->startPublishing(mTrackletSlope.get());
 
-  mTrackletHCID = new TH1F("tracklethcid", "Tracklet distribution over Halfchambers;HalfChamber ID;counts", 1080, -0.5, 1079.5);
-  getObjectsManager()->startPublishing(mTrackletHCID);
+  mTrackletHCID.reset(new TH1F("tracklethcid", "Tracklet distribution over Halfchambers;HalfChamber ID;counts", 1080, -0.5, 1079.5));
+  getObjectsManager()->startPublishing(mTrackletHCID.get());
 
-  mTrackletPosition = new TH1F("trackletpos", "Tracklet position relative to MCM center;number of pads;counts", 200, -30, 30);
-  getObjectsManager()->startPublishing(mTrackletPosition);
+  mTrackletPosition.reset(new TH1F("trackletpos", "Tracklet position relative to MCM center;number of pads;counts", 200, -30, 30));
+  getObjectsManager()->startPublishing(mTrackletPosition.get());
 
-  mTrackletsPerEvent = new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", nLogBins, xBins);
-  getObjectsManager()->startPublishing(mTrackletsPerEvent);
+  mTrackletsPerEvent.reset(new TH1F("trackletsperevent", "Number of Tracklets per event;Tracklets in Event;Counts", nLogBins, xBins));
+  getObjectsManager()->startPublishing(mTrackletsPerEvent.get());
   getObjectsManager()->setDefaultDrawOptions(mTrackletsPerEvent->GetName(), "logx");
 
-  mTrackletsPerEventPP = new TH1F("trackletspereventPP", "Number of Tracklets per event;Tracklets in Event;Counts", 1000, 0, 5000);
-  getObjectsManager()->startPublishing(mTrackletsPerEventPP);
+  mTrackletsPerEventPP.reset(new TH1F("trackletspereventPP", "Number of Tracklets per event;Tracklets in Event;Counts", 1000, 0, 5000));
+  getObjectsManager()->startPublishing(mTrackletsPerEventPP.get());
 
-  mTrackletsPerEventPbPb = new TH1F("trackletspereventPbPb", "Number of Tracklets per event;Tracklets in Event;Counts", 1000, 0, 100000);
-  getObjectsManager()->startPublishing(mTrackletsPerEventPbPb);
+  mTrackletsPerEventPbPb.reset(new TH1F("trackletspereventPbPb", "Number of Tracklets per event;Tracklets in Event;Counts", 1000, 0, 100000));
+  getObjectsManager()->startPublishing(mTrackletsPerEventPbPb.get());
 
-  mTrackletsPerHC2D = new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30);
+  mTrackletsPerHC2D.reset(new TH2F("trackletsperHC2D", "Tracklets distribution in half-chambers;Sector_Side;Stack_Side", 36, 0, 36, 30, 0, 30));
   mTrackletsPerHC2D->SetStats(0);
   mTrackletsPerHC2D->GetXaxis()->SetTitle("Sector_Side");
   mTrackletsPerHC2D->GetXaxis()->CenterTitle(kTRUE);
@@ -99,22 +99,22 @@ void TrackletsTask::buildHistograms()
     }
   }
 
-  getObjectsManager()->startPublishing(mTrackletsPerHC2D);
-  getObjectsManager()->setDefaultDrawOptions("trackletsperHC2D", "COLZ");
+  getObjectsManager()->startPublishing(mTrackletsPerHC2D.get());
+  getObjectsManager()->setDefaultDrawOptions(mTrackletsPerHC2D->GetName(), "COLZ");
   getObjectsManager()->setDisplayHint(mTrackletsPerHC2D->GetName(), "logz");
 
   for (int chargeWindow = 0; chargeWindow < 3; ++chargeWindow) {
-    mTrackletQ[chargeWindow] = new TH1F(Form("TrackletQ%i", chargeWindow), Form("Tracklet Q%i;charge (a.u.);counts", chargeWindow), 256, -0.5, 255.5);
-    getObjectsManager()->startPublishing(mTrackletQ[chargeWindow]);
+    mTrackletQ[chargeWindow].reset(new TH1F(Form("TrackletQ%i", chargeWindow), Form("Tracklet Q%i;charge (a.u.);counts", chargeWindow), 256, -0.5, 255.5));
+    getObjectsManager()->startPublishing(mTrackletQ[chargeWindow].get());
     getObjectsManager()->setDefaultDrawOptions(mTrackletQ[chargeWindow]->GetName(), "logy");
   }
 
-  mTrackletsPerTimeFrame = new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", nLogBins, xBins);
-  getObjectsManager()->startPublishing(mTrackletsPerTimeFrame);
+  mTrackletsPerTimeFrame.reset(new TH1F("trackletspertimeframe", "Number of Tracklets per timeframe;Tracklets in TimeFrame;Counts", nLogBins, xBins));
+  getObjectsManager()->startPublishing(mTrackletsPerTimeFrame.get());
   getObjectsManager()->setDefaultDrawOptions(mTrackletsPerTimeFrame->GetName(), "logx");
 
-  mTriggersPerTimeFrame = new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 1000, 0, 1000);
-  getObjectsManager()->startPublishing(mTriggersPerTimeFrame);
+  mTriggersPerTimeFrame.reset(new TH1F("triggerspertimeframe", "Number of Triggers per timeframe;Triggers in TimeFrame;Counts", 1000, 0, 1000));
+  getObjectsManager()->startPublishing(mTriggersPerTimeFrame.get());
 
   // Build tracklet layers
   mUnitsPerSection = 8;

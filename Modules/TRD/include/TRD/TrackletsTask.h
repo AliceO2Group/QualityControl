@@ -51,17 +51,16 @@ class TrackletsTask final : public TaskInterface
   // settings
   bool mRemoveNoise{ false };
   // histograms
-  std::array<TH1F*, 3> mTrackletQ;
-  TH1F* mTrackletSlope = nullptr;
-  TH1F* mTrackletHCID = nullptr;
-  TH1F* mTrackletPosition = nullptr;
-  TH1F* mTrackletsPerEvent = nullptr;
-  TH1F* mTrackletsPerEventPP = nullptr;
-  TH1F* mTrackletsPerEventPbPb = nullptr;
-  TH2F* mTrackletsPerHC2D = nullptr;
-  TH1F* mTrackletsPerTimeFrame = nullptr;
-  TH1F* mTriggersPerTimeFrame = nullptr;
-  // std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayersTracklets;
+  std::array<std::shared_ptr<TH1F>, 3> mTrackletQ;
+  std::shared_ptr<TH1F> mTrackletSlope = nullptr;
+  std::shared_ptr<TH1F> mTrackletHCID = nullptr;
+  std::shared_ptr<TH1F> mTrackletPosition = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerEvent = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerEventPP = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerEventPbPb = nullptr;
+  std::shared_ptr<TH2F> mTrackletsPerHC2D = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerTimeFrame = nullptr;
+  std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr;
   std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers;
 
   // Plotting variables
