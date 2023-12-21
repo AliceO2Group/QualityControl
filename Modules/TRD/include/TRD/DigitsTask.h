@@ -20,7 +20,6 @@
 #include <array>
 #include "DataFormatsTRD/NoiseCalibration.h"
 #include "TRDQC/StatusHelper.h"
-#include "TRD/TRDHelpers.h"
 
 class TH1F;
 class TH2F;
@@ -84,7 +83,7 @@ class DigitsTask final : public TaskInterface
   std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers;
 
   // Plotting variables
-  TRDHelpers mTRDHelpers; // Auxiliary functions for TRD
+  //TRDHelpers mTRDHelpers; // Auxiliary functions for TRD
   int mUnitsPerSection;   // Units for each section in layers plots
 
   // CCDB objects

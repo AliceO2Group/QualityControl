@@ -25,6 +25,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
 #include "TRD/TrackletsTask.h"
+#include "TRD/TRDHelpers.h"
 #include "TRDQC/StatusHelper.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
@@ -122,7 +123,7 @@ void TrackletsTask::buildHistograms()
     mLayers[iLayer].reset(new TH2F(Form("TrackletsPerMCM_Layer%i", iLayer), Form("Tracklet count per MCM in layer %i;glb pad row;glb MCM col", iLayer),
                                    76, -0.5, 75.5, mUnitsPerSection * 18, -0.5, mUnitsPerSection * 18 - 0.5));
     mLayers[iLayer]->SetStats(0);
-    mTRDHelpers.drawTrdLayersGrid(mLayers[iLayer].get(), mUnitsPerSection);
+    TRDHelpers::drawTrdLayersGrid(mLayers[iLayer].get(), mUnitsPerSection);
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
@@ -142,8 +143,8 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mChamberStatus = ptr.get();
     // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
     if (mChamberStatus) {
-      mTRDHelpers.drawChamberStatusOn2D(mTrackletsPerHC2D, mChamberStatus);
-      mTRDHelpers.drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
+      TRDHelpers::drawChamberStatusOn2D(mTrackletsPerHC2D, mChamberStatus);
+      TRDHelpers::drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
     } else {
       ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
     }

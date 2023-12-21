@@ -19,6 +19,8 @@
 #include <TProfile2D.h>
 #include <TMath.h>
 
+#include "TRD/DigitsTask.h"
+#include "TRD/TRDHelpers.h"
 #include "DataFormatsTRD/Constants.h"
 #include "DataFormatsTRD/Digit.h"
 #include "DataFormatsTRD/HelperMethods.h"
@@ -27,7 +29,6 @@
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
-#include "TRD/DigitsTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <gsl/span>
@@ -130,7 +131,7 @@ void DigitsTask::buildHistograms()
     mLayers[iLayer].reset(new TH2F(Form("DigitsPerLayer_%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer),
                                    76, -0.5, 75.5, mUnitsPerSection * 18, -0.5, mUnitsPerSection * 18 - 0.5));
     mLayers[iLayer]->SetStats(0);
-    mTRDHelpers.drawTrdLayersGrid(mLayers[iLayer].get(), mUnitsPerSection);
+    TRDHelpers::drawTrdLayersGrid(mLayers[iLayer].get(), mUnitsPerSection);
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
@@ -150,7 +151,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mChamberStatus = ptr.get();
     // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
     if (mChamberStatus) {
-      mTRDHelpers.drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
+      TRDHelpers::drawChamberStatusOnLayers(mLayers, mChamberStatus, mUnitsPerSection);
     } else {
       ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
     }
