@@ -1085,11 +1085,14 @@ The following tasks will be merged correctly:
 ```
 The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
-## Definition and access of user-specific configuration
+## Definition and access of simple user-defined task configuration ("taskParameters")
 
-A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.extendedTaskParameters` or `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+The new, extended, way of defining such parameters, not only in Tasks but also in Checks, Aggregators and PP tasks, 
+is described in the next section. 
 
-The simple, deprecated, syntax is 
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The syntax is
 ```json
     "tasks": {
       "QcTask": {
@@ -1097,7 +1100,21 @@ The simple, deprecated, syntax is
           "myOwnKey1": "myOwnValue1"
         },
 ```
-It is accessed with : `mCustomParameters["myOwnKey"]`. 
+It is accessed with : `mCustomParameters["myOwnKey"]`.
+
+## Definition and access of user-defined configuration ("extendedTaskParameters")
+
+User code, whether it is a Task, a Check, an Aggregator or a PostProcessing task, can access custom parameters declared in the configuration file. 
+They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The following table gives the path in the config file and the name of the configuration parameter for the various types of user code: 
+
+| User code      | Config File item                                       |
+|----------------|--------------------------------------------------------|
+| Task           | `qc.tasks.<task_id>.extendedTaskParameters`            |
+| Check          | `qc.checks.<check_id>.extendedCheckParameters`         |
+| Aggregator     | `qc.aggregators.<agg_id>.extendedAggregatorParameters` |
+| PostProcessing | `qc.postprocessing.<pp_id>.extendedTaskParameters`      |
 
 The new syntax is
 ```json
@@ -1133,7 +1150,7 @@ It allows to have variations of the parameters depending on the run and beam typ
 to ignore the run or the beam type. 
 The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
 
-The values can be accessed in various ways.
+The values can be accessed in various ways described in the following sub-sections.
 
 ### Access optional values with or without activity
 
@@ -1143,11 +1160,11 @@ However, before returning an empty value we try to substitute the runType and th
 ```c++
 // returns an Optional<string> if it finds the key `myOwnKey` for the runType and beamType of the provided activity, 
 // or if it can find the key with the runType or beamType substituted with "default". 
-auto param = mCustomParameters.atOptional("myOwnKey", activity); // activity is "PHYSICS", "Pb-Pb" , returns "myOwnValue1d"
+auto param = mCustomParameters.atOptional("myOwnKey1", activity); // activity is "PHYSICS", "Pb-Pb" , returns "myOwnValue1d"
 // same but passing directly the run and beam types
-auto param = mCustomParameters.atOptional("myOwnKey", "PHYSICS", "Pb-Pb"); // returns "myOwnValue1d"
+auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns "myOwnValue1d"
 // or with only the run type
-auto param = mCustomParameters.atOptional("myOwnKey", "PHYSICS"); // returns "myOwnValue1b"
+auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS"); // returns "myOwnValue1b"
 ```
 
 ### Access values directly specifying the run and beam type

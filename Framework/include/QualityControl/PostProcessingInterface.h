@@ -17,6 +17,8 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINTERFACE_H
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
+#include "QualityControl/CustomParameters.h"
+
 #include <string>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Triggers.h"
@@ -65,6 +67,7 @@ class PostProcessingInterface
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   virtual void finalize(Trigger trigger, framework::ServiceRegistryRef services) = 0;
 
+  void setCustomParameters(const core::CustomParameters& parameters);
   void setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager);
   void setID(const std::string& id);
   [[nodiscard]] const std::string& getID() const;
@@ -73,6 +76,7 @@ class PostProcessingInterface
 
  protected:
   std::shared_ptr<core::ObjectsManager> getObjectsManager();
+  core::CustomParameters mCustomParameters;
 
  private:
   std::string mID;

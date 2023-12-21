@@ -44,6 +44,7 @@ struct PostProcessingTaskSpec {
   bool critical = true;
   std::string detectorName = "Invalid";
   boost::property_tree::ptree tree = {};
+  core::CustomParameters customParameters;
 };
 
 } // namespace o2::quality_control::core

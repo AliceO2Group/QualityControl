@@ -23,7 +23,6 @@
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-#include <iostream>
 
 using namespace o2::framework;
 using namespace o2::header;
@@ -41,7 +40,6 @@ ITSFeeTask::~ITSFeeTask()
   delete mTFInfo;
   delete mTrigger;
   delete mTriggerVsFeeId;
-  delete mLaneInfo;
   delete mFlag1Check;
   delete mDecodingCheck;
   delete mProcessingTime;
@@ -83,9 +81,6 @@ void ITSFeeTask::createFeePlots()
 
   mTFInfo = new TH1I("STFInfo", "STF vs count", 10000, 0, 10000);
   getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
-
-  mLaneInfo = new TH2I("LaneInfo", "Lane Information", NLanesMax, -.5, NLanesMax - 0.5, NFlags, -.5, NFlags - 0.5);
-  getObjectsManager()->startPublishing(mLaneInfo); // mLaneInfo
 
   mProcessingTime = new TH1I("ProcessingTime", "Processing Time", 10000, 0, 10000); // last bin: overflow
   getObjectsManager()->startPublishing(mProcessingTime);                            // mProcessingTime
@@ -200,10 +195,6 @@ void ITSFeeTask::setPlotsFormat()
     for (int i = 0; i < mTriggerType.size(); i++) {
       mTriggerVsFeeId->GetYaxis()->SetBinLabel(i + 1, mTriggerType.at(i).second);
     }
-  }
-
-  if (mLaneInfo) {
-    setAxisTitle(mLaneInfo, "Lane", "Flag");
   }
 
   if (mProcessingTime) {
@@ -350,7 +341,6 @@ void ITSFeeTask::setPlotsFormat()
 void ITSFeeTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
-  mRunNumber = activity.mId;
 }
 
 void ITSFeeTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
@@ -369,13 +359,13 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   DPLRawParser parser(ctx.inputs());
 
-  resetLanePlotsAndCounters(); // action taken depending on mResetLaneStatus and mResetPayload
+  resetLanePlotsAndCounters(false); // not full reset // action taken depending on mResetLaneStatus and mResetPayload
 
   // manual call of DPL data iterator to catch exceptoin:
   try {
     auto it = parser.begin();
   } catch (const std::runtime_error& error) {
-    LOG(error) << "Error during parsing DPL data: " << error.what();
+    ILOG(Error, Support) << "Error during parsing DPL data: " << error.what() << ENDM;
     return;
   }
 
@@ -445,7 +435,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         try {
           ihw = reinterpret_cast<const GBTITSHeaderWord*>(it.data());
         } catch (const std::runtime_error& error) {
-          LOG(error) << "Error during reading its header data: " << error.what();
+          ILOG(Error, Support) << "Error during reading its header data: " << error.what() << ENDM;
           return;
         }
 
@@ -474,7 +464,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       try {
         ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       } catch (const std::runtime_error& error) {
-        LOG(error) << "Error during reading late diagnostic data: " << error.what();
+        ILOG(Error, Support) << "Error during reading late diagnostic data: " << error.what() << ENDM;
         return;
       }
 
@@ -658,9 +648,9 @@ void ITSFeeTask::resetGeneralPlots()
   mTrigger->Reset();
 }
 
-void ITSFeeTask::resetLanePlotsAndCounters()
+void ITSFeeTask::resetLanePlotsAndCounters(bool isFullReset)
 {
-  if (mResetLaneStatus) {
+  if (mResetLaneStatus || isFullReset) {
     mRDHSummary->Reset("ICES"); // option ICES is to not remove layer lines and labels
     mFlag1Check->Reset();
     mLaneStatusSummaryIB->Reset();
@@ -678,14 +668,26 @@ void ITSFeeTask::resetLanePlotsAndCounters()
 
     memset(mStatusFlagNumber, 0, sizeof(mStatusFlagNumber)); // reset counters
   }
-  if (mResetPayload) {
+  if (mResetPayload || isFullReset) {
     mPayloadSize->Reset("ICES");
   }
 }
 
 void ITSFeeTask::reset()
 {
+  // it is expected that this reset function will be executed only at the end of run
   resetGeneralPlots();
+  resetLanePlotsAndCounters(true); // full reset of all plots
+  mTimeFrameId = 0;
+  mDecodingCheck->Reset();
+  mRDHSummaryCumulative->Reset();
+  mTrailerCount->Reset();
+  mActiveLanes->Reset();
+  for (int i = 0; i < NFlags; i++) {
+    mLaneStatusCumulative[i]->Reset("ICES");
+  }
+  mProcessingTime->Reset();
+  mProcessingTime2->Reset();
   ILOG(Debug, Devel) << "Reset" << ENDM;
 }
 

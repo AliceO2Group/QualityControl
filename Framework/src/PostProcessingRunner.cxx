@@ -106,6 +106,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
     mTaskState = TaskState::Created;
     mTask->setID(mTaskConfig.id);
     mTask->setName(mTaskConfig.taskName);
+    mTask->setCustomParameters(mTaskConfig.customParameters);
     mTask->configure(mRunnerConfig.configTree);
   } else {
     throw std::runtime_error("Failed to create the task '" + mTaskConfig.taskName + "' (det " + mTaskConfig.detectorName + ")");

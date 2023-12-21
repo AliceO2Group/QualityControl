@@ -142,6 +142,12 @@ Checks can be applied to the results of Post-processing Tasks just as for normal
 ...
 ```
 
+## Definition and access of user-specific configuration
+
+A postprocessing task can access custom parameters declared in the configuration file at `qc.postprocessing.<task_id>.extendedTaskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+[More details](Advanced.md#definition-and-access-of-user-specific-configuration) can be found about this feature in the Tasks (same behaviour). 
+
 #### Triggers configuration
 
 Each of the three methods can be invoked by one or more triggers. Below are listed the possible options (case insensitive).

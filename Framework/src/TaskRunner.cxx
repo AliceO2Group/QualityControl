@@ -222,7 +222,7 @@ void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
   mTask->finaliseCCDB(matcher, obj);
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs, std::vector<framework::InputSpec> const&, ServiceRegistryRef&)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
@@ -576,8 +576,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   outputs.snapshot(
     Output{ concreteOutput.origin,
             concreteOutput.description,
-            concreteOutput.subSpec,
-            mTaskConfig.moSpec.lifetime },
+            concreteOutput.subSpec },
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();

@@ -116,7 +116,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
             continue;
           }
           // eta-phi distribution per layer
-          mTracksEtaPhiPerLayer[charge][iLayer]->Fill(trackTRD.getOuterParam().getEta(), trackTRD.getOuterParam().getPhiPos());
+          mTracksEtaPhiPerLayer[iLayer][charge]->Fill(trackTRD.getOuterParam().getEta(), trackTRD.getOuterParam().getPhiPos());
         } // end of loop over layers
       }   // end of loop over tracks
     }     // end of loop over track trigger records
@@ -203,7 +203,7 @@ void TrackingTask::buildHistograms()
   axisConfig(mNtracks, "# of tracks", "", "", 1, 1.0, 1.3);
   publishObject(mNtracks);
 
-  mNtracklets = new TH1D("Ntracklets", "Number of Tracklets per track", 6, 0.0, 6.0);
+  mNtracklets = new TH1D("Ntracklets", "Number of Tracklets per Track", 7, -0.5, 6.5);
   axisConfig(mNtracklets, "# of tracklets", "", "", 1, 1.0, 1.1);
   publishObject(mNtracklets);
 

@@ -20,11 +20,11 @@
 #include "QualityControl/TaskInterface.h"
 #include "Common/TH1Ratio.h"
 
-#include <TH1.h>
-#include <TH2.h>
+#include <TH1D.h>
+#include <TH2D.h>
 
-class TH2D;
-class TH1D;
+// class TH2D;
+// class TH1D;
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control_modules::common;

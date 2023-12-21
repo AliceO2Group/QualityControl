@@ -17,25 +17,13 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSClusterTask.h"
+#include "Common/Utils.h"
 
-#include <sstream>
-#include <DataFormatsParameters/GRPObject.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
-#include "ITSMFTReconstruction/ClustererParam.h"
-#include "DetectorsCommonDataFormats/DetectorNameConf.h"
-#include "ITStracking/IOUtils.h"
 #include <DataFormatsITSMFT/ClusterTopology.h>
-#include "CCDB/BasicCCDBManager.h"
-#include "CCDB/CCDBTimeStampUtils.h"
 #include <Framework/InputRecord.h>
-#include "Framework/TimingInfo.h"
-#include <TH1F.h>
-#include <TH2F.h>
-#include "Common/Utils.h"
-#include "TLine.h"
-#include "TLatex.h"
 
 #ifdef WITH_OPENMP
 #include <omp.h>
@@ -136,9 +124,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
     ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
-    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-    mgr.setTimestamp(ts);
-    mDict = mgr.get<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary");
+    std::map<std::string, std::string> metadata;
+    mDict = TaskInterface::retrieveConditionAny<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary", metadata, ts);
     ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
   }
 
@@ -151,9 +138,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
-  int dictSize = mDict->getSize();
 
-  int iPattern = 0;
   int ChipIDprev = -1;
 
 #ifdef WITH_OPENMP

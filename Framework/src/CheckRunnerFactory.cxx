@@ -68,7 +68,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& 
 
 void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = CheckRunner::getCheckRunnerLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = CheckRunner::getCheckRunnerLabel()](auto const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("checkerCompletionPolicy", matcher));

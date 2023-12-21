@@ -12,6 +12,7 @@
 #include "QualityControl/CustomParameters.h"
 #include <DataFormatsParameters/ECSDataAdapters.h>
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
 #include <string_view>
 #include <vector>
 
@@ -33,7 +34,7 @@ std::ostream& operator<<(std::ostream& out, const CustomParameters& customParame
 
 CustomParameters::CustomParameters()
 {
-  mCustomParameters["default"]["default"] = {};
+  mCustomParameters["null"]["null"] = {};
 }
 
 void CustomParameters::set(const std::string& key, const std::string& value, const std::string& runType, const std::string& beamType)
@@ -154,7 +155,7 @@ std::unordered_map<std::string, std::string>::const_iterator CustomParameters::f
 
 std::unordered_map<std::string, std::string>::const_iterator CustomParameters::end() const
 {
-  return mCustomParameters.at("default").at("default").end();
+  return mCustomParameters.at("null").at("null").end();
 }
 
 std::string CustomParameters::operator[](const std::string& key) const
@@ -168,6 +169,17 @@ std::string& CustomParameters::operator[](const std::string& key)
     set(key, "");
   }
   return mCustomParameters.at("default").at("default").at(key);
+}
+
+void CustomParameters::populateCustomParameters(const boost::property_tree::ptree& tree)
+{
+  for (const auto& [runtype, subTreeRunType] : tree) {
+    for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
+      for (const auto& [key, value] : subTreeBeamType) {
+        set(key, value.get_value<std::string>(), runtype, beamtype);
+      }
+    }
+  }
 }
 
 } // namespace o2::quality_control::core

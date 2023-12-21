@@ -421,7 +421,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
     auto outputSpec = correspondingCheck.getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
-      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, *qo);
     mTotalQOSent++;
   }
 }
@@ -534,11 +534,12 @@ void CheckRunner::stop()
 
 void CheckRunner::reset()
 {
-  ILOG(Info, Devel) << "Reset" << ENDM;
-
   try {
     mCollector.reset();
     mActivity = make_shared<Activity>();
+    for (auto& [checkName, check] : mChecks) {
+      check.reset();
+    }
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() : "
