@@ -3,7 +3,7 @@
  - Goal : The general purpose is to track "unexpected" detector issues not well reproduced with MC simulations. These problems generate non-negligible bias in Acc*Eff corrections resulting in large tracking systematic uncertainties. During the data reconstruction, the status of the detector is calculated with the CCDB which is used to discard most of the detector issues. This status map is built with information based on pedestals, occupancy etc. (high and low voltage will be included soon in the statusmap.) Nevertheless, some detector issues (e.g. a cable swapping) are not well detected online and consequently not properly reproduced by the CCBD. The main objective of this code is to spot these issues not included in the status map.
 
  - SRC FILE:
- `clustermap-display.cxx`
+ `Clustermap-Display.cxx`
 
 - INPUT FILES:
 `DATA_QC.root`
@@ -13,7 +13,7 @@
  - HELP MESSAGE TO KNOW WHICH OPTIONS ARE AVAILABLE:
 ```shell
 
-o2-mch-clustermap-display --help
+o2-qc-mch-clustermap-display --help
 
 ```
 
@@ -21,7 +21,7 @@ o2-mch-clustermap-display --help
 
 ```shell
 
-o2-mch-clustermap-display --green --normperarea --rootfileleft DATA_QC.root --rootfileright MC_QC.root --help
+o2-qc-mch-clustermap-display --green --normperarea --rootfileleft DATA_QC.root --rootfileright MC_QC.root
 
 ```
 

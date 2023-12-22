@@ -195,6 +195,6 @@ foreach(test ${TEST_SRCS})
 endforeach()
 
 
-add_executable(o2-qc-mch-clustermap-display src/clustermap-display.cxx)
+add_executable(o2-qc-mch-clustermap-display src/Clustermap-Display.cxx)
 target_link_libraries(o2-qc-mch-clustermap-display PRIVATE O2QualityControl  O2::MCHMappingSegContour O2::MCHMappingImpl4 O2::MCHMappingInterface O2::MCHContour O2::MCHGeometryCreator O2::MCHGeometryTransformer O2::MCHConstants O2::MCHGlobalMapping)
 install(TARGETS o2-qc-mch-clustermap-display RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
