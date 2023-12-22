@@ -42,6 +42,7 @@
     "postprocessing": {
       "ExamplePostprocessing": {
         "active": "true",
+        "critical": "false",     "": "if false the task is allowed to die without stopping the workflow, default: true",
         "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",

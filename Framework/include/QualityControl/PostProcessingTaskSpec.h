@@ -41,6 +41,7 @@ struct PostProcessingTaskSpec {
   std::string id = "Invalid";
   std::string taskName = "Invalid";
   bool active = true;
+  bool critical = true;
   std::string detectorName = "Invalid";
   boost::property_tree::ptree tree = {};
   core::CustomParameters customParameters;

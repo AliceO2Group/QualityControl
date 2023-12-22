@@ -45,6 +45,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     options };
   newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newCheckRunner.labels.emplace_back(CheckRunner::getCheckRunnerLabel());
+  newCheckRunner.labels.emplace_back(framework::DataProcessorLabel{ "resilient" });
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
@@ -61,7 +62,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& 
                                     checkRunnerConfig.options,
                                     {},
                                     { o2::framework::ecs::qcReconfigurable } };
-
+  newCheckRunner.labels.emplace_back(framework::DataProcessorLabel{ "resilient" });
   return newCheckRunner;
 }
 

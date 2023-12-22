@@ -357,6 +357,7 @@ QualityObjectsType CheckRunner::check()
   QualityObjectsType allQOs;
   for (auto& [checkName, check] : mChecks) {
     if (updatePolicyManager.isReady(check.getName())) {
+      ILOG(Debug, Support) << "Monitor Objects for the check '" << checkName << "' are ready --> check()" << ENDM;
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
 
@@ -366,7 +367,7 @@ QualityObjectsType CheckRunner::check()
       // Was checked, update latest revision
       updatePolicyManager.updateActorRevision(checkName);
     } else {
-      ILOG(Info, Support) << "Monitor Objects for the check '" << checkName << "' are not ready, ignoring" << ENDM;
+      ILOG(Debug, Support) << "Monitor Objects for the check '" << checkName << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;

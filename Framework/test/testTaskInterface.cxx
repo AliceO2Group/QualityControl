@@ -173,6 +173,7 @@ TEST_CASE("test_task_factory")
     "o2::quality_control_modules::skeleton::SkeletonTask",
     { { 10, 1 } },
     -1,
+    true,
     ""
   };
 

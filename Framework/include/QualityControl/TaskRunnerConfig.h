@@ -47,6 +47,7 @@ struct TaskRunnerConfig {
   std::string className;
   std::vector<std::pair<size_t, size_t>> cycleDurations = {};
   int maxNumberCycles;
+  bool critical;
   std::string consulUrl{};
   std::string conditionUrl{};
   std::string monitoringUrl{};

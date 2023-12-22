@@ -47,6 +47,7 @@ struct PostProcessingConfig {
   std::string consulUrl;
   core::Activity activity;
   bool matchAnyRunNumber = false;
+  bool critical;
   core::CustomParameters customParameters;
 };
 
