@@ -32,7 +32,7 @@ bool TRDHelpers::isHalfChamberMasked(int hcid, const std::array<int, MAXCHAMBER>
   return (std::find(std::begin(GoodStatus), std::end(GoodStatus), hcstat) == std::end(GoodStatus));
 }
 
-void TRDHelpers::drawChamberStatusOnMapAndLayers(const std::array<int, MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> hcdist, std::array<std::shared_ptr<TH2F>, NLAYER> mLayers, int unitspersection)
+void TRDHelpers::drawChamberStatusOnHistograms(const std::array<int, MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> chamberMap, std::array<std::shared_ptr<TH2F>, NLAYER> ptrLayersArray, int unitsPerSection)
 {
   std::pair<float, float> x, y;
   for (int hcid = 0; hcid < MAXCHAMBER * 2; ++hcid) {
@@ -43,8 +43,8 @@ void TRDHelpers::drawChamberStatusOnMapAndLayers(const std::array<int, MAXCHAMBE
       int sec = hcid / NHCPERSEC;
       int stack = Helper::getStack(hcid / 2);
       int layer = Helper::getLayer(hcid / 2);
-      
-      if (hcdist) {
+
+      if (chamberMap) {
         // Coordinates for half chamber distribution
         int stackLayer = stack * NLAYER + layer;
         int sectorSide = sec * 2 + side;
@@ -53,36 +53,36 @@ void TRDHelpers::drawChamberStatusOnMapAndLayers(const std::array<int, MAXCHAMBE
         y.first = stackLayer;
         y.second = stackLayer + 1;
 
-        drawChamberStatusMask(hcstat, x, y, hcdist);
+        drawHalfChamberMask(hcstat, x, y, chamberMap);
       }
-      
-      if (mLayers[layer]) { 
+
+      if (ptrLayersArray[layer]) {
         // Chamber stack of type C0 or C1 condition
         int rowstart = FIRSTROW[stack];
         int rowend = stack == 2 ? rowstart + NROWC0 : rowstart + NROWC1;
-        
-        // Coordinates for layer map	
+
+        // Coordinates for layer map
         x.first = rowstart - 0.5;
         x.second = rowend - 0.5;
-        y.first = (sec * 2 + side) * (unitspersection / 2) - 0.5;
-        y.second = y.first + (unitspersection / 2);
-        
-        drawChamberStatusMask(hcstat, x, y, mLayers[layer]);
+        y.first = (sec * 2 + side) * (unitsPerSection / 2) - 0.5;
+        y.second = y.first + (unitsPerSection / 2);
+
+        drawHalfChamberMask(hcstat, x, y, ptrLayersArray[layer]);
       }
     }
   }
 }
 
-void TRDHelpers::drawChamberStatusMask(int hcstat, std::pair<float, float> x, std::pair<float, float> y, std::shared_ptr<TH2F> hist)
+void TRDHelpers::drawHalfChamberMask(int hcstat, std::pair<float, float> xCoord, std::pair<float, float> yCoord, std::shared_ptr<TH2F> histogram)
 {
   TLine* box[6];
-  box[0] = new TLine(x.first, y.first, x.second, y.first); // bottom
-  box[1] = new TLine(x.first, y.second, x.second, y.second); // top
-  box[2] = new TLine(x.first, y.first, x.first, y.second); // left
-  box[3] = new TLine(x.second, y.first, x.second, y.second);     // right
-  box[4] = new TLine(x.first, y.second, x.second, y.first);   // backslash
-  box[5] = new TLine(x.first, y.first, x.second, y.second);   // forwardslash
-  
+  box[0] = new TLine(xCoord.first, yCoord.first, xCoord.second, yCoord.first);   // bottom
+  box[1] = new TLine(xCoord.first, yCoord.second, xCoord.second, yCoord.second); // top
+  box[2] = new TLine(xCoord.first, yCoord.first, xCoord.first, yCoord.second);   // left
+  box[3] = new TLine(xCoord.second, yCoord.first, xCoord.second, yCoord.second); // right
+  box[4] = new TLine(xCoord.first, yCoord.second, xCoord.second, yCoord.first);  // backslash
+  box[5] = new TLine(xCoord.first, yCoord.first, xCoord.second, yCoord.second);  // forwardslash
+
   for (int line = 0; line < 6; ++line) {
     if (hcstat == mEmptyChamberStatus) {
       box[line]->SetLineColor(kGray + 1);
@@ -92,48 +92,26 @@ void TRDHelpers::drawChamberStatusMask(int hcstat, std::pair<float, float> x, st
       box[line]->SetLineColor(kBlack);
     }
     box[line]->SetLineWidth(2);
-    hist->GetListOfFunctions()->Add(box[line]);
+    histogram->GetListOfFunctions()->Add(box[line]);
   }
 }
 
-void TRDHelpers::drawTrdLayersGrid(TH2F* hist, int unitspersection)
+void TRDHelpers::addChamberGridToHistogram(TH2F* histogram, int unitsPerSection)
 {
   TLine* line;
-  for (int i = 0; i < 5; ++i) {
-    switch (i) {
-      case 0:
-        line = new TLine(15.5, 0, 15.5, 18 * unitspersection - 0.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 1:
-        line = new TLine(31.5, 0, 31.5, 18 * unitspersection - 0.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 2:
-        line = new TLine(43.5, 0, 43.5, 18 * unitspersection - 0.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-      case 3:
-        line = new TLine(59.5, 0, 59.5, 18 * unitspersection - 0.5);
-        hist->GetListOfFunctions()->Add(line);
-        line->SetLineStyle(kDashed);
-        line->SetLineColor(kBlack);
-        break;
-    }
-  }
-
-  for (int iSec = 1; iSec < 18; ++iSec) {
-    float yPos = iSec * unitspersection - 0.5;
-    line = new TLine(-0.5, yPos, 75.5, yPos);
+  for (int iStack = 0; iStack < NSTACK; ++iStack) {
+    line = new TLine(FIRSTROW[iStack] - 0.5, 0, FIRSTROW[iStack] - 0.5, NSECTOR * unitsPerSection - 0.5);
     line->SetLineStyle(kDashed);
     line->SetLineColor(kBlack);
-    hist->GetListOfFunctions()->Add(line);
+    histogram->GetListOfFunctions()->Add(line);
+  }
+
+  for (int iSec = 1; iSec < NSECTOR; ++iSec) {
+    float yPos = iSec * unitsPerSection - 0.5;
+    line = new TLine(-0.5, yPos, FIRSTROW[NSTACK - 1] + NROWC1 - 0.5, yPos);
+    line->SetLineStyle(kDashed);
+    line->SetLineColor(kBlack);
+    histogram->GetListOfFunctions()->Add(line);
   }
 }
 } // namespace o2::quality_control_modules::trd

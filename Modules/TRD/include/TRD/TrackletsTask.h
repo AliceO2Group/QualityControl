@@ -62,10 +62,6 @@ class TrackletsTask final : public TaskInterface
   std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr;
   std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers;
 
-  // Plotting variables
-  //TRDHelpers mTRDHelpers; // Auxiliary functions for TRD
-  int mUnitsPerSection;   // Units for each section in layers plots
-
   // data to pull from CCDB
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;

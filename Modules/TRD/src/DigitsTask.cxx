@@ -126,12 +126,12 @@ void DigitsTask::buildHistograms()
   }
 
   // Build digits layers
-  mUnitsPerSection = 144;
+  int unitsPerSection = NCOLUMN;
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
     mLayers[iLayer].reset(new TH2F(Form("DigitsPerLayer_%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer),
-                                   76, -0.5, 75.5, mUnitsPerSection * 18, -0.5, mUnitsPerSection * 18 - 0.5));
+                                   76, -0.5, 75.5, unitsPerSection * 18, -0.5, unitsPerSection * 18 - 0.5));
     mLayers[iLayer]->SetStats(0);
-    TRDHelpers::drawTrdLayersGrid(mLayers[iLayer].get(), mUnitsPerSection);
+    TRDHelpers::addChamberGridToHistogram(mLayers[iLayer].get(), unitsPerSection);
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
@@ -152,7 +152,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
     if (mChamberStatus) {
       // LB: no half chamber distribution map for Digits, pass it as null pointer
-      TRDHelpers::drawChamberStatusOnMapAndLayers(mChamberStatus, nullptr, mLayers, mUnitsPerSection);
+      TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, nullptr, mLayers, NCOLUMN);
     } else {
       ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
     }

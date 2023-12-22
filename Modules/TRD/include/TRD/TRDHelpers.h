@@ -32,11 +32,11 @@ class TRDHelpers
   TRDHelpers() = default;
   ~TRDHelpers() = default;
 
-  static void drawTrdLayersGrid(TH2F* hist, int unitspersection);
-  static void drawChamberStatusOnMapAndLayers(const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> hcdist, std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers, int unitspersection);
-  static void drawChamberStatusMask(int hcstat, std::pair<float, float> x, std::pair<float, float> y, std::shared_ptr<TH2F> hist);
-  static bool isHalfChamberMasked(int hcid, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber);
- 
+  static void addChamberGridToHistogram(TH2F* histogram, int unitsPerSection);
+  static void drawChamberStatusOnHistograms(const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> chamberMap, std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> ptrLayersArray, int unitsPerSection);
+  static void drawHalfChamberMask(int halfChamberStatus, std::pair<float, float> xCoords, std::pair<float, float> yCoords, std::shared_ptr<TH2F> histogram);
+  static bool isHalfChamberMasked(int halfChamberId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber);
+
  private:
   // Chamber status values definitions, used for masking
   static const int mConfiguredChamberStatus = 3;
