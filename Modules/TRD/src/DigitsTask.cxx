@@ -129,9 +129,9 @@ void DigitsTask::buildHistograms()
   int unitsPerSection = NCOLUMN;
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
     mLayers[iLayer].reset(new TH2F(Form("DigitsPerLayer_%i", iLayer), Form("Digit count per pad in layer %i;glb pad row;glb pad col", iLayer),
-                                   76, -0.5, 75.5, unitsPerSection * 18, -0.5, unitsPerSection * 18 - 0.5));
+                                   76, -0.5, 75.5, unitsPerSection * NSECTOR, -0.5, unitsPerSection * NSECTOR - 0.5));
     mLayers[iLayer]->SetStats(0);
-    TRDHelpers::addChamberGridToHistogram(mLayers[iLayer].get(), unitsPerSection);
+    TRDHelpers::addChamberGridToHistogram(mLayers[iLayer], unitsPerSection);
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");

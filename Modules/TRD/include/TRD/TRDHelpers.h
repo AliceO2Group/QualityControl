@@ -32,7 +32,7 @@ class TRDHelpers
   TRDHelpers() = default;
   ~TRDHelpers() = default;
 
-  static void addChamberGridToHistogram(TH2F* histogram, int unitsPerSection);
+  static void addChamberGridToHistogram(std::shared_ptr<TH2F> histogram, int unitsPerSection);
   static void drawChamberStatusOnHistograms(const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber, std::shared_ptr<TH2F> chamberMap, std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> ptrLayersArray, int unitsPerSection);
   static void drawHalfChamberMask(int halfChamberStatus, std::pair<float, float> xCoords, std::pair<float, float> yCoords, std::shared_ptr<TH2F> histogram);
   static bool isHalfChamberMasked(int halfChamberId, const std::array<int, o2::trd::constants::MAXCHAMBER>* ptrChamber);

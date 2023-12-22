@@ -96,7 +96,7 @@ void TRDHelpers::drawHalfChamberMask(int hcstat, std::pair<float, float> xCoord,
   }
 }
 
-void TRDHelpers::addChamberGridToHistogram(TH2F* histogram, int unitsPerSection)
+void TRDHelpers::addChamberGridToHistogram(std::shared_ptr<TH2F> histogram, int unitsPerSection)
 {
   TLine* line;
   for (int iStack = 0; iStack < NSTACK; ++iStack) {

@@ -121,9 +121,9 @@ void TrackletsTask::buildHistograms()
   int unitsPerSection = NCOLUMN / NSECTOR;
   for (int iLayer = 0; iLayer < NLAYER; ++iLayer) {
     mLayers[iLayer].reset(new TH2F(Form("TrackletsPerMCM_Layer%i", iLayer), Form("Tracklet count per MCM in layer %i;glb pad row;glb MCM col", iLayer),
-                                   76, -0.5, 75.5, unitsPerSection * 18, -0.5, unitsPerSection * 18 - 0.5));
+                                   76, -0.5, 75.5, NCOLUMN, -0.5, NCOLUMN - 0.5));
     mLayers[iLayer]->SetStats(0);
-    TRDHelpers::addChamberGridToHistogram(mLayers[iLayer].get(), unitsPerSection);
+    TRDHelpers::addChamberGridToHistogram(mLayers[iLayer], unitsPerSection);
     getObjectsManager()->startPublishing(mLayers[iLayer].get());
     getObjectsManager()->setDefaultDrawOptions(mLayers[iLayer]->GetName(), "COLZ");
     getObjectsManager()->setDisplayHint(mLayers[iLayer].get(), "logz");
