@@ -49,6 +49,8 @@ DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& common
   };
   newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
+  framework::DataProcessorLabel resilientLabel = { "resilient" };
+  newAggregatorRunner.labels.emplace_back(resilientLabel);
   newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregatorRunner));
   return newAggregatorRunner;
 }
@@ -56,7 +58,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& common
 // Specify a custom policy to trigger whenever something arrive regardless of the timeslice.
 void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = AggregatorRunner::getLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = AggregatorRunner::getLabel()](auto const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("aggregatorRunnerCompletionPolicy", matcher));

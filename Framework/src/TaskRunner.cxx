@@ -222,7 +222,7 @@ void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
   mTask->finaliseCCDB(matcher, obj);
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs, std::vector<framework::InputSpec> const&, ServiceRegistryRef&)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
@@ -413,6 +413,7 @@ void TaskRunner::printTaskConfig() const
                     << " / Module name : " << mTaskConfig.moduleName                 //
                     << " / Detector name : " << mTaskConfig.detectorName             //
                     << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
+                    << " / critical : " << mTaskConfig.critical                      //
                     << " / Save to file : " << mTaskConfig.saveToFile
                     << " / Cycle duration seconds : ";
   for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {

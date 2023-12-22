@@ -45,6 +45,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     options };
   newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newCheckRunner.labels.emplace_back(CheckRunner::getCheckRunnerLabel());
+  newCheckRunner.labels.emplace_back(framework::DataProcessorLabel{ "resilient" });
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
@@ -61,13 +62,13 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& 
                                     checkRunnerConfig.options,
                                     {},
                                     { o2::framework::ecs::qcReconfigurable } };
-
+  newCheckRunner.labels.emplace_back(framework::DataProcessorLabel{ "resilient" });
   return newCheckRunner;
 }
 
 void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = CheckRunner::getCheckRunnerLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = CheckRunner::getCheckRunnerLabel()](auto const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("checkerCompletionPolicy", matcher));

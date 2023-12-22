@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/PostProcessingConfig.h"
+
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::postprocessing
@@ -36,7 +37,8 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
              config.get<std::string>("qc.config.Activity.provenance", "qc"),
              { config.get<uint64_t>("qc.config.Activity.start", 0),
                config.get<uint64_t>("qc.config.Activity.end", -1) }),
-    matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false))
+    matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false)),
+    critical(true)
 {
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
@@ -46,6 +48,10 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   }
   for (const auto& stopTrigger : config.get_child("qc.postprocessing." + id + ".stopTrigger")) {
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
+  }
+  auto ppTree = config.get_child("qc.postprocessing." + id);
+  if (ppTree.count("extendedTaskParameters")) {
+    customParameters.populateCustomParameters(ppTree.get_child("extendedTaskParameters"));
   }
 }
 

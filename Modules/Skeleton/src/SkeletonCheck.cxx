@@ -88,4 +88,9 @@ void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   }
 }
 
+void SkeletonCheck::reset()
+{
+  ILOG(Debug, Devel) << "SkeletonCheck::reset" << ENDM;
+}
+
 } // namespace o2::quality_control_modules::skeleton

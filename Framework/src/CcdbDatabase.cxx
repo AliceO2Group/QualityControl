@@ -72,7 +72,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
+  vector<string> filenames = { "streamerinfos.root" };
   for (const auto& filename : filenames) {
     string localPath = path + filename;
     ILOG(Debug, Devel) << "Loading streamerinfos from : " << localPath << ENDM;

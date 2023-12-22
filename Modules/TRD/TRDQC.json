@@ -10,10 +10,7 @@
       },
       "Activity": {
         "number": "123456",
-        "type": "2",
-        "periodName": "",
-        "passName": "",
-        "provenance": "qc"
+        "type": "2"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -22,7 +19,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "http://alice-ccdb.cern.ch"
       },
       "infologger": {
         "filterDiscardDebug": "false",
@@ -31,18 +28,15 @@
     },
     "tasks": {
       "RawData": {
-        "active": "true",
+        "active": "false",
         "className": "o2::quality_control_modules::trd::RawData",
         "moduleName": "QcTRD",
         "detectorName": "TRD",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "rawstats:TRD/RAWSTATS"
-        },
-        "location": "local",
-        "saveObjectsToFile": "QC_TRD.root"
+        }
       },
       "Digits": {
         "active": "true",
@@ -50,13 +44,10 @@
         "moduleName": "QcTRD",
         "detectorName": "TRD",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "digits:TRD/DIGITS;triggers:TRD/TRKTRGRD"
-        },
-        "location": "local",
-        "saveObjectsToFile": "QC_TRD.root"
+          "query": "digits:TRD/DIGITS;triggers:TRD/TRKTRGRD;noiseMap:TRD/NOISEMAP/0?lifetime=condition&ccdb-path=TRD/Calib/NoiseMapMCM;chamberStatus:TRD/CHSTATUS/0?lifetime=condition&ccdb-path=TRD/Calib/HalfChamberStatusQC"
+        }
       },
       "Tracklets": {
         "active": "true",
@@ -64,14 +55,10 @@
         "moduleName": "QcTRD",
         "detectorName": "TRD",
         "cycleDurationSeconds": "15",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "no comment",
         "dataSource": {
           "type": "direct",
-          "query": "tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
-        },
-        "location": "local",
-        "saveObjectsToFile": "QC_TRD.root"
+          "query": "tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;noiseMap:TRD/NOISEMAP/0?lifetime=condition&ccdb-path=TRD/Calib/NoiseMapMCM;chamberStatus:TRD/CHSTATUS/0?lifetime=condition&ccdb-path=TRD/Calib/HalfChamberStatusQC"
+        }
       },
       "PHTrackMatch": {
         "active": "true",
@@ -79,21 +66,10 @@
         "moduleName": "QcTRD",
         "detectorName": "TRD",
         "cycleDurationSeconds": "15",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "no comment",
         "dataSource": {
           "type": "direct",
           "query": "phValues:TRD/PULSEHEIGHT"
-        },
-        "taskParameters": {
-          "trackType": "0xf",
-          "driftRegionStart": "7.0",
-          "driftRegionEnd": "20.0",
-          "peakRegionStart": "1.0",
-          "peakRegionEnd": "5.0"
-        },
-        "location": "local",
-        "saveObjectsToFile": "QC_TRD.root"
+        }
       },
       "Tracking": {
         "active": "true",
@@ -101,23 +77,20 @@
         "moduleName": "QcTRD",
         "detectorName": "TRD",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query": "tracksqc:TRD/TRACKINGQC;tracksTRD:TRD/MATCH_ITSTPC;trigrectrk:TRD/TRGREC_ITSTPC"
+          "query": "trackITSTPCTRD:TRD/MATCH_ITSTPC;trigITSTPCTRD:TRD/TRGREC_ITSTPC"
         },
         "taskParameters": {
-          "detailedQC": "true",
+          "detailedQC": "false",
           "trackSources": "ITS-TPC-TRD"
-        },
-        "location": "local",
-        "saveObjectsToFile": "QC_TRD.root"
+        }
       }
     },
     "checks": {
-      "TrackletPerTriggerCheck": {
+      "TrackletCountCheck": {
         "active": "true",
-        "className": "o2::quality_control_modules::trd::TrackletPerTriggerCheck",
+        "className": "o2::quality_control_modules::trd::TrackletCountCheck",
         "moduleName": "QcTRD",
         "policy": "OnAny",
         "detectorName": "TRD",
@@ -127,9 +100,9 @@
           "MOs": [ "trackletsperevent" ]
         }],
         "checkParameters":{
-          "Lowerthreshold":"500.0",
-          "Upperthreshold":"520.0",
-          "StatThreshold": "1000"
+          "LowerthresholdPerTrigger":"500.0",
+          "UpperthresholdPerTrigger":"520.0",
+          "StatThresholdPerTrigger": "100"
         }
       }
     },
@@ -157,7 +130,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "TRD/MO/Tracklets/",		       
+            "path": "TRD/MO/Tracklets/",
             "names": [ "trackletspertimeframe","trackletsperevent" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcTRD"

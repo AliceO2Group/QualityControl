@@ -144,7 +144,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
       generateMergers(workflow, taskSpec.taskName, 1, cycleDurationsMultiplied,
                       taskSpec.mergingMode, resetAfterCycles, infrastructureSpec.common.monitoringUrl,
-                      taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows);
+                      taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows, taskSpec.critical);
     } else { // TaskLocationSpec::Remote
       auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, taskSpec.resetAfterCycles);
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
@@ -277,9 +277,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
-      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied,
-                      taskSpec.mergingMode, resetAfterCycles, infrastructureSpec.common.monitoringUrl,
-                      taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows);
+      generateMergers(workflow, taskSpec.taskName, numberOfLocalMachines, cycleDurationsMultiplied, taskSpec.mergingMode,
+                      resetAfterCycles, infrastructureSpec.common.monitoringUrl, taskSpec.detectorName, taskSpec.mergersPerLayer, enableMovingWindows, taskSpec.critical);
 
     } else if (taskSpec.location == TaskLocationSpec::Remote) {
 
@@ -550,6 +549,9 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       { proxyInput },
       channelConfig.c_str()));
   workflow.back().labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if (!taskSpec.critical) {
+    workflow.back().labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
+  }
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
     workflow.back().metadata.push_back(DataProcessorMetadata{ ecs::privateMemoryKillThresholdMB, proxyMemoryKillThresholdMB });
   }
@@ -577,6 +579,9 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  if (!taskSpec.critical) {
+    workflow.back().labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
+  }
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
@@ -585,11 +590,9 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   workflow.emplace_back(std::move(proxy));
 }
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, const std::string& taskName,
-                                              size_t numberOfLocalMachines,
-                                              std::vector<std::pair<size_t, size_t>> cycleDurations,
-                                              const std::string& mergingMode, size_t resetAfterCycles,
-                                              std::string monitoringUrl, const std::string& detectorName,
-                                              std::vector<size_t> mergersPerLayer, bool enableMovingWindows)
+                                              size_t numberOfLocalMachines, std::vector<std::pair<size_t, size_t>> cycleDurations,
+                                              const std::string& mergingMode, size_t resetAfterCycles, std::string monitoringUrl,
+                                              const std::string& detectorName, std::vector<size_t> mergersPerLayer, bool enableMovingWindows, bool critical)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -617,8 +620,9 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.topologySize = { TopologySize::MergersPerLayer, mergersPerLayer };
   mergerConfig.monitoringUrl = std::move(monitoringUrl);
   mergerConfig.detectorName = detectorName;
-  mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
+  mergerConfig.labels.push_back({ "resilient" });
   mergerConfig.publishMovingWindow = { enableMovingWindows ? PublishMovingWindow::Yes : PublishMovingWindow::No };
+  mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
   mergersBuilder.setConfig(mergerConfig);
 
   mergersBuilder.generateInfrastructure(workflow);
@@ -786,6 +790,10 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
         ppTask.getOptions()
       };
       dataProcessorSpec.labels.emplace_back(PostProcessingDevice::getLabel());
+      if (!ppTaskSpec.critical) {
+        framework::DataProcessorLabel expendableLabel = { "expendable" };
+        dataProcessorSpec.labels.emplace_back(expendableLabel);
+      }
       dataProcessorSpec.algorithm = adaptFromTask<PostProcessingDevice>(std::move(ppTask));
 
       workflow.emplace_back(std::move(dataProcessorSpec));

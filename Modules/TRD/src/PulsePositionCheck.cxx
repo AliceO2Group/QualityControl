@@ -26,7 +26,6 @@
 
 #include <fairlogger/Logger.h>
 #include <DataFormatsQualityControl/FlagReasons.h>
-#include "CCDB/BasicCCDBManager.h"
 
 using namespace std;
 using namespace o2::quality_control;
@@ -36,15 +35,6 @@ namespace o2::quality_control_modules::trd
 
 void PulsePositionCheck::configure()
 {
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimeStamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimeStamp << ENDM;
-  } else {
-    mTimeStamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimeStamp << ENDM;
-  }
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(mTimeStamp);
   ILOG(Debug, Devel) << "initialize PulseHeight" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   if (auto param = mCustomParameters.find("pulseheightpeaklower"); param != mCustomParameters.end()) {
     mPulseHeightPeakRegion.first = stof(param->second);

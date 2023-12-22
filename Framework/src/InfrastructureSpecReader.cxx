@@ -110,6 +110,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
   }
   ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
   ts.active = taskTree.get<bool>("active", ts.active);
+  ts.critical = taskTree.get<bool>("critical", ts.critical);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
   ts.saveObjectsToFile = taskTree.get<std::string>("saveObjectsToFile", ts.saveObjectsToFile);
@@ -117,13 +118,7 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
     ILOG(Warning, Devel) << "Both taskParameters and extendedTaskParameters are defined in the QC config file. We will use only extendedTaskParameters. " << ENDM;
   }
   if (taskTree.count("extendedTaskParameters") > 0) {
-    for (const auto& [runtype, subTreeRunType] : taskTree.get_child("extendedTaskParameters")) {
-      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for (const auto& [key, value] : subTreeBeamType) {
-          ts.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
-        }
-      }
-    }
+    ts.customParameters.populateCustomParameters(taskTree.get_child("extendedTaskParameters"));
   } else if (taskTree.count("taskParameters") > 0) {
     for (const auto& [key, value] : taskTree.get_child("taskParameters")) {
       ts.customParameters.set(key, value.get_value<std::string>());
@@ -316,13 +311,7 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(const std::string& 
 
   cs.active = checkTree.get<bool>("active", cs.active);
   if (checkTree.count("extendedCheckParameters") > 0) {
-    for (const auto& [runtype, subTreeRunType] : checkTree.get_child("extendedCheckParameters")) {
-      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for (const auto& [key, value] : subTreeBeamType) {
-          cs.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
-        }
-      }
-    }
+    cs.customParameters.populateCustomParameters(checkTree.get_child("extendedCheckParameters"));
   }
   if (checkTree.count("checkParameters") > 0) {
     for (const auto& [key, value] : checkTree.get_child("checkParameters")) {
@@ -356,13 +345,7 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
 
   as.active = aggregatorTree.get<bool>("active", as.active);
   if (aggregatorTree.count("extendedAggregatorParameters") > 0) {
-    for (const auto& [runtype, subTreeRunType] : aggregatorTree.get_child("extendedAggregatorParameters")) {
-      for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
-        for (const auto& [key, value] : subTreeBeamType) {
-          as.customParameters.set(key, value.get_value<std::string>(), runtype, beamtype);
-        }
-      }
-    }
+    as.customParameters.populateCustomParameters(aggregatorTree.get_child("extendedAggregatorParameters"));
   }
   if (aggregatorTree.count("aggregatorParameters") > 0) {
     for (const auto& [key, value] : aggregatorTree.get_child("aggregatorParameters")) {
@@ -381,6 +364,7 @@ PostProcessingTaskSpec
   ppts.id = ppTaskId;
   ppts.taskName = ppTaskTree.get<std::string>("taskName", ppts.id);
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
+  ppts.critical = ppTaskTree.get<bool>("critical", ppts.critical);
   ppts.detectorName = ppTaskTree.get<std::string>("detectorName", ppts.detectorName);
   ppts.tree = wholeTree;
 

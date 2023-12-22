@@ -62,7 +62,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
   if (auto param = mCustomParameters.find("maxChi2PerClusterITS"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - maxChi2PerClusterITS (for track selection): " << param->second << ENDM;
-    mMatchITSTPCQC.setMaxChi2PerClusterITS(atoi(param->second.c_str()));
+    mMatchITSTPCQC.setMaxChi2PerClusterITS(atof(param->second.c_str()));
   }
   // TO DO: define an agreed way to implement the setter for ITS matching (min. # layers, which layers)
   // [...] --> exploit the method TrackCuts::setRequireHitsInITSLayers(...)
