@@ -92,23 +92,11 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto src : sources) {
     const gsl::span<const TrackTriggerRecord>* trackTriggers = (src == GID::Source::ITSTPCTRD) ? &mTrigITSTPCTRD : &mTrigTPCTRD;
     const gsl::span<const TrackTRD>* tracks = (src == GID::Source::ITSTPCTRD) ? &mITSTPCTRDTracks : &mTPCTRDTracks;
-
-    if (src == GID::Source::ITSTPC) {
-      for (size_t itrk = 0; itrk < static_cast<int>(mTPCITSTracks.size()); ++itrk) {
-        const auto& track = mTPCITSTracks[itrk];
-        // filling track information
-        if (track.getPt() < mPtMin) {
-          continue;
-        }
-        mTrackPtTPCITS->Fill(track.getPt());
-        mTrackEtaTPCITS->Fill(track.getEta());
-        mTrackPhiTPCITS->Fill(track.getPhi());
-      }
-    }
     for (const auto& tracktrig : *trackTriggers) {
       int start = tracktrig.getFirstTrack();
       int end = start + tracktrig.getNumberOfTracks();
       mNtracks->Fill(tracktrig.getNumberOfTracks());
+      trdTrigTimes.push_back(tracktrig.getBCData().differenceInBC(mRecoCont.startIR) * o2::constants::lhc::LHCBunchSpacingMUS);
       for (int itrack = start; itrack < end; ++itrack) {
         const auto& trackTRD = (*tracks)[itrack];
         // remove tracks with pt below threshold
@@ -137,6 +125,26 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         } // end of loop over layers
       }   // end of loop over tracks
     }     // end of loop over track trigger records
+
+    if (src == GID::Source::ITSTPC) {
+      for (size_t itrk = 0; itrk < static_cast<int>(mTPCITSTracks.size()); ++itrk) {
+        const auto& track = mTPCITSTracks[itrk];
+        double trackTime = track.getTimeMUS().getTimeStamp();
+        double trackTimeError = track.getTimeMUS().getTimeStampError();
+
+        bool hasTRDTrigger = std::any_of(trdTrigTimes.begin(), trdTrigTimes.end(), [&](double trdTime) {
+          return (trackTime - trackTimeError <= trdTime) && (trackTime + trackTimeError >= trdTime);
+        });
+        if ((!hasTRDTrigger) || (track.getPt() < mPtMin) || (abs(track.getEta()) > 0.85)) {
+          continue;
+        }
+
+        //  filling track information
+        mTrackPtTPCITS->Fill(track.getPt());
+        mTrackEtaTPCITS->Fill(track.getEta());
+        mTrackPhiTPCITS->Fill(track.getPhi());
+      }
+    }
 
     setEfficiency(mEfficiencyPt, mTrackPt, mTrackPtTPCITS);
     setEfficiency(mEfficiencyEta, mTrackEta, mTrackEtaTPCITS);
