@@ -79,23 +79,12 @@
         "cycleDurationSeconds": "60",
         "dataSource": {
           "type": "direct",
-<<<<<<< HEAD
           "query": "trackITSTPCTRD:TRD/MATCH_ITSTPC;trigITSTPCTRD:TRD/TRGREC_ITSTPC"
         },
         "taskParameters": {
           "detailedQC": "false",
           "trackSources": "ITS-TPC-TRD"
         }
-=======
-          "query": "tracksqc:TRD/TRACKINGQC;tracksTRD:TRD/MATCH_ITSTPC;trackITSTPCTRD:TRD/MATCH_ITSTPC;trigITSTPCTRD:TRD/TRGREC_ITSTPC;trackITSTPC:GLO/TPCITS;trackITSTPCABREFS:GLO/TPCITSAB_REFS;trackITSTPCABCLID:GLO/TPCITSAB_CLID"
-        },
-        "taskParameters": {
-          "detailedQC": "true",
-          "trackSources": "ITS-TPC,ITS-TPC-TRD"
-        },
-        "location": "local",
-        "saveObjectsToFile": "QC_TRD.root"
->>>>>>> f5e9b26e (v1)
       }
     },
     "checks": {
