@@ -103,7 +103,7 @@ DATA RECONSTRUCTION (this can be done locally  with QC Environment):
 
 ```shell
 
-o2-ctf-reader-workflow --ctf-input /Volumes/LaData/alice/data/2022/LHC22t/529691/compact -max-tf 10 --onlyDet MCH \ | o2-mch-reco-workflow --disable-mc --disable-root-input \ | o2-qc --config json://./mch-clustermap.json --local batch="DATA_QC.root"
+o2-ctf-reader-workflow --ctf-input /Volumes/LaData/alice/data/2022/LHC22t/529691/compact -max-tf 10000 --onlyDet MCH \ | o2-mch-reco-workflow --disable-mc --disable-root-input \ | o2-qc --config json://./mch-clustermap.json --local batch="DATA_QC.root"
 
 
 ```
