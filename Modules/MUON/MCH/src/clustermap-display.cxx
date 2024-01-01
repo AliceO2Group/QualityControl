@@ -498,6 +498,34 @@ double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSamp
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Save dsIndex with 0 clusters in a txt.file (useful for the muon reject list)
+void saveDsIndexfor0clusters(int nChamber, bool bending, const TH1F* ClustersperDualSampa, std::ofstream& outFile)
+{
+    // Load clusters from TH1F Histogram
+    auto nClusters_dsindex = processClustersperDualSampa(ClustersperDualSampa);
+    std::vector<int> nClusters = nClusters_dsindex.first;
+
+    // Getting all DeIds for all Chambers
+    auto deIds = getAllDeIds(nChamber);
+
+    int dsIndex;
+    // Iterate through deIds and dsIds
+    for (auto deId : deIds) {
+        auto dsIds = getDualSampasBorNB(deId, bending);
+        for (auto dsId : dsIds) {
+            // Convert local dsId to global dsIndex (for a given deId)
+            dsIndex = getDsIndexFromDsIdAndDeId(dsId, deId);
+
+            // Check if clusters are zero and save dsIndex to the text file
+            if (nClusters[dsIndex] == 0) {
+                outFile <<  "-d " << dsIndex << " " ;
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Gradient of Number for the color scale
 std::vector<double> numberGradient(double n, int m)
 {
@@ -713,13 +741,14 @@ int main(int argc, char* argv[])
   // Generating various command arguments
   bool norm = false;
   bool green = false;
+  bool dsindexof0clusters = false;
   std::string rootfileleft = "DATA_QC.root";
   std::string rootfileright = "MC_QC.root";
 
   po::variables_map vm;
   po::options_description generic("Generic options");
 
-  generic.add_options()("help", "produce help message")("normperarea", "normalize per unit area")("green", "green color for 0 clusters")("rootfileleft", po::value<std::string>(&rootfileleft), "select root file for the left chamber")("rootfileright", po::value<std::string>(&rootfileright), "select root file for the right chamber");
+  generic.add_options()("help", "produce help message")("normperarea", "normalize per unit area")("dslist", "save all dsIndex with 0clusters in a txt file" )("green", "green color for 0 clusters")("rootfileleft", po::value<std::string>(&rootfileleft), "select root file for the left chamber")("rootfileright", po::value<std::string>(&rootfileright), "select root file for the right chamber");
 
   po::options_description cmdline;
   cmdline.add(generic);
@@ -738,6 +767,10 @@ int main(int argc, char* argv[])
 
   if (vm.count("green")) {
     green = true;
+  }
+
+  if (vm.count("dslist")) {
+    dsindexof0clusters = true;
   }
 
   // Define the bounding boxes for the 10 images:
@@ -762,6 +795,13 @@ int main(int argc, char* argv[])
   std::string directory = "output/";
   mkdir(directory.c_str(), 0777); // 0777 sets permissions;
 
+  std::ofstream outFile;
+
+  if (dsindexof0clusters) {
+    // Open a text file to save dsIndex with 0 clusters
+    outFile.open(directory + "dsIndex_with_0_clusters.txt");
+  }
+
   // Generate two sets (left and right) of 10 bending and non-bending chambers using SVGWriter
   for (auto isBendingPlane : {true, false}) {
 
@@ -775,6 +815,12 @@ int main(int argc, char* argv[])
       o2::mch::contour::SVGWriter wSegLeft(bboxes[i]);
       o2::mch::contour::SVGWriter wSegRight(bboxes[i]);
 
+      if (dsindexof0clusters){
+
+        saveDsIndexfor0clusters(i + 1, isBendingPlane, getrootHistogram(rootfileleft), outFile );
+
+      }
+
       svgChamber(wSegLeft, i + 1, isBendingPlane, getrootHistogram(rootfileleft), loadGeom, norm, green);
       svgChamber(wSegRight, i + 1, isBendingPlane, getrootHistogram(rootfileright), loadGeom, norm, green);
 
@@ -786,6 +832,5 @@ int main(int argc, char* argv[])
       outv << "</div>" << std::endl;
     }
   }
-
   return 0;
 }
