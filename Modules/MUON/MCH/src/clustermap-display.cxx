@@ -51,166 +51,166 @@ std::pair<double, double> getTranslationOffset(int deId)
   std::map<int, std::pair<double, double>> translationOffsets = {
 
     // 1st type of Chamber Shape (chambers 1,2,3,4)
-    {100, {5.0, 0.0}},
-    {101, {-5.0, 0.0}},
-    {102, {-5.0, 10.0}},
-    {103, {5.0, 10.0}},
-    {200, {5.0, 0.0}},
-    {201, {-5.0, 0.0}},
-    {202, {-5.0, 10.0}},
-    {203, {5.0, 10.0}},
-    {300, {5.0, 0.0}},
-    {301, {-5.0, 0.0}},
-    {302, {-5.0, 10.0}},
-    {303, {5.0, 10.0}},
-    {400, {5.0, 0.0}},
-    {401, {-5.0, 0.0}},
-    {402, {-5.0, 10.0}},
-    {403, {5.0, 10.0}},
+    { 100, { 5.0, 0.0 } },
+    { 101, { -5.0, 0.0 } },
+    { 102, { -5.0, 10.0 } },
+    { 103, { 5.0, 10.0 } },
+    { 200, { 5.0, 0.0 } },
+    { 201, { -5.0, 0.0 } },
+    { 202, { -5.0, 10.0 } },
+    { 203, { 5.0, 10.0 } },
+    { 300, { 5.0, 0.0 } },
+    { 301, { -5.0, 0.0 } },
+    { 302, { -5.0, 10.0 } },
+    { 303, { 5.0, 10.0 } },
+    { 400, { 5.0, 0.0 } },
+    { 401, { -5.0, 0.0 } },
+    { 402, { -5.0, 10.0 } },
+    { 403, { 5.0, 10.0 } },
 
     // 2nd type of Chamber Shape (chambers 5,6)
-    {500, {5.0, 5.0}},
-    {501, {5.0, -10.0}},
-    {502, {5.0, -20.0}},
-    {503, {5.0, -30.0}},
-    {504, {5.0, -40.0}},
-    {505, {0, -40.0}},
-    {506, {0, -30.0}},
-    {507, {0, -20.0}},
-    {508, {0, -10.0}},
-    {509, {0.0, 5.0}},
-    {510, {0.0, 20.0}},
-    {511, {0.0, 30.0}},
-    {512, {0.0, 40.0}},
-    {513, {0.0, 50.0}},
-    {514, {5.0, 50.0}},
-    {515, {5.0, 40.0}},
-    {516, {5.0, 30.0}},
-    {517, {5.0, 20.0}},
-    {600, {5.0, 5.0}},
-    {601, {5.0, -10.0}},
-    {602, {5.0, -20.0}},
-    {603, {5.0, -30.0}},
-    {604, {5.0, -40.0}},
-    {605, {0, -40.0}},
-    {606, {0, -30.0}},
-    {607, {0, -20.0}},
-    {608, {0, -10.0}},
-    {609, {0.0, 5.0}},
-    {610, {0.0, 20.0}},
-    {611, {0.0, 30.0}},
-    {612, {0.0, 40.0}},
-    {613, {0.0, 50.0}},
-    {614, {5.0, 50.0}},
-    {615, {5.0, 40.0}},
-    {616, {5.0, 30.0}},
-    {617, {5.0, 20.0}},
+    { 500, { 5.0, 5.0 } },
+    { 501, { 5.0, -10.0 } },
+    { 502, { 5.0, -20.0 } },
+    { 503, { 5.0, -30.0 } },
+    { 504, { 5.0, -40.0 } },
+    { 505, { 0, -40.0 } },
+    { 506, { 0, -30.0 } },
+    { 507, { 0, -20.0 } },
+    { 508, { 0, -10.0 } },
+    { 509, { 0.0, 5.0 } },
+    { 510, { 0.0, 20.0 } },
+    { 511, { 0.0, 30.0 } },
+    { 512, { 0.0, 40.0 } },
+    { 513, { 0.0, 50.0 } },
+    { 514, { 5.0, 50.0 } },
+    { 515, { 5.0, 40.0 } },
+    { 516, { 5.0, 30.0 } },
+    { 517, { 5.0, 20.0 } },
+    { 600, { 5.0, 5.0 } },
+    { 601, { 5.0, -10.0 } },
+    { 602, { 5.0, -20.0 } },
+    { 603, { 5.0, -30.0 } },
+    { 604, { 5.0, -40.0 } },
+    { 605, { 0, -40.0 } },
+    { 606, { 0, -30.0 } },
+    { 607, { 0, -20.0 } },
+    { 608, { 0, -10.0 } },
+    { 609, { 0.0, 5.0 } },
+    { 610, { 0.0, 20.0 } },
+    { 611, { 0.0, 30.0 } },
+    { 612, { 0.0, 40.0 } },
+    { 613, { 0.0, 50.0 } },
+    { 614, { 5.0, 50.0 } },
+    { 615, { 5.0, 40.0 } },
+    { 616, { 5.0, 30.0 } },
+    { 617, { 5.0, 20.0 } },
 
     // 3rd type of Chamber Shape (chambers 7,8,9,10)
-    {700, {3.0, 5.0}},
-    {701, {3.0, -10.0}},
-    {702, {3.0, -20.0}},
-    {703, {3.0, -30.0}},
-    {704, {3.0, -50.0}},
-    {705, {3, -60.0}},
-    {706, {3, -80.0}},
-    {707, {0, -80.0}},
-    {708, {0, -60.0}},
-    {709, {0.0, -50}},
-    {710, {0.0, -30.0}},
-    {711, {0.0, -20.0}},
-    {712, {0.0, -10.0}},
-    {713, {0.0, 5.0}},
-    {714, {0.0, 20.0}},
-    {715, {0.0, 30.0}},
-    {716, {0.0, 42.0}},
-    {717, {0.0, 64.0}},
-    {718, {0.0, 79.0}},
-    {719, {0.0, 101.0}},
-    {720, {3.0, 101.0}},
-    {721, {3.0, 79}},
-    {722, {3.0, 64.0}},
-    {723, {3.0, 42.0}},
-    {724, {3.0, 30}},
-    {725, {3.0, 20}},
-    {800, {3.0, 5.0}},
-    {801, {3.0, -10.0}},
-    {802, {3.0, -20.0}},
-    {803, {3.0, -30.0}},
-    {804, {3.0, -50.0}},
-    {805, {3, -60.0}},
-    {806, {3, -80.0}},
-    {807, {0, -80.0}},
-    {808, {0, -60.0}},
-    {809, {0.0, -50}},
-    {810, {0.0, -30.0}},
-    {811, {0.0, -20.0}},
-    {812, {0.0, -10.0}},
-    {813, {0.0, 5.0}},
-    {814, {0.0, 20.0}},
-    {815, {0.0, 30.0}},
-    {816, {0.0, 42.0}},
-    {817, {0.0, 64.0}},
-    {818, {0.0, 79.0}},
-    {819, {0.0, 101.0}},
-    {820, {3.0, 101.0}},
-    {821, {3.0, 79}},
-    {822, {3.0, 64.0}},
-    {823, {3.0, 42.0}},
-    {824, {3.0, 30}},
-    {825, {3.0, 20}},
-    {900, {0.0, 5.0}},
-    {901, {0.0, -10.0}},
-    {902, {0.0, -20.0}},
-    {903, {0.0, -30.0}},
-    {904, {0.0, -50.0}},
-    {905, {0, -60.0}},
-    {906, {0, -80.0}},
-    {907, {0, -80.0}},
-    {908, {0, -60.0}},
-    {909, {0.0, -50}},
-    {910, {0.0, -30.0}},
-    {911, {0.0, -20.0}},
-    {912, {0.0, -10.0}},
-    {913, {0.0, 5.0}},
-    {914, {0.0, 20.0}},
-    {915, {0.0, 30.0}},
-    {916, {0.0, 50.0}},
-    {917, {0.0, 70.0}},
-    {918, {0.0, 90.0}},
-    {919, {0.0, 110.0}},
-    {920, {0.0, 110.0}},
-    {921, {0.0, 90}},
-    {922, {0.0, 70}},
-    {923, {0.0, 50}},
-    {924, {0.0, 30}},
-    {925, {0.0, 20}},
-    {1000, {0.0, 5.0}},
-    {1001, {0.0, -10.0}},
-    {1002, {0.0, -20.0}},
-    {1003, {0.0, -30.0}},
-    {1004, {0.0, -50.0}},
-    {1005, {0, -60.0}},
-    {1006, {0, -80.0}},
-    {1007, {0, -80.0}},
-    {1008, {0, -60.0}},
-    {1009, {0.0, -50}},
-    {1010, {0.0, -30.0}},
-    {1011, {0.0, -20.0}},
-    {1012, {0.0, -10.0}},
-    {1013, {0.0, 5.0}},
-    {1014, {0.0, 20.0}},
-    {1015, {0.0, 30.0}},
-    {1016, {0.0, 50.0}},
-    {1017, {0.0, 70.0}},
-    {1018, {0.0, 90.0}},
-    {1019, {0.0, 110.0}},
-    {1020, {0.0, 110.0}},
-    {1021, {0.0, 90}},
-    {1022, {0.0, 70}},
-    {1023, {0.0, 50}},
-    {1024, {0.0, 30}},
-    {1025, {0.0, 20}}
+    { 700, { 3.0, 5.0 } },
+    { 701, { 3.0, -10.0 } },
+    { 702, { 3.0, -20.0 } },
+    { 703, { 3.0, -30.0 } },
+    { 704, { 3.0, -50.0 } },
+    { 705, { 3, -60.0 } },
+    { 706, { 3, -80.0 } },
+    { 707, { 0, -80.0 } },
+    { 708, { 0, -60.0 } },
+    { 709, { 0.0, -50 } },
+    { 710, { 0.0, -30.0 } },
+    { 711, { 0.0, -20.0 } },
+    { 712, { 0.0, -10.0 } },
+    { 713, { 0.0, 5.0 } },
+    { 714, { 0.0, 20.0 } },
+    { 715, { 0.0, 30.0 } },
+    { 716, { 0.0, 42.0 } },
+    { 717, { 0.0, 64.0 } },
+    { 718, { 0.0, 79.0 } },
+    { 719, { 0.0, 101.0 } },
+    { 720, { 3.0, 101.0 } },
+    { 721, { 3.0, 79 } },
+    { 722, { 3.0, 64.0 } },
+    { 723, { 3.0, 42.0 } },
+    { 724, { 3.0, 30 } },
+    { 725, { 3.0, 20 } },
+    { 800, { 3.0, 5.0 } },
+    { 801, { 3.0, -10.0 } },
+    { 802, { 3.0, -20.0 } },
+    { 803, { 3.0, -30.0 } },
+    { 804, { 3.0, -50.0 } },
+    { 805, { 3, -60.0 } },
+    { 806, { 3, -80.0 } },
+    { 807, { 0, -80.0 } },
+    { 808, { 0, -60.0 } },
+    { 809, { 0.0, -50 } },
+    { 810, { 0.0, -30.0 } },
+    { 811, { 0.0, -20.0 } },
+    { 812, { 0.0, -10.0 } },
+    { 813, { 0.0, 5.0 } },
+    { 814, { 0.0, 20.0 } },
+    { 815, { 0.0, 30.0 } },
+    { 816, { 0.0, 42.0 } },
+    { 817, { 0.0, 64.0 } },
+    { 818, { 0.0, 79.0 } },
+    { 819, { 0.0, 101.0 } },
+    { 820, { 3.0, 101.0 } },
+    { 821, { 3.0, 79 } },
+    { 822, { 3.0, 64.0 } },
+    { 823, { 3.0, 42.0 } },
+    { 824, { 3.0, 30 } },
+    { 825, { 3.0, 20 } },
+    { 900, { 0.0, 5.0 } },
+    { 901, { 0.0, -10.0 } },
+    { 902, { 0.0, -20.0 } },
+    { 903, { 0.0, -30.0 } },
+    { 904, { 0.0, -50.0 } },
+    { 905, { 0, -60.0 } },
+    { 906, { 0, -80.0 } },
+    { 907, { 0, -80.0 } },
+    { 908, { 0, -60.0 } },
+    { 909, { 0.0, -50 } },
+    { 910, { 0.0, -30.0 } },
+    { 911, { 0.0, -20.0 } },
+    { 912, { 0.0, -10.0 } },
+    { 913, { 0.0, 5.0 } },
+    { 914, { 0.0, 20.0 } },
+    { 915, { 0.0, 30.0 } },
+    { 916, { 0.0, 50.0 } },
+    { 917, { 0.0, 70.0 } },
+    { 918, { 0.0, 90.0 } },
+    { 919, { 0.0, 110.0 } },
+    { 920, { 0.0, 110.0 } },
+    { 921, { 0.0, 90 } },
+    { 922, { 0.0, 70 } },
+    { 923, { 0.0, 50 } },
+    { 924, { 0.0, 30 } },
+    { 925, { 0.0, 20 } },
+    { 1000, { 0.0, 5.0 } },
+    { 1001, { 0.0, -10.0 } },
+    { 1002, { 0.0, -20.0 } },
+    { 1003, { 0.0, -30.0 } },
+    { 1004, { 0.0, -50.0 } },
+    { 1005, { 0, -60.0 } },
+    { 1006, { 0, -80.0 } },
+    { 1007, { 0, -80.0 } },
+    { 1008, { 0, -60.0 } },
+    { 1009, { 0.0, -50 } },
+    { 1010, { 0.0, -30.0 } },
+    { 1011, { 0.0, -20.0 } },
+    { 1012, { 0.0, -10.0 } },
+    { 1013, { 0.0, 5.0 } },
+    { 1014, { 0.0, 20.0 } },
+    { 1015, { 0.0, 30.0 } },
+    { 1016, { 0.0, 50.0 } },
+    { 1017, { 0.0, 70.0 } },
+    { 1018, { 0.0, 90.0 } },
+    { 1019, { 0.0, 110.0 } },
+    { 1020, { 0.0, 110.0 } },
+    { 1021, { 0.0, 90 } },
+    { 1022, { 0.0, 70 } },
+    { 1023, { 0.0, 50 } },
+    { 1024, { 0.0, 30 } },
+    { 1025, { 0.0, 20 } }
 
   };
 
@@ -223,7 +223,7 @@ std::pair<double, double> getTranslationOffset(int deId)
 std::vector<o2::mch::contour::Contour<double>> transformLocalToGlobal(int deId, bool bending, const o2::mch::geo::TransformationCreator& transformation)
 {
 
-  CathodeSegmentation cSeg{deId, bending};
+  CathodeSegmentation cSeg{ deId, bending };
 
   std::vector<o2::mch::contour::Contour<double>> dualSampaContoursIn = getDualSampaContours(cSeg);
   std::vector<o2::mch::contour::Contour<double>> dualSampaContoursOut;
@@ -362,16 +362,15 @@ TH1F* getrootHistogramTH1F(const std::string& rootfile)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TH1F * getrootHistogram(const std::string& rootfile)
+TH1F* getrootHistogram(const std::string& rootfile)
 {
-    TFile* file = TFile::Open(rootfile.c_str());
-    TDirectoryFile* dir = dynamic_cast<TDirectoryFile*>(file->GetDirectory("int"));
-    TDirectoryFile* mhcDir = dynamic_cast<TDirectoryFile*>(dir->GetDirectory("MCH"));
+  TFile* file = TFile::Open(rootfile.c_str());
+  TDirectoryFile* dir = dynamic_cast<TDirectoryFile*>(file->GetDirectory("int"));
+  TDirectoryFile* mhcDir = dynamic_cast<TDirectoryFile*>(dir->GetDirectory("MCH"));
 
-    o2::quality_control::core::MonitorObjectCollection* coll = dynamic_cast<o2::quality_control::core::MonitorObjectCollection*>(mhcDir->FindObjectAny("Clusters"));
-    o2::quality_control::core::MonitorObject* obj = dynamic_cast<o2::quality_control::core::MonitorObject*>(coll->FindObject("ClustersPerDualSampa"));
-    return dynamic_cast<TH1F*>(obj->getObject());
-
+  o2::quality_control::core::MonitorObjectCollection* coll = dynamic_cast<o2::quality_control::core::MonitorObjectCollection*>(mhcDir->FindObjectAny("Clusters"));
+  o2::quality_control::core::MonitorObject* obj = dynamic_cast<o2::quality_control::core::MonitorObject*>(coll->FindObject("ClustersPerDualSampa"));
+  return dynamic_cast<TH1F*>(obj->getObject());
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -471,14 +470,14 @@ double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSamp
 
     for (auto deId : deIds) {
 
-       CathodeSegmentation cSeg{deId, bending};
+      CathodeSegmentation cSeg{ deId, bending };
 
       // auto dualSampaContoursOut = transformLocalToGlobal(deId, bending, transformation);
       // Get the map index to dsId
       auto dsIds = getDualSampasBorNB(deId, bending);
       for (auto dsId : dsIds) {
         o2::mch::contour::Contour<double> dualSampaContourOut = getDualSampaContour(cSeg, dsId);
-        double area = 0.0;                       // Area of a DS Contour
+        double area = 0.0; // Area of a DS Contour
         for (const auto& poly : dualSampaContourOut.getPolygons()) {
           area += poly.signedArea();
         }
@@ -501,27 +500,27 @@ double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSamp
 // Save dsIndex with 0 clusters in a txt.file (useful for the muon reject list)
 void saveDsIndexfor0clusters(int nChamber, bool bending, const TH1F* ClustersperDualSampa, std::ofstream& outFile)
 {
-    // Load clusters from TH1F Histogram
-    auto nClusters_dsindex = processClustersperDualSampa(ClustersperDualSampa);
-    std::vector<int> nClusters = nClusters_dsindex.first;
+  // Load clusters from TH1F Histogram
+  auto nClusters_dsindex = processClustersperDualSampa(ClustersperDualSampa);
+  std::vector<int> nClusters = nClusters_dsindex.first;
 
-    // Getting all DeIds for all Chambers
-    auto deIds = getAllDeIds(nChamber);
+  // Getting all DeIds for all Chambers
+  auto deIds = getAllDeIds(nChamber);
 
-    int dsIndex;
-    // Iterate through deIds and dsIds
-    for (auto deId : deIds) {
-        auto dsIds = getDualSampasBorNB(deId, bending);
-        for (auto dsId : dsIds) {
-            // Convert local dsId to global dsIndex (for a given deId)
-            dsIndex = getDsIndexFromDsIdAndDeId(dsId, deId);
+  int dsIndex;
+  // Iterate through deIds and dsIds
+  for (auto deId : deIds) {
+    auto dsIds = getDualSampasBorNB(deId, bending);
+    for (auto dsId : dsIds) {
+      // Convert local dsId to global dsIndex (for a given deId)
+      dsIndex = getDsIndexFromDsIdAndDeId(dsId, deId);
 
-            // Check if clusters are zero and save dsIndex to the text file
-            if (nClusters[dsIndex] == 0) {
-                outFile <<  "-d " << dsIndex << " " ;
-            }
-        }
+      // Check if clusters are zero and save dsIndex to the text file
+      if (nClusters[dsIndex] == 0) {
+        outFile << "-d " << dsIndex << " ";
+      }
     }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -628,10 +627,10 @@ void addRectangleContour(int nChamber, o2::mch::contour::Contour<double>& contou
     double startX = rectX;
     double endX = rectX + rectWidth;
 
-    contour.addPolygon({{startX, startY},
-                        {endX, startY},
-                        {endX, endY},
-                        {startX, endY}});
+    contour.addPolygon({ { startX, startY },
+                         { endX, startY },
+                         { endX, endY },
+                         { startX, endY } });
   }
 
   std::vector<double> numbers = numberGradient(Nmax, 11);
@@ -748,7 +747,7 @@ int main(int argc, char* argv[])
   po::variables_map vm;
   po::options_description generic("Generic options");
 
-  generic.add_options()("help", "produce help message")("normperarea", "normalize per unit area")("dslist", "save all dsIndex with 0clusters in a txt file" )("green", "green color for 0 clusters")("rootfileleft", po::value<std::string>(&rootfileleft), "select root file for the left chamber")("rootfileright", po::value<std::string>(&rootfileright), "select root file for the right chamber");
+  generic.add_options()("help", "produce help message")("normperarea", "normalize per unit area")("dslist", "save all dsIndex with 0clusters in a txt file")("green", "green color for 0 clusters")("rootfileleft", po::value<std::string>(&rootfileleft), "select root file for the left chamber")("rootfileright", po::value<std::string>(&rootfileright), "select root file for the right chamber");
 
   po::options_description cmdline;
   cmdline.add(generic);
@@ -775,16 +774,17 @@ int main(int argc, char* argv[])
 
   // Define the bounding boxes for the 10 images:
   std::vector<o2::mch::contour::BBox<double>> bboxes = {
-    {-175, -175, 175, 175},
-    {-175, -175, 175, 175},
-    {-200, -200, 200, 200},
-    {-200, -200, 200, 200},
-    {-260, -260, 260, 260},
-    {-260, -260, 260, 260},
-    {-360, -360, 360, 360},
-    {-450, -450, 450, 450},
-    {-450, -450, 450, 450},
-    {-450, -450, 450, 450}};
+    { -175, -175, 175, 175 },
+    { -175, -175, 175, 175 },
+    { -200, -200, 200, 200 },
+    { -200, -200, 200, 200 },
+    { -260, -260, 260, 260 },
+    { -260, -260, 260, 260 },
+    { -360, -360, 360, 360 },
+    { -450, -450, 450, 450 },
+    { -450, -450, 450, 450 },
+    { -450, -450, 450, 450 }
+  };
 
   // Load  the aligned geometry from root file
   std::string alignedgeom = "o2sim_geometry-aligned.root";
@@ -803,7 +803,7 @@ int main(int argc, char* argv[])
   }
 
   // Generate two sets (left and right) of 10 bending and non-bending chambers using SVGWriter
-  for (auto isBendingPlane : {true, false}) {
+  for (auto isBendingPlane : { true, false }) {
 
     for (int i = 0; i < 10; i++) {
 
@@ -815,10 +815,9 @@ int main(int argc, char* argv[])
       o2::mch::contour::SVGWriter wSegLeft(bboxes[i]);
       o2::mch::contour::SVGWriter wSegRight(bboxes[i]);
 
-      if (dsindexof0clusters){
+      if (dsindexof0clusters) {
 
-        saveDsIndexfor0clusters(i + 1, isBendingPlane, getrootHistogram(rootfileleft), outFile );
-
+        saveDsIndexfor0clusters(i + 1, isBendingPlane, getrootHistogram(rootfileleft), outFile);
       }
 
       svgChamber(wSegLeft, i + 1, isBendingPlane, getrootHistogram(rootfileleft), loadGeom, norm, green);
