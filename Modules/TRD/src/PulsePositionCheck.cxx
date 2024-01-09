@@ -128,9 +128,6 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 {
   Quality result = Quality::Null;
 
-  // you can get details about the activity via the object mActivity:
-  ILOG(Debug, Trace) << "Run type: " << getActivity()->mType << ENDM;
-
   // ILOG(Debug, Trace) << "Check function called"<< ENDM;
   //  LOG(info)<<"Check function called";
 
