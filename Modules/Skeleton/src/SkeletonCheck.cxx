@@ -36,7 +36,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   Quality result = Quality::Null;
 
   // you can get details about the activity via the object mActivity:
-  ILOG(Debug, Devel) << "Run " << getActivity()->mId << ", type: " << getActivity()->mType << ", beam: " << getActivity()->mBeamType << ENDM;
+  ILOG(Debug, Devel) << "Run " << mActivity->mId << ", type: " << mActivity->mType << ", beam: " << mActivity->mBeamType << ENDM;
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "default_value") << ENDM;
 
@@ -96,6 +96,7 @@ void SkeletonCheck::reset()
 void SkeletonCheck::startOfActivity(const core::Activity& activity)
 {
   ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
+  mActivity = make_shared<Activity>(activity);
 }
 
 void SkeletonCheck::endOfActivity(const core::Activity& activity)

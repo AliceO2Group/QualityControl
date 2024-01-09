@@ -44,12 +44,8 @@ class AggregatorInterface : public o2::quality_control::core::UserCodeInterface
   /// @return The new qualities, associated with a name.
   virtual std::map<std::string, core::Quality> aggregate(std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap) = 0;
 
-  std::shared_ptr<const core::Activity> getActivity() const { return mActivity; }
   virtual void startOfActivity(const core::Activity& activity);
   virtual void endOfActivity(const core::Activity& activity);
-
-private:
-  std::shared_ptr<core::Activity> mActivity;
 
   ClassDef(AggregatorInterface, 4)
 };

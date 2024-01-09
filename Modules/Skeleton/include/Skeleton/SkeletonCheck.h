@@ -41,7 +41,10 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
   startOfActivity(const core::Activity& activity) override;
   endOfActivity(const core::Activity& activity) override;
 
-  ClassDefOverride(SkeletonCheck, 2);
+private:
+  std::shared_ptr<core::Activity> mActivity;
+
+  ClassDefOverride(SkeletonCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::skeleton

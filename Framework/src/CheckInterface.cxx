@@ -20,7 +20,6 @@
 #include <TClass.h>
 
 using namespace std;
-
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
@@ -50,12 +49,12 @@ void CheckInterface::reset()
   // noop, override it if you want.
 }
 
-void CheckInterface::startOfActivity(const core::Activity& activity)
+void CheckInterface::startOfActivity(const Activity& activity)
 {
-  mActivity = std::make_shared<core::Activity>(activity);
+  // noop, override it if you want.
 }
 
-void CheckInterface::endOfActivity(const core::Activity& activity)
+void CheckInterface::endOfActivity(const Activity& activity)
 {
   // noop, override it if you want.
 }

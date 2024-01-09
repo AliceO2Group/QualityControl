@@ -17,16 +17,17 @@
 #include "QualityControl/AggregatorInterface.h"
 
 using namespace std;
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {
 
-void AggregatorInterface::startOfActivity(const core::Activity& activity)
+void AggregatorInterface::startOfActivity(const Activity& activity)
 {
-  mActivity = std::make_shared<core::Activity>(activity);
+  // noop, override it if you want.
 }
 
-void AggregatorInterface::endOfActivity(const core::Activity& activity)
+void AggregatorInterface::endOfActivity(const Activity& activity)
 {
   // noop, override it if you want.
 }
