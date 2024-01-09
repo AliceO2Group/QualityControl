@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+#include "QualityControl/ActivityHelpers.h"
 #include <TDatime.h>
 #include <TPaveText.h>
 #include <chrono>
@@ -105,19 +106,27 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
 
 static std::pair<std::shared_ptr<QualityObject>, bool> getQO(repository::DatabaseInterface& qcdb, Trigger t, BigScreenConfig::DataSource& source, long notOlderThan, bool ignoreActivity)
 {
-  // retrieve MO from CCDB - do not associate to trigger activity if ignoreActivity is true
-  auto qo = ignoreActivity ? qcdb.retrieveQO(source.path, t.timestamp, {}) : qcdb.retrieveQO(source.path, t.timestamp, t.activity);
+  // find the time-stamp of the most recent object matching the current activity
+  // if ignoreActivity is true the activity matching criteria are not applied
+  Activity activity = ignoreActivity ? Activity{} : t.activity;
+  auto timestamp = t.timestamp;
+  const auto objFullPath = t.activity.mProvenance + "/" + source.path;
+  const auto filterMetadata = activity_helpers::asDatabaseMetadata(activity, false);
+  const auto objectValidity = qcdb.getLatestObjectValidity(objFullPath, filterMetadata);
+  if (objectValidity.isValid()) {
+    timestamp = objectValidity.getMax() - 1;
+  } else {
+    ILOG(Warning, Devel) << "Could not find an object '" << objFullPath << "' for activity " << activity << ENDM;
+    return { nullptr, false };
+  }
+
+  // retrieve QO from CCDB - do not associate to trigger activity if ignoreActivity is true
+  auto qo = qcdb.retrieveQO(source.path, timestamp, activity);
   if (!qo) {
     return { nullptr, false };
   }
-  // get the MO creation time stamp
-  long timeStamp{ 0 };
-  auto iter = qo->getMetadataMap().find(repository::metadata_keys::created);
-  if (iter != qo->getMetadataMap().end()) {
-    timeStamp = std::stol(iter->second);
-  }
 
-  long elapsed = static_cast<long>(t.timestamp) - timeStamp;
+  long elapsed = static_cast<long>(t.timestamp) - timestamp;
   // check if the object is not older than a given number of milliseconds
   if (elapsed > notOlderThan) {
     return { qo, false };
