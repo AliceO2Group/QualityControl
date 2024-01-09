@@ -23,7 +23,7 @@ namespace o2::quality_control::checker
 
 void AggregatorInterface::startOfActivity(const core::Activity& activity)
 {
-  // noop, override it if you want.
+  mActivity = std::make_shared<core::Activity>(activity);
 }
 
 void AggregatorInterface::endOfActivity(const core::Activity& activity)

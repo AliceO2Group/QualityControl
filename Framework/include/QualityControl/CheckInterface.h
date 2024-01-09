@@ -77,12 +77,16 @@ class CheckInterface : public core::UserCodeInterface
   bool isObjectCheckable(const std::shared_ptr<core::MonitorObject> mo);
   bool isObjectCheckable(const core::MonitorObject* mo);
 
+  std::shared_ptr<const core::Activity> getActivity() const { return mActivity; }
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
   virtual void endOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
 
  protected:
   /// \brief Called each time mCustomParameters is updated.
   virtual void configure() override;
+
+private:
+  std::shared_ptr<core::Activity> mActivity;
 
   ClassDef(CheckInterface, 6)
 };

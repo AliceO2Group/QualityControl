@@ -52,7 +52,7 @@ void CheckInterface::reset()
 
 void CheckInterface::startOfActivity(const core::Activity& activity)
 {
-  // noop, override it if you want.
+  mActivity = std::make_shared<core::Activity>(activity);
 }
 
 void CheckInterface::endOfActivity(const core::Activity& activity)
