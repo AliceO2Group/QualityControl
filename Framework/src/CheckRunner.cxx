@@ -510,7 +510,7 @@ void CheckRunner::start(ServiceRegistryRef services)
   mCollector->setRunNumber(mActivity->mId);
   mReceivedEOS = false;
   for (auto& [checkName, check] : mChecks) {
-    check.startActivity(*mActivity);
+    check.startOfActivity(*mActivity);
   }
 
   // register ourselves to the BK
