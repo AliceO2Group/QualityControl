@@ -93,13 +93,13 @@ void SkeletonCheck::reset()
   ILOG(Debug, Devel) << "SkeletonCheck::reset" << ENDM;
 }
 
-void SkeletonCheck::startOfActivity(const core::Activity& activity)
+void SkeletonCheck::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
   mActivity = make_shared<Activity>(activity);
 }
 
-void SkeletonCheck::endOfActivity(const core::Activity& activity)
+void SkeletonCheck::endOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "SkeletonCheck::end : " << activity.mId << ENDM;
 }
