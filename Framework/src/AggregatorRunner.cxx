@@ -400,7 +400,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   QcInfoLogger::setPartition(mActivity->mPartitionName);
   ILOG(Info, Support) << "Starting run " << mActivity->mId << ENDM;
   for (auto& aggregator : mAggregators) {
-    aggregator->setActivity(mActivity);
+    aggregator->startOfActivity(*mActivity);
   }
 
   // register ourselves to the BK
@@ -417,6 +417,9 @@ void AggregatorRunner::start(ServiceRegistryRef services)
 void AggregatorRunner::stop()
 {
   ILOG(Info, Support) << "Stopping run " << mActivity->mId << ENDM;
+  for (auto& aggregator : mAggregators) {
+    aggregator->endOfActivity(*mActivity);
+  }
 }
 
 void AggregatorRunner::reset()

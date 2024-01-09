@@ -93,4 +93,14 @@ void SkeletonCheck::reset()
   ILOG(Debug, Devel) << "SkeletonCheck::reset" << ENDM;
 }
 
+void SkeletonCheck::startOfActivity(const core::Activity& activity)
+{
+  ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
+}
+
+void SkeletonCheck::endOfActivity(const core::Activity& activity)
+{
+  ILOG(Debug, Devel) << "SkeletonCheck::end : " << activity.mId << ENDM;
+}
+
 } // namespace o2::quality_control_modules::skeleton

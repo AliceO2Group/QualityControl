@@ -75,7 +75,8 @@ class Aggregator
   std::vector<AggregatorSource> getSources() const;
   std::vector<AggregatorSource> getSources(core::DataSourceType type);
   const std::string& getDetector() const { return mAggregatorConfig.detectorName; };
-  void setActivity(std::shared_ptr<core::Activity> activity);
+  void startOfActivity(const core::Activity& activity);
+  void endOfActivity(const core::Activity& activity);
 
   static AggregatorConfig extractConfig(const core::CommonSpec&, const AggregatorSpec&);
 

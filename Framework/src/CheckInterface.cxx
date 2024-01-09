@@ -19,9 +19,9 @@
 
 #include <TClass.h>
 
-ClassImp(o2::quality_control::checker::CheckInterface)
+using namespace std;
 
-  using namespace std;
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {
@@ -46,6 +46,16 @@ void CheckInterface::configure()
 }
 
 void CheckInterface::reset()
+{
+  // noop, override it if you want.
+}
+
+void CheckInterface::startOfActivity(const core::Activity& activity)
+{
+  // noop, override it if you want.
+}
+
+void CheckInterface::endOfActivity(const core::Activity& activity)
 {
   // noop, override it if you want.
 }

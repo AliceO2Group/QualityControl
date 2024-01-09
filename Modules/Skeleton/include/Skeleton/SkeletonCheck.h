@@ -38,6 +38,8 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
   void reset() override;
+  startOfActivity(const core::Activity& activity) override;
+  endOfActivity(const core::Activity& activity) override;
 
   ClassDefOverride(SkeletonCheck, 2);
 };

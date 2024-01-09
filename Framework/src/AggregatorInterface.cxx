@@ -10,30 +10,25 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   UserCodeInterface.cxx
+/// \file   AggregatorInterface.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/UserCodeInterface.h"
+#include "QualityControl/AggregatorInterface.h"
 
-using namespace o2::ccdb;
+using namespace std;
 
-namespace o2::quality_control::core
+namespace o2::quality_control::checker
 {
 
-void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
+void AggregatorInterface::startOfActivity(const core::Activity& activity)
 {
-  mCustomParameters = parameters;
-  configure();
+  // noop, override it if you want.
 }
 
-void UserCodeInterface::setCcdbUrl(const std::string& url)
+void AggregatorInterface::endOfActivity(const core::Activity& activity)
 {
-  o2::ccdb::BasicCCDBManager::instance().setURL(url);
+  // noop, override it if you want.
 }
 
-const std::string& UserCodeInterface::getName() const { return mName; }
-
-void UserCodeInterface::setName(const std::string& name) { mName = name; }
-
-} // namespace o2::quality_control::core
+} // namespace o2::quality_control::checker
