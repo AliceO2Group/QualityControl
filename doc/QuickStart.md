@@ -10,7 +10,7 @@
       * [Environment loading](#environment-loading)
    * [Execution](#execution)
       * [Basic workflow](#basic-workflow)
-      * [Readout chain](#readout-chain)
+      * [Readout chain (optional)](#readout-chain-\(optional\))
          * [Getting real data from readout](#getting-real-data-from-readout)
          * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
       * [Post-processing example](#post-processing-example)
@@ -40,17 +40,15 @@ A CS8 machine (Mac, and in particular Ubuntu, are only supported on a best effor
 2. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
 
-4. Build/install the QualityControl and the readout. The simplest is to use the metapackage `O2Suite`.
-    * `aliBuild build O2Suite --defaults o2`
-    * At this point you might encounter a message about missing system requirements. Run `aliDoctor --defaults o2 O2Suite` to get a full information about what is missing and how to install it.
+4. Build/install the QualityControl.
+    * `aliBuild build QualityControl --defaults o2`
+    * At this point you might encounter a message about missing system requirements. Run `aliDoctor --defaults o2 QualityControl` to get a full information about what is missing and how to install it.
 
-Note: you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. Moreover, you can build `QualityControl` instead of `O2Suite` if you don't plan to use the readout (remember to substitute `O2Suite` with `QualityControl` when loading the environment).
+Note: you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. If you plan to use `Readout`, you can build both with one `aliBuild` command by listing them one after another, space-separated.
 
 ### Environment loading
 
-Whenever you want to work with O2 and QualityControl, do either `alienv enter O2Suite/latest` or `alienv load O2Suite/latest`. 
-
-You can also load a package instead of the whole O2Suite, i.e. `alienv enter QualityControl/latest` or `alienv enter qcg/latest`. 
+Whenever you want to work with O2 and QualityControl, do `alienv enter QualityControl/latest`. To load multiple independent packages, list them one after the other, space-separated (e.g. `alienv enter QualityControl/latest Readout/latest`). O2 is automatically pulled by QualityControl, thus no need to specify it explicitely.
 
 ## Execution
 
@@ -112,9 +110,10 @@ The configuration for the QC is made of many parameters described in an [advance
 ```
 Try and change the name of the task by replacing `QcTask` by a name of your choice (there are 2 places to update in the config file!). Relaunch the workflows. You should now see the object published under a different directory in the QCG.
 
-### Readout chain
+### Readout chain (optional)
 
 In this second example, we are going to use the Readout as our data source.
+This example assumes that Readout has been compiled beforehand (`aliBuild build Readout --defaults o2`).
 
 ![alt text](images/readout-schema.png)
 
