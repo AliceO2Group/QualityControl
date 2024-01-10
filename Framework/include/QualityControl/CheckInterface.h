@@ -80,7 +80,7 @@ class CheckInterface : public core::UserCodeInterface
   bool isObjectCheckable(const core::MonitorObject* mo);
 
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
-  virtual void endOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
+  virtual void endOfActivity(const core::Activity& activity);   // not fully abstract because we don't want to change all the existing subclasses
 
  protected:
   /// \brief Called each time mCustomParameters is updated.

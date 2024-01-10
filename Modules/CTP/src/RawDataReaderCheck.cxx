@@ -132,5 +132,5 @@ void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
   ILOG(Debug, Devel) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
   mRunNumber = activity.mId;
 }
-  
+
 } // namespace o2::quality_control_modules::ctp

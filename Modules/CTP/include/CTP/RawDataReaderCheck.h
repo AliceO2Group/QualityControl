@@ -38,7 +38,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
   void startOfActivity(const Activity& activity) override;
-  
+
   ClassDefOverride(RawDataReaderCheck, 2);
 
  private:
