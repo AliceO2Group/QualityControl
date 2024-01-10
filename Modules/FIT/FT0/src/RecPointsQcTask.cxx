@@ -65,22 +65,26 @@ void RecPointsQcTask::rebinFromConfig()
 
   const std::string rebinKeyword = "binning";
   const char* channelIdPlaceholder = "#";
-  for (auto& param : mCustomParameters.getAllDefaults()) {
-    if (param.first.rfind(rebinKeyword, 0) != 0)
-      continue;
-    std::string hName = param.first.substr(rebinKeyword.length() + 1);
-    std::string binning = param.second.c_str();
-    if (hName.find(channelIdPlaceholder) != std::string::npos) {
-      for (const auto& chID : mSetAllowedChIDs) {
-        std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
-        rebinHisto(hNameCur, binning);
+  try{
+    for (auto& param : mCustomParameters.getAllDefaults()) {
+      if (param.first.rfind(rebinKeyword, 0) != 0)
+        continue;
+      std::string hName = param.first.substr(rebinKeyword.length() + 1);
+      std::string binning = param.second.c_str();
+      if (hName.find(channelIdPlaceholder) != std::string::npos) {
+        for (const auto& chID : mSetAllowedChIDs) {
+          std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
+          rebinHisto(hNameCur, binning);
+        }
+      } else if (!gROOT->FindObject(hName.data())) {
+        ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
+        continue;
+      } else {
+        rebinHisto(hName, binning);
       }
-    } else if (!gROOT->FindObject(hName.data())) {
-      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
-      continue;
-    } else {
-      rebinHisto(hName, binning);
     }
+  } catch (std::out_of_range& oor) {
+    ILOG(Error) << "Cannot access the default custom parameters : " << oor << ENDM;
   }
 }
 
