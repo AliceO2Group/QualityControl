@@ -88,7 +88,7 @@ void DigitQcTask::rebinFromConfig()
       }
     }
   } catch (std::out_of_range& oor) {
-    ILOG(Error) << "Cannot access the default custom parameters : " << oor << ENDM;
+    ILOG(Error) << "Cannot access the default custom parameters : " << oor.what() << ENDM;
   }
 }
 
