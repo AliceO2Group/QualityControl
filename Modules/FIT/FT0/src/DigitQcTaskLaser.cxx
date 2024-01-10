@@ -67,7 +67,7 @@ void DigitQcTaskLaser::rebinFromConfig()
 
   const std::string rebinKeyword = "binning";
   const char* channelIdPlaceholder = "#";
-  try{
+  try {
     for (auto& param : mCustomParameters.getAllDefaults()) {
       if (param.first.rfind(rebinKeyword, 0) != 0)
         continue;
