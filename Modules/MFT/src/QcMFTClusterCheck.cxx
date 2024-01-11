@@ -198,14 +198,14 @@ void QcMFTClusterCheck::createMaskedChipsNames()
 
 void QcMFTClusterCheck::createOutsideAccNames()
 {
-    for (int iHalf = 0; iHalf < 2; iHalf++) {
-        for (int iDisk = 0; iDisk < 5; iDisk++) {
-            for (int iFace = 0; iFace < 2; iFace++) {
-                mOutsideAccName.push_back(Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mClusterChipOccupancyMap",
-                                               iHalf, iDisk, iFace));
-            }
-        }
+  for (int iHalf = 0; iHalf < 2; iHalf++) {
+    for (int iDisk = 0; iDisk < 5; iDisk++) {
+      for (int iFace = 0; iFace < 2; iFace++) {
+        mOutsideAccName.push_back(Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mClusterChipOccupancyMap",
+                                       iHalf, iDisk, iFace));
+      }
     }
+  }
 }
 
 void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
@@ -233,31 +233,32 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       tl->Draw();
     }
   }
-    
-    QcMFTUtilTables MFTTable;
-    for (int iHalf = 0; iHalf < 2; iHalf++) {
-        for (int iDisk = 0; iDisk < 5; iDisk++) {
-            for (int iFace = 0; iFace < 2; iFace++) {
-                int idx = (iDisk * 2 + iFace) + (10 * iHalf);
-                if (mo->getName().find(mOutsideAccName[idx]) != std::string::npos){
-                    //LOGF(info, "Name: %s", mo->getName());
-                  auto* h = dynamic_cast<TH2F*>(mo->getObject());
-                  //TBox *b = new TBox();
-                    for (int i = 0; i < 21; i++){
-                        int binX = MFTTable.mBinX[idx][i];
-                        int binY = MFTTable.mBinY[idx][i];
-                        if(binX == -1 || binY == -1) continue;
-                        TBox *b = new TBox(h->GetXaxis()->GetBinLowEdge(binX),h->GetYaxis()->GetBinLowEdge(binY),h->GetXaxis()->GetBinWidth(binX)+h->GetXaxis()->GetBinLowEdge(binX),h->GetYaxis()->GetBinWidth(binY) + h->GetYaxis()->GetBinLowEdge(binY));
-                        b->SetFillStyle(4055);
-                        b->SetFillColor(15);
-                        h->GetListOfFunctions()->Add(b);
-                        b->Draw();
-                    }
-                }
-            }
+
+  QcMFTUtilTables MFTTable;
+  for (int iHalf = 0; iHalf < 2; iHalf++) {
+    for (int iDisk = 0; iDisk < 5; iDisk++) {
+      for (int iFace = 0; iFace < 2; iFace++) {
+        int idx = (iDisk * 2 + iFace) + (10 * iHalf);
+        if (mo->getName().find(mOutsideAccName[idx]) != std::string::npos) {
+          // LOGF(info, "Name: %s", mo->getName());
+          auto* h = dynamic_cast<TH2F*>(mo->getObject());
+          // TBox *b = new TBox();
+          for (int i = 0; i < 21; i++) {
+            int binX = MFTTable.mBinX[idx][i];
+            int binY = MFTTable.mBinY[idx][i];
+            if (binX == -1 || binY == -1)
+              continue;
+            TBox* b = new TBox(h->GetXaxis()->GetBinLowEdge(binX), h->GetYaxis()->GetBinLowEdge(binY), h->GetXaxis()->GetBinWidth(binX) + h->GetXaxis()->GetBinLowEdge(binX), h->GetYaxis()->GetBinWidth(binY) + h->GetYaxis()->GetBinLowEdge(binY));
+            b->SetFillStyle(4055);
+            b->SetFillColor(15);
+            h->GetListOfFunctions()->Add(b);
+            b->Draw();
+          }
         }
+      }
     }
-    
+  }
+
   if (mo->getName().find("mClusterOccupancySummary") != std::string::npos) {
     auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
     TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
