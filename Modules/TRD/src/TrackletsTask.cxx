@@ -139,7 +139,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("chamberStatus");
+    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
     mChamberStatus = ptr.get();
     // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
     if (mChamberStatus) {
