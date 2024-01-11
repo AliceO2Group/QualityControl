@@ -64,7 +64,8 @@ class CustomParameters
 
   /**
    * Return all the parameters (key-value pairs) for the default runType and the default beamType.
-   * @return
+   * @return a map of the key-value pairs for
+   * @throw std::out_of_range if no key-value pair correspond to these beamType and runType
    */
   const std::unordered_map<std::string, std::string>& getAllDefaults();
 
