@@ -90,6 +90,16 @@ void Clusters::initialize(InitContext& /*ctx*/)
 void Clusters::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
+
+  mQCClusters.getClusters().reset();
+  if (!mIsMergeable) {
+    clearCanvases(mNClustersCanvasVec);
+    clearCanvases(mQMaxCanvasVec);
+    clearCanvases(mQTotCanvasVec);
+    clearCanvases(mSigmaTimeCanvasVec);
+    clearCanvases(mSigmaPadCanvasVec);
+    clearCanvases(mTimeBinCanvasVec);
+  }
 }
 
 void Clusters::startOfCycle()

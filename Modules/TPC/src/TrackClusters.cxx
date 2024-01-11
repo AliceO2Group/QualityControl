@@ -64,7 +64,7 @@ void TrackClusters::initialize(InitContext& /*ctx*/)
 void TrackClusters::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
-  // serksnyte: anything neeeded for start of activity (in track tasks there is a reset of histograms)?
+  mQCTrackClusters.resetHistograms();
 }
 
 void TrackClusters::startOfCycle()

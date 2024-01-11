@@ -86,6 +86,14 @@ void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 void RawDigits::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "startOfActivity" << ENDM;
+
+  mRawDigitQC.getClusters().reset();
+
+  if (!mIsMergeable) {
+    clearCanvases(mNRawDigitsCanvasVec);
+    clearCanvases(mQMaxCanvasVec);
+    clearCanvases(mTimeBinCanvasVec);
+  }
 }
 
 void RawDigits::startOfCycle()
