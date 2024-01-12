@@ -42,13 +42,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 {
   Quality result = Quality::Null;
 
-  // you can get details about the activity via the object mActivity:
-  ILOG(Debug, Devel) << "Run " << getActivity()->mId << ", type: " << getActivity()->mType << ", beam: " << getActivity()->mBeamType << ENDM;
-  // and you can get your custom parameters:
-  ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "physics", "pp", "default_value") << ENDM;
-
-  mRunNumber = getActivity()->mId;
-
   map<string, string> metadata; // can be empty
   auto mo = moMap->begin()->second;
   mTimestamp = mo->getValidity().getMin();
@@ -132,6 +125,12 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->SetLineColor(kOrange);
     }
   }
+}
+
+void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
+{
+  ILOG(Debug, Devel) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
+  mRunNumber = activity.mId;
 }
 
 } // namespace o2::quality_control_modules::ctp

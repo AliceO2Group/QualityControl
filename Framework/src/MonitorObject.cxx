@@ -19,9 +19,7 @@
 #include <iostream>
 #include "QualityControl/RepoPathUtils.h"
 
-ClassImp(o2::quality_control::core::MonitorObject)
-
-  using namespace std;
+using namespace std;
 
 namespace o2::quality_control::core
 {

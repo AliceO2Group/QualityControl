@@ -30,6 +30,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
 
+#include <QualityControl/AggregatorRunner.h>
+
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 
@@ -268,12 +270,21 @@ framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
   return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
-void Check::setActivity(std::shared_ptr<core::Activity> activity)
+void Check::startOfActivity(const core::Activity& activity)
 {
   if (mCheckInterface) {
-    mCheckInterface->setActivity(std::move(activity));
+    mCheckInterface->startOfActivity(activity);
   } else {
-    throw std::runtime_error("Trying to set Activity on an empty CheckInterface '" + mCheckConfig.name + "'");
+    throw std::runtime_error("Trying to start an Activity on an empty CheckInterface '" + mCheckConfig.name + "'");
+  }
+}
+
+void Check::endOfActivity(const core::Activity& activity)
+{
+  if (mCheckInterface) {
+    mCheckInterface->endOfActivity(activity);
+  } else {
+    throw std::runtime_error("Trying to stop an Activity on an empty CheckInterface '" + mCheckConfig.name + "'");
   }
 }
 

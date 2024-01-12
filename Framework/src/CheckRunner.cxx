@@ -510,7 +510,7 @@ void CheckRunner::start(ServiceRegistryRef services)
   mCollector->setRunNumber(mActivity->mId);
   mReceivedEOS = false;
   for (auto& [checkName, check] : mChecks) {
-    check.setActivity(mActivity);
+    check.startOfActivity(*mActivity);
   }
 
   // register ourselves to the BK
@@ -529,6 +529,9 @@ void CheckRunner::stop()
   ILOG(Info, Support) << "Stopping run " << mActivity->mId << ENDM;
   if (!mReceivedEOS) {
     ILOG(Warning, Devel) << "The STOP transition happened before an EndOfStream was received. The very last QC objects in this run might not have been stored." << ENDM;
+  }
+  for (auto& [checkName, check] : mChecks) {
+    check.endOfActivity(*mActivity);
   }
 }
 

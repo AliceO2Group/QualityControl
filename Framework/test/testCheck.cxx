@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_check_empty_mo)
 
   Check check(getCheckConfig(configFilePath, "singleCheck"));
   check.init();
-  check.setActivity(std::make_shared<Activity>());
+  check.startOfActivity(Activity());
 
   {
     std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(test_check_invoke_check)
 
   Check check(getCheckConfig(configFilePath, "singleCheck"));
   check.init();
-  check.setActivity(std::make_shared<Activity>());
+  check.startOfActivity(Activity());
 
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
     { "skeletonTask/example", dummyMO("example") }
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_check_postprocessing)
 
   Check check(getCheckConfig(configFilePath, "checkAnyPP"));
   check.init();
-  check.setActivity(std::make_shared<Activity>());
+  check.startOfActivity(Activity());
 
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
     { "SkeletonPostProcessing/example", dummyMO("example") }
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(test_check_activity)
   moMap["abcTask/test2"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 5, 15 }, "pp" });
 
   check.init();
-  check.setActivity(std::make_shared<Activity>());
+  check.startOfActivity(Activity());
   auto qos = check.check(moMap);
 
   BOOST_REQUIRE_EQUAL(qos.size(), 1);

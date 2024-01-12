@@ -17,12 +17,12 @@
 #ifndef QC_CHECKER_AGGREGATORINTERFACE_H
 #define QC_CHECKER_AGGREGATORINTERFACE_H
 
-#include <unordered_map>
 #include <map>
 
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::checker
 {
@@ -42,15 +42,12 @@ class AggregatorInterface : public o2::quality_control::core::UserCodeInterface
   ///
   /// @param qoMap A map of the the QualityObjects to aggregate and their full names.
   /// @return The new qualities, associated with a name.
-  virtual std::map<std::string, o2::quality_control::core::Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
+  virtual std::map<std::string, core::Quality> aggregate(std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap) = 0;
 
-  void setActivity(std::shared_ptr<core::Activity> activity) { mActivity = activity; }
-  std::shared_ptr<const core::Activity> getActivity() const { return mActivity; }
+  virtual void startOfActivity(const core::Activity& activity);
+  virtual void endOfActivity(const core::Activity& activity);
 
- private:
-  std::shared_ptr<core::Activity> mActivity; // TODO should probably go to UserCodeInterface
-
-  ClassDef(AggregatorInterface, 3)
+  ClassDef(AggregatorInterface, 4)
 };
 
 } // namespace o2::quality_control::checker

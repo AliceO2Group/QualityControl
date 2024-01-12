@@ -224,12 +224,21 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
   };
 }
 
-void Aggregator::setActivity(std::shared_ptr<core::Activity> activity)
+void Aggregator::startOfActivity(const core::Activity& activity)
 {
   if (mAggregatorInterface) {
-    mAggregatorInterface->setActivity(std::move(activity));
+    mAggregatorInterface->startOfActivity(activity);
   } else {
-    throw std::runtime_error("Trying to set Activity on an empty AggregatorInterface '" + mAggregatorConfig.name + "'");
+    throw std::runtime_error("Trying to start an Activity on an empty AggregatorInterface '" + mAggregatorConfig.name + "'");
+  }
+}
+
+void Aggregator::endOfActivity(const core::Activity& activity)
+{
+  if (mAggregatorInterface) {
+    mAggregatorInterface->endOfActivity(activity);
+  } else {
+    throw std::runtime_error("Trying to end an Activity on an empty AggregatorInterface '" + mAggregatorConfig.name + "'");
   }
 }
 
