@@ -336,6 +336,13 @@ void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRang
 
 TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)
 {
+  if (timestamp == Timestamp::Latest) {
+    auto latestValidity = getLatestObjectValidity(path, metadata);
+    if (latestValidity.isInvalid()) {
+      return nullptr;
+    }
+    timestamp = latestValidity.getMin();
+  }
   // we try first to load a TFile
   auto* object = ccdbApi->retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
@@ -348,6 +355,13 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
 
 void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, const map<std::string, std::string>& metadata, long timestamp, std::map<std::string, std::string>* headers, const string& createdNotAfter, const string& createdNotBefore)
 {
+  if (timestamp == Timestamp::Latest) {
+    auto latestValidity = getLatestObjectValidity(path, metadata);
+    if (latestValidity.isInvalid()) {
+      return nullptr;
+    }
+    timestamp = latestValidity.getMin();
+  }
   auto* object = ccdbApi->retrieveFromTFile(tinfo, path, metadata, timestamp, headers, "", createdNotAfter, createdNotBefore);
   if (object == nullptr) {
     ILOG(Warning, Support) << "We could NOT retrieve the object " << path << " with timestamp " << timestamp << "." << ENDM;

@@ -44,6 +44,11 @@ class DatabaseInterface
  public:
   constexpr static framework::ServiceKind service_kind = framework::ServiceKind::Global;
 
+  enum Timestamp : long {
+    Current = -1,
+    Latest = 0
+  };
+
   /// Default constructor
   DatabaseInterface() = default;
   /// Destructor
@@ -140,7 +145,7 @@ class DatabaseInterface
    * @param activity Activity of the object
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = -1, const core::Activity& activity = {}) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = Timestamp::Current, const core::Activity& activity = {}) = 0;
   /**
    * \brief Look up a quality object and return it.
    * Look up a quality object and return it if found or nullptr if not.
@@ -149,14 +154,14 @@ class DatabaseInterface
    * @param activity Activity of the object
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1, const core::Activity& activity = {}) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current, const core::Activity& activity = {}) = 0;
   /**
    * \brief Look up a TimeRangeFlagCollection object and return it.
    * Look up a TimeRangeFlagCollection and return it if found or nullptr if not.
    */
   virtual std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> retrieveTRFC(const std::string& name, const std::string& detector, int runNumber = 0,
                                                                                      const std::string& passName = "", const std::string& periodName = "",
-                                                                                     const std::string& provenance = "", long timestamp = -1) = 0;
+                                                                                     const std::string& provenance = "", long timestamp = Timestamp::Current) = 0;
   /**
    * \brief Look up an object and return it.
    * Look up an object and return it if found or nullptr if not. It is a raw pointer because we might need it to build a MO.
@@ -165,7 +170,7 @@ class DatabaseInterface
    * \param headers Map to be populated with the headers we received, if it is not null.
    * \param metadata filters under the form of key-value pairs to select data
    */
-  virtual TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) = 0;
+  virtual TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = Timestamp::Current, std::map<std::string, std::string>* headers = nullptr) = 0;
 
   /**
    * \brief Look up an object and return it in JSON format.
