@@ -19,7 +19,6 @@
 
 #include <boost/algorithm/string/case_conv.hpp>
 
-#include "CCDB/BasicCCDBManager.h"
 #include "CommonConstants/LHCConstants.h"
 #include "CommonConstants/Triggers.h"
 #include "DataFormatsCTP/Configuration.h"

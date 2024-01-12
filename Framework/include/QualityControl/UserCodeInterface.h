@@ -67,7 +67,8 @@ template <typename T>
 T* UserCodeInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata, long timestamp)
 {
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  o2::ccdb::BasicCCDBManager::instance().setTimestamp(timestamp);
+  mgr.setFatalWhenNull(false);
+  mgr.setTimestamp(timestamp);
   return mgr.getSpecific<T>(path, mgr.getTimestamp(), metadata);
 }
 

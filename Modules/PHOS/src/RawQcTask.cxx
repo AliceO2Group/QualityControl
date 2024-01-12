@@ -29,7 +29,6 @@
 #include "PHOSBase/Mapping.h"
 #include "Framework/InputRecord.h"
 #include "CommonUtils/NameConf.h"
-#include "CCDB/BasicCCDBManager.h"
 
 namespace o2::quality_control_modules::phos
 {
