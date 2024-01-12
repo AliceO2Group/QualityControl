@@ -25,7 +25,6 @@
 
 #include <DataFormatsQualityControl/FlagReasons.h>
 
-#include "CCDB/BasicCCDBManager.h"
 #include "TRDQC/StatusHelper.h"
 
 using namespace o2::quality_control;

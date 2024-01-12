@@ -30,7 +30,6 @@
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
-#include "CCDB/BasicCCDBManager.h"
 #include "CCDB/CCDBTimeStampUtils.h"
 #include "MFTTracking/IOUtils.h"
 #include "MFTBase/GeometryTGeo.h"

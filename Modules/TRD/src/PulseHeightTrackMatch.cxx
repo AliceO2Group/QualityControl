@@ -29,7 +29,6 @@
 #include "TRDWorkflowIO/TRDCalibWriterSpec.h"
 #include "DataFormatsGlobalTracking/RecoContainer.h"
 #include <Framework/InputRecord.h>
-#include "CCDB/BasicCCDBManager.h"
 
 namespace o2::quality_control_modules::trd
 {

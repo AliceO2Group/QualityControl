@@ -72,6 +72,7 @@ using namespace AliceO2::Common;
 TaskRunner::TaskRunner(const TaskRunnerConfig& config)
   : mTaskConfig(config)
 {
+  o2::ccdb::BasicCCDBManager::instance()->setFatalWhenNull(false);
 }
 
 TaskRunner::~TaskRunner()

@@ -24,7 +24,6 @@
 #include <TH1.h>
 #include <TLatex.h>
 #include "DataFormatsCTP/Configuration.h"
-#include "CCDB/BasicCCDBManager.h"
 #include "DataFormatsParameters/GRPLHCIFData.h"
 
 #include <DataFormatsQualityControl/FlagReasons.h>
