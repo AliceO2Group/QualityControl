@@ -22,7 +22,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "TRDQC/Tracking.h"
 #include <Framework/InputRecord.h>
-#include "CCDB/BasicCCDBManager.h"
 // QC includes
 #include "TRD/TrackingTask.h"
 #include "Common/Utils.h"
