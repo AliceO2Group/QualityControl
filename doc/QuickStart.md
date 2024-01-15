@@ -52,7 +52,7 @@ Whenever you want to work with O2 and QualityControl, do `alienv enter QualityCo
 
 ## Execution
 
-To make sure that your system is correctly setup, we are going to run a basic QC workflow attached to a simple data producer. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](#local-ccdb-setup) and [here](#local-qcg-setup).
+To make sure that your system is correctly setup, we are going to run a basic QC workflow attached to a simple data producer. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](doc/Advanced.md#local-ccdb-setup) and [here](doc/Advanced.md#local-qcg-qc-gui-setup).
 
 ### Basic workflow
 
