@@ -52,7 +52,7 @@ Whenever you want to work with O2 and QualityControl, do `alienv enter QualityCo
 
 ## Execution
 
-To make sure that your system is correctly setup, we are going to run a basic QC workflow attached to a simple data producer. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](#local-ccdb-setup) and [here](#local-qcg-setup).
+To make sure that your system is correctly setup, we are going to run a basic QC workflow attached to a simple data producer. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](Advanced.md#local-ccdb-setup) and [here](Advanced.md#local-qcg-qc-gui-setup).
 
 ### Basic workflow
 
@@ -97,7 +97,7 @@ __Configuration file__
 
 In the example above, the devices are configured in the config file named `basic.json`. It is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
 
-The configuration for the QC is made of many parameters described in an [advanced section of the documentation](https://github.com/AliceO2Group/QualityControl/blob/master/doc/Advanced.md#configuration-files-details). For now we can just see below the definition of a task. `moduleName` and `className` specify respectively the library and the class to load and instantiate to do the actual job of the task. 
+The configuration for the QC is made of many parameters described in an [advanced section of the documentation](Advanced.md#configuration-files-details). For now we can just see below the definition of a task. `moduleName` and `className` specify respectively the library and the class to load and instantiate to do the actual job of the task. 
 ```json
 (...)
 "tasks": {
@@ -153,7 +153,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 
 #### Getting real data from readout
 
-See [these instructions for readout](doc/ModulesDevelopment.md#readout) and [these for O2 utilities](doc/ModulesDevelopment.md#dpl-workflow).
+See [these instructions for readout](ModulesDevelopment.md#readout) and [these for O2 utilities](ModulesDevelopment.md#dpl-workflow).
 
 #### Readout data format as received by the Task
 
