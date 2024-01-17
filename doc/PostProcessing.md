@@ -656,26 +656,11 @@ The grid of colored boxes is built from the list of data sources, and the corres
 
 This section contains examples of how to approach usual use-cases.
 
-### I want to run postprocessing alongside of synchronous QC and trend some object parameters
+### I want to run postprocessing alongside of synchronous QC and trend some QC object parameters
 
-Use either Periodic or NewObject as the update trigger:
+Use NewObject as the update trigger:
 ```json
-        "updateTrigger": [ "5 seconds" ],
-```
-```json
-        "updateTrigger": [ "newobject:qcdb:TST/MO/QcTask/example" ],
-```
-
-Be sure to match the run number and other Activity metadata to isolate the QC run you need.
-Leaving values empty will match anything available (which might be also what you want).
-```json
-      "Activity": {
-        "number": "3212",
-        "type": "",
-        "passName": "",
-        "periodName" : "",
-        "provenance" : "qc"
-      },
+  "updateTrigger": [ "newobject:qcdb:TST/MO/QcTask/example" ],
 ```
 
 If the post-processing runs in a different AliECS environment than the acquisition run, one should add the following 
