@@ -675,6 +675,46 @@ flag. Since AliECS adds a concrete run number to the workflow, the triggers woul
     }
 ```
 
+### I want to run postprocessing synchronously and trend an object in CCDB
+
+Use Periodic or NewObject (but with `ccdb` as the DB) as the update trigger:
+```json
+  "updateTrigger": [ "newobject:ccdb:TPC/Calib/IDC_0_A" ],
+```
+or
+```json
+  "updateTrigger": [ "60s" ],
+```
+
+In your trending task, make sure to retrieve the object from the CCDB, not QCDB.
+
+If you want to keep the task running regardless of the data-taking activity, please contact the QC developers to set 
+up a long-running workflow in Nomad.
+
+### I want to run trend a moving window in a synchronous QC
+
+In your QC task, enable the moving window feature on the selected plot.
+More details can be found in [Advanced/Moving window](Advanced.md#moving-window).
+
+Use the NewObject trigger on the moving window to update the task:
+```json
+  "updateTrigger": [ "newobject:qcdb:TST/MO/QcTask/mw/example" ],
+```
+
+In your postprocessing task, retrieve the object you want to trend.
+For TrendingTask, it would be:
+```json
+    "dataSources": [
+      {
+        "type": "repository",
+        "path": "TST/MO/QcTask/mw",
+        "names": [ "example" ],
+        "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+        "moduleName": "QcCommon"
+      }
+    ]
+```
+
 ### I want to run postprocessing on all already existing objects for a run
 
 Use ForEachObject as the update trigger:
