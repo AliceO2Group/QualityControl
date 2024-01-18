@@ -223,40 +223,46 @@ void TaskRunner::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
   mTask->finaliseCCDB(matcher, obj);
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs, std::vector<framework::InputSpec> const&, ServiceRegistryRef&)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs, std::vector<framework::InputSpec> const& specs, ServiceRegistryRef&)
 {
-  // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
-  //  added, this will break.
-  size_t dataInputsExpected = inputs.size() - 1;
-  size_t dataInputsPresent = 0;
+  struct InputCount {
+    size_t seen = 0;
+    size_t expected = 0;
+  };
 
+  InputCount dataInputs;
+  InputCount timerInputs;
+  InputCount conditionInputs;
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
-  for (auto& input : inputs) {
-    if (input.header == nullptr) {
-      continue;
-    }
+  assert(inputs.size() == specs.size());
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const auto header = inputs.header(i);
+    const auto& spec = specs[i];
+    const bool headerPresent = header != nullptr;
 
-    const auto* dataHeader = CompletionPolicyHelpers::getHeader<DataHeader>(input);
-    assert(dataHeader);
-
-    if (!strncmp(dataHeader->dataDescription.str, "TIMER", 5)) {
-      action = CompletionPolicy::CompletionOp::Consume;
+    if (spec.lifetime == Lifetime::Timer) {
+      timerInputs.seen += headerPresent;
+      timerInputs.expected += 1;
+    } else if (spec.lifetime == Lifetime::Condition) {
+      conditionInputs.seen += headerPresent;
+      conditionInputs.expected += 1;
     } else {
-      dataInputsPresent++;
+      // we do not expect any concrete Lifetimes to be data to leave the room open for new ones
+      dataInputs.seen += headerPresent;
+      dataInputs.expected += 1;
     }
   }
 
-  ILOG(Debug, Trace) << "Completion policy callback. "
-                     << "Total inputs possible: " << inputs.size()
-                     << ", data inputs: " << dataInputsPresent
-                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
-
-  if (dataInputsPresent == dataInputsExpected) {
+  if (dataInputs.expected == dataInputs.seen || timerInputs.seen > 0) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  ILOG(Debug, Trace) << "Action: " << action << ENDM;
+  ILOG(Debug, Trace) << "Input summary (seen/expected): "
+                     << "data " << dataInputs.seen << "/" << dataInputs.expected << ", "
+                     << "timer " << timerInputs.seen << "/" << timerInputs.expected << ", "
+                     << "condition " << conditionInputs.seen << "/" << conditionInputs.expected
+                     << ". Action taken: " << action << ENDM;
 
   return action;
 }
