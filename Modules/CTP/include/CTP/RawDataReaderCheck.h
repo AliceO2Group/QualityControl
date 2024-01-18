@@ -18,6 +18,7 @@
 #define QC_MODULE_CTP_CTPRAWDATAREADERCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "TH1.h"
 
 namespace o2::quality_control_modules::ctp
 {
@@ -43,9 +44,14 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
+  int getNumberFilledBins(TH1F * hist);
 
   int mRunNumber;
   long int mTimestamp;
+  float mThreshold;
+  std::vector<int>  vGoodBC;
+  std::vector<int> vMediumBC;
+  std::vector<int> vBadBC;
 };
 
 } // namespace o2::quality_control_modules::ctp
