@@ -44,12 +44,12 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
-  int getNumberFilledBins(TH1F * hist);
+  int getNumberFilledBins(TH1F* hist);
 
   int mRunNumber;
   long int mTimestamp;
   float mThreshold;
-  std::vector<int>  vGoodBC;
+  std::vector<int> vGoodBC;
   std::vector<int> vMediumBC;
   std::vector<int> vBadBC;
 };

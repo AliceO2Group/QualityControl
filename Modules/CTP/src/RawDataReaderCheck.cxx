@@ -45,7 +45,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 
   map<string, string> metadata; // can be empty
 
-  ILOG(Info, Support) << "Check timeStamp.   "<< mTimestamp << ENDM;
+  ILOG(Info, Support) << "Check timeStamp.   " << mTimestamp << ENDM;
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
   auto bfilling = lhcifdata->getBunchFilling();
 
@@ -60,35 +60,37 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   for (auto const& bc : bcs) {
     lhcBC_bitset.set(bc, 1);
   }
-    ILOG(Info, Support) << "Number of BC " << bcs.size() << ENDM;
-    ILOG(Info, Support) << "Filling Scheme" << bfilling.getPattern() << ENDM;
+  ILOG(Info, Support) << "Number of BC " << bcs.size() << ENDM;
+  ILOG(Info, Support) << "Filling Scheme" << bfilling.getPattern() << ENDM;
 
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
     if (mo->getName() == "bcMTVX") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      mThreshold = h->GetEntries()/getNumberFilledBins(h);
+      mThreshold = h->GetEntries() / getNumberFilledBins(h);
       mThreshold = mThreshold - sqrt(mThreshold);
 
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
-        if(lhcBC_bitset[i])ILOG(Info, Support) << i << " ";
+        if (lhcBC_bitset[i])
+          ILOG(Info, Support) << i << " ";
         if (lhcBC_bitset[i] && h->GetBinContent(i + 1) <= mThreshold) {
           vMediumBC.push_back(i);
-        }
-        else if (!lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold) {
+        } else if (!lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold) {
           vBadBC.push_back(i);
-        }
-        else if(lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold){
+        } else if (lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold) {
           vGoodBC.push_back(i);
         }
       }
     }
   }
 
-  if(vBadBC.size()>0) result = Quality::Bad;
-  else if(vMediumBC.size()>0) result = Quality::Medium;
-  else result = Quality::Good;
+  if (vBadBC.size() > 0)
+    result = Quality::Bad;
+  else if (vMediumBC.size() > 0)
+    result = Quality::Medium;
+  else
+    result = Quality::Good;
 
   return result;
 }
@@ -101,9 +103,12 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
   if (mo->getName() == "bcMTVX") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     msg = std::make_shared<TLatex>(0.5, 0.8, Form("Overall Quality: %s", (checkResult.getName()).c_str()));
-    if(checkResult == Quality::Bad) msg->SetTextColor(kRed);
-    else if(checkResult == Quality::Medium) msg->SetTextColor(kOrange);
-    else msg->SetTextColor(kGreen+1);
+    if (checkResult == Quality::Bad)
+      msg->SetTextColor(kRed);
+    else if (checkResult == Quality::Medium)
+      msg->SetTextColor(kOrange);
+    else
+      msg->SetTextColor(kGreen + 1);
     msg->SetTextSize(0.03);
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
@@ -129,16 +134,18 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     msg->SetNDC();
     h->GetListOfFunctions()->Add(msg->Clone());
 
-    h->GetYaxis()->SetRangeUser(0,h->GetMaximum()*1.5);
+    h->GetYaxis()->SetRangeUser(0, h->GetMaximum() * 1.5);
   }
 }
 
-int RawDataReaderCheck::getNumberFilledBins(TH1F * hist){
+int RawDataReaderCheck::getNumberFilledBins(TH1F* hist)
+{
 
   int nBins = hist->GetXaxis()->GetNbins();
   int filledBins = 0;
   for (int i = 0; i < nBins; i++) {
-    if(hist->GetBinContent(i+1) > 0) filledBins++;
+    if (hist->GetBinContent(i + 1) > 0)
+      filledBins++;
   }
   return filledBins;
 }

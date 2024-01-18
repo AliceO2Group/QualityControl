@@ -38,7 +38,6 @@ CTPRawDataReaderTask::~CTPRawDataReaderTask()
   delete mHistoInputs;
   delete mHistoClasses;
   delete mHistoMTVXBC;
-
 }
 
 void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -89,7 +88,8 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
           mHistoInputs->Fill(i);
-          if(i==indexTvx-1)mHistoMTVXBC->Fill(bcid);
+          if (i == indexTvx - 1)
+            mHistoMTVXBC->Fill(bcid);
         }
       }
     }
