@@ -22,7 +22,7 @@
         "url": "ccdb-test.cern.ch:8080"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
-        "filterDiscardDebug": "true",    "": "Set to true to discard debug and trace messages (default: false)",
+        "filterDiscardDebug": "true",     "": "Set to true to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "21",       "": "Message at this level or above are discarded (default: 21 - Trace)"
       }
     },

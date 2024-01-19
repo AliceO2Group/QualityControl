@@ -90,7 +90,16 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/advanced.json";
   ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'";
-  ILOG_INST.filterDiscardDebug(noDebug);
+
+  // we set the infologger levels as soon as possible to avoid spamming
+  auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+  auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", true);
+  auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+  auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
+  ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
+  ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+  ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), 0, 0, 0, true /*Do not store Debug messages in file*/);
+  QcInfoLogger::setFacility("runAdvanced");
 
   // Full processing topology.
   // We pretend to spawn topologies on three processing machines
