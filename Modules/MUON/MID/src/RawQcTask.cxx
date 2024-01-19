@@ -22,10 +22,6 @@
 #include <TH2.h>
 #include <TProfile.h>
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <vector>
 #include <unordered_map>
 
@@ -51,8 +47,7 @@ namespace o2::quality_control_modules::mid
 
 RawQcTask::~RawQcTask()
 {
-  if (mRawDataChecker)
-    delete mRawDataChecker;
+  delete mRawDataChecker;
 }
 
 void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)

@@ -38,7 +38,6 @@ class CalibMQcCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  ///////////////////////////
   HistoHelper mHistoHelper; ///! Histogram helper
   ClassDefOverride(CalibMQcCheck, 3);
 };

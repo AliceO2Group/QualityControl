@@ -429,89 +429,13 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             else
               mTrackNBDetRatio44->Fill(DetId0 + 9 * i, 0.);
 
-            if (i == 0) { // MT11
-              if (isRightSide == 0) {
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map11->Fill(-1, rpcLine, 0.);
-              } else { // LeftSide
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map11->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map11->Fill(1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map11->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map11->Fill(1, rpcLine, 0.);
-              }
-            } else if (i == 1) { // MT12
-              if (isRightSide == 0) {
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map12->Fill(-1, rpcLine, 0.);
-              } else { // LeftSide
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map12->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map12->Fill(1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map12->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map12->Fill(1, rpcLine, 0.);
-              }
-            } else if (i == 2) { // MT21
-              if (isRightSide == 0) {
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map21->Fill(-1, rpcLine, 0.);
-              } else { // LeftSide
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map21->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map21->Fill(1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map21->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map21->Fill(1, rpcLine, 0.);
-              }
-            } else if (i == 3) { // MT22
-              if (isRightSide == 0) {
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map22->Fill(-1, rpcLine, 0.);
-              } else { // LeftSide
-                if (track.isFiredChamber(i, 0))
-                  mTrackDetRatio44Map22->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map22->Fill(1, rpcLine, 0.);
-                if (track.isFiredChamber(i, 1))
-                  mTrackDetRatio44Map22->Fill(1, rpcLine, 1.); // Fired
-                else
-                  mTrackDetRatio44Map22->Fill(1, rpcLine, 0.);
-              }
-            }
+            std::array<std::shared_ptr<TProfile2D>, 4> maps = {
+              mTrackDetRatio44Map11, mTrackDetRatio44Map12, mTrackDetRatio44Map21, mTrackDetRatio44Map22
+            };
+            auto sideBin = isRightSide == 0 ? -1 : 1;
+            maps[i]->Fill(sideBin, rpcLine, track.isFiredChamber(i, 0) ? 1.0 : 0.0);
+            maps[i]->Fill(sideBin, rpcLine, track.isFiredChamber(i, 1) ? 1.0 : 0.0);
           }
-
           if (EffFlag > 2) { // LocBoardeff
             auto localBoard = mMapping.getBoardId(lineId, colId, deIndex);
 
@@ -569,26 +493,17 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TracksQcTask::endOfCycle()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  // ILOG(Info, Devel) << "endOfCycle" << ENDM;
-  // printf(" =================== > test endOfCycle Tracks \n");
 }
 
 void TracksQcTask::endOfActivity(const Activity& /*activity*/)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Devel) << "endOfActivity" << ENDM;
-  // printf(" =================== > test endOfActivity Tracks \n");
 }
 
 void TracksQcTask::reset()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-
-  // clean all the monitor objects here
 
   ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
-  // printf(" =================== > test reset Tracks \n");
 
   mNbTracksTF->Reset();
   mTrackMapXY->Reset();

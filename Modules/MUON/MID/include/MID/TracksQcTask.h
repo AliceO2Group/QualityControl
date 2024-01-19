@@ -19,7 +19,6 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MIDBase/Mapping.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
 
 class TH1F;
 class TH2F;
@@ -27,7 +26,6 @@ class TProfile;
 class TProfile2D;
 
 using namespace o2::quality_control::core;
-using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::mid
 {
@@ -40,7 +38,6 @@ class TracksQcTask final : public TaskInterface
   /// Destructor
   ~TracksQcTask() override;
 
-  // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(const Activity& activity) override;
   void startOfCycle() override;
@@ -74,11 +71,6 @@ class TracksQcTask final : public TaskInterface
 
   std::shared_ptr<TProfile> mTrackBCCounts{ nullptr };
 
-  // std::shared_ptr<MergeableTH2Ratio> mmTrackDetRatio44Map11{ nullptr };
-  // TH2F* mTrackDet44Map11;
-  // TH2F* mTrackDetAllMap11;
-
-  // std::shared_ptr<TH2F> mTrackDetRatio44Map11{ nullptr };
   std::shared_ptr<TProfile2D> mTrackDetRatio44Map11{ nullptr };
   std::shared_ptr<TProfile2D> mTrackDetRatio44Map12{ nullptr };
   std::shared_ptr<TProfile2D> mTrackDetRatio44Map21{ nullptr };
@@ -88,7 +80,6 @@ class TracksQcTask final : public TaskInterface
   std::shared_ptr<TProfile2D> mTrackLocalBoardsBRatio44Map{ nullptr };
   std::shared_ptr<TProfile2D> mTrackLocalBoardsNBRatio44Map{ nullptr };
 
-  ///////////////////////////
   o2::mid::Mapping mMapping; ///< Mapping
   int mROF = 0;
   int multTracksTot = 0;
