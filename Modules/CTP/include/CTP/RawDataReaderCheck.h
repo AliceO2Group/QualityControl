@@ -18,7 +18,7 @@
 #define QC_MODULE_CTP_CTPRAWDATAREADERCHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include "TH1.h"
+class TH1F;
 
 namespace o2::quality_control_modules::ctp
 {
@@ -40,7 +40,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
   void startOfActivity(const Activity& activity) override;
 
-  ClassDefOverride(RawDataReaderCheck, 2);
+  ClassDefOverride(RawDataReaderCheck, 3);
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
