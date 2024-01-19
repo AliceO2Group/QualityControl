@@ -207,11 +207,14 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
     } else // TaskLocationSpec::Remote
     {
       // Collecting Data Sampling Policies
-      if (taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
-        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
-      } else {
-        throw std::runtime_error(
-          "Configuration error: unsupported dataSource '" + taskSpec.dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + "'");
+      for (const auto& dataSource : taskSpec.dataSources) {
+        if (dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
+          samplingPoliciesForRemoteTasks.insert({ dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
+        } else {
+          throw std::runtime_error(
+            "Configuration error: unsupported dataSource '" + dataSource.name + "' for a remote QC Task '" +
+            taskSpec.taskName + "'");
+        }
       }
     }
   }
@@ -286,11 +289,14 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
 
       // Collecting Data Sampling Policies
-      if (taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
-        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
-      } else {
-        throw std::runtime_error(
-          "Configuration error: unsupported dataSource '" + taskSpec.dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + "'");
+      for (const auto& dataSource : taskSpec.dataSources) {
+        if (dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
+          samplingPoliciesForRemoteTasks.insert({ dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
+        } else {
+          throw std::runtime_error(
+            "Configuration error: unsupported dataSource '" + dataSource.name + "' for a remote QC Task '" +
+            taskSpec.taskName + "'");
+        }
       }
 
       // Creating the remote task

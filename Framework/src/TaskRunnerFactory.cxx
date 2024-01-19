@@ -67,8 +67,12 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
   int parallelTaskID = id.value_or(0);
 
-  if (!taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy, DataSourceType::Direct)) {
-    throw std::runtime_error("This data source of the task '" + taskSpec.taskName + "' is not supported.");
+  std::vector<InputSpec> inputs;
+  for (const auto& ds : taskSpec.dataSources) {
+    if (!ds.isOneOf(DataSourceType::DataSamplingPolicy, DataSourceType::Direct)) {
+      throw std::runtime_error("This data source of the task '" + taskSpec.taskName + "' is not supported.");
+    }
+    inputs.insert(inputs.end(), ds.inputs.begin(), ds.inputs.end());
   }
 
   // cycle duration
@@ -82,7 +86,6 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   if (taskSpec.cycleDurationSeconds > 0) {                       // if it was actually the old style, then we convert it to the new style
     multipleCycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
   }
-  auto inputs = taskSpec.dataSource.inputs;
   inputs.emplace_back(createTimerInputSpec(globalConfig, multipleCycleDurations, taskSpec.detectorName, taskSpec.taskName));
 
   static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
