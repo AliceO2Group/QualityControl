@@ -51,7 +51,6 @@ Quality ClustQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
     if (mo->getName() == "NbClusterTF") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       mClusterTF = h->GetBinContent(1);
-      // std::cout << " mClusterTF  = "<< mClusterTF << std::endl ;
     }
 
     float scale = 1 / (mClusterTF * scaleTime * mOrbTF); // (Hz)
@@ -70,26 +69,6 @@ Quality ClustQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
     if (mo->getName() == "ClusterMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
-    }
-
-    (void)moName;
-    if (mo->getName() == "example") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
-      result = Quality::Good;
-
-      for (int i = 0; i < h->GetNbinsX(); i++) {
-        if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
-          result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because there is nothing in bin " + std::to_string(i));
-          break;
-        } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
-          result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because bin " + std::to_string(i) + " is not empty");
-        }
-      }
     }
   }
   return result;
@@ -162,21 +141,6 @@ void ClustQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
     updateTitle(h2, getCurrentTime());
     h2->SetMaximum(mClusterScale);
-  }
-
-  if (mo->getName() == "example") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red" << ENDM;
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
-      h->SetFillColor(kOrange);
-    }
-    h->SetLineColor(kBlack);
   }
 }
 

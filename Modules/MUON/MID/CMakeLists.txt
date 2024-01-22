@@ -60,8 +60,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/MID DESTINATION "${CMAKE_I
 
 # ---- Test(s) ----
 
-#set(TEST_SRCS test/testQcMID.cxx) # uncomment to reenable the test which was empty
-
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
@@ -74,15 +72,5 @@ foreach(test ${TEST_SRCS})
 endforeach()
 
 # ---- Executables ----
-
-# set(EXE_SRCS src/runMID.cxx)
-
-# set(EXE_NAMES o2-qc-run-mid)
-
-# list(LENGTH EXE_SRCS count) math(EXPR count "${count}-1") foreach(i RANGE ${count}) list(GET EXE_SRCS ${i} src)
-# list(GET EXE_NAMES ${i} name) add_executable(${name} ${src}) target_link_libraries(${name} PRIVATE O2QualityControl
-# O2QcMID CURL::libcurl O2::MIDWorkflow O2::DetectorsBase) endforeach()
-
-# install( TARGETS ${EXE_NAMES} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} )
 
 install(FILES mid-raw.json mid-digits.json DESTINATION etc)

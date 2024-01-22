@@ -17,16 +17,10 @@
 #include "MID/CalibMQcCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TStyle.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TList.h>
-#include <TLatex.h>
-#include <TPaveText.h>
-
-#include <DataFormatsQualityControl/FlagReasons.h>
 
 using namespace std;
 using namespace o2::quality_control;

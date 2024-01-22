@@ -48,7 +48,6 @@ ClustQcTask::~ClustQcTask()
 void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // ILOG(Info, Devel) << "initialize ClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  // printf(" =================== > test initialise Clust \n");
 
   mNbClusterTF = std::make_shared<TH1F>("NbClusterTF", "NbTimeFrame", 1, 0, 1.);
   getObjectsManager()->startPublishing(mNbClusterTF.get());
@@ -124,18 +123,14 @@ void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ClustQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "startOfActivity" << ENDM;
-  // printf(" =================== > test startOfActivity Clust \n");
 }
 
 void ClustQcTask::startOfCycle()
 {
-  // ILOG(Info, Devel) << "startOfCycle" << ENDM;
-  // printf(" =================== > test startOfCycle Clust \n");
 }
 
 void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // printf(" =================== > test monitorData Clust \n");
 
   mNbClusterTF->Fill(0.5, 1.);
 
