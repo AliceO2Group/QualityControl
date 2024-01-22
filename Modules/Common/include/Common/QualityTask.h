@@ -96,8 +96,6 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
   std::unordered_map<std::string, int> mColors;
   /// \brief numerical IDs associated to each quality state (Good/Medium/Bad/Null)
   std::unordered_map<std::string, int> mQualityIDs;
-  /// \brief messages associated to each quality state (Good/Medium/Bad/Null)
-  std::unordered_map<std::string, std::string> mCheckerMessages;
   /// \brief Quality Objects histograms
   std::unordered_map<std::string, std::unique_ptr<TH1F>> mHistograms;
   /// \brief Quality Objects trends

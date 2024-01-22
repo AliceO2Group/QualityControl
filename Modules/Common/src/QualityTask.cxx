@@ -149,6 +149,13 @@ static void setQualityLabels(TH1F* h)
 
 void QualityTask::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
 {
+  mLatestTimestamps.clear();
+  mColors.clear();
+  mQualityIDs.clear();
+  mHistograms.clear();
+  mTrends.clear();
+  mQualityCanvas.reset();
+
   mColors[Quality::Null.getName()] = kViolet - 6;
   mColors[Quality::Bad.getName()] = kRed;
   mColors[Quality::Medium.getName()] = kOrange - 3;
