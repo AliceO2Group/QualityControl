@@ -79,8 +79,9 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
 
   // Counting background
   int nb = 0;
+  float ybin_width = hDiffGlobal.GetYaxis()->GetBinWidth(1) * 0.5;
   for (int i = 1; i <= hpdiff->GetNbinsX(); i++) {
-    if (hpdiff->GetBinContent(i) - 0.5 < mThresholdBkg) {
+    if (hpdiff->GetBinContent(i) - ybin_width < mThresholdBkg) {
       if (!hback) {
         hback = hDiffGlobal.ProjectionY("back", i, i);
       } else {
@@ -97,14 +98,17 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
   if (nb == 0) { // threshold too low? return since hback was not created
     ILOG(Warning, Support) << "Counted 0 background events, BKG threshold might be too low!" << ENDM;
     delete hpdiff;
+    bcInt.push_back(0.);
+    bcRate.push_back(0.);
+    bcPileup.push_back(0.);
     return;
   }
-  if (hback->Integral() < 0 || hback->GetMean() < 0.5) {
+  if (hback->Integral() < 0 || hback->GetMean() < ybin_width) {
     return;
   }
 
   if (mActiveChannels > 0) {
-    mNoiseRatePerChannel = (hback->GetMean() - 0.5) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
+    mNoiseRatePerChannel = (hback->GetMean() - ybin_width) / orbit_lenght * h->GetNbinsX() / mActiveChannels;
   }
 
   std::vector<int> signals;
@@ -115,7 +119,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
 
   if (nb) {
     for (int i = 1; i <= hDiffGlobal.GetNbinsX(); i++) {
-      if (hpdiff->GetBinContent(i) - 0.5 > mThresholdSgn) {
+      if (hpdiff->GetBinContent(i) - ybin_width > mThresholdSgn) {
         signals.push_back(i);
         mNIBC++;
       }
@@ -168,7 +172,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
 
     if (sumw > 0) {
       mCollisionRate = ratetot;
-      mPileupRate = pilup / sumw;
+      mPileupRate = pilup / sumw - 1;
     }
     delete hback;
   }
@@ -239,9 +243,12 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
     if (dataSource.name == "HitMap") {
       foundHitMap = true;
       TH2F* hmap = dynamic_cast<TH2F*>(mo->getObject());
-      hmap->Divide(hmap);
-      mActiveChannels = hmap->Integral() * 24;
-      ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
+      if (hmap) {
+        TH2F hcopy(*hmap);
+        hcopy.Divide(hmap);
+        mActiveChannels = hcopy.Integral() * 24;
+        // ILOG(Info, Support) << "N channels = " << mActiveChannels << ENDM;
+      }
     } else if (dataSource.name == "Multiplicity/VsBC") {
       moHistogramMultVsBC = mo;
       foundVsBC = true;
@@ -265,11 +272,10 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
 
   computeTOFRates(dynamic_cast<TH2F*>(moHistogramMultVsBC->getObject()), bcInt, bcRate, bcPileup);
 
-  ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
-
+  /*ILOG(Info, Support) << "In " << mActiveChannels << " channels, noise rate per channel= " << mNoiseRatePerChannel << " Hz - collision rate = " << mCollisionRate << " Hz - mu-pilup = " << mPileupRate << ENDM;
   for (int i = 0; i < bcInt.size(); i++) {
-    ILOG(Info, Support) << "bc = " << bcInt[i] * 18 - 9 << ") rate = " << bcRate[i] << ", pilup = " << bcPileup[i] << ENDM;
-  }
+    ILOG(Info, Support) << "bc = " << bcInt[i] * 18 - 9 << ") rate = " << bcRate[i] << ", pilup = " << bcPileup[i] - 1 << ENDM;
+  }*/
 
   mTrend->Fill();
 }
