@@ -47,10 +47,7 @@ class DigitsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void drawTrdLayersGrid(TH2F* hist);
   void drawLinesOnPulseHeight(TH1F* h);
-  void fillLinesOnHistsPerLayer(int iLayer);
-  void drawHashOnLayers(int layer, int hcid, int col, int rowstart, int rowend);
   void buildChamberIgnoreBP();
 
  private:
@@ -87,7 +84,7 @@ class DigitsTask final : public TaskInterface
 
   // CCDB objects
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd

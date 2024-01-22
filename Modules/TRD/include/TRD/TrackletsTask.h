@@ -45,31 +45,26 @@ class TrackletsTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   void buildHistograms();
-  void drawLinesMCM(TH2F* histo);
-  void drawTrdLayersGrid(TH2F* hist);
-  void buildTrackletLayers();
-  void drawHashedOnHistsPerLayer(int layer); //, int hcid, int rowstart, int rowend);
-  void drawHashOnLayers(int layer, int hcid, int rowstart, int rowend);
 
  private:
   // settings
   bool mRemoveNoise{ false };
   // histograms
-  std::array<TH1F*, 3> mTrackletQ;
-  TH1F* mTrackletSlope = nullptr;
-  TH1F* mTrackletHCID = nullptr;
-  TH1F* mTrackletPosition = nullptr;
-  TH1F* mTrackletsPerEvent = nullptr;
-  TH1F* mTrackletsPerEventPP = nullptr;
-  TH1F* mTrackletsPerEventPbPb = nullptr;
-  TH2F* mTrackletsPerHC2D = nullptr;
-  TH1F* mTrackletsPerTimeFrame = nullptr;
-  TH1F* mTriggersPerTimeFrame = nullptr;
-  std::array<TH2F*, 6> mLayers;
+  std::array<std::shared_ptr<TH1F>, 3> mTrackletQ;
+  std::shared_ptr<TH1F> mTrackletSlope = nullptr;
+  std::shared_ptr<TH1F> mTrackletHCID = nullptr;
+  std::shared_ptr<TH1F> mTrackletPosition = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerEvent = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerEventPP = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerEventPbPb = nullptr;
+  std::shared_ptr<TH2F> mTrackletsPerHC2D = nullptr;
+  std::shared_ptr<TH1F> mTrackletsPerTimeFrame = nullptr;
+  std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr;
+  std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers;
 
   // data to pull from CCDB
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  const o2::trd::HalfChamberStatusQC* mChamberStatus = nullptr;
+  const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
