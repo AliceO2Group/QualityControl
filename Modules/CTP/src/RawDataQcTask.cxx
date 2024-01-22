@@ -35,21 +35,22 @@ namespace o2::quality_control_modules::ctp
 
 CTPRawDataReaderTask::~CTPRawDataReaderTask()
 {
-  delete mHistoBC;
   delete mHistoInputs;
   delete mHistoClasses;
+  delete mHistoMTVXBC;
 }
 
 void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize CTPRawDataReaderTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  mHistoBC = new TH1F("histobc", "BC distribution", 3564, 0, 3564);
   mHistoInputs = new TH1F("inputs", "Inputs distribution", 48, 0, 48);
   mHistoClasses = new TH1F("classes", "Classes distribution", 64, 0, 64);
-  getObjectsManager()->startPublishing(mHistoBC);
+  mHistoMTVXBC = new TH1F("bcMTVX", "BC position of MTVX", 3564, 0, 3564);
   getObjectsManager()->startPublishing(mHistoInputs);
   getObjectsManager()->startPublishing(mHistoClasses);
+  getObjectsManager()->startPublishing(mHistoMTVXBC);
+
   mDecoder.setDoLumi(1);
   mDecoder.setDoDigits(1);
 }
@@ -57,9 +58,9 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
-  mHistoBC->Reset();
   mHistoInputs->Reset();
   mHistoClasses->Reset();
+  mHistoMTVXBC->Reset();
 }
 
 void CTPRawDataReaderTask::startOfCycle()
@@ -83,22 +84,18 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
-    // LOG(info) << "bcid = " << bcid;
-    if (digit.CTPInputMask[indexTvx - 1]) {
-      mHistoBC->Fill(bcid);
-    }
     if (digit.CTPInputMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
-          // LOG(info) << "i of input = " << i;#
           mHistoInputs->Fill(i);
+          if (i == indexTvx - 1)
+            mHistoMTVXBC->Fill(bcid);
         }
       }
     }
     if (digit.CTPClassMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NCLASSES; i++) {
         if (digit.CTPClassMask[i]) {
-          // LOG(info) << "i of class = " << i;
           mHistoClasses->Fill(i);
         }
       }
@@ -121,9 +118,9 @@ void CTPRawDataReaderTask::reset()
   // clean all the monitor objects here
 
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
-  mHistoBC->Reset();
   mHistoInputs->Reset();
   mHistoClasses->Reset();
+  mHistoMTVXBC->Reset();
 }
 
 } // namespace o2::quality_control_modules::ctp

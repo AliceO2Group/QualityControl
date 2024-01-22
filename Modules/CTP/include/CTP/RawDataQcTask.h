@@ -12,6 +12,7 @@
 ///
 /// \file   RawDataQcTask.h
 /// \author Marek Bombara
+/// \author Lucia Anna Tarasovicova
 ///
 
 #ifndef QC_MODULE_CTP_CTPRAWDATAQCTASK_H
@@ -27,8 +28,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::ctp
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \brief Task for reading the CTP inputs
 class CTPRawDataReaderTask final : public TaskInterface
 {
  public:
@@ -48,9 +48,9 @@ class CTPRawDataReaderTask final : public TaskInterface
 
  private:
   o2::ctp::RawDataDecoder mDecoder;
-  TH1F* mHistoBC = nullptr;
   TH1F* mHistoInputs = nullptr;
   TH1F* mHistoClasses = nullptr;
+  TH1F* mHistoMTVXBC = nullptr;
 };
 
 } // namespace o2::quality_control_modules::ctp
