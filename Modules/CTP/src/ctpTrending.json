@@ -1,0 +1,731 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "536238",
+        "start" : "1683755568367",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "postprocessing": {
+        "periodSeconds": "60"
+      }
+    },
+    "postprocessing": {
+      "TrendingCTP": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::CTPTrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "CTP",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "CTP/MO/RawData",
+            "names": ["inputs","classes"],
+            "reductorName": "o2::quality_control_modules::ctp::TH1ctpReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "L0_0_rate",
+            "title": "L0_0_rate",
+            "varexp": "inputs.inputs[0]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_1_rate",
+            "title": "L0_1_rate",
+            "varexp": "inputs.inputs[1]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_2_rate",
+            "title": "L0_2_rate",
+            "varexp": "inputs.inputs[2]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_3_rate",
+            "title": "L0_3_rate",
+            "varexp": "inputs.inputs[3]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_4_rate",
+            "title": "L0_4_rate",
+            "varexp": "inputs.inputs[4]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_5_rate",
+            "title": "L0_5_rate",
+            "varexp": "inputs.inputs[5]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_6_rate",
+            "title": "L0_6_rate",
+            "varexp": "inputs.inputs[6]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_7_rate",
+            "title": "L0_7_rate",
+            "varexp": "inputs.inputs[7]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_8_rate",
+            "title": "L0_8_rate",
+            "varexp": "inputs.inputs[8]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_9_rate",
+            "title": "L0_9_rate",
+            "varexp": "inputs.inputs[9]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_12_rate",
+            "title": "L0_12_rate",
+            "varexp": "inputs.inputs[12]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_13_rate",
+            "title": "L0_13_rate",
+            "varexp": "inputs.inputs[13]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_14_rate",
+            "title": "L0_14_rate",
+            "varexp": "inputs.inputs[14]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_15_rate",
+            "title": "L0_15_rate",
+            "varexp": "inputs.inputs[15]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_16_rate",
+            "title": "L0_16_rate",
+            "varexp": "inputs.inputs[16]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_17_rate",
+            "title": "L0_17_rate",
+            "varexp": "inputs.inputs[17]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_20_rate",
+            "title": "L0_20_rate",
+            "varexp": "inputs.inputs[20]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_21_rate",
+            "title": "L0_21_rate",
+            "varexp": "inputs.inputs[21]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_24_rate",
+            "title": "L0_24_rate",
+            "varexp": "inputs.inputs[24]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_25_rate",
+            "title": "L0_25_rate",
+            "varexp": "inputs.inputs[25]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_26_rate",
+            "title": "L0_26_rate",
+            "varexp": "inputs.inputs[26]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_27_rate",
+            "title": "L0_27_rate",
+            "varexp": "inputs.inputs[27]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_28_rate",
+            "title": "L0_28_rate",
+            "varexp": "inputs.inputs[28]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_36_rate",
+            "title": "L0_36_rate",
+            "varexp": "inputs.inputs[36]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_37_rate",
+            "title": "L0_37_rate",
+            "varexp": "inputs.inputs[37]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_38_rate",
+            "title": "L0_38_rate",
+            "varexp": "inputs.inputs[38]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_39_rate",
+            "title": "L0_39_rate",
+            "varexp": "inputs.inputs[39]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_40_rate",
+            "title": "L0_40_rate",
+            "varexp": "inputs.inputs[40]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_41_rate",
+            "title": "L0_41_rate",
+            "varexp": "inputs.inputs[41]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_42_rate",
+            "title": "L0_42_rate",
+            "varexp": "inputs.inputs[42]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_43_rate",
+            "title": "L0_43_rate",
+            "varexp": "inputs.inputs[43]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_47_rate",
+            "title": "L0_47_rate",
+            "varexp": "inputs.inputs[47]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_0_rate",
+            "title": "Class_0_rate",
+            "varexp": "classes.classContent[0]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_1_rate",
+            "title": "Class_1_rate",
+            "varexp": "classes.classContent[1]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_2_rate",
+            "title": "Class_2_rate",
+            "varexp": "classes.classContent[2]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_3_rate",
+            "title": "Class_3_rate",
+            "varexp": "classes.classContent[3]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_4_rate",
+            "title": "Class_4_rate",
+            "varexp": "classes.classContent[4]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_5_rate",
+            "title": "Class_5_rate",
+            "varexp": "classes.classContent[5]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_6_rate",
+            "title": "Class_6_rate",
+            "varexp": "classes.classContent[6]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_7_rate",
+            "title": "Class_7_rate",
+            "varexp": "classes.classContent[7]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_8_rate",
+            "title": "Class_8_rate",
+            "varexp": "classes.classContent[8]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_9_rate",
+            "title": "Class_9_rate",
+            "varexp": "classes.classContent[9]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_10_rate",
+            "title": "Class_10_rate",
+            "varexp": "classes.classContent[10]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_11_rate",
+            "title": "Class_11_rate",
+            "varexp": "classes.classContent[11]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_12_rate",
+            "title": "Class_12_rate",
+            "varexp": "classes.classContent[12]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_13_rate",
+            "title": "Class_13_rate",
+            "varexp": "classes.classContent[13]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_14_rate",
+            "title": "Class_14_rate",
+            "varexp": "classes.classContent[14]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_15_rate",
+            "title": "Class_15_rate",
+            "varexp": "classes.classContent[15]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_16_rate",
+            "title": "Class_16_rate",
+            "varexp": "classes.classContent[16]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_17_rate",
+            "title": "Class_17_rate",
+            "varexp": "classes.classContent[17]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_18_rate",
+            "title": "Class_18_rate",
+            "varexp": "classes.classContent[18]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_19_rate",
+            "title": "Class_19_rate",
+            "varexp": "classes.classContent[19]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_20_rate",
+            "title": "Class_20_rate",
+            "varexp": "classes.classContent[20]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_21_rate",
+            "title": "Class_21_rate",
+            "varexp": "classes.classContent[21]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_22_rate",
+            "title": "Class_22_rate",
+            "varexp": "classes.classContent[22]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_23_rate",
+            "title": "Class_23_rate",
+            "varexp": "classes.classContent[23]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_24_rate",
+            "title": "Class_24_rate",
+            "varexp": "classes.classContent[24]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_25_rate",
+            "title": "Class_25_rate",
+            "varexp": "classes.classContent[25]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_26_rate",
+            "title": "Class_26_rate",
+            "varexp": "classes.classContent[26]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_27_rate",
+            "title": "Class_27_rate",
+            "varexp": "classes.classContent[27]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_28_rate",
+            "title": "Class_28_rate",
+            "varexp": "classes.classContent[28]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_29_rate",
+            "title": "Class_29_rate",
+            "varexp": "classes.classContent[29]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_30_rate",
+            "title": "Class_30_rate",
+            "varexp": "classes.classContent[30]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_31_rate",
+            "title": "Class_31_rate",
+            "varexp": "classes.classContent[31]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_32_rate",
+            "title": "Class_32_rate",
+            "varexp": "classes.classContent[32]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_33_rate",
+            "title": "Class_33_rate",
+            "varexp": "classes.classContent[33]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_34_rate",
+            "title": "Class_34_rate",
+            "varexp": "classes.classContent[34]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_35_rate",
+            "title": "Class_35_rate",
+            "varexp": "classes.classContent[35]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_36_rate",
+            "title": "Class_36_rate",
+            "varexp": "classes.classContent[36]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_37_rate",
+            "title": "Class_37_rate",
+            "varexp": "classes.classContent[37]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_38_rate",
+            "title": "Class_38_rate",
+            "varexp": "classes.classContent[38]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_39_rate",
+            "title": "Class_39_rate",
+            "varexp": "classes.classContent[39]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_40_rate",
+            "title": "Class_40_rate",
+            "varexp": "classes.classContent[40]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_41_rate",
+            "title": "Class_41_rate",
+            "varexp": "classes.classContent[41]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_42_rate",
+            "title": "Class_42_rate",
+            "varexp": "classes.classContent[42]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_44_rate",
+            "title": "Class_44_rate",
+            "varexp": "classes.classContent[44]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_44_rate",
+            "title": "Class_44_rate",
+            "varexp": "classes.classContent[44]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_45_rate",
+            "title": "Class_45_rate",
+            "varexp": "classes.classContent[45]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_46_rate",
+            "title": "Class_46_rate",
+            "varexp": "classes.classContent[46]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_47_rate",
+            "title": "Class_47_rate",
+            "varexp": "classes.classContent[47]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_48_rate",
+            "title": "Class_48_rate",
+            "varexp": "classes.classContent[48]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_49_rate",
+            "title": "Class_49_rate",
+            "varexp": "classes.classContent[49]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_50_rate",
+            "title": "Class_50_rate",
+            "varexp": "classes.classContent[50]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_51_rate",
+            "title": "Class_51_rate",
+            "varexp": "classes.classContent[51]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_52_rate",
+            "title": "Class_52_rate",
+            "varexp": "classes.classContent[52]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_53_rate",
+            "title": "Class_53_rate",
+            "varexp": "classes.classContent[53]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_54_rate",
+            "title": "Class_54_rate",
+            "varexp": "classes.classContent[54]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_55_rate",
+            "title": "Class_55_rate",
+            "varexp": "classes.classContent[55]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_56_rate",
+            "title": "Class_56_rate",
+            "varexp": "classes.classContent[56]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_57_rate",
+            "title": "Class_57_rate",
+            "varexp": "classes.classContent[57]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_58_rate",
+            "title": "Class_58_rate",
+            "varexp": "classes.classContent[58]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_59_rate",
+            "title": "Class_59_rate",
+            "varexp": "classes.classContent[59]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_60_rate",
+            "title": "Class_60_rate",
+            "varexp": "classes.classContent[60]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_61_rate",
+            "title": "Class_61_rate",
+            "varexp": "classes.classContent[61]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_62_rate",
+            "title": "Class_62_rate",
+            "varexp": "classes.classContent[62]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_63_rate",
+            "title": "Class_63_rate",
+            "varexp": "classes.classContent[63]/60:time",
+            "selection": "",
+            "option": "*L"
+          }
+
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "foreachobject:qcdb:CTP/MO/RawData/inputs"
+        ],
+        "stopTrigger": [
+          "newobject", "10 minutes"
+        ]
+      }
+    }
+  }
+}
