@@ -168,6 +168,19 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     std::vector<Quality> qualitiesOfPad;
 
     const int nBins = graphs[iGraph]->GetN();
+
+    if (nBins == 0) {
+      mPadQualities.push_back(Quality::Null);
+      padNullString += "Graph has no data points for pad " + std::to_string(iGraph) + " \n";
+
+      mPadMetaData[Quality::Null.getName()].push_back(padNullString);
+      mPadMetaData[Quality::Bad.getName()].push_back(padBadString);
+      mPadMetaData[Quality::Medium.getName()].push_back(padMediumString);
+      mPadMetaData[Quality::Good.getName()].push_back(padGoodString);
+
+      continue;
+    }
+
     const double* yValues = graphs[iGraph]->GetY();
     const double* yErrors = graphs[iGraph]->GetEY(); // returns nullptr for TGraph (no errors)
 
@@ -395,6 +408,54 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   }
 
   for (size_t iGraph = 0; iGraph < graphs.size(); iGraph++) {
+
+    // InfoBox
+    std::string checkMessage;
+    TPaveText* msg = new TPaveText(0.5, 0.75, 0.9, 0.9, "NDC");
+    msg->SetName(Form("%s_msg_%zu", mo->GetName(), iGraph));
+    graphs[iGraph]->GetListOfFunctions()->Add(msg);
+
+    if (mPadQualities[iGraph] == Quality::Good) {
+      graphs[iGraph]->SetFillColor(kGreen - 2);
+      msg->Clear();
+      msg->AddText("Quality::Good");
+      msg->SetFillColor(kGreen - 2);
+    } else if (mPadQualities[iGraph] == Quality::Bad) {
+      graphs[iGraph]->SetFillColor(kRed);
+      msg->Clear();
+      msg->AddText("Quality::Bad. Failed checks:");
+      checkMessage = mPadMetaData[Quality::Bad.getName()][iGraph];
+      msg->SetFillColor(kRed);
+    } else if (mPadQualities[iGraph] == Quality::Medium) {
+      graphs[iGraph]->SetFillColor(kOrange);
+      msg->Clear();
+      msg->AddText("Quality::Medium. Failed checks:");
+      checkMessage = mPadMetaData[Quality::Medium.getName()][iGraph];
+      msg->SetFillColor(kOrange);
+    } else if (mPadQualities[iGraph] == Quality::Null) {
+      graphs[iGraph]->SetFillColor(0);
+      msg->AddText("Quality::Null. Failed checks:");
+      checkMessage = mPadMetaData[Quality::Null.getName()][iGraph];
+    }
+
+    // Split lines by hand as \n does not work with TPaveText
+    const std::string delimiter = "\n";
+    size_t pos = 0;
+    std::string subText;
+    while ((pos = checkMessage.find(delimiter)) != std::string::npos) {
+      subText = checkMessage.substr(0, pos);
+      msg->AddText(subText.c_str());
+      checkMessage.erase(0, pos + delimiter.length());
+    }
+    msg->AddText(checkResult.getMetadata("Comment", "").c_str());
+
+    const int nDataPoints = graphs[iGraph]->GetN();
+    if (nDataPoints == 0) {
+      graphs[iGraph]->AddPoint(0., 0.);       // have to add dummy point, else msg is not shown
+      graphs[iGraph]->SetMarkerColor(kWhite); // hide the dummy point
+      continue;
+    }
+
     graphs[iGraph]->SetLineColor(kBlack);
     double xMin = graphs[iGraph]->GetXaxis()->GetXmin();
     double xMax = graphs[iGraph]->GetXaxis()->GetXmax();
@@ -533,46 +594,6 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
         graphs[iGraph]->GetListOfFunctions()->Add(stddevGraphBadDown);
       }
     }
-
-    // InfoBox
-    std::string checkMessage;
-    TPaveText* msg = new TPaveText(0.5, 0.75, 0.9, 0.9, "NDC");
-    msg->SetName(Form("%s_msg_%zu", mo->GetName(), iGraph));
-    graphs[iGraph]->GetListOfFunctions()->Add(msg);
-
-    if (mPadQualities[iGraph] == Quality::Good) {
-      graphs[iGraph]->SetFillColor(kGreen - 2);
-      msg->Clear();
-      msg->AddText("Quality::Good");
-      msg->SetFillColor(kGreen - 2);
-    } else if (mPadQualities[iGraph] == Quality::Bad) {
-      graphs[iGraph]->SetFillColor(kRed);
-      msg->Clear();
-      msg->AddText("Quality::Bad. Failed checks:");
-      checkMessage = mPadMetaData[Quality::Bad.getName()][iGraph];
-      msg->SetFillColor(kRed);
-    } else if (mPadQualities[iGraph] == Quality::Medium) {
-      graphs[iGraph]->SetFillColor(kOrange);
-      msg->Clear();
-      msg->AddText("Quality::Medium. Failed checks:");
-      checkMessage = mPadMetaData[Quality::Medium.getName()][iGraph];
-      msg->SetFillColor(kOrange);
-    } else if (mPadQualities[iGraph] == Quality::Null) {
-      graphs[iGraph]->SetFillColor(0);
-      msg->AddText("Quality::Null. Failed checks:");
-      checkMessage = mPadMetaData[Quality::Null.getName()][iGraph];
-    }
-
-    // Split lines by hand as \n does not work with TPaveText
-    const std::string delimiter = "\n";
-    size_t pos = 0;
-    std::string subText;
-    while ((pos = checkMessage.find(delimiter)) != std::string::npos) {
-      subText = checkMessage.substr(0, pos);
-      msg->AddText(subText.c_str());
-      checkMessage.erase(0, pos + delimiter.length());
-    }
-    msg->AddText(checkResult.getMetadata("Comment", "").c_str());
   } // for(size_t iGraph = 0; iGraph < graphs.size(); iGraph++)
 }
 
@@ -617,6 +638,8 @@ std::string CheckOfTrendings::createMetaData(const std::vector<std::string>& poi
     std::string expectedValueString = "";
     std::string rangeString = "";
     std::string zeroString = "";
+    std::string noDataPointsString = "";
+    std::string noChecksString = "";
 
     for (size_t i = 0; i < pointMetaData.size(); i++) {
       if (pointMetaData.at(i).find("MeanCheck") != std::string::npos) {
@@ -630,6 +653,12 @@ std::string CheckOfTrendings::createMetaData(const std::vector<std::string>& poi
       }
       if (pointMetaData.at(i).find("ZeroCheck") != std::string::npos) {
         zeroString += " " + std::to_string(i) + ",";
+      }
+      if (pointMetaData.at(i).find("Graph has no data points") != std::string::npos) {
+        noDataPointsString += " " + std::to_string(i) + ",";
+      }
+      if (pointMetaData.at(i).find("No Checks performed") != std::string::npos) {
+        noChecksString += " " + std::to_string(i) + ",";
       }
     }
 
@@ -652,6 +681,16 @@ std::string CheckOfTrendings::createMetaData(const std::vector<std::string>& poi
       zeroString.pop_back();
       zeroString = "ZeroCheck for Graphs:" + zeroString + "\n";
       totalString += zeroString;
+    }
+    if (noDataPointsString != "") {
+      noDataPointsString.pop_back();
+      noDataPointsString = "No data points for Graphs:" + noDataPointsString + "\n";
+      totalString += noDataPointsString;
+    }
+    if (noChecksString != "") {
+      noChecksString.pop_back();
+      noChecksString = "No checks performed for Graphs:" + noChecksString + "\n";
+      totalString += noChecksString;
     }
   } else {
     totalString = pointMetaData[0];
