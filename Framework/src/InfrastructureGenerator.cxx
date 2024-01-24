@@ -580,7 +580,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     dplModelAdaptor());
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
   if (!taskSpec.critical) {
-    workflow.back().labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
+    proxy.labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
   }
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
