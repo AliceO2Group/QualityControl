@@ -29,6 +29,7 @@
 #include <regex>
 #include <set>
 #include <map>
+#include <string>
 #include <array>
 #include <type_traits>
 #include <boost/algorithm/string.hpp>
@@ -59,57 +60,29 @@ class RecPointsQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sOrbitsPerTF = 256;
-  constexpr static uint8_t sDataIsValidBitPos = 7;
 
  private:
-  // three ways of computing cycle duration:
-  // 1) number of time frames
-  // 2) time in ns from InteractionRecord: total range (totalMax - totalMin)
-  // 3) time in ns from InteractionRecord: sum of each TF duration
-  // later on choose the best and remove others
-  double mTimeMinNS = 0.;
-  double mTimeMaxNS = 0.;
-  double mTimeCurNS = 0.;
-  int mTfCounter = 0;
-  double mTimeSum = 0.;
-  const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
-
-  template <typename Param_t,
-            typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                               std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
-  auto parseParameters(const std::string& param, const std::string& del)
-  {
-    std::regex reg(del);
-    std::sregex_token_iterator first{ param.begin(), param.end(), reg, -1 }, last;
-    std::vector<Param_t> vecResult;
-    for (auto it = first; it != last; it++) {
-      if constexpr (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value) {
-        vecResult.push_back(std::stoi(*it));
-      } else if constexpr (std::is_floating_point<Param_t>::value) {
-        vecResult.push_back(std::stod(*it));
-      } else if constexpr (std::is_same<std::string, Param_t>::value) {
-        vecResult.push_back(*it);
-      }
-    }
-    return vecResult;
-  }
-
-  void rebinFromConfig();
 
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
-  std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
-
+  unsigned int mTrgPos_minBias;
+  unsigned int mTrgPos_allEvents;
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH1F> mHistCollTimeAC;
   std::unique_ptr<TH1F> mHistCollTimeA;
   std::unique_ptr<TH1F> mHistCollTimeC;
+  std::unique_ptr<TH2F> mHistSumTimeAC_perTrg;
+  std::unique_ptr<TH2F> mHistDiffTimeAC_perTrg;
+  std::unique_ptr<TH2F> mHistTimeA_perTrg;
+  std::unique_ptr<TH2F> mHistTimeC_perTrg;
+  std::unique_ptr<TH2F> mHistBC_perTriggers;
   std::unique_ptr<TH1F> mHistResCollTimeA;
   std::unique_ptr<TH1F> mHistResCollTimeC;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
+
+  std::map<unsigned int, std::string> mMapTrgBits{};
 };
 
 } // namespace o2::quality_control_modules::ft0

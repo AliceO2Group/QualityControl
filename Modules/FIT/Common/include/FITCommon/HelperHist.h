@@ -49,8 +49,11 @@ inline void getMapBinLabelsPerAxis(std::map<unsigned int, std::map<unsigned int,
     using ElementType = typename std::tuple_element<NStep, TupleArgs>::type;
     const auto& arg = std::get<NStep>(tupleArgs);
     constexpr bool isArgMapBinLabels = std::is_same_v<std::decay_t<ElementType>, std::map<unsigned int, std::string>>;
+    constexpr bool isArgTupleBins = std::is_same_v<std::decay_t<ElementType>, std::tuple<int, float, float>>;
     if constexpr (isArgMapBinLabels && NArgLocal == 0) { // map with bin labels
       mapAxisToMapBinLabels.insert({ NAxis, arg });
+      getMapBinLabelsPerAxis<NStep + 1, 0, NAxis + 1>(mapAxisToMapBinLabels, tupleArgs);
+    } else if constexpr (isArgTupleBins && NArgLocal == 0) { // tuple of bin params
       getMapBinLabelsPerAxis<NStep + 1, 0, NAxis + 1>(mapAxisToMapBinLabels, tupleArgs);
     } else if constexpr (!isArgMapBinLabels && NArgLocal < 2) { // first or second bin argument
       getMapBinLabelsPerAxis<NStep + 1, NArgLocal + 1, NAxis>(mapAxisToMapBinLabels, tupleArgs);
@@ -69,6 +72,8 @@ inline auto unpackHistArg(const Arg& arg)
 {
   if constexpr (std::is_same_v<std::decay_t<Arg>, std::map<unsigned int, std::string>>) {
     return std::make_tuple(static_cast<int>(arg.size()), float(0.0), static_cast<float>(arg.size()));
+  } else if constexpr (std::is_same_v<std::decay_t<Arg>, std::tuple<int, float, float>>) {
+    return arg;
   } else {
     return std::make_tuple(arg);
   }
