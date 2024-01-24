@@ -26,72 +26,22 @@
 #include <Framework/InputRecord.h>
 #include <vector>
 
+#include "FITCommon/HelperHist.h"
+#include "FITCommon/HelperCommon.h"
+#include "FITCommon/HelperFIT.h"
 namespace o2::quality_control_modules::ft0
 {
+
+using namespace o2::quality_control_modules::fit;
 
 RecPointsQcTask::~RecPointsQcTask()
 {
   delete mListHistGarbage;
 }
 
-void RecPointsQcTask::rebinFromConfig()
-{
-  /* Examples:
-     "binning_SumAmpC": "100, 0, 100"
-     "binning_BcOrbitMap_TrgOrA": "25, 0, 256, 10, 0, 3564"
-   hashtag = all channel IDs (mSetAllowedChIDs), e.g.
-     "binning_Amp_channel#": "5,-10,90"
-   is equivalent to:
-     "binning_Amp_channel0": "5,-10,90"
-     "binning_Amp_channel1": "5,-10,90"
-     "binning_Amp_channel2": "5,-10,90" ...
-  */
-  auto rebinHisto = [](std::string hName, std::string binning) {
-    std::vector<std::string> tokenizedBinning;
-    boost::split(tokenizedBinning, binning, boost::is_any_of(","));
-    if (tokenizedBinning.size() == 3) { // TH1
-      ILOG(Debug) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;
-      auto htmp = (TH1F*)gROOT->FindObject(hName.data());
-      htmp->SetBins(std::atof(tokenizedBinning[0].c_str()), std::atof(tokenizedBinning[1].c_str()), std::atof(tokenizedBinning[2].c_str()));
-    } else if (tokenizedBinning.size() == 6) { // TH2
-      auto htmp = (TH2F*)gROOT->FindObject(hName.data());
-      ILOG(Debug) << "config: rebinning TH2 " << hName << " -> " << binning << ENDM;
-      htmp->SetBins(std::atof(tokenizedBinning[0].c_str()), std::atof(tokenizedBinning[1].c_str()), std::atof(tokenizedBinning[2].c_str()),
-                    std::atof(tokenizedBinning[3].c_str()), std::atof(tokenizedBinning[4].c_str()), std::atof(tokenizedBinning[5].c_str()));
-    } else {
-      ILOG(Warning) << "config: invalid binning parameter: " << hName << " -> " << binning << ENDM;
-    }
-  };
-
-  const std::string rebinKeyword = "binning";
-  const char* channelIdPlaceholder = "#";
-  try {
-    for (auto& param : mCustomParameters.getAllDefaults()) {
-      if (param.first.rfind(rebinKeyword, 0) != 0)
-        continue;
-      std::string hName = param.first.substr(rebinKeyword.length() + 1);
-      std::string binning = param.second.c_str();
-      if (hName.find(channelIdPlaceholder) != std::string::npos) {
-        for (const auto& chID : mSetAllowedChIDs) {
-          std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
-          rebinHisto(hNameCur, binning);
-        }
-      } else if (!gROOT->FindObject(hName.data())) {
-        ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
-        continue;
-      } else {
-        rebinHisto(hName, binning);
-      }
-    }
-  } catch (std::out_of_range& oor) {
-    ILOG(Error) << "Cannot access the default custom parameters : " << oor.what() << ENDM;
-  }
-}
-
 void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "@@@@initialize RecoQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  mStateLastIR2Ch = {};
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ps]", NCHANNELS, 0, NCHANNELS, 500, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
@@ -109,7 +59,7 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
     const auto chIDs = param->second;
     const std::string del = ",";
-    vecChannelIDs = parseParameters<unsigned int>(chIDs, del);
+    vecChannelIDs = helper::parseParameters<unsigned int>(chIDs, del);
   } else {
     for (unsigned int iCh = 0; iCh < o2::ft0::Constants::sNCHANNELS_PM; iCh++)
       vecChannelIDs.push_back(iCh);
@@ -126,8 +76,21 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistResCollTimeA.get());
   getObjectsManager()->startPublishing(mHistResCollTimeC.get());
 
+  const std::tuple<int, float, float> binsTime{ 500, -2500, 2500 };
+  const std::tuple<int, float, float> binsBC{ 3564, 0, 3564 };
+  mMapTrgBits = HelperTrgFIT::sMapBasicTrgBitsFT0;
+  mTrgPos_minBias = mMapTrgBits.size();
+  mMapTrgBits.insert({ mTrgPos_minBias, "MinBias" });
+  mTrgPos_allEvents = mMapTrgBits.size();
+  mMapTrgBits.insert({ mTrgPos_allEvents, "AllEvents" });
+  mHistSumTimeAC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "SumTimeAC_perTrg", "(T0A+T0C)/2 per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistDiffTimeAC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "DiffTimeAC_perTrg", "(T0C-T0C)/2 per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistTimeA_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TimeA_perTrg", "T0A per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistTimeC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TimeC_perTrg", "T0C per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistBC_perTriggers = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "BC_perTriggers", "BC per Triggers;BC; Trigger", binsBC, mMapTrgBits);
+
   for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 500, 410, -2050, 2050) });
+    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 1000, 0, 4000, 100, -1000, 1000) });
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
@@ -135,7 +98,6 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   ILOG(Info, Support) << "@@@ histos created" << ENDM;
-  rebinFromConfig(); // after all histos are created
 }
 
 void RecPointsQcTask::startOfActivity(const Activity& activity)
@@ -148,6 +110,12 @@ void RecPointsQcTask::startOfActivity(const Activity& activity)
   mHistCollTimeC->Reset();
   mHistResCollTimeA->Reset();
   mHistResCollTimeC->Reset();
+  mHistSumTimeAC_perTrg->Reset();
+  mHistDiffTimeAC_perTrg->Reset();
+  mHistTimeA_perTrg->Reset();
+  mHistTimeC_perTrg->Reset();
+  mHistBC_perTriggers->Reset();
+
   for (auto& entry : mMapHistAmpVsTime) {
     entry.second->Reset();
   }
@@ -155,24 +123,15 @@ void RecPointsQcTask::startOfActivity(const Activity& activity)
 
 void RecPointsQcTask::startOfCycle()
 {
-  mTimeMinNS = -1;
-  mTimeMaxNS = 0.;
-  mTimeCurNS = 0.;
-  mTfCounter = 0;
-  mTimeSum = 0.;
 }
 
 void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  double curTfTimeMin = -1;
-  double curTfTimeMax = 0;
-  mTfCounter++;
   auto chan = ctx.inputs().get<gsl::span<o2::ft0::ChannelDataFloat>>("channels");
   auto recpoints = ctx.inputs().get<gsl::span<o2::ft0::RecPoints>>("recpoints");
-  bool isFirst = true;
-  uint32_t firstOrbit;
 
-  for (auto& recpoint : recpoints) {
+  for (const auto& recpoint : recpoints) {
+    const auto bc = recpoint.getInteractionRecord().bc;
     int time[o2::ft0::Constants::sNCHANNELS_PM] = { 0 };
     int amp[o2::ft0::Constants::sNCHANNELS_PM] = { 0 };
     o2::ft0::Triggers triggersignals = recpoint.getTrigger();
@@ -181,12 +140,31 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistCollTimeAC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeMean()));
     mHistCollTimeA->Fill(static_cast<Float_t>(recpoint.getCollisionTimeA()));
     mHistCollTimeC->Fill(static_cast<Float_t>(recpoint.getCollisionTimeC()));
+    const bool minBias = triggersignals.getVertex() && (triggersignals.getCen() || triggersignals.getSCen());
+    // Preparing trigger word
+    uint64_t trgWord = triggersignals.getTriggersignals() & 0b11111;
+    trgWord |= (static_cast<int>(minBias) << mTrgPos_minBias);
+    trgWord |= (1ull << mTrgPos_allEvents);
+    // Filling hists with trg bits
+    for (const auto& entry : mMapTrgBits) {
+      if ((trgWord & (1ull << entry.first)) > 0) {
+        mHistBC_perTriggers->Fill(static_cast<double>(bc), static_cast<double>(entry.first));
+        const auto timeA = static_cast<double>(recpoint.getCollisionTimeA());
+        const auto timeC = static_cast<double>(recpoint.getCollisionTimeC());
+        mHistTimeA_perTrg->Fill(timeA, static_cast<double>(entry.first));
+        mHistTimeC_perTrg->Fill(timeC, static_cast<double>(entry.first));
+        mHistDiffTimeAC_perTrg->Fill(static_cast<double>(recpoint.getVertex()), static_cast<double>(entry.first));
+        if (timeA < o2::ft0::RecPoints::sDummyCollissionTime && timeC < o2::ft0::RecPoints::sDummyCollissionTime) {
+          mHistSumTimeAC_perTrg->Fill(static_cast<double>(recpoint.getCollisionTimeMean()), static_cast<double>(entry.first));
+        }
+      }
+    }
     for (const auto& chData : channels) {
       time[chData.ChId] = chData.CFDTime;
       amp[chData.ChId] = chData.QTCAmpl;
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
-      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
+      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end() && minBias) { // ampt-time dependency is needed only for PbPb runs
         mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
       }
     }
@@ -233,7 +211,6 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-  mTimeSum += curTfTimeMax - curTfTimeMin;
 }
 
 void RecPointsQcTask::endOfCycle()
@@ -258,6 +235,12 @@ void RecPointsQcTask::reset()
   mHistCollTimeC->Reset();
   mHistResCollTimeA->Reset();
   mHistResCollTimeC->Reset();
+  mHistSumTimeAC_perTrg->Reset();
+  mHistDiffTimeAC_perTrg->Reset();
+  mHistTimeA_perTrg->Reset();
+  mHistTimeC_perTrg->Reset();
+  mHistBC_perTriggers->Reset();
+
   for (auto& entry : mMapHistAmpVsTime) {
     entry.second->Reset();
   }
