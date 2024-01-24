@@ -136,21 +136,33 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       if (hb->GetBinContent(1)) {
         hb->Scale(hs->GetBinContent(1) / hb->GetBinContent(1));
       } else {
+        delete hb;
+        delete hs;
+
         continue;
       }
       const float overall = hs->Integral();
       if (overall <= 0.f) {
         ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
+        delete hb;
+        delete hs;
+
         continue;
       }
       const float background = hb->Integral();
       if (background <= 0.f) {
         ILOG(Info, Support) << "no background for BC index " << ibc << ENDM;
+        delete hb;
+        delete hs;
+
         continue;
       }
       const float prob = (overall - background) / overall;
       if ((1.f - prob) < 0.f) {
         ILOG(Info, Support) << "Probability is 1, can't comute mu" << ENDM;
+        delete hb;
+        delete hs;
+
         continue;
       }
       const float mu = TMath::Log(1.f / (1.f - prob));
@@ -159,6 +171,9 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       bcRate.push_back(rate);
       if (prob <= 0.f) {
         ILOG(Warning, Support) << "Probability is 0, can't compute pileup" << ENDM;
+        delete hb;
+        delete hs;
+
         continue;
       }
       bcPileup.push_back(mu / prob);
