@@ -98,7 +98,6 @@ class TrackingTask final : public TaskInterface
   TEfficiency* mEfficiencyPt = nullptr;                                               // efficiency vs. pt
   TEfficiency* mEfficiencyEta = nullptr;                                              // efficiency vs. eta
   TEfficiency* mEfficiencyPhi = nullptr;                                              // efficiency vs. phi
-  std::vector<double_t> trdTrigTimes = {};                                            // vector of TRD trigger times
 };
 
 } // namespace o2::quality_control_modules::trd

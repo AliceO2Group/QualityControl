@@ -89,6 +89,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
     trackQcPtr = &trackQc.value();
   }
 
+  std::vector<double_t> trdTrigTimes = {};
   for (auto src : sources) {
     const gsl::span<const TrackTriggerRecord>* trackTriggers = (src == GID::Source::ITSTPCTRD) ? &mTrigITSTPCTRD : &mTrigTPCTRD;
     const gsl::span<const TrackTRD>* tracks = (src == GID::Source::ITSTPCTRD) ? &mITSTPCTRDTracks : &mTPCTRDTracks;
@@ -127,7 +128,7 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
     }     // end of loop over track trigger records
 
     if (src == GID::Source::ITSTPC) {
-      for (size_t itrk = 0; itrk < static_cast<int>(mTPCITSTracks.size()); ++itrk) {
+      for (size_t itrk = 0; itrk < mTPCITSTracks.size(); ++itrk) {
         const auto& track = mTPCITSTracks[itrk];
         double trackTime = track.getTimeMUS().getTimeStamp();
         double trackTimeError = track.getTimeMUS().getTimeStampError();
@@ -135,21 +136,23 @@ void TrackingTask::monitorData(o2::framework::ProcessingContext& ctx)
         bool hasTRDTrigger = std::any_of(trdTrigTimes.begin(), trdTrigTimes.end(), [&](double trdTime) {
           return (trackTime - trackTimeError <= trdTime) && (trackTime + trackTimeError >= trdTime);
         });
-        if ((!hasTRDTrigger) || (track.getPt() < mPtMin) || (abs(track.getEta()) > 0.85)) {
+        if ((!hasTRDTrigger) || (abs(track.getEta()) > 0.84)) {
           continue;
         }
 
         //  filling track information
         mTrackPtTPCITS->Fill(track.getPt());
-        mTrackEtaTPCITS->Fill(track.getEta());
-        mTrackPhiTPCITS->Fill(track.getPhi());
+        if (track.getPt() > mPtMin) {
+          mTrackEtaTPCITS->Fill(track.getEta());
+          mTrackPhiTPCITS->Fill(track.getPhi());
+        }
       }
     }
-
     setEfficiency(mEfficiencyPt, mTrackPt, mTrackPtTPCITS);
     setEfficiency(mEfficiencyEta, mTrackEta, mTrackEtaTPCITS);
     setEfficiency(mEfficiencyPhi, mTrackPhi, mTrackPhiTPCITS);
   }
+  trdTrigTimes.clear();
 
   if (mDetailedTrackQC && trackQcPtr) {
     // Residuals in y and z using TRD/TRACKINGQC
