@@ -29,14 +29,11 @@ void PostProcessingInterface::setID(const std::string& id)
   mID = id;
 }
 
-const std::string& PostProcessingInterface::getName() const { return mName; }
-
-void PostProcessingInterface::setName(const std::string& name)
+void PostProcessingInterface::configure(const boost::property_tree::ptree& config)
 {
-  mName = name;
 }
 
-void PostProcessingInterface::configure(const boost::property_tree::ptree& config)
+void PostProcessingInterface::configure()
 {
 }
 
@@ -48,11 +45,6 @@ void PostProcessingInterface::setObjectsManager(std::shared_ptr<core::ObjectsMan
 std::shared_ptr<core::ObjectsManager> PostProcessingInterface::getObjectsManager()
 {
   return mObjectsManager;
-}
-
-void PostProcessingInterface::setCustomParameters(const core::CustomParameters& parameters)
-{
-  mCustomParameters = parameters;
 }
 
 } // namespace o2::quality_control::postprocessing
