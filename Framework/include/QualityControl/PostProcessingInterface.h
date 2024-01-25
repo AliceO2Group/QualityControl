@@ -17,12 +17,11 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINTERFACE_H
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
-#include "QualityControl/CustomParameters.h"
-
 #include <string>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Triggers.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/UserCodeInterface.h"
 #include <Framework/ServiceRegistryRef.h>
 
 namespace o2::quality_control::postprocessing
@@ -35,11 +34,17 @@ namespace o2::quality_control::postprocessing
 /// It is responsible for retrieving, processing and storing the data, mainly from and to QC repository.
 ///
 /// \author Piotr Konopka
-class PostProcessingInterface
+class PostProcessingInterface : public core::UserCodeInterface
 {
  public:
   PostProcessingInterface() = default;
   virtual ~PostProcessingInterface() = default;
+
+  /// \brief Configure the task with custom parameters, optional for PostProcessingInterface
+  ///
+  /// Users can use this method to configure their task with custom parameters
+  /// It is called each time mCustomParameters is updated, including the first time it is read.
+  virtual void configure() override;
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
@@ -67,20 +72,15 @@ class PostProcessingInterface
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   virtual void finalize(Trigger trigger, framework::ServiceRegistryRef services) = 0;
 
-  void setCustomParameters(const core::CustomParameters& parameters);
   void setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager);
   void setID(const std::string& id);
   [[nodiscard]] const std::string& getID() const;
-  void setName(const std::string& name);
-  [[nodiscard]] const std::string& getName() const;
 
  protected:
   std::shared_ptr<core::ObjectsManager> getObjectsManager();
-  core::CustomParameters mCustomParameters;
 
  private:
   std::string mID;
-  std::string mName;
   std::shared_ptr<core::ObjectsManager> mObjectsManager;
 };
 

@@ -99,14 +99,15 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   ILOG(Debug, Devel) << "Creating a user task '" << mTaskConfig.taskName << "'" << ENDM;
   PostProcessingFactory f;
   mTask.reset(f.create(mTaskConfig));
-  mTask->setObjectsManager(mObjectManager);
   if (mTask) {
     ILOG(Debug, Devel) << "The user task '" << mTaskConfig.taskName << "' has been successfully created" << ENDM;
 
     mTaskState = TaskState::Created;
+    mTask->setObjectsManager(mObjectManager);
     mTask->setID(mTaskConfig.id);
     mTask->setName(mTaskConfig.taskName);
     mTask->setCustomParameters(mTaskConfig.customParameters);
+    mTask->setCcdbUrl(mTaskConfig.ccdbUrl);
     mTask->configure(mRunnerConfig.configTree);
   } else {
     throw std::runtime_error("Failed to create the task '" + mTaskConfig.taskName + "' (det " + mTaskConfig.detectorName + ")");
