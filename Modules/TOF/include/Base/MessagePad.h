@@ -22,6 +22,7 @@
 // QC includes
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "TOF/Utils.h"
 
 // ROOT includes
 #include "TPaveText.h"
@@ -42,6 +43,12 @@ struct MessagePad {
   int mEnabledFlag = 1;                 /// Flag to enable or disable the pad
   const std::string mName = "";         /// Name of the message pad, can be used to identify the pad if multiple are used
 
+  // Messages to print based on quality
+  std::string mMessageWhenNull = "No quality established"; /// Message to print when quality is Null
+  std::string mMessageWhenGood = "OK!";                    /// Message to print when quality is Good
+  std::string mMessageWhenMedium = "Email TOF on-call";    /// Message to print when quality is Medium
+  std::string mMessageWhenBad = "";                        /// Message to print when quality is Bad
+
   MessagePad(const std::string name = "",
              const float padLowX = 0.6, const float padLowY = 0.5,
              const float padHighX = 0.9, const float padHighY = 0.75) : mName(name)
@@ -54,22 +61,33 @@ struct MessagePad {
   template <typename T>
   void configure(const T& CustomParameters)
   {
-    if (auto param = CustomParameters.find(mName + "PadLowX"); param != CustomParameters.end()) {
-      mPadLowX = ::atof(param->second.c_str());
+    // Setting position
+    if (utils::parseFloatParameter(CustomParameters, mName + "PadLowX", mPadLowX)) {
       ILOG(Info, Support) << "Setting message pad " << mName << " mPadLowX to " << mPadLowX << ENDM;
     }
-    if (auto param = CustomParameters.find(mName + "PadLowY"); param != CustomParameters.end()) {
-      mPadLowY = ::atof(param->second.c_str());
+    if (utils::parseFloatParameter(CustomParameters, mName + "PadLowY", mPadLowY)) {
       ILOG(Info, Support) << "Setting message pad " << mName << " mPadLowY to " << mPadLowY << ENDM;
     }
-    if (auto param = CustomParameters.find(mName + "PadHighX"); param != CustomParameters.end()) {
-      mPadHighX = ::atof(param->second.c_str());
+    if (utils::parseFloatParameter(CustomParameters, mName + "PadHighX", mPadHighX)) {
       ILOG(Info, Support) << "Setting message pad " << mName << " mPadHighX to " << mPadHighX << ENDM;
     }
-    if (auto param = CustomParameters.find(mName + "PadHighY"); param != CustomParameters.end()) {
-      mPadHighY = ::atof(param->second.c_str());
+    if (utils::parseFloatParameter(CustomParameters, mName + "PadHighY", mPadHighY)) {
       ILOG(Info, Support) << "Setting message pad " << mName << " mPadHighY to " << mPadHighY << ENDM;
     }
+    // Setting standard messages
+    if (utils::parseStrParameter(CustomParameters, mName + "MessageWhenNull", mMessageWhenNull)) {
+      ILOG(Info, Support) << "Setting message pad " << mName << " mMessageWhenNull to " << mMessageWhenNull << ENDM;
+    }
+    if (utils::parseStrParameter(CustomParameters, mName + "MessageWhenGood", mMessageWhenGood)) {
+      ILOG(Info, Support) << "Setting message pad " << mName << " mMessageWhenGood to " << mMessageWhenGood << ENDM;
+    }
+    if (utils::parseStrParameter(CustomParameters, mName + "MessageWhenMedium", mMessageWhenMedium)) {
+      ILOG(Info, Support) << "Setting message pad " << mName << " mMessageWhenMedium to " << mMessageWhenMedium << ENDM;
+    }
+    if (utils::parseStrParameter(CustomParameters, mName + "MessageWhenBad", mMessageWhenBad)) {
+      ILOG(Info, Support) << "Setting message pad " << mName << " mMessageWhenBad to " << mMessageWhenBad << ENDM;
+    }
+    // Setting flags
     configureEnabledFlag(CustomParameters);
   }
 
@@ -90,6 +108,15 @@ struct MessagePad {
     mPadLowY = padLowY;
     mPadHighX = padHighX;
     mPadHighY = padHighY;
+  }
+
+  /// Function to reset the standard quality messages
+  void clearQualityMessages()
+  {
+    mMessageWhenNull = "";
+    mMessageWhenGood = "";
+    mMessageWhenMedium = "";
+    mMessageWhenBad = "";
   }
 
   /// Function to add a message that will be reported in the pad, will only add the message if the flag mEnabledFlag is on
@@ -127,11 +154,28 @@ struct MessagePad {
       mMessagePad->SetTextColor(kWhite);
       mMessagePad->SetFillStyle(3001);
       mMessagePad->SetFillColor(kBlack);
-      mMessagePad->AddText("No quality established");
     }
+    // Add all lines
     for (const auto& line : mMessages) {
       mMessagePad->AddText(line.c_str());
     }
+    // Last line: message based on quality
+    std::string qualityMessage = "";
+    if (quality == Quality::Good) {
+      qualityMessage = mMessageWhenGood;
+    } else if (quality == Quality::Medium) {
+      qualityMessage = mMessageWhenMedium;
+    } else if (quality == Quality::Bad) {
+      qualityMessage = mMessageWhenBad;
+    } else if (quality == Quality::Null) {
+      qualityMessage = mMessageWhenNull;
+    } else {
+      qualityMessage = "Quality undefined";
+    }
+    if (qualityMessage != "") {
+      mMessagePad->AddText(qualityMessage.c_str());
+    }
+
     // Clear the messages for next usage
     mMessages.clear();
     return mMessagePad;

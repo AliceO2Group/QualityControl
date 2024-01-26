@@ -1,16 +1,15 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
-// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
-// All rights not expressly granted are reserved.
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
 //
-// This software is distributed under the terms of the GNU General Public
-// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+// See http://alice-o2.web.cern.ch/license for full licensing information.
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CheckCompressedData.h
+/// \file   CheckRaw.h
 /// \author Nicolo' Jacazio
 /// \brief  Checker for the raw compressed data for TOF
 ///
@@ -19,7 +18,8 @@
 #define QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
 
 #include "QualityControl/CheckInterface.h"
-#include "Base/MessagePad.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -27,16 +27,16 @@ namespace o2::quality_control_modules::tof
 /// \brief  Checker for the data produced by the TOF compressor (i.e. checking raw data)
 ///
 /// \author Nicolo' Jacazio
-class CheckCompressedData : public o2::quality_control::checker::CheckInterface
+class CheckRaw : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  CheckCompressedData() = default;
+  CheckRaw() = default;
   /// Destructor
-  ~CheckCompressedData() override = default;
+  ~CheckRaw() override = default;
 
   // Override interface
-  void configure() override;
+  void configure(std::string name) override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
@@ -44,10 +44,7 @@ class CheckCompressedData : public o2::quality_control::checker::CheckInterface
  private:
   float mDiagnosticThresholdPerSlot = 0;
 
-  /// Messages to print on the output PAD
-  MessagePad mShifterMessages{ "CompressedData", 0.9, 0.1, 1.0, 0.5 };
-
-  ClassDefOverride(CheckCompressedData, 2);
+  ClassDefOverride(CheckRaw, 1);
 };
 
 } // namespace o2::quality_control_modules::tof
