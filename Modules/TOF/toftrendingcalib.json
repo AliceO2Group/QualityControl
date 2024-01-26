@@ -1,0 +1,66 @@
+{
+    "qc": {
+        "config": {
+            "database": {
+                "implementation": "CCDB",
+                "host": "ccdb-test.cern.ch:8080",
+                "username": "not_applicable",
+                "password": "not_applicable",
+                "name": "not_applicable"
+            },
+            "Activity": {
+                "number": "0"
+            },
+            "monitoring": {
+                "url": "infologger:///debug?qc"
+            },
+            "consul": {
+                "url": ""
+            },
+            "conditionDB": {
+                "url": "http://alice-ccdb.cern.ch"
+            }
+        },
+        "postprocessing": {
+            "TOFTrendingCalibLHCphase": {
+                "active": "true",
+                "className": "o2::quality_control_modules::tof::TrendingCalibLHCphase",
+                "moduleName": "QcTOF",
+                "detectorName": "TOF",
+                "dataSourceURL": "http://alice-ccdb.cern.ch",
+                "dataSources": [
+                    {
+                        "type": "ccdb",
+                        "path": "/TOF/Calib/LHCphase/",
+                        "names": [
+                            "LHC_phase"
+                        ],
+                        "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+                        "moduleName": "QcCommon"
+                    }
+                ],
+                "plots": [
+                    {
+                        "name": "LHC_phase",
+                        "title": "LHC phase",
+                        "varexp": "phase:time",
+                        "selection": "",
+                        "option": "*L"
+                    }
+                ],
+                "initTrigger": [
+                    "once"
+                ],
+                "updateTrigger": [
+                    "newobject:ccdb:TOF/Calib/LHCphase/"
+                ],
+                "stopTrigger": [
+                    "userorcontrol"
+                ]
+            }
+        }
+    },
+    "dataSamplingPolicies": [
+        {}
+    ]
+}
