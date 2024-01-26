@@ -65,6 +65,8 @@ void TrendingCalibLHCphase::initialize(Trigger, framework::ServiceRegistryRef)
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("time", &mTime);
   mTrend->Branch("phase", &mPhase);
+  mTrend->Branch("startValidity", &mStartValidity);
+  mTrend->Branch("endValidity", &mEndValidity);
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
@@ -95,6 +97,8 @@ void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseIn
   mMetaData.runNumber = t.activity.mId;
 
   mPhase = 0.;
+  mStartValidity = 0;
+  mEndValidity = 0;
 
   map<string, string> metadata; // can be empty
 
@@ -102,14 +106,15 @@ void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseIn
 
     if (dataSource.type == "ccdb") {
 
-      auto calib_object = mCdbApi.retrieveFromTFileAny<LHCphase>(dataSource.path, metadata, -1);
-      // auto calib_object = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<LHCphase>(dataSource.path, -1);
+      auto calib_object = UserCodeInterface::retrieveConditionAny<LHCphase>(dataSource.path, metadata, -1);
 
       if (!calib_object) {
         ILOG(Error, Support) << "Could not retrieve calibration file '" << dataSource.path << "'." << ENDM;
       } else {
         ILOG(Info, Support) << "Retrieved calibration file '" << dataSource.path << "'." << ENDM;
         mPhase = calib_object->getLHCphase(0);
+        mStartValidity = calib_object->getStartValidity();
+        mEndValidity = calib_object->getEndValidity();
       }
     } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'. Expected: ccdb" << ENDM;
