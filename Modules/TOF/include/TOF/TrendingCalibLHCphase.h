@@ -59,8 +59,8 @@ class TrendingCalibLHCphase : public PostProcessingInterface
   MetaData mMetaData;
   UInt_t mTime;
   float mPhase = 0.;
-  Long64_t mStartValidity = 0;
-  Long64_t mEndValidity = 0;
+  double mStartValidity = 0;
+  double mEndValidity = 0;
   o2::ccdb::CcdbApi mCdbApi;
   std::string mHost;
 

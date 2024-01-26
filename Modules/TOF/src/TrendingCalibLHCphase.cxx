@@ -113,8 +113,8 @@ void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseIn
       } else {
         ILOG(Info, Support) << "Retrieved calibration file '" << dataSource.path << "'." << ENDM;
         mPhase = calib_object->getLHCphase(0);
-        mStartValidity = calib_object->getStartValidity();
-        mEndValidity = calib_object->getEndValidity();
+        mStartValidity = (double)calib_object->getStartValidity() * 0.001;
+        mEndValidity = (double)calib_object->getEndValidity() * 0.001;
       }
     } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'. Expected: ccdb" << ENDM;
@@ -193,13 +193,21 @@ void TrendingCalibLHCphase::generatePlots()
 
       // We have to explicitly configure showing time on x axis.
       // I hope that looking for ":time" is enough here and someone doesn't come with an exotic use-case.
-      if (plot.varexp.find(":time") != std::string::npos) {
+      if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":startValidity") != std::string::npos || plot.varexp.find(":endValidity") != std::string::npos) {
         histo->GetXaxis()->SetTimeDisplay(1);
         // It deals with highly congested dates labels
         histo->GetXaxis()->SetNdivisions(505);
         // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
         histo->GetXaxis()->SetTimeOffset(0.0);
         histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+      }
+      if (plot.varexp.find("startValidity:") != std::string::npos || plot.varexp.find("endValidity:") != std::string::npos) {
+        histo->GetYaxis()->SetTimeDisplay(1);
+        // It deals with highly congested dates labels
+        histo->GetYaxis()->SetNdivisions(505);
+        // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
+        histo->GetYaxis()->SetTimeOffset(0.0);
+        histo->GetYaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
       }
       // QCG doesn't empty the buffers before visualizing the plot, nor does ROOT when saving the file,
       // so we have to do it here.
