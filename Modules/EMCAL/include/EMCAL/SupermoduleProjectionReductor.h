@@ -11,8 +11,7 @@
 #ifndef QUALITYCONTROL_EMCAL_SUPERMODULEPROJECTIONREDUCTOR_H
 #define QUALITYCONTROL_EMCAL_SUPERMODULEPROJECTIONREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
-
+#include "QualityControl/ReductorTObject.h"
 namespace o2::quality_control_modules::emcal
 {
 
@@ -20,7 +19,7 @@ namespace o2::quality_control_modules::emcal
 ///
 /// Obtaining number of entries, mean, sigma and max for each slice
 /// of the input histogram (supermodule dimension)
-class SupermoduleProjectionReductorBase : public quality_control::postprocessing::Reductor
+class SupermoduleProjectionReductorBase : public quality_control::postprocessing::ReductorTObject
 {
  public:
   SupermoduleProjectionReductorBase() = default;

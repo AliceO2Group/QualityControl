@@ -10,32 +10,33 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Reductor.h
+/// \file   ReductorTObject.h
 /// \author Piotr Konopka
 ///
-#ifndef QUALITYCONTROL_REDUCTOR_H
-#define QUALITYCONTROL_REDUCTOR_H
+#ifndef QUALITYCONTROL_REDUCTORTOBJECT_H
+#define QUALITYCONTROL_REDUCTORTOBJECT_H
+
+#include "QualityControl/Reductor.h"
+#include <RtypesCore.h>
+
+class TObject;
 
 namespace o2::quality_control::postprocessing
 {
 
-/// \brief An interface for storing columnar data into a TTree
-class Reductor
+/// \brief An interface for storing data derived from TObjects into a TTree
+class ReductorTObject : public Reductor
 {
  public:
   /// \brief Constructor
-  Reductor() = default;
+  ReductorTObject() = default;
   /// \brief Destructor
-  virtual ~Reductor() = default;
+  virtual ~ReductorTObject() = default;
 
-  /// \brief Branch address getter
-  /// \return A pointer to a structure/variable which will be used to fill a TTree. It must not change later!
-  virtual void* getBranchAddress() = 0;
-  /// \brief Branch leaf list getter
-  /// \return A C string with a description of a branch format, formatted accordingly to the TTree interface
-  virtual const char* getBranchLeafList() = 0;
+  /// \brief Fill the data structure with new data
+  /// \param An object to be reduced into a limited set of observables
+  virtual void update(TObject* obj) = 0;
 };
 
 } // namespace o2::quality_control::postprocessing
-
-#endif //QUALITYCONTROL_REDUCTOR_H
+#endif // QUALITYCONTROL_REDUCTORTOBJECT_H

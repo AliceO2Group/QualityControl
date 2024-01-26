@@ -12,7 +12,7 @@
 #ifndef QUALITYCONTROL_EMCAL_TIMECALIBPARAMREDUCTOR_H
 #define QUALITYCONTROL_EMCAL_TIMECALIBPARAMREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2
 {
@@ -32,7 +32,7 @@ namespace o2::quality_control_modules::emcal
 /// - Fraction channels with failed fit for Full acceptance/Subdetector/Supermodule
 /// - Mean time shift
 /// - Sigma time shift
-class TimeCalibParamReductor : public quality_control::postprocessing::Reductor
+class TimeCalibParamReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TimeCalibParamReductor();

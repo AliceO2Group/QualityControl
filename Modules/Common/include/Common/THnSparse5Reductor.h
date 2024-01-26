@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_THNSPARSE5REDUCTOR_H
 #define QUALITYCONTROL_THNSPARSE5REDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2::quality_control_modules::common
 {
@@ -25,7 +25,7 @@ namespace o2::quality_control_modules::common
 ///
 /// A Reductor which obtains the most popular characteristics of THnSparse up to 5 dimensions.
 /// It produces a branch in the format: "mean[NDIM]/D:stddev[NDIM]:entries[NDIM] where NDIM=5"
-class THnSparse5Reductor : public quality_control::postprocessing::Reductor
+class THnSparse5Reductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   THnSparse5Reductor() = default;

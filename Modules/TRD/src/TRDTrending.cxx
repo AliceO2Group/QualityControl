@@ -20,6 +20,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/RepoPathUtils.h"
@@ -103,8 +104,9 @@ void TRDTrending::trendValues(const Trigger& t, repository::DatabaseInterface& q
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
-      if (obj) {
-        mReductors[dataSource.name]->update(obj);
+      auto reductor = dynamic_cast<ReductorTObject*>(mReductors[dataSource.name].get());
+      if (obj && reductor) {
+        reductor->update(obj);
       }
     } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;

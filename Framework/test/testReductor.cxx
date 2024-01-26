@@ -15,6 +15,12 @@
 ///
 
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
+#include "QualityControl/ReductorConditionAny.h"
+#include "QualityControl/RootClassFactory.h"
+#include "QualityControl/PostProcessingInterface.h"
+#include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/ConditionAccess.h"
 #include <TH1I.h>
 #include <TTree.h>
 
@@ -24,10 +30,14 @@
 
 #include <boost/test/unit_test.hpp>
 
-using namespace o2::quality_control;
-using namespace o2::quality_control::postprocessing;
+const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 
-class MyReductor : public Reductor
+using namespace o2::quality_control;
+using namespace o2::quality_control::core;
+using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::repository;
+
+class MyReductor : public ReductorTObject
 {
  public:
   MyReductor() = default;
@@ -55,7 +65,7 @@ class MyReductor : public Reductor
   } mStats;
 };
 
-BOOST_AUTO_TEST_CASE(test_ReductorInterface)
+BOOST_AUTO_TEST_CASE(test_ReductorTObjectInterface)
 {
   auto histo = std::make_unique<TH1I>("test", "test", 10, 0, 1000);
   auto reductor = std::make_unique<MyReductor>();
@@ -85,4 +95,81 @@ BOOST_AUTO_TEST_CASE(test_ReductorInterface)
   BOOST_CHECK_EQUAL(integrals[1], 1);
   BOOST_CHECK_EQUAL(integrals[2], 2);
   BOOST_CHECK_EQUAL(integrals[3], 5);
+}
+
+class MyReductorAny : public ReductorConditionAny
+{
+ public:
+  MyReductorAny() = default;
+  ~MyReductorAny() = default;
+
+  void* getBranchAddress() override
+  {
+    return &mStats;
+  }
+
+  const char* getBranchLeafList() override
+  {
+    return "a/I";
+  }
+
+  bool update(ConditionRetriever& retriever) override
+  {
+    auto obj = retriever.retrieve<TString>();
+    if (obj != nullptr) {
+      mStats.a = obj->Length();
+      return true;
+    }
+    std::cerr << "could not get the object from db" << std::endl;
+    return false;
+  }
+
+ private:
+  struct {
+    Int_t a;
+  } mStats;
+};
+
+std::string pathToTestObject()
+{
+  return "qc/TST/MO/TestReductor/pid" + std::to_string(getpid());
+}
+
+std::string fullTestObjectPath()
+{
+  return pathToTestObject() + "/string";
+}
+
+struct MyGlobalFixture {
+  void teardown()
+  {
+    std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
+    backend->connect(CCDB_ENDPOINT, "", "", "");
+    // cannot use the test_fixture because we are tearing down
+    backend->truncate(pathToTestObject(), "*");
+  }
+};
+BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
+
+BOOST_AUTO_TEST_CASE(test_ReductorAnyInterface)
+{
+  std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
+  backend->connect(CCDB_ENDPOINT, "", "", "");
+  backend->truncate(pathToTestObject(), "*");
+  TString secret = "1234567890";
+  backend->storeAny(&secret, typeid(TString), fullTestObjectPath(), {}, "TST", "TestReductor", 1, 10);
+
+  ConditionAccess conditionAccess;
+  conditionAccess.setCcdbUrl(CCDB_ENDPOINT);
+
+  std::unique_ptr<ReductorConditionAny> reductor = std::make_unique<MyReductorAny>();
+  auto tree = std::make_unique<TTree>();
+  tree->Branch("numbers", reductor->getBranchAddress(), reductor->getBranchLeafList());
+  reductor->update(conditionAccess, 5, fullTestObjectPath());
+  tree->Fill();
+  BOOST_REQUIRE_EQUAL(tree->GetEntries(), 1);
+  tree->Draw("numbers.a", "", "goff");
+  Double_t* integrals = tree->GetVal(0);
+
+  BOOST_CHECK_EQUAL(integrals[0], secret.Length());
 }

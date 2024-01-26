@@ -17,7 +17,7 @@
 #define QUALITYCONTROL_CLUSTERCHARGEREDUCTOR_H
 
 #include "MCH/Helpers.h"
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "MCHRawCommon/DataFormats.h"
 #include "MCHRawElecMap/Mapper.h"
 #include <array>
@@ -29,7 +29,7 @@ namespace o2::quality_control_modules::muonchambers
 ///
 /// A Reductor which obtains the most popular characteristics of TH1.
 
-class ClusterChargeReductor : public quality_control::postprocessing::Reductor
+class ClusterChargeReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   ClusterChargeReductor();

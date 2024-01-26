@@ -22,6 +22,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 #include <TH1.h>
@@ -127,8 +128,9 @@ void TrendingTracks::trendValues(const Trigger& t, repository::DatabaseInterface
       moClusPerChamber = mo;
     } else {
       TObject* obj = mo ? mo->getObject() : nullptr;
-      if (obj) {
-        mReductors[dataSource.name]->update(obj);
+      auto reductor = dynamic_cast<ReductorTObject*>(mReductors[dataSource.name].get());
+      if (obj && reductor) {
+        reductor->update(obj);
       }
     }
   }

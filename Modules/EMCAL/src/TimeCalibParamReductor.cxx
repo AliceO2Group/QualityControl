@@ -19,7 +19,7 @@
 
 using namespace o2::quality_control_modules::emcal;
 
-TimeCalibParamReductor::TimeCalibParamReductor() : Reductor(), mGeometry(nullptr), mStats()
+TimeCalibParamReductor::TimeCalibParamReductor() : ReductorTObject(), mGeometry(nullptr), mStats()
 {
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }

@@ -14,7 +14,7 @@
 /// \author  Piotr Konopka
 ///
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "QualityControl/QualityObject.h"
 #include "Common/TH1Reductor.h"
 #include "Common/TH2Reductor.h"

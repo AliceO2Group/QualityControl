@@ -12,7 +12,7 @@
 #ifndef QUALITYCONTROL_EMCAL_BADCHANNELMAPREDUCTOR_H
 #define QUALITYCONTROL_EMCAL_BADCHANNELMAPREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2
 {
@@ -30,7 +30,7 @@ namespace o2::quality_control_modules::emcal
 /// Produces entries:
 /// - Bad/Dead channels for Full acceptance/Subdetector/Supermodule
 /// - Fraction Bad/Dead channels for Full acceptance/Subdetector/Supermodule
-class BadChannelMapReductor : public quality_control::postprocessing::Reductor
+class BadChannelMapReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   BadChannelMapReductor();

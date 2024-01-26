@@ -21,7 +21,7 @@
 namespace o2::quality_control_modules::muonchambers
 {
 
-ClusterChargeReductor::ClusterChargeReductor() : quality_control::postprocessing::Reductor()
+ClusterChargeReductor::ClusterChargeReductor() : quality_control::postprocessing::ReductorTObject()
 {
 }
 

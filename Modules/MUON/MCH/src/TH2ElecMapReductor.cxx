@@ -33,7 +33,7 @@ namespace o2::quality_control_modules::muonchambers
 {
 
 TH2ElecMapReductor::TH2ElecMapReductor(float min, float max)
-  : quality_control::postprocessing::Reductor(),
+  : quality_control::postprocessing::ReductorTObject(),
     mMin(min),
     mMax(max)
 {
