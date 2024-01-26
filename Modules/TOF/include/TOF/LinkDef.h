@@ -24,5 +24,6 @@
 // Trending
 #pragma link C++ class o2::quality_control_modules::tof::TrendingHits + ;
 #pragma link C++ class o2::quality_control_modules::tof::TrendingRate + ;
+#pragma link C++ class o2::quality_control_modules::tof::TrendingCalibLHCphase + ;
 // Utilities
 #endif
