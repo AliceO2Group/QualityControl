@@ -40,7 +40,7 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& na
   mHealthUrl = mHealthUrl.empty() ? boost::asio::ip::host_name() : mHealthUrl;
   mHealthPortAssigned = false;
 
-  mHealthThread = std::thread([=] {
+  mHealthThread = std::thread([this] {
 #ifdef __linux__
     std::string threadName = "QC/SrvcDiscov";
     pthread_setname_np(pthread_self(), threadName.c_str());
