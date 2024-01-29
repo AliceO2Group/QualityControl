@@ -17,7 +17,6 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DigitsPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PreclustersPostProcessing + ;
-#pragma link C++ class o2::quality_control_modules::muonchambers::QualityPostProcessing + ;
 // Trending
 #pragma link C++ class o2::quality_control_modules::muonchambers::TrendingTracks + ;
 // Checks
@@ -25,9 +24,7 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DigitsCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PreclustersCheck + ;
-#pragma link C++ class o2::quality_control_modules::muonchambers::QualityCheck + ;
 // Aggregators
-#pragma link C++ class o2::quality_control_modules::muonchambers::MCHAggregator + ;
 // legacy tasks
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskDigits + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskRofs + ;

@@ -36,9 +36,6 @@ set(SRCS
   src/PreclustersPostProcessing.cxx
   src/PostProcessingConfigMCH.cxx
   src/TrendingTracks.cxx
-  src/MCHAggregator.cxx
-  src/QualityPostProcessing.cxx
-  src/QualityCheck.cxx
   src/ClustersTask.cxx
 )
 
@@ -79,9 +76,6 @@ set(HEADERS
   include/MCH/PreclustersPostProcessing.h
   include/MCH/PostProcessingConfigMCH.h
   include/MCH/TrendingTracks.h
-  include/MCH/MCHAggregator.h
-  include/MCH/QualityPostProcessing.h
-  include/MCH/QualityCheck.h
   include/MCH/ClustersTask.h
 
   # legacy tasks
@@ -160,16 +154,12 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/DecodingCheck.h
                             include/MCH/ErrorTask.h
                             include/MCH/PedestalsCheck.h
-                            include/MCH/sampa_header.h
                             include/MCH/TracksTask.h
                             include/MCH/DecodingPostProcessing.h
                             include/MCH/DigitsPostProcessing.h
                             include/MCH/PreclustersPostProcessing.h
                             include/MCH/PostProcessingConfigMCH.h
                             include/MCH/TrendingTracks.h
-                            include/MCH/MCHAggregator.h
-                            include/MCH/QualityPostProcessing.h
-                            include/MCH/QualityCheck.h
                             include/MCH/ClustersTask.h
 
                             # legacy tasks
