@@ -26,7 +26,8 @@ target_sources(O2QcCommon
                        src/QualityReductor.cxx
                        src/EverIncreasingGraph.cxx
                        src/TH1SliceReductor.cxx
-                       src/TH2SliceReductor.cxx)
+                       src/TH2SliceReductor.cxx
+                       src/LHCClockPhaseReductor.cxx)
 
 target_include_directories(
   O2QcCommon
@@ -58,6 +59,7 @@ add_root_dictionary(O2QcCommon
                             include/Common/IncreasingEntries.h
                             include/Common/TH1SliceReductor.h
                             include/Common/TH2SliceReductor.h
+                            include/Common/LHCClockPhaseReductor.h
                     LINKDEF include/Common/LinkDef.h)
 
 install(FILES etc/trfcollection-example.json
