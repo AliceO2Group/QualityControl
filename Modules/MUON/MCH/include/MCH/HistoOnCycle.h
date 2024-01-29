@@ -47,8 +47,6 @@ void HistoOnCycle<T>::update(TObject* obj)
     return;
   }
 
-  T::SetNameTitle(TString::Format("%sOnCycle", histo->GetName()), TString::Format("%s - OnCycle", histo->GetTitle()));
-
   // if not already done, initialize the internal plot that stores the data from the previous cycle
   if (!mHistPrevCycle) {
     std::string name = std::string(T::GetName()) + "PrevCycle";
@@ -56,44 +54,15 @@ void HistoOnCycle<T>::update(TObject* obj)
     Bool_t bStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
     mHistPrevCycle = std::make_unique<T>();
+    histo->Copy(*mHistPrevCycle);
     mHistPrevCycle->SetNameTitle(name.c_str(), title.c_str());
-    switch (mHistPrevCycle->GetDimension()) {
-      case 1:
-        mHistPrevCycle->SetBins(histo->GetXaxis()->GetNbins(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
-        break;
-      case 2:
-        mHistPrevCycle->SetBins(histo->GetXaxis()->GetNbins(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax(),
-                                histo->GetYaxis()->GetNbins(), histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
-        break;
-      case 3:
-        mHistPrevCycle->SetBins(histo->GetXaxis()->GetNbins(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax(),
-                                histo->GetYaxis()->GetNbins(), histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax(),
-                                histo->GetZaxis()->GetNbins(), histo->GetZaxis()->GetXmin(), histo->GetZaxis()->GetXmax());
-        break;
-      default:
-        break;
-    }
+    mHistPrevCycle->Reset("ICES");
     TH1::AddDirectory(bStatus);
   }
 
-  T::Reset("ICES");
-  switch (T::GetDimension()) {
-    case 1:
-      T::SetBins(histo->GetXaxis()->GetNbins(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax());
-      break;
-    case 2:
-      T::SetBins(histo->GetXaxis()->GetNbins(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax(),
-                 histo->GetYaxis()->GetNbins(), histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax());
-      break;
-    case 3:
-      T::SetBins(histo->GetXaxis()->GetNbins(), histo->GetXaxis()->GetXmin(), histo->GetXaxis()->GetXmax(),
-                 histo->GetYaxis()->GetNbins(), histo->GetYaxis()->GetXmin(), histo->GetYaxis()->GetXmax(),
-                 histo->GetZaxis()->GetNbins(), histo->GetZaxis()->GetXmin(), histo->GetZaxis()->GetXmax());
-      break;
-    default:
-      break;
-  }
-  T::Add(histo, mHistPrevCycle.get(), 1, -1);
+  histo->Copy(*this);
+  T::SetNameTitle(TString::Format("%sOnCycle", histo->GetName()), TString::Format("%s - OnCycle", histo->GetTitle()));
+  T::Add(mHistPrevCycle.get(), -1);
 
   mHistPrevCycle->Reset("ICES");
   mHistPrevCycle->Add(histo);
