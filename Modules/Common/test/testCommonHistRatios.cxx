@@ -10,11 +10,10 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testCommonReductors.cxx
-/// \author  Piotr Konopka
+/// \file    testCommonHistRatios.cxx
+/// \author  Andrea Ferrero
 ///
 
-#include "QualityControl/Reductor.h"
 #include "QualityControl/QualityObject.h"
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
