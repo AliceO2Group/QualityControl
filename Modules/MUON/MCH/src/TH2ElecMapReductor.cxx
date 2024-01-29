@@ -11,13 +11,15 @@
 
 ///
 /// \file   TH2ElecMapReductor.cxx
-/// \author Piotr Konopka, Sebastien Perrin
+/// \author Andrea Ferrero
+/// \author Sebastien Perrin
 ///
 
 #include <TH1.h>
 #include "MCH/TH2ElecMapReductor.h"
 #include "MCH/Helpers.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include "Common/TH2Ratio.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHGlobalMapping/DsIndex.h"
 #include <iostream>
@@ -27,7 +29,7 @@
 #include <limits>
 
 using namespace o2::mch;
-using namespace o2::quality_control_modules::muon;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -108,19 +110,19 @@ int TH2ElecMapReductor::getNumPadsNoStat(int deid, int cathode)
 void TH2ElecMapReductor::update(TObject* obj)
 {
   if (sDeNum != getNumDE()) {
-    std::cout << "wrong sDeNum" << std::endl;
+    ILOG(Warning) << "wrong sDeNum" << ENDM;
     return;
   }
 
   auto h = dynamic_cast<TH2*>(obj);
   if (!h) {
-    std::cout << "cannot cast to TH2F" << std::endl;
+    ILOG(Warning) << "cannot cast to TH2F" << ENDM;
     return;
   }
 
-  auto* hr = dynamic_cast<MergeableTH2Ratio*>(obj);
+  auto* hr = dynamic_cast<TH2FRatio*>(obj);
   if (!hr) {
-    std::cout << "cannot cast to MergeableTH2Ratio" << std::endl;
+    ILOG(Warning) << "cannot cast to TH2FRatio" << ENDM;
     return;
   }
 

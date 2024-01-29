@@ -46,7 +46,7 @@ void DecodingTask::createErrorHistos()
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Number of decoding errors, grouped by chamber ID and normalized to the number of processed TF
-  mHistogramErrorsFEC = std::make_unique<MergeableTH2Ratio>("DecodingErrors_Elec", "Error Code vs. FEC ID", nElecXbins, 0, nElecXbins, getErrorCodesSize(), 0, getErrorCodesSize());
+  mHistogramErrorsFEC = std::make_unique<TH2FRatio>("DecodingErrors_Elec", "Error Code vs. FEC ID", nElecXbins, 0, nElecXbins, getErrorCodesSize(), 0, getErrorCodesSize());
   {
     TAxis* ax = mHistogramErrorsFEC->GetYaxis();
     for (int i = 0; i < getErrorCodesSize(); i++) {
@@ -64,14 +64,14 @@ void DecodingTask::createHeartBeatHistos()
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Heart-beat packets time distribution and synchronization errors
-  mHistogramHBTimeFEC = std::make_unique<MergeableTH2Ratio>("HBTime_Elec", "HB time vs. FEC ID", nElecXbins, 0, nElecXbins, 40, mHBExpectedBc - 20, mHBExpectedBc + 20);
+  mHistogramHBTimeFEC = std::make_unique<TH2FRatio>("HBTime_Elec", "HB time vs. FEC ID", nElecXbins, 0, nElecXbins, 40, mHBExpectedBc - 20, mHBExpectedBc + 20);
   publishObject(mHistogramHBTimeFEC.get(), "colz", "logz", false, false);
 
   uint64_t max = ((static_cast<uint64_t>(0x100000) / 100) + 1) * 100;
-  mHistogramHBCoarseTimeFEC = std::make_unique<MergeableTH2Ratio>("HBCoarseTime_Elec", "HB time vs. FEC ID (coarse)", nElecXbins, 0, nElecXbins, 100, 0, max);
+  mHistogramHBCoarseTimeFEC = std::make_unique<TH2FRatio>("HBCoarseTime_Elec", "HB time vs. FEC ID (coarse)", nElecXbins, 0, nElecXbins, 100, 0, max);
   publishObject(mHistogramHBCoarseTimeFEC.get(), "colz", "", false, false);
 
-  mSyncStatusFEC = std::make_unique<MergeableTH2Ratio>("SyncStatus_Elec", "Heart-beat status vs. FEC ID", nElecXbins, 0, nElecXbins, 3, 0, 3);
+  mSyncStatusFEC = std::make_unique<TH2FRatio>("SyncStatus_Elec", "Heart-beat status vs. FEC ID", nElecXbins, 0, nElecXbins, 3, 0, 3);
   mSyncStatusFEC->GetYaxis()->SetBinLabel(1, "OK");
   mSyncStatusFEC->GetYaxis()->SetBinLabel(2, "Out-of-sync");
   mSyncStatusFEC->GetYaxis()->SetBinLabel(3, "Missing");
@@ -338,7 +338,7 @@ void DecodingTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   mHistogramTimeFramesCount->Fill(0.5);
 
-  auto updateTFcount = [](MergeableTH2Ratio* hr, int nTF) {
+  auto updateTFcount = [](TH2FRatio* hr, int nTF) {
     auto hTF = hr->getDen();
     for (int ybin = 1; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
       for (int xbin = 1; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {

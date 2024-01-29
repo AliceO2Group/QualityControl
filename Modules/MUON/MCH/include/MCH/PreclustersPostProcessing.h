@@ -22,7 +22,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 
 #include "MCH/Helpers.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/EfficiencyPlotter.h"
 #include "MCH/EfficiencyTrendsPlotter.h"
@@ -38,7 +38,7 @@ class DatabaseInterface;
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::postprocessing;
-using namespace o2::quality_control_modules::muon;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -83,7 +83,7 @@ class PreclustersPostProcessing : public PostProcessingInterface
   // Hit rate histograms ===============================================
 
   // On-cycle plots generators
-  std::unique_ptr<HistoOnCycle<MergeableTH2Ratio>> mElecMapOnCycle;
+  std::unique_ptr<HistoOnCycle<TH2FRatio>> mElecMapOnCycle;
   std::unique_ptr<HistoOnCycle<TH2F>> mClusterChargeOnCycle;
   std::unique_ptr<HistoOnCycle<TH2F>> mClusterSizeOnCycle;
   // Plotters

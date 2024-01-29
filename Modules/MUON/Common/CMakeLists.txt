@@ -4,8 +4,6 @@ set(MODULE_NAME "O2QcMUONCommon")
 
 set(SRCS
   src/Helpers.cxx
-  src/MergeableTH1Ratio.cxx
-  src/MergeableTH2Ratio.cxx
   src/HistPlotter.cxx
   src/MuonTrack.cxx
   src/TrackPlotter.cxx
@@ -14,8 +12,6 @@ set(SRCS
 )
 
 set(HEADERS
-  include/MUONCommon/MergeableTH1Ratio.h
-  include/MUONCommon/MergeableTH2Ratio.h
   include/MUONCommon/HistPlotter.h
   include/MUONCommon/MuonTrack.h
   include/MUONCommon/TrackCheck.h
@@ -52,9 +48,7 @@ install(
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MUONCommon/MergeableTH1Ratio.h
-                            include/MUONCommon/MergeableTH2Ratio.h
-                            include/MUONCommon/TrackPlotter.h
+                    HEADERS include/MUONCommon/TrackPlotter.h
                             include/MUONCommon/TracksCheck.h
                             include/MUONCommon/TracksTask.h
                     LINKDEF include/MUONCommon/LinkDef.h)

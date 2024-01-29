@@ -83,12 +83,12 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
 
   auto obj = mCcdbObjects.find(rateSourceName());
   if (obj != mCcdbObjects.end()) {
-    mElecMapOnCycle = std::make_unique<HistoOnCycle<MergeableTH2Ratio>>();
+    mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   obj = mCcdbObjects.find(rateSignalSourceName());
   if (obj != mCcdbObjects.end()) {
-    mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<MergeableTH2Ratio>>();
+    mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   //----------------------------------
@@ -206,7 +206,7 @@ void DigitsPostProcessing::updateRateHistos(Trigger t, repository::DatabaseInter
 {
   auto obj = mCcdbObjects.find(rateSourceName());
   if (obj != mCcdbObjects.end() && obj->second.update(qcdb, t.timestamp, t.activity)) {
-    MergeableTH2Ratio* hr = obj->second.get<MergeableTH2Ratio>();
+    TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mRatesPlotter->update(hr);
       // extract the average occupancies on the last cycle
@@ -220,7 +220,7 @@ void DigitsPostProcessing::updateRateHistos(Trigger t, repository::DatabaseInter
 
   obj = mCcdbObjects.find(rateSignalSourceName());
   if (obj != mCcdbObjects.end() && obj->second.update(qcdb, t.timestamp, t.activity)) {
-    MergeableTH2Ratio* hr = obj->second.get<MergeableTH2Ratio>();
+    TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mRatesPlotterSignal->update(hr);
       // extract the average occupancies on the last cycle
