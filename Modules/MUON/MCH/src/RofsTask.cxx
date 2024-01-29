@@ -31,6 +31,8 @@
 #include "MCHRawDecoder/ErrorCodes.h"
 #include "MCHBase/DecoderError.h"
 
+using namespace o2::quality_control::core;
+
 namespace o2
 {
 namespace quality_control_modules

@@ -29,7 +29,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::MCHMappingImpl4 O2::DataFormatsMCH O2::MCHTracking O2::MCHRawElecMap O2::ReconstructionDataFormats O2::MCHGeometryTransformer O2::DataFormatsGlobalTracking)
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2QcCommon O2::MCHMappingImpl4 O2::DataFormatsMCH O2::MCHTracking O2::MCHRawElecMap O2::ReconstructionDataFormats O2::MCHGeometryTransformer O2::DataFormatsGlobalTracking)
 
 # Digit.h is moving from MCHBase to DataFormatsMCH : let's handle both
 # gracefully for the moment...
