@@ -11,8 +11,6 @@
 
 ///
 /// \file   PreclustersTask.cxx
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
 /// \author Andrea Ferrero
 /// \author Sebastien Perrin
 ///

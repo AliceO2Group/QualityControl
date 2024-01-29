@@ -42,23 +42,8 @@ class ClusterSizePlotter : public HistPlotter
   void update(TH2F* hCharge);
 
  private:
-  void addHisto(TH1* h, bool statBox, const char* drawOptions, const char* displayHints)
-  {
-    h->SetOption(drawOptions);
-    if (!statBox) {
-      h->SetStats(0);
-    }
-    histograms().emplace_back(HistInfo{ h, drawOptions, displayHints });
-  }
-
-  void addCanvas(TCanvas* c, TH1* h, bool statBox, const char* drawOptions, const char* displayHints)
-  {
-    h->SetOption(drawOptions);
-    if (!statBox) {
-      h->SetStats(0);
-    }
-    histograms().emplace_back(HistInfo{ c, "", displayHints });
-  }
+  void addHisto(TH1* h, bool statBox, const char* drawOptions, const char* displayHints);
+  void addCanvas(TCanvas* c, TH1* h, bool statBox, const char* drawOptions, const char* displayHints);
 
   void fillHistograms(TH2F* h);
 

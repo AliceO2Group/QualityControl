@@ -17,7 +17,6 @@
 ///
 
 #include "MCH/TrendingTracks.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -34,7 +33,6 @@
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
-using namespace o2::quality_control_modules::muon;
 using namespace o2::quality_control_modules::muonchambers;
 
 void TrendingTracks::configure(const boost::property_tree::ptree& config)
