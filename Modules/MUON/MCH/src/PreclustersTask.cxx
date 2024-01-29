@@ -48,15 +48,15 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDet2ElecMapper = createDet2ElecMapper<ElectronicMapperGenerated>();
   mSolar2FeeLinkMapper = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
 
-  mHistogramPreclustersPerDE = std::make_unique<MergeableTH1Ratio>("PreclustersPerDE", "Number of pre-clusters for each DE", getNumDE(), 0, getNumDE());
+  mHistogramPreclustersPerDE = std::make_unique<TH1DRatio>("PreclustersPerDE", "Number of pre-clusters for each DE", getNumDE(), 0, getNumDE());
   publishObject(mHistogramPreclustersPerDE.get(), "hist", false);
-  mHistogramPreclustersSignalPerDE = std::make_unique<MergeableTH1Ratio>("PreclustersSignalPerDE", "Number of pre-clusters (with signal) for each DE", getNumDE(), 0, getNumDE());
+  mHistogramPreclustersSignalPerDE = std::make_unique<TH1DRatio>("PreclustersSignalPerDE", "Number of pre-clusters (with signal) for each DE", getNumDE(), 0, getNumDE());
   publishObject(mHistogramPreclustersSignalPerDE.get(), "hist", false);
 
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Histograms in electronics coordinates
-  mHistogramPseudoeffElec = std::make_unique<MergeableTH2Ratio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
+  mHistogramPseudoeffElec = std::make_unique<TH2FRatio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64);
   publishObject(mHistogramPseudoeffElec.get(), "colz", false);
 
   // 256 bins, 50 ADC / bin
