@@ -26,7 +26,6 @@
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
-using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::common;
 
 BOOST_AUTO_TEST_CASE(test_TH1FRatioUniform)
