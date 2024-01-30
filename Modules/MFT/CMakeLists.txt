@@ -9,6 +9,7 @@ target_sources(O2QcMFT PRIVATE
                src/QcMFTClusterTask.cxx
                src/QcMFTTrackCheck.cxx
                src/QcMFTTrackTask.cxx
+               src/QCMFTTrackMCTask.cxx
                src/QcMFTReadoutCheck.cxx
                src/QcMFTReadoutTask.cxx
                src/QcMFTReadoutTrend.cxx
@@ -35,6 +36,7 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTClusterTask.h
                     include/MFT/QcMFTTrackCheck.h
                     include/MFT/QcMFTTrackTask.h
+                    include/MFT/QcMFTTrackMCTask.h
                     include/MFT/QcMFTReadoutCheck.h
                     include/MFT/QcMFTReadoutTask.h
                     include/MFT/QcMFTReadoutTrend.h
@@ -97,6 +99,7 @@ endforeach()
 install(FILES mft-digits.json
               mft-clusters.json
               mft-tracks.json
+              mft-tracks-mc.json
               mft-readout.json
               mft-readout-trend.json
               mft-occupancy-trend.json
