@@ -25,7 +25,6 @@
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
 #include "MIDRaw/FEEIdConfig.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
 
 class TH1F;
 class TH2F;

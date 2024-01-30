@@ -18,8 +18,6 @@
 #include <TH2F.h>
 #include <fmt/format.h>
 
-using namespace o2::mch::raw;
-
 namespace o2
 {
 namespace quality_control_modules

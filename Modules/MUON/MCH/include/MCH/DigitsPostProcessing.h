@@ -20,7 +20,7 @@
 #define QC_MODULE_MCH_PP_DIGITS_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/RatesPlotter.h"
 #include "MCH/RatesTrendsPlotter.h"
@@ -33,7 +33,7 @@ class DatabaseInterface;
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::postprocessing;
-using namespace o2::quality_control_modules::muon;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -73,8 +73,8 @@ class DigitsPostProcessing : public PostProcessingInterface
   // Hit rate histograms ===============================================
 
   // On-cycle plots generators
-  std::unique_ptr<HistoOnCycle<MergeableTH2Ratio>> mElecMapOnCycle;
-  std::unique_ptr<HistoOnCycle<MergeableTH2Ratio>> mElecMapSignalOnCycle;
+  std::unique_ptr<HistoOnCycle<TH2FRatio>> mElecMapOnCycle;
+  std::unique_ptr<HistoOnCycle<TH2FRatio>> mElecMapSignalOnCycle;
   // Plotters
   std::unique_ptr<RatesPlotter> mRatesPlotter;
   std::unique_ptr<RatesPlotter> mRatesPlotterOnCycle;

@@ -18,9 +18,6 @@
 
 #include "MCH/Helpers.h"
 #include "QualityControl/Reductor.h"
-#include "MCHRawCommon/DataFormats.h"
-#include "MCHRawElecMap/Mapper.h"
-#include <array>
 
 namespace o2::quality_control_modules::muonchambers
 {

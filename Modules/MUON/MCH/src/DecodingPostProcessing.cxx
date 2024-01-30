@@ -17,7 +17,6 @@
 ///
 
 #include "MCH/DecodingPostProcessing.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
 #include "MCH/PostProcessingConfigMCH.h"
 #include <MCHMappingInterface/Segmentation.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -77,7 +76,7 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
 
   auto obj = mCcdbObjects.find(errorsSourceName());
   if (obj != mCcdbObjects.end()) {
-    mErrorsOnCycle = std::make_unique<HistoOnCycle<MergeableTH2Ratio>>();
+    mErrorsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   //----------------------------------
@@ -101,7 +100,7 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
 
   auto obj = mCcdbObjects.find(hbPacketsSourceName());
   if (obj != mCcdbObjects.end()) {
-    mHBPacketsOnCycle = std::make_unique<HistoOnCycle<MergeableTH2Ratio>>();
+    mHBPacketsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   //----------------------------------
@@ -125,7 +124,7 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
 
   auto obj = mCcdbObjects.find(syncStatusSourceName());
   if (obj != mCcdbObjects.end()) {
-    mSyncStatusOnCycle = std::make_unique<HistoOnCycle<MergeableTH2Ratio>>();
+    mSyncStatusOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   //----------------------------------
@@ -156,7 +155,7 @@ void DecodingPostProcessing::updateDecodingErrorsHistos(Trigger t, repository::D
 {
   auto obj = mCcdbObjects.find(errorsSourceName());
   if (obj != mCcdbObjects.end() && obj->second.update(qcdb, t.timestamp, t.activity)) {
-    MergeableTH2Ratio* hr = obj->second.get<MergeableTH2Ratio>();
+    TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mErrorsPlotter->update(hr);
       //  extract the average occupancies on the last cycle
@@ -172,7 +171,7 @@ void DecodingPostProcessing::updateHeartBeatPacketsHistos(Trigger t, repository:
 {
   auto obj = mCcdbObjects.find(hbPacketsSourceName());
   if (obj != mCcdbObjects.end() && obj->second.update(qcdb, t.timestamp, t.activity)) {
-    MergeableTH2Ratio* hr = obj->second.get<MergeableTH2Ratio>();
+    TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mHBPacketsPlotter->update(hr);
       // extract the average occupancies on the last cycle
@@ -188,7 +187,7 @@ void DecodingPostProcessing::updateSyncStatusHistos(Trigger t, repository::Datab
 {
   auto obj = mCcdbObjects.find(syncStatusSourceName());
   if (obj != mCcdbObjects.end() && obj->second.update(qcdb, t.timestamp, t.activity)) {
-    TH2F* hr = obj->second.get<MergeableTH2Ratio>();
+    TH2F* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mSyncStatusPlotter->update(hr);
       // extract the average occupancies on the last cycle

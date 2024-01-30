@@ -18,7 +18,7 @@
 #ifndef QC_MODULE_MCH_DECODINGTASK_H
 #define QC_MODULE_MCH_DECODINGTASK_H
 
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include "Common/TH2Ratio.h"
 #include "MCH/Helpers.h"
 #include <DPLUtils/DPLRawParser.h>
 #include <MCHRawDecoder/PageDecoder.h>
@@ -28,7 +28,7 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 
-using namespace o2::quality_control_modules::muon;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -99,12 +99,12 @@ class DecodingTask /*final*/ : public TaskInterface
   std::unique_ptr<TH1F> mHistogramTimeFramesCount;
 
   /// \brief decoding error plots
-  std::unique_ptr<MergeableTH2Ratio> mHistogramErrorsFEC; ///< error codes per FEC
+  std::unique_ptr<TH2FRatio> mHistogramErrorsFEC; ///< error codes per FEC
 
   /// \brief time synchronization diagnostics plots
-  std::unique_ptr<MergeableTH2Ratio> mHistogramHBTimeFEC;       ///< bunch-crossing from HB packets vs. FEC id
-  std::unique_ptr<MergeableTH2Ratio> mHistogramHBCoarseTimeFEC; ///< bunch-crossing from HB packets vs. FEC id, coarse scale
-  std::unique_ptr<MergeableTH2Ratio> mSyncStatusFEC;            ///< time synchronization status of each DS board (OK, out-of-synch, missing good HB)
+  std::unique_ptr<TH2FRatio> mHistogramHBTimeFEC;       ///< bunch-crossing from HB packets vs. FEC id
+  std::unique_ptr<TH2FRatio> mHistogramHBCoarseTimeFEC; ///< bunch-crossing from HB packets vs. FEC id, coarse scale
+  std::unique_ptr<TH2FRatio> mSyncStatusFEC;            ///< time synchronization status of each DS board (OK, out-of-synch, missing good HB)
 
   std::vector<TH1*> mAllHistograms;
 };

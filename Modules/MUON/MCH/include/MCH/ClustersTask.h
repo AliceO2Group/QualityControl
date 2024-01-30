@@ -49,14 +49,6 @@ class ClustersTask /*final*/ : public TaskInterface
   /** check whether all the expected inputs are present.*/
   bool assertInputs(o2::framework::ProcessingContext& ctx);
 
-  /** create one histogram with relevant drawing options / stat box status.*/
-  template <typename T>
-  std::unique_ptr<T> createHisto(const char* name, const char* title,
-                                 int nbins, double xmin, double xmax,
-                                 bool statBox = false,
-                                 const char* drawOptions = "",
-                                 const char* displayHints = "");
-
   /** create histograms related to clusters (those attached to tracks) */
   void createClusterHistos();
 

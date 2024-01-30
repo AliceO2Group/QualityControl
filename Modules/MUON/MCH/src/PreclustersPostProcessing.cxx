@@ -33,8 +33,7 @@ void PreclustersPostProcessing::configure(const boost::property_tree::ptree& con
     TDatime date(refDate.c_str());
     mRefTimeStamp = date.Convert();
   }
-  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp
-                    << "  (" << refDate << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp << "  (" << refDate << ")" << ENDM;
 
   mFullHistos = mchConfig.getParameter<bool>("FullHistos", false);
 
@@ -48,7 +47,7 @@ void PreclustersPostProcessing::configure(const boost::property_tree::ptree& con
     mCcdbObjectsRef.emplace(clusterSizeSourceName(), CcdbObjectHelper());
   }
 
-  for (auto source : mchConfig.dataSources) {
+  for (const auto& source : mchConfig.dataSources) {
     std::string sourceType, sourceName;
     splitDataSourceName(source.name, sourceType, sourceName);
     if (sourceType.empty()) {
@@ -79,7 +78,7 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
 
   auto obj = mCcdbObjects.find(effSourceName());
   if (obj != mCcdbObjects.end()) {
-    mElecMapOnCycle = std::make_unique<HistoOnCycle<MergeableTH2Ratio>>();
+    mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   //----------------------------------
@@ -89,8 +88,8 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
   TH2F* hElecHistoRef{ nullptr };
   obj = mCcdbObjectsRef.find(effSourceName());
   if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
-    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName()
+                      << "\", time stamp " << mRefTimeStamp << ENDM;
     hElecHistoRef = obj->second.get<TH2F>();
   }
 
@@ -225,7 +224,7 @@ void PreclustersPostProcessing::updateEfficiencyHistos(Trigger t, repository::Da
 {
   auto obj = mCcdbObjects.find(effSourceName());
   if (obj != mCcdbObjects.end() && obj->second.update(qcdb, t.timestamp, t.activity)) {
-    MergeableTH2Ratio* hr = obj->second.get<MergeableTH2Ratio>();
+    TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mEfficiencyPlotter->update(hr);
       // extract the average occupancies on the last cycle

@@ -10,9 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PhysicsTask.h
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \file   GlobalHistogram.h
 /// \author Andrea Ferrero
 ///
 
