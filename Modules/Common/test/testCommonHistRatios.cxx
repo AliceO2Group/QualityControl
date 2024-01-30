@@ -10,11 +10,10 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testCommonReductors.cxx
-/// \author  Piotr Konopka
+/// \file    testCommonHistRatios.cxx
+/// \author  Andrea Ferrero
 ///
 
-#include "QualityControl/Reductor.h"
 #include "QualityControl/QualityObject.h"
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
@@ -27,7 +26,6 @@
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
-using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::common;
 
 BOOST_AUTO_TEST_CASE(test_TH1FRatioUniform)
