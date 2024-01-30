@@ -84,12 +84,10 @@ class QcMFTTrackMCTask : public TaskInterface
 
   std::unique_ptr<TH1D> hPrimaryReco_pt = nullptr;
   std::unique_ptr<TH1D> hPrimaryGen_pt = nullptr;
-  std::unique_ptr<TH1D> hResolution_pt = nullptr; // (pt_reco - pt_gen)/pt_gen
+  std::unique_ptr<TH1D> hResolution_pt = nullptr;
 
   int mRunNumber = 0;
   std::string mCollisionsContextPath;
-
-  float bz;
 };
 } // namespace o2::quality_control_modules::mft
 
