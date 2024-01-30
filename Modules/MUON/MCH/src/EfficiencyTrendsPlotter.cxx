@@ -10,9 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PhysicsTask.cxx
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \file   EfficiencyTrendsPlotter.cxx
 /// \author Andrea Ferrero
 ///
 

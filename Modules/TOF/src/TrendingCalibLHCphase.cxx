@@ -10,56 +10,63 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TrendingTracks.cxx
-/// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Trending of the MCH tracking
-/// \since   21/06/2022
-///
+/// \file   TrendingCalibLHCphase.cxx
+/// \author Francesca Ercolessi
 
-#include "MCH/TrendingTracks.h"
+#include "TOF/TrendingCalibLHCphase.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
-#include "QualityControl/ReductorTObject.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/ActivityHelpers.h"
+#include "CCDB/BasicCCDBManager.h"
+#include "QualityControl/UserCodeInterface.h"
+#include "DetectorsCalibration/Utils.h"
+#include "TOFBase/Utils.h"
+#include "TOFCalibration/LHCClockCalibrator.h"
+#include "TOFBase/Geo.h"
+#include "CCDB/CcdbApi.h"
+
 #include <TH1.h>
+#include <TMath.h>
+#include <TH2.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <TDatime.h>
 #include <TGraphErrors.h>
 #include <TProfile.h>
 #include <TPoint.h>
 
+#include <boost/property_tree/ptree.hpp>
+
+using namespace std;
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
-using namespace o2::quality_control_modules::muonchambers;
+using namespace o2::quality_control_modules::tof;
 
-void TrendingTracks::configure(const boost::property_tree::ptree& config)
+using LHCphase = o2::dataformats::CalibLHCphaseTOF;
+
+void TrendingCalibLHCphase::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = PostProcessingConfigMCH(getID(), config);
-  for (int chamber = 0; chamber < 10; chamber++) {
-    mConfig.plots.push_back({ fmt::format("Clusters_CH{}", chamber + 1),
-                              fmt::format("Clusters CH{}", chamber + 1),
-                              fmt::format("clusCH{}:time", chamber + 1),
-                              "", "*L", "" });
-  }
+  mConfig = TrendingConfigTOF(getID(), config);
+  mHost = config.get<std::string>("qc.postprocessing." + getID() + ".dataSourceURL");
 }
 
-void TrendingTracks::initialize(Trigger, framework::ServiceRegistryRef)
+void TrendingCalibLHCphase::initialize(Trigger, framework::ServiceRegistryRef)
 {
-  // Setting parameters
+  mCdbApi.init(mHost);
 
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("time", &mTime);
-
-  for (int chamber = 0; chamber < 10; chamber++) {
-    mTrend->Branch(fmt::format("clusCH{}", chamber + 1).c_str(), &mClusCH[chamber]);
-  }
+  mTrend->Branch("phase", &mPhase);
+  mTrend->Branch("startValidity", &mStartValidity);
+  mTrend->Branch("endValidity", &mEndValidity);
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
@@ -69,83 +76,55 @@ void TrendingTracks::initialize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->startPublishing(mTrend.get());
 }
 
-void TrendingTracks::computeClustersPerChamber(TProfile* p)
+void TrendingCalibLHCphase::update(Trigger t, framework::ServiceRegistryRef services)
 {
-  if (!p) {
-    return;
-  }
-  if (p->GetXaxis()->GetNbins() != 10) {
-    ILOG(Error, Support) << "Wrong number of bins in moClusPerChamber, can't compute number of clusters per chamber";
-    return;
-  }
+  auto& ccdb = services.get<repository::DatabaseInterface>();
 
-  if (!mHistClusPerChamberPrev) {
-    mHistClusPerChamberPrev = new TProfile(*p);
-    mHistClusPerChamberPrev->SetName("histClusPerChamberPrev");
-    mHistClusPerChamberPrev->Reset();
-  }
-
-  TProfile hDiff(*p);
-  hDiff.SetName("histClusPerChamberDiff");
-  hDiff.Add(mHistClusPerChamberPrev, -1);
-
-  for (int ch = 0; ch < 10; ch++) {
-    mClusCH[ch] = hDiff.GetBinContent(ch + 1);
-  }
-}
-
-// todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTracks::update(Trigger t, framework::ServiceRegistryRef services)
-{
-  auto& qcdb = services.get<repository::DatabaseInterface>();
-
-  trendValues(t, qcdb);
+  trendValues(t, ccdb);
   generatePlots();
 }
 
-void TrendingTracks::finalize(Trigger t, framework::ServiceRegistryRef)
+void TrendingCalibLHCphase::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   generatePlots();
 }
 
-void TrendingTracks::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
+void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseInterface& ccdb)
 {
   mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
             ? t.timestamp / 1000
-            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.  mMetaData.runNumber = t.activity.mId;
+            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
+  mMetaData.runNumber = t.activity.mId;
 
-  std::shared_ptr<o2::quality_control::core::MonitorObject> moClusPerChamber = nullptr;
+  mPhase = 0.;
+  mStartValidity = 0;
+  mEndValidity = 0;
+
+  map<string, string> metadata; // can be empty
 
   for (auto& dataSource : mConfig.dataSources) {
-    auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
-    if (!mo) {
-      continue;
-    }
-    ILOG(Debug, Support) << "Got MO " << mo << ENDM;
-    if (mo->getName().find(nameClusPerChamber) != std::string::npos) {
-      moClusPerChamber = mo;
-    } else {
-      TObject* obj = mo ? mo->getObject() : nullptr;
-      auto reductor = dynamic_cast<ReductorTObject*>(mReductors[dataSource.name].get());
-      if (obj && reductor) {
-        reductor->update(obj);
-      }
-    }
-  }
 
-  if (moClusPerChamber) {
-    TProfile* p = dynamic_cast<TProfile*>(moClusPerChamber->getObject());
-    if (!p) {
-      ILOG(Error, Support) << "Cannot cast moClusPerChamber, can't compute number of clusters per chamber";
-      return;
+    if (dataSource.type == "ccdb") {
+
+      auto calib_object = UserCodeInterface::retrieveConditionAny<LHCphase>(dataSource.path, metadata, -1);
+
+      if (!calib_object) {
+        ILOG(Error, Support) << "Could not retrieve calibration file '" << dataSource.path << "'." << ENDM;
+      } else {
+        ILOG(Info, Support) << "Retrieved calibration file '" << dataSource.path << "'." << ENDM;
+        mPhase = calib_object->getLHCphase(0);
+        mStartValidity = (double)calib_object->getStartValidity() * 0.001;
+        mEndValidity = (double)calib_object->getEndValidity() * 0.001;
+      }
+    } else {
+      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'. Expected: ccdb" << ENDM;
     }
-    computeClustersPerChamber(p);
   }
 
   mTrend->Fill();
 }
 
-void TrendingTracks::generatePlots()
+void TrendingCalibLHCphase::generatePlots()
 {
   if (mTrend->GetEntries() < 1) {
     ILOG(Info, Support) << "No entries in the trend so far, won't generate any plots." << ENDM;
@@ -158,9 +137,14 @@ void TrendingTracks::generatePlots()
 
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
-    if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
-      delete mPlots[plot.name];
+    TCanvas* c;
+    if (!mPlots.count(plot.name)) {
+      c = new TCanvas(plot.name.c_str(), plot.title.c_str());
+      mPlots[plot.name] = c;
+      getObjectsManager()->startPublishing(c);
+    } else {
+      c = (TCanvas*)mPlots[plot.name];
+      c->cd();
     }
 
     // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
@@ -168,12 +152,7 @@ void TrendingTracks::generatePlots()
     // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
     TGraphErrors* graphErrors = nullptr;
 
-    TCanvas* c = new TCanvas();
-
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
-
-    c->SetName(plot.name.c_str());
-    c->SetTitle(plot.title.c_str());
 
     // For graphs we allow to draw errors if they are specified.
     if (!plot.graphErrors.empty()) {
@@ -214,7 +193,7 @@ void TrendingTracks::generatePlots()
 
       // We have to explicitly configure showing time on x axis.
       // I hope that looking for ":time" is enough here and someone doesn't come with an exotic use-case.
-      if (plot.varexp.find(":time") != std::string::npos) {
+      if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":startValidity") != std::string::npos || plot.varexp.find(":endValidity") != std::string::npos) {
         histo->GetXaxis()->SetTimeDisplay(1);
         // It deals with highly congested dates labels
         histo->GetXaxis()->SetNdivisions(505);
@@ -222,14 +201,19 @@ void TrendingTracks::generatePlots()
         histo->GetXaxis()->SetTimeOffset(0.0);
         histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
       }
+      if (plot.varexp.find("startValidity:") != std::string::npos || plot.varexp.find("endValidity:") != std::string::npos) {
+        histo->GetYaxis()->SetTimeDisplay(1);
+        // It deals with highly congested dates labels
+        histo->GetYaxis()->SetNdivisions(505);
+        // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
+        histo->GetYaxis()->SetTimeOffset(0.0);
+        histo->GetYaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+      }
       // QCG doesn't empty the buffers before visualizing the plot, nor does ROOT when saving the file,
       // so we have to do it here.
       histo->BufferEmpty();
     } else {
       ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
     }
-
-    mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
   }
 }

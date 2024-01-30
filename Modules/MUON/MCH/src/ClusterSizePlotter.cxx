@@ -112,6 +112,28 @@ ClusterSizePlotter::ClusterSizePlotter(std::string path, TH2F* hRef, bool fullPl
 
 //_________________________________________________________________________________________
 
+void ClusterSizePlotter::addHisto(TH1* h, bool statBox, const char* drawOptions, const char* displayHints)
+{
+  h->SetOption(drawOptions);
+  if (!statBox) {
+    h->SetStats(0);
+  }
+  histograms().emplace_back(HistInfo{ h, drawOptions, displayHints });
+}
+
+//_________________________________________________________________________________________
+
+void ClusterSizePlotter::addCanvas(TCanvas* c, TH1* h, bool statBox, const char* drawOptions, const char* displayHints)
+{
+  h->SetOption(drawOptions);
+  if (!statBox) {
+    h->SetStats(0);
+  }
+  histograms().emplace_back(HistInfo{ c, "", displayHints });
+}
+
+//_________________________________________________________________________________________
+
 void ClusterSizePlotter::fillHistograms(TH2F* hSize)
 {
   // extract the MPVs of the cluster charge distributions

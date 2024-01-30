@@ -11,8 +11,6 @@
 
 ///
 /// \file   DigitsTask.h
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
 /// \author Andrea Ferrero
 ///
 
@@ -27,14 +25,14 @@
 #include "MCHBase/Digit.h"
 #endif
 #include "MCHDigitFiltering/DigitFilter.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include "Common/TH2Ratio.h"
 #include "MCH/Helpers.h"
 
 class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
-using namespace o2::quality_control_modules::muon;
+using namespace o2::quality_control_modules::common;
 
 namespace o2
 {
@@ -96,8 +94,8 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
   int mNOrbitsPerTF{ -1 };
 
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
-  std::unique_ptr<MergeableTH2Ratio> mHistogramOccupancyElec;       // Occupancy histogram (Elec view)
-  std::unique_ptr<MergeableTH2Ratio> mHistogramSignalOccupancyElec; // Occupancy histogram (Elec view) for signal-like digits
+  std::unique_ptr<TH2FRatio> mHistogramOccupancyElec;       // Occupancy histogram (Elec view)
+  std::unique_ptr<TH2FRatio> mHistogramSignalOccupancyElec; // Occupancy histogram (Elec view) for signal-like digits
 
   // TH2F* mHistNum;
   // TH2F* mHistDen;

@@ -24,6 +24,7 @@ target_sources(O2QcTOF
                       # Trending
                       src/TrendingHits.cxx
                       src/TrendingRate.cxx
+                      src/TrendingCalibLHCphase.cxx
                       # Trending config
                       src/TrendingConfigTOF.cxx
                       # Utilities
@@ -75,6 +76,7 @@ add_root_dictionary(O2QcTOF
                             # Trending
                             include/TOF/TrendingHits.h
                             include/TOF/TrendingRate.h
+                            include/TOF/TrendingCalibLHCphase.h
                             # Trending config
                             include/TOF/TrendingConfigTOF.h
                             # Utilities
@@ -118,6 +120,7 @@ install(FILES tofdigits.json
               tofcosmics.json
               toftrending.json
               toftrendingrate.json
+              toftrendingcalib.json
               tofMatchedTracks_ITSTPCTOF.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json

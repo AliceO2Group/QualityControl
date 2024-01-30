@@ -174,7 +174,7 @@ void EfficiencyPlotter::fillGlobalHistograms(TH2F* h)
         continue;
       }
 
-      double rate = h->GetBinContent(i, j);
+      double eff = h->GetBinContent(i, j);
 
       double padX = segment.padPositionX(padId);
       double padY = segment.padPositionY(padId);
@@ -185,7 +185,7 @@ void EfficiencyPlotter::fillGlobalHistograms(TH2F* h)
       // Fill 2D rate histograms
       auto hEfficiency = mHistogramEfficiencyDE[cathode].find(deId);
       if ((hEfficiency != mHistogramEfficiencyDE[cathode].end()) && (hEfficiency->second != NULL)) {
-        hEfficiency->second->Set(padX, padY, padSizeX, padSizeY, rate);
+        hEfficiency->second->Set(padX, padY, padSizeX, padSizeY, eff);
       }
     }
   }

@@ -4,8 +4,6 @@ set(MODULE_NAME "O2QcMUONCommon")
 
 set(SRCS
   src/Helpers.cxx
-  src/MergeableTH1Ratio.cxx
-  src/MergeableTH2Ratio.cxx
   src/HistPlotter.cxx
   src/MuonTrack.cxx
   src/TrackPlotter.cxx
@@ -14,8 +12,6 @@ set(SRCS
 )
 
 set(HEADERS
-  include/MUONCommon/MergeableTH1Ratio.h
-  include/MUONCommon/MergeableTH2Ratio.h
   include/MUONCommon/HistPlotter.h
   include/MUONCommon/MuonTrack.h
   include/MUONCommon/TrackCheck.h
@@ -33,7 +29,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::MCHMappingImpl4 O2::DataFormatsMCH O2::MCHTracking O2::MCHRawElecMap O2::ReconstructionDataFormats O2::MCHGeometryTransformer O2::DataFormatsGlobalTracking)
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2QcCommon O2::MCHMappingImpl4 O2::DataFormatsMCH O2::MCHTracking O2::MCHRawElecMap O2::ReconstructionDataFormats O2::MCHGeometryTransformer O2::DataFormatsGlobalTracking)
 
 # Digit.h is moving from MCHBase to DataFormatsMCH : let's handle both
 # gracefully for the moment...
@@ -52,9 +48,7 @@ install(
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MUONCommon/MergeableTH1Ratio.h
-                            include/MUONCommon/MergeableTH2Ratio.h
-                            include/MUONCommon/TrackPlotter.h
+                    HEADERS include/MUONCommon/TrackPlotter.h
                             include/MUONCommon/TracksCheck.h
                             include/MUONCommon/TracksTask.h
                     LINKDEF include/MUONCommon/LinkDef.h)

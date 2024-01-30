@@ -11,7 +11,8 @@
 
 ///
 /// \file   ClusterSizeReductor.cxx
-/// \author Piotr Konopka, Sebastien Perrin
+/// \author Andrea Ferrero
+/// \author Sebastien Perrin
 ///
 
 #include "MCH/ClusterSizeReductor.h"

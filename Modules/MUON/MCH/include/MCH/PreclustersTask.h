@@ -11,17 +11,16 @@
 
 ///
 /// \file   PreclustersTask.h
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
 /// \author Andrea Ferrero
+/// \author Sebastien Perrin
 ///
 
 #ifndef QC_MODULE_MUONCHAMBERS_PRECLUSTERSTASK_H
 #define QC_MODULE_MUONCHAMBERS_PRECLUSTERSTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MUONCommon/MergeableTH1Ratio.h"
-#include "MUONCommon/MergeableTH2Ratio.h"
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 #include "MCHRawElecMap/Mapper.h"
 #ifdef HAVE_DIGIT_IN_DATAFORMATS
 #include "DataFormatsMCH/Digit.h"
@@ -31,7 +30,7 @@
 #include "MCHDigitFiltering/DigitFilter.h"
 #include "MCHBase/PreCluster.h"
 
-using namespace o2::quality_control_modules::muon;
+using namespace o2::quality_control_modules::common;
 
 namespace o2
 {
@@ -80,10 +79,10 @@ class PreclustersTask /*final*/ : public o2::quality_control::core::TaskInterfac
 
   o2::mch::DigitFilter mIsSignalDigit;
 
-  std::unique_ptr<MergeableTH2Ratio> mHistogramPseudoeffElec; // Mergeable object, Occupancy histogram (Elec view)
+  std::unique_ptr<TH2FRatio> mHistogramPseudoeffElec; // Mergeable object, Occupancy histogram (Elec view)
 
-  std::unique_ptr<MergeableTH1Ratio> mHistogramPreclustersPerDE;       // number of pre-clusters per DE and per TF
-  std::unique_ptr<MergeableTH1Ratio> mHistogramPreclustersSignalPerDE; // number of pre-clusters with signal per DE and per TF
+  std::unique_ptr<TH1DRatio> mHistogramPreclustersPerDE;       // number of pre-clusters per DE and per TF
+  std::unique_ptr<TH1DRatio> mHistogramPreclustersSignalPerDE; // number of pre-clusters with signal per DE and per TF
 
   std::unique_ptr<TH2F> mHistogramClusterCharge;
   std::unique_ptr<TH2F> mHistogramClusterSize;

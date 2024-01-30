@@ -11,8 +11,6 @@
 
 ///
 /// \file   DigitsTask.cxx
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
 /// \author Andrea Ferrero
 /// \author Sebastien Perrin
 ///
@@ -75,10 +73,10 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   resetOrbits();
 
   // Histograms in electronics coordinates
-  mHistogramOccupancyElec = std::make_unique<MergeableTH2Ratio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramOccupancyElec = std::make_unique<TH2FRatio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
   publishObject(mHistogramOccupancyElec.get(), "colz", false, false);
 
-  mHistogramSignalOccupancyElec = std::make_unique<MergeableTH2Ratio>("OccupancySignal_Elec", "Occupancy (signal)", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramSignalOccupancyElec = std::make_unique<TH2FRatio>("OccupancySignal_Elec", "Occupancy (signal)", nElecXbins, 0, nElecXbins, 64, 0, 64);
   publishObject(mHistogramSignalOccupancyElec.get(), "colz", false, false);
 
   mHistogramDigitsOrbitElec = std::make_unique<TH2F>("DigitOrbit_Elec", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 768, -384, 384);

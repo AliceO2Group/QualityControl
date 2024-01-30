@@ -37,7 +37,7 @@ RatesTrendsPlotter::RatesTrendsPlotter(std::string path, TH2F* hRef, bool fullPl
     reductorRef->update(hRef);
   }
 
-  mOrbits = std::make_unique<TrendGraph>(fmt::format("{}/Orbits", path), "Orbits", "orbits");
+  mOrbits = std::make_unique<TrendGraph>(fmt::format("{}Orbits", path), "Orbits", "orbits");
   addCanvas(mOrbits.get(), "");
 
   //--------------------------------------------------
@@ -51,7 +51,7 @@ RatesTrendsPlotter::RatesTrendsPlotter(std::string path, TH2F* hRef, bool fullPl
     }
     if (reductorRef) {
       mRefValues[deID] = reductorRef->getDeValue(deID);
-      mTrendsDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}/Rates_DE{}", path, getHistoPath(de), de),
+      mTrendsDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}Rates_DE{}", path, getHistoPath(de), de),
                                                      fmt::format("DE{} Rates", de), "rate (kHz)", reductorRef->getDeValue(deID));
     } else {
       mTrendsDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}/Rates_DE{}", path, getHistoPath(de), de),
@@ -61,18 +61,18 @@ RatesTrendsPlotter::RatesTrendsPlotter(std::string path, TH2F* hRef, bool fullPl
       addCanvas(mTrendsDE[deID].get(), "");
     }
 
-    mTrendsRefRatioDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}/RatesRefRatio_DE{}", path, getHistoPath(de), de),
+    mTrendsRefRatioDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}RatesRefRatio_DE{}", path, getHistoPath(de), de),
                                                            fmt::format("DE{} Rates, ratio wrt. reference", de), "ratio");
     if (fullPlots) {
       addCanvas(mTrendsRefRatioDE[deID].get(), "");
     }
   }
 
-  mTrends = std::make_unique<TrendMultiGraph>(fmt::format("{}/ChamberRates", path), "Chamber Rates", "rate (kHz)");
+  mTrends = std::make_unique<TrendMultiGraph>(fmt::format("{}ChamberRates", path), "Chamber Rates", "rate (kHz)");
   for (int i = 0; i < mTrendsChamber.size(); i++) {
     int st = (i / 2) + 1;
     int ch = i + 1;
-    mTrendsChamber[i] = std::make_unique<TrendGraph>(fmt::format("{}/ST{}/Rates_CH{}", path, st, ch),
+    mTrendsChamber[i] = std::make_unique<TrendGraph>(fmt::format("{}ST{}/Rates_CH{}", path, st, ch),
                                                      fmt::format("CH{} Rates", ch), "rate (kHz)");
     addCanvas(mTrendsChamber[i].get(), "");
 

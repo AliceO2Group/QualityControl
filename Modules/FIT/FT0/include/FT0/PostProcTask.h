@@ -83,8 +83,8 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH1F> mHistTrgValidation;
 
   std::unique_ptr<TCanvas> mRatesCanv;
-  TProfile* mAmpl;
-  TProfile* mTime;
+  TProfile* mAmpl = nullptr;
+  TProfile* mTime = nullptr;
 
   // if storage size matters it can be replaced with TH1
   // and TH2 can be created based on it on the fly, but only TH1 would be stored

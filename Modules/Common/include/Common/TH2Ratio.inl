@@ -150,9 +150,6 @@ void TH2Ratio<T>::update()
     return;
   }
 
-  const char* name = this->GetName();
-  const char* title = this->GetTitle();
-
   T::Reset();
   T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   T::GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
@@ -165,6 +162,17 @@ void TH2Ratio<T>::update()
     double norm = (entries > 0) ? 1.0 / entries : 0;
     T::Scale(norm);
   } else {
+    // copy bin labels to denominator before dividing, otherwise we get a warning
+    if (T::GetXaxis()->GetLabels())  {
+      for (int bin = 1; bin <= T::GetXaxis()->GetNbins(); bin++) {
+        mHistoDen->GetXaxis()->SetBinLabel(bin, T::GetXaxis()->GetBinLabel(bin));
+      }
+    }
+    if (T::GetYaxis()->GetLabels())  {
+      for (int bin = 1; bin <= T::GetYaxis()->GetNbins(); bin++) {
+        mHistoDen->GetYaxis()->SetBinLabel(bin, T::GetYaxis()->GetBinLabel(bin));
+      }
+    }
     T::Divide(mHistoDen);
   }
 }

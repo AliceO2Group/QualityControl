@@ -11,7 +11,8 @@
 
 ///
 /// \file   ClusterChargeReductor.cxx
-/// \author Piotr Konopka, Sebastien Perrin
+/// \author Andrea Ferrero
+/// \author Sebastien Perrin
 ///
 
 #include "MCH/ClusterChargeReductor.h"
