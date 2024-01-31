@@ -251,13 +251,15 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
 
   for (auto& dataSource : mConfig.dataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
-    if (!mo) {
+    TObject* obj = mo ? mo->getObject() : nullptr;
+    if (!obj) {
+      ILOG(Error, Support) << "No MO retrieved from qcdb, name: " << dataSource.name << " - path:" << dataSource.path << " - timestamp" << t.timestamp << ENDM;
       continue;
     }
     ILOG(Debug, Support) << "Got MO " << mo << ENDM;
     if (dataSource.name == "HitMap") {
       foundHitMap = true;
-      TH2F* hmap = dynamic_cast<TH2F*>(mo->getObject());
+      TH2F* hmap = dynamic_cast<TH2F*>(obj);
       if (hmap) {
         TH2F hcopy(*hmap);
         hcopy.Divide(hmap);
