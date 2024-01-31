@@ -22,10 +22,10 @@
 namespace o2::quality_control_modules::common
 {
 
-/// \brief A Reductor which obtains the most popular characteristics of TH1.
+/// \brief A Reductor which obtains the LHC clock phase.
 ///
-/// A Reductor which obtains the most popular characteristics of TH1.
-/// It produces a branch in the format: "mean/D:stddev:entries"
+/// A Reductor which obtains the LHC clock phase based on the corresponding object in CCDB.
+/// It produces a branch in the format: "phase/F"
 class LHCClockPhaseReductor : public quality_control::postprocessing::ReductorConditionAny
 {
  public:
