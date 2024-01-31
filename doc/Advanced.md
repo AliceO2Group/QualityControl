@@ -1368,7 +1368,7 @@ the "tasks" path.
         ],
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
         "disableLastCycle": "true",         "": "Last cycle, upon EndOfStream, is not published. (default: false)",
-        "dataSources": [{                   "": "Data sources of the QC Task. The following three are supported",
+        "dataSources": [{                   "": "Data sources of the QC Task. The following are supported",
           "type": "dataSamplingPolicy",     "": "Type of the data source",
           "name": "tst-raw",                "": "Name of Data Sampling Policy"
         }, {
