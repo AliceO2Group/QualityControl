@@ -10,13 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TH1Reductor.h
+/// \file   LHCClockPhaseReductor.h
 /// \author Piotr Konopka
 ///
-#ifndef QUALITYCONTROL_TH1REDUCTOR_H
-#define QUALITYCONTROL_TH1REDUCTOR_H
 
-#include "QualityControl/ReductorTObject.h"
+#ifndef QUALITYCONTROL_LHCCLOCKPHASEREDUCTOR_H
+#define QUALITYCONTROL_LHCCLOCKPHASEREDUCTOR_H
+
+#include "QualityControl/ReductorConditionAny.h"
 
 namespace o2::quality_control_modules::common
 {
@@ -25,24 +26,22 @@ namespace o2::quality_control_modules::common
 ///
 /// A Reductor which obtains the most popular characteristics of TH1.
 /// It produces a branch in the format: "mean/D:stddev:entries"
-class TH1Reductor : public quality_control::postprocessing::ReductorTObject
+class LHCClockPhaseReductor : public quality_control::postprocessing::ReductorConditionAny
 {
  public:
-  TH1Reductor() = default;
-  ~TH1Reductor() = default;
+  LHCClockPhaseReductor() = default;
+  ~LHCClockPhaseReductor() = default;
 
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
-  void update(TObject* obj) override;
+  bool update(ConditionRetriever& retriever) override;
 
  private:
   struct {
-    Double_t mean;
-    Double_t stddev;
-    Double_t entries;
+    Float_t phase;
   } mStats;
 };
 
 } // namespace o2::quality_control_modules::common
 
-#endif //QUALITYCONTROL_TH1REDUCTOR_H
+#endif // QUALITYCONTROL_LHCCLOCKPHASEREDUCTOR_H

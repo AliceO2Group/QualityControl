@@ -17,7 +17,7 @@
 #ifndef QC_MODULE_TPC_LTRCALIBREDUCTOR_H
 #define QC_MODULE_TPC_LTRCALIBREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include <TText.h>
 
 namespace o2::quality_control_modules::tpc
@@ -26,7 +26,7 @@ namespace o2::quality_control_modules::tpc
 /// \brief <insert some text here>
 ///
 /// <insert more text here>
-class LtrCalibReductor : public quality_control::postprocessing::Reductor
+class LtrCalibReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   LtrCalibReductor() = default;

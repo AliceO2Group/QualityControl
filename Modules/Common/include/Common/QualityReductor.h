@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_QUALITYREDUCTOR_H
 #define QUALITYCONTROL_QUALITYREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::common
@@ -27,7 +27,7 @@ namespace o2::quality_control_modules::common
 ///
 /// A Reductor of QualityObjects, stores a name and level of a Quality
 /// It produces a branch in the format: "level/i:name/C"
-class QualityReductor : public quality_control::postprocessing::Reductor
+class QualityReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   QualityReductor() = default;

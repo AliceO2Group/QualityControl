@@ -16,7 +16,7 @@
 #ifndef QC_MODULE_TPC_CALPADCLUSTERDUCTOR_H
 #define QC_MODULE_TPC_CALPADCLUSTERDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "TPCBase/CalDet.h"
 #include "TPCBase/CalArray.h"
 #include "TPCQC/Clusters.h"
@@ -32,7 +32,7 @@ namespace o2::quality_control_modules::tpc
 /// First iterator holds entries [0], mean [1], standard deviation [2] and median [3]
 /// Second iterator runs over all 72 ROCs
 
-class CalPadClusterReductor : public quality_control::postprocessing::Reductor
+class CalPadClusterReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   CalPadClusterReductor() = default;

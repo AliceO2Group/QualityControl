@@ -16,13 +16,13 @@
 #ifndef QUALITYCONTROL_REDUCTORBINCONTENT_H
 #define QUALITYCONTROL_REDUCTORBINCONTENT_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include <vector>
 
 namespace o2::quality_control_modules::its
 {
 
-class ReductorBinContent : public quality_control::postprocessing::Reductor
+class ReductorBinContent : public quality_control::postprocessing::ReductorTObject
 {
  public:
   ReductorBinContent() = default;

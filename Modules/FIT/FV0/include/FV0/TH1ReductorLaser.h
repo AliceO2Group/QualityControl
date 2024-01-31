@@ -17,7 +17,7 @@
 #ifndef QUALITYCONTROL_TH1REDUCTORLASER_H
 #define QUALITYCONTROL_TH1REDUCTORLASER_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2::quality_control_modules::fv0
 {
@@ -26,7 +26,7 @@ namespace o2::quality_control_modules::fv0
 ///
 /// A Reductor which obtains the most popular characteristics of TH1.
 /// It produces a branch in the format: "mean/D:stddev:entries"
-class TH1ReductorLaser : public quality_control::postprocessing::Reductor
+class TH1ReductorLaser : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TH1ReductorLaser() = default;

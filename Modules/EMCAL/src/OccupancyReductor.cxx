@@ -15,7 +15,7 @@
 
 using namespace o2::quality_control_modules::emcal;
 
-OccupancyReductor::OccupancyReductor() : Reductor(), mGeometry(nullptr), mStats()
+OccupancyReductor::OccupancyReductor() : ReductorTObject(), mGeometry(nullptr), mStats()
 {
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }

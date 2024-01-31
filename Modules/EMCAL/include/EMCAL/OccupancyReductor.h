@@ -11,7 +11,7 @@
 #ifndef QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
 #define QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2
 {
@@ -27,7 +27,7 @@ namespace o2::quality_control_modules::emcal
 /// \brief Reductor for Occupancy histograms
 ///
 /// Extracting number of entries above 0 for each supermodule area.
-class OccupancyReductor : public quality_control::postprocessing::Reductor
+class OccupancyReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   OccupancyReductor();

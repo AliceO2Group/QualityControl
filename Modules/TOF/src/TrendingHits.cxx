@@ -22,6 +22,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorHelpers.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 #include <boost/property_tree/ptree.hpp>
@@ -81,21 +82,10 @@ void TrendingHits::trendValues(const Trigger& t, repository::DatabaseInterface& 
   mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
-
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
-    if (dataSource.type == "repository") {
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
-      TObject* obj = mo ? mo->getObject() : nullptr;
-      if (obj) {
-        mReductors[dataSource.name]->update(obj);
-      }
-    } else if (dataSource.type == "repository-quality") {
-      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
-      if (qo) {
-        mReductors[dataSource.name]->update(qo.get());
-      }
-    } else {
-      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
+    if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
+      ILOG(Error, Support) << "Failed to update reductor for data sources with path '" << dataSource.path
+                           << "', name '" << dataSource.name
+                           << "', type '" << dataSource.type << "'." << ENDM;
     }
   }
 

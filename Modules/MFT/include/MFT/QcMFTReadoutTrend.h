@@ -19,7 +19,7 @@
 #ifndef MFT_READOUT_TREND_H
 #define MFT_READOUT_TREND_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2::quality_control_modules::mft
 {
@@ -27,7 +27,7 @@ namespace o2::quality_control_modules::mft
 /// \brief A Reductor which obtains the  bin content of a TH1.
 /// A Reductor which obtains the bin content of a  TH1.
 
-class QcMFTReadoutTrend : public quality_control::postprocessing::Reductor
+class QcMFTReadoutTrend : public quality_control::postprocessing::ReductorTObject
 {
  public:
   QcMFTReadoutTrend() = default;

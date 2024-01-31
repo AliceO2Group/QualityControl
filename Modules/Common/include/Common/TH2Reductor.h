@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_TH2REDUCTOR_H
 #define QUALITYCONTROL_TH2REDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2::quality_control_modules::common
 {
@@ -25,7 +25,7 @@ namespace o2::quality_control_modules::common
 ///
 /// A Reductor which obtains the most popular characteristics of TH2.
 /// It produces a branch in the format: "sumw/D:sumw2:sumwx:sumwx2:sumwy:sumwy2:sumwxy:entries"
-class TH2Reductor : public quality_control::postprocessing::Reductor
+class TH2Reductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TH2Reductor() = default;

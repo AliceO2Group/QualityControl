@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 #include <TCanvas.h>
 #include <TH1.h>
@@ -114,13 +115,15 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
-      if (obj) {
-        mReductors[dataSource.name]->update(obj);
+      auto reductor = dynamic_cast<ReductorTObject*>(mReductors[dataSource.name].get());
+      if (obj && reductor) {
+        reductor->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
       auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name);
-      if (qo) {
-        mReductors[dataSource.name]->update(qo.get());
+      auto reductor = dynamic_cast<ReductorTObject*>(mReductors[dataSource.name].get());
+      if (qo && reductor) {
+        reductor->update(qo.get());
       }
     } else {
       ILOGE << "Unknown type of data source '" << dataSource.type << "'.";

@@ -27,11 +27,6 @@ void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
   configure();
 }
 
-void UserCodeInterface::setCcdbUrl(const std::string& url)
-{
-  o2::ccdb::BasicCCDBManager::instance().setURL(url);
-}
-
 const std::string& UserCodeInterface::getName() const { return mName; }
 
 void UserCodeInterface::setName(const std::string& name) { mName = name; }

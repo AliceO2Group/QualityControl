@@ -17,7 +17,7 @@
 #ifndef QC_MODULE_TPC_ROCREDUCTOR_H
 #define QC_MODULE_TPC_ROCREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "TPCBase/CalDet.h"
 //#include "CCDB/TObjectWrapper.h"
 
@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::tpc
 ///
 /// A Reductor of ROC, stores entries, mean, standard deviation, median and rms for each ROC.
 /// It produces a branch in the format: "entries[72]/I:mean[72]/F:stddev[72]:median[72]:rms[72]"
-class ROCReductor : public quality_control::postprocessing::Reductor
+class ROCReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   ROCReductor() = default;
