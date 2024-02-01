@@ -42,8 +42,6 @@ using namespace o2::mch::mapping;
 
 namespace po = boost::program_options;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Function with 156 translation offsets to not overlap the deIds of each chamber
 std::pair<double, double> getTranslationOffset(int deId)
 {
@@ -217,7 +215,6 @@ std::pair<double, double> getTranslationOffset(int deId)
   return translationOffsets[deId];
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //  function to transform local contour coordinates to global contour coordinates
 std::vector<o2::mch::contour::Contour<double>> transformLocalToGlobal(int deId, bool bending, const o2::mch::geo::TransformationCreator& transformation)
@@ -269,7 +266,6 @@ std::vector<o2::mch::contour::Contour<double>> transformLocalToGlobal(int deId, 
   return dualSampaContoursOut;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Getting all deID of a given Chamber
 std::vector<int> getAllDeIds(int nChamber)
@@ -296,8 +292,6 @@ std::vector<int> getAllDeIds(int nChamber)
   }
   return deIds;
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Getting DualSampas of a given deId
 std::vector<int> getDualSampas(int deId)
@@ -333,8 +327,6 @@ std::vector<int> getDualSampasBorNB(int deId, bool isBending)
   return dualSampas;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Convert DsIndex (Global) to DsId (Local)
 uint16_t convertDsIndextoDsId(o2::mch::DsIndex dsIndex)
 {
@@ -350,7 +342,6 @@ uint16_t getDsIndexFromDsIdAndDeId(uint16_t dsId, uint16_t deId)
   return o2::mch::getDsIndex(dsDetId);       // Get the corresponding dsIndex from the getDsIndex function
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Getting ClustersPerDualSampa (TH1F Histogram stored in root file)
 TH1F* getrootHistogramTH1F(const std::string& rootfile)
@@ -359,8 +350,6 @@ TH1F* getrootHistogramTH1F(const std::string& rootfile)
   TH1F* ClustersperDualSampa = (TH1F*)file->Get("ClustersPerDualSampa");
   return ClustersperDualSampa;
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TH1F* getrootHistogram(const std::string& rootfile)
 {
@@ -372,8 +361,6 @@ TH1F* getrootHistogram(const std::string& rootfile)
   o2::quality_control::core::MonitorObject* obj = dynamic_cast<o2::quality_control::core::MonitorObject*>(coll->FindObject("ClustersPerDualSampa"));
   return dynamic_cast<TH1F*>(obj->getObject());
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Storing clusters and dsindex from TH1F histogram
 std::pair<std::vector<int>, std::vector<uint16_t>> processClustersperDualSampa(const TH1F* ClustersperDualSampa)
@@ -396,7 +383,6 @@ std::pair<std::vector<int>, std::vector<uint16_t>> processClustersperDualSampa(c
   return std::make_pair(nClusters, dsindex);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Getting transformations from the aligned geometry
 o2::mch::geo::TransformationCreator loadGeometry(const std::string& name)
@@ -409,7 +395,6 @@ o2::mch::geo::TransformationCreator loadGeometry(const std::string& name)
   return transformation;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Creation of Color Gradiant Palette
 std::vector<std::string> colorGradiant()
@@ -432,7 +417,6 @@ std::vector<std::string> colorGradiant()
   return hexcolors;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Calculation of Nmax for two types of normalisation (maximum of clusters per chamber) <--> (maximum ratio of Clusters/DSArea per chamber)
 double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSampa, bool IsNormalizedPerDSArea)
@@ -466,7 +450,7 @@ double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSamp
 
     // Calculate maximum ratio of clusters/DSArea
     double maxRatio = 0.0;
-    double epsilon = 0.01;
+    double epsilon = 0.1;
 
     for (auto deId : deIds) {
 
@@ -495,7 +479,6 @@ double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSamp
   return Nmax;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Save dsIndex with 0 clusters in a txt.file (useful for the muon reject list)
 void saveDsIndexfor0clusters(int nChamber, bool bending, const TH1F* ClustersperDualSampa, std::ofstream& outFile)
@@ -523,8 +506,6 @@ void saveDsIndexfor0clusters(int nChamber, bool bending, const TH1F* Clustersper
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Gradient of Number for the color scale
 std::vector<double> numberGradient(double n, int m)
 {
@@ -536,7 +517,6 @@ std::vector<double> numberGradient(double n, int m)
   return grad;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Add Rentangle with 255 colors + 11 Numbers (from 0 to Nmax)
 void addRectangleContour(int nChamber, o2::mch::contour::Contour<double>& contour, o2::mch::contour::SVGWriter& w, double Nmax, bool IsNormalizedPerDSArea)
@@ -648,7 +628,6 @@ void addRectangleContour(int nChamber, o2::mch::contour::Contour<double>& contou
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Creating Chambers in SVG format
 void svgChamber(o2::mch::contour::SVGWriter& w, int nChamber, bool bending, const TH1F* ClustersperDualSampa, o2::mch::geo::TransformationCreator transformation, bool IsNormalizedPerDSArea, bool WhiteOrGreen)
@@ -673,7 +652,7 @@ void svgChamber(o2::mch::contour::SVGWriter& w, int nChamber, bool bending, cons
   // Getting all deIds for all Chambers
   auto deIds = getAllDeIds(nChamber);
 
-  double epsilon = 1.e-6;
+  double epsilon = 0.01;
 
   int colorId;
 
@@ -732,7 +711,6 @@ void svgChamber(o2::mch::contour::SVGWriter& w, int nChamber, bool bending, cons
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char* argv[])
 {
