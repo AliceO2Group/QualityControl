@@ -143,7 +143,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       }
       const float overall = hs->Integral();
       if (overall <= 0.f) {
-        ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
+        ILOG(Warning, Support) << "no signal for BC index " << ibc << ENDM;
         delete hb;
         delete hs;
 
@@ -151,7 +151,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       }
       const float background = hb->Integral();
       if (background <= 0.f) {
-        ILOG(Info, Support) << "no background for BC index " << ibc << ENDM;
+        ILOG(Warning, Support) << "no background for BC index " << ibc << ENDM;
         delete hb;
         delete hs;
 
@@ -159,7 +159,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       }
       const float prob = (overall - background) / overall;
       if ((1.f - prob) < 0.f) {
-        ILOG(Info, Support) << "Probability is 1, can't comute mu" << ENDM;
+        ILOG(Warning, Support) << "Probability is 1, can't comute mu" << ENDM;
         delete hb;
         delete hs;
 
@@ -180,7 +180,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       sumw += rate;
       pilup += mu / prob * rate;
       ratetot += rate;
-      ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
+      //ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
       delete hb;
       delete hs;
     }
