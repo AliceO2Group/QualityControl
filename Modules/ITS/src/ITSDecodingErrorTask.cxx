@@ -54,26 +54,26 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSDecodingErrorTask::createDecodingPlots()
 {
-  mLinkErrorVsFeeid = new TH2D("General/LinkErrorVsFeeid", "GBTLink errors per FeeId", NFees, 0, NFees, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mLinkErrorVsFeeid = new TH2D("General/LinkErrorVsFeeid", "GBTLink errors per FeeId", NFees, 0, NFees, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, (float)o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mLinkErrorVsFeeid->SetMinimum(0);
   mLinkErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mLinkErrorVsFeeid);
   for (int ilayer = 0; ilayer < 7; ilayer++) {
-    mChipErrorVsChipid[ilayer] = new TH2D(Form("General/Layer%dChipErrorVsChipid", ilayer), Form("Layer%d Chip errors per FeeId", ilayer), ChipBoundary[ilayer + 1] - ChipBoundary[ilayer], 0, ChipBoundary[ilayer + 1] - ChipBoundary[ilayer], o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
+    mChipErrorVsChipid[ilayer] = new TH2D(Form("General/Layer%dChipErrorVsChipid", ilayer), Form("Layer%d Chip errors per FeeId", ilayer), ChipBoundary[ilayer + 1] - ChipBoundary[ilayer], 0, ChipBoundary[ilayer + 1] - ChipBoundary[ilayer], o2::itsmft::ChipStat::NErrorsDefined, 0.5, (float)o2::itsmft::ChipStat::NErrorsDefined + 0.5);
     mChipErrorVsChipid[ilayer]->SetMinimum(0);
     mChipErrorVsChipid[ilayer]->SetStats(0);
     getObjectsManager()->startPublishing(mChipErrorVsChipid[ilayer]);
   }
-  mChipErrorVsFeeid = new TH2D("General/ChipErrorVsFeeid", "Chip decoding errors per FeeId", NFees, 0, NFees, o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
+  mChipErrorVsFeeid = new TH2D("General/ChipErrorVsFeeid", "Chip decoding errors per FeeId", NFees, 0, NFees, o2::itsmft::ChipStat::NErrorsDefined, 0.5, (float)o2::itsmft::ChipStat::NErrorsDefined + 0.5);
   mChipErrorVsFeeid->SetMinimum(0);
   mChipErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mChipErrorVsFeeid);
-  mLinkErrorPlots = new TH1D("General/LinkErrorPlots", "GBTLink decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mLinkErrorPlots = new TH1D("General/LinkErrorPlots", "GBTLink decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, (float)o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mLinkErrorPlots->SetMinimum(0);
   mLinkErrorPlots->SetStats(0);
   mLinkErrorPlots->SetFillColor(kOrange);
   getObjectsManager()->startPublishing(mLinkErrorPlots); // mLinkErrorPlots
-  mChipErrorPlots = new TH1D("General/ChipErrorPlots", "Chip Decoding Errors", o2::itsmft::ChipStat::NErrorsDefined, 0.5, o2::itsmft::ChipStat::NErrorsDefined + 0.5);
+  mChipErrorPlots = new TH1D("General/ChipErrorPlots", "Chip Decoding Errors", o2::itsmft::ChipStat::NErrorsDefined, 0.5, (float)o2::itsmft::ChipStat::NErrorsDefined + 0.5);
   mChipErrorPlots->SetMinimum(0);
   mChipErrorPlots->SetStats(0);
   mChipErrorPlots->SetFillColor(kOrange);
