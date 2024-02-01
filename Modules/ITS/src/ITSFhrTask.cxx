@@ -388,7 +388,8 @@ void ITSFhrTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  if (ctx.services().get<o2::framework::TimingInfo>().globalRunNumberChanged) {
+  if (mGeom == nullptr) {
+    ILOG(Warning, Devel) << "Created new instance of mGeom" << ENDM;
     mGeom = o2::its::GeometryTGeo::Instance();
     mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
   }
