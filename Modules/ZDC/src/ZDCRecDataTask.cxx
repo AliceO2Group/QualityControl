@@ -443,7 +443,7 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC_A_A", "h_TDC_ZPCS_ZPCC", "TDC amplitude ZPC SUM vs TDC amplitude ZPC TC", "TDCA", "ZPCC", "TDCA", "ZPCS", 0);
 
   // msg histo
-  setBinHisto2D(o2::zdc::NChannels, -0.5, o2::zdc::NChannels - 0.5, o2::zdc::MsgEnd, -0.5, o2::zdc::MsgEnd - 0.5);
+  setBinHisto2D(o2::zdc::NChannels, -0.5, (float)o2::zdc::NChannels - 0.5, o2::zdc::MsgEnd, -0.5, (float)o2::zdc::MsgEnd - 0.5);
   addNewHisto("MSG_REC", "h_msg", "Reconstruction messages", "INFO", "CH", "INFO", "MSG", 0);
   int idh_msg = (int)mHisto2D.size() - 1;
   setBinHisto1D(10, -0.5, 9.5);
