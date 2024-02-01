@@ -52,7 +52,7 @@
           "askGRPMagField": "false",
           "askMatLUT": "false",
           "askTime": "false",
-          "askOnceAllButField": "true",
+          "askOnceAllButField": "false",
           "needPropagatorD":  "false"
         }
       }
