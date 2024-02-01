@@ -205,13 +205,14 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       info[i][mc].isPrimary = mcTrack.isPrimary();
       if (mcTrack.isPrimary()) {
         hPrimaryGen_pt->Fill(mcTrack.GetPt());
-      }
 
-      hDenTrue_r->Fill(distance);
-      hDenTrue_pt->Fill(mcTrack.GetPt());
-      hDenTrue_eta->Fill(mcTrack.GetEta());
-      hDenTrue_phi->Fill(mcTrack.GetPhi());
-      hDenTrue_z->Fill(mcTrack.Vz());
+        // True Generated primaries: denominator of the efficiency plots
+        hDenTrue_r->Fill(distance);
+        hDenTrue_pt->Fill(mcTrack.GetPt());
+        hDenTrue_eta->Fill(mcTrack.GetEta());
+        hDenTrue_phi->Fill(mcTrack.GetPhi());
+        hDenTrue_z->Fill(mcTrack.Vz());
+      }
     }
   }
 
@@ -253,12 +254,14 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
           hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
         }
       } else {
-        hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-        hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-        hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-        hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-        hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
         if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
+          // True primaries reconstructed: numerator of efficiency plots
+          hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+
           hTrackImpactTransvValid->Fill(ip[0]);
           hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
         }
