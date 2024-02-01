@@ -360,7 +360,7 @@ void ITSTrackSimTask::createAllHistos()
 
   hDuplicate_pt = new TEfficiency("Duplicate_pt", "#it{p}_{T} fraction of mother duplicate track;#it{p}_{T} (GeV/#it{c});Fraction", nb, xbins);
   addObject(hDuplicate_pt);
-  hEfficiency_pt = new TEfficiency("efficiency_pt", "#it{p}_{T} efficiency of tracking; #it{p}_{T} (GeV/#it{c}); {p}_{T}Efficiency", nb, xbins);
+  hEfficiency_pt = new TEfficiency("efficiency_pt", "Primary pions with 7cls - tracking efficiency vs #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); {p}_{T}Efficiency", nb, xbins);
   addObject(hEfficiency_pt);
   hFakeTrack_pt = new TEfficiency("faketrack_pt", "#it{p}_{T} fake-track rate;#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
   addObject(hFakeTrack_pt);
@@ -369,7 +369,7 @@ void ITSTrackSimTask::createAllHistos()
   hNumRecoFake_pt = new TH1D("NumRecoFake_pt", "", nb, xbins);
   hDenTrue_pt = new TH1D("DenTrueMC_pt", "", nb, xbins);
 
-  hEfficiency_phi = new TEfficiency("efficiency_phi", "#phi efficiency of tracking;#phi;Efficiency", 60, 0, TMath::TwoPi());
+  hEfficiency_phi = new TEfficiency("efficiency_phi", "Primary pions with 7cls - tracking efficiency vs #phi;#phi;Efficiency", 60, 0, TMath::TwoPi());
   addObject(hEfficiency_phi);
   hFakeTrack_phi = new TEfficiency("faketrack_phi", "#phi fake-track rate;#phi;Fake-track rate", 60, 0, TMath::TwoPi());
   addObject(hFakeTrack_phi);
@@ -380,7 +380,7 @@ void ITSTrackSimTask::createAllHistos()
   hNumRecoFake_phi = new TH1D("NumRecoFake_phi", "", 60, 0, TMath::TwoPi());
   hDenTrue_phi = new TH1D("DenTrueMC_phi", "", 60, 0, TMath::TwoPi());
 
-  hEfficiency_eta = new TEfficiency("efficiency_eta", "#eta efficiency of tracking;#eta;Efficiency", 30, -1.5, 1.5);
+  hEfficiency_eta = new TEfficiency("efficiency_eta", "Primary pions with 7 cls - tracking efficiency vs #eta;#eta;Efficiency", 30, -1.5, 1.5);
   addObject(hEfficiency_eta);
   hFakeTrack_eta = new TEfficiency("faketrack_eta", "#eta fake-track rate;#eta;Fake-track rate", 30, -1.5, 1.5);
   addObject(hFakeTrack_eta);
@@ -391,7 +391,7 @@ void ITSTrackSimTask::createAllHistos()
   hNumRecoFake_eta = new TH1D("NumRecoFake_eta", "", 30, -1.5, 1.5);
   hDenTrue_eta = new TH1D("DenTrueMC_eta", "", 30, -1.5, 1.5);
 
-  hEfficiency_r = new TEfficiency("efficiency_r", "r efficiency of tracking;r (cm);Efficiency", 100, 0, 5);
+  hEfficiency_r = new TEfficiency("efficiency_r", "Primary pions with 7 cls - tracking efficiency vs r;r (cm);Efficiency", 100, 0, 5);
   addObject(hEfficiency_r);
   hFakeTrack_r = new TEfficiency("faketrack_r", "r fake-track rate;r (cm);Fake-track rate", 100, 0, 5);
   addObject(hFakeTrack_r);
@@ -402,7 +402,7 @@ void ITSTrackSimTask::createAllHistos()
   hNumDuplicate_r = new TH1D("NumDuplicate_r", "", 100, 0, 5);
   hDenTrue_r = new TH1D("DenTrueMC_r", "", 100, 0, 5);
 
-  hEfficiency_z = new TEfficiency("efficiency_z", "z efficiency of tracking;z (cm);Efficiency", 101, -5, 5);
+  hEfficiency_z = new TEfficiency("efficiency_z", "Primary pions with 7 cls - tracking efficiency vs z;z (cm);Efficiency", 101, -5, 5);
   addObject(hEfficiency_z);
   hFakeTrack_z = new TEfficiency("faketrack_z", "z fake-track rate;z (cm);Fake-track rate", 101, -5, 5);
   addObject(hFakeTrack_z);
