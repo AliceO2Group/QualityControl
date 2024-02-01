@@ -254,7 +254,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  if (dataInputs.expected == dataInputs.seen || timerInputs.seen > 0) {
+  if ((dataInputs.expected == dataInputs.seen && conditionInputs.expected == conditionInputs.seen) || timerInputs.seen > 0) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
