@@ -79,7 +79,7 @@ void PostProcessingLostOrbits::update(Trigger t, framework::ServiceRegistryRef)
   if (moH) {
     ILOG(Info, Support) << "Found MO " << mMOName << " in path " << mCCDBPath << ENDM;
     for (int i = 0; i < 72; i++) { // loop over crates
-      tempPerCrateHisto[i] = (TH1F*)moH->ProjectionY(Form("hPerCrate%i"), i + 1, i + 1);
+      tempPerCrateHisto[i] = (TH1F*)moH->ProjectionY(Form("hPerCrate%i",i), i + 1, i + 1);
       mHistoOrbitsInTFEfficiency->Fill(tempPerCrateHisto[i]->Integral() / (32.f * 3.f)); // 32 orbits in Time Frame, 3 readout windows per orbit
     }
   } else {
