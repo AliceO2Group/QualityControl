@@ -48,7 +48,7 @@ Quality CheckLostOrbits::check(std::map<std::string, std::shared_ptr<MonitorObje
       if (h->GetBinCenter((h->GetMaximumBin())) > mFractionThr) {
         result = Quality::Good;
       } else {
-        result = Quality::Medium;
+        result = Quality::Bad;
       }
     }
   }
