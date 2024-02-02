@@ -29,6 +29,8 @@ target_sources(O2QcTOF
                       src/TrendingCalibLHCphase.cxx
                       # Trending config
                       src/TrendingConfigTOF.cxx
+                      # Reductors
+                      src/TH1ReductorTOF.cxx
                       # Utilities
                 )
 
@@ -83,6 +85,8 @@ add_root_dictionary(O2QcTOF
                             include/TOF/TrendingCalibLHCphase.h
                             # Trending config
                             include/TOF/TrendingConfigTOF.h
+                            # Reductors
+                            include/TOF/TH1ReductorTOF.h
                             # Utilities
                             include/Base/Counter.h
                             include/Base/MessagePad.h
