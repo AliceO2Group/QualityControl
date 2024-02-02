@@ -17,7 +17,6 @@
 #include "TOF/PostProcessingLostOrbits.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "TOF/PostProcessingConfigTOF.h"
 
 #include "TOF/Utils.h"
 
