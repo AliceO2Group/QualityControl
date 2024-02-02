@@ -18,9 +18,11 @@ target_sources(O2QcTOF
                       src/CheckHitMap.cxx
                       src/CheckNoise.cxx
                       src/CheckSlotPartMask.cxx
+                      src/CheckLostOrbits.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
                       src/PostProcessHitMap.cxx
+                      src/PostProcessingLostOrbits.cxx
                       # Trending
                       src/TrendingHits.cxx
                       src/TrendingRate.cxx
@@ -70,9 +72,11 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckHitMap.h
                             include/TOF/CheckNoise.h
                             include/TOF/CheckSlotPartMask.h
+                            include/TOF/CheckLostOrbits.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
                             include/TOF/PostProcessHitMap.h
+                            include/TOF/PostProcessingLostOrbits.h
                             # Trending
                             include/TOF/TrendingHits.h
                             include/TOF/TrendingRate.h

@@ -18,9 +18,11 @@
 #pragma link C++ class o2::quality_control_modules::tof::CheckHitMap + ;
 #pragma link C++ class o2::quality_control_modules::tof::CheckNoise + ;
 #pragma link C++ class o2::quality_control_modules::tof::CheckSlotPartMask + ;
+#pragma link C++ class o2::quality_control_modules::tof::CheckLostOrbits + ;
 // PostProcessing
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate + ;
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessHitMap + ;
+#pragma link C++ class o2::quality_control_modules::tof::PostProcessingLostOrbits + ;
 // Trending
 #pragma link C++ class o2::quality_control_modules::tof::TrendingHits + ;
 #pragma link C++ class o2::quality_control_modules::tof::TrendingRate + ;
