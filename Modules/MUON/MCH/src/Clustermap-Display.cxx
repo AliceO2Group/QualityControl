@@ -460,9 +460,9 @@ double calculateNmax(int nChamber, bool bending, const TH1F* ClustersperDualSamp
       // Get the map index to dsId
       auto dsIds = getDualSampasBorNB(deId, bending);
       for (auto dsId : dsIds) {
-        o2::mch::contour::Contour<double> dualSampaContour = getDualSampaContour(cSeg, dsId);
+        o2::mch::contour::Contour<double> dualSampaContourOut = getDualSampaContour(cSeg, dsId);
         double area = 0.0; // Area of a DS Contour
-        for (const auto& poly : dualSampaContour.getPolygons()) {
+        for (const auto& poly : dualSampaContourOut.getPolygons()) {
           area += poly.signedArea();
         }
         // Convert local dsId to global dsIndex (for a given deId)
