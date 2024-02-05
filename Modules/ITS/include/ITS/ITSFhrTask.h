@@ -93,7 +93,7 @@ class ITSFhrTask final : public TaskInterface
   int mNThreads = 1;
   std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; // layer, stave, substave, hic, chip
 
-  o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
+  o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder = nullptr;
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
 
@@ -107,14 +107,14 @@ class ITSFhrTask final : public TaskInterface
   float mPhysicalOccupancyOB = 4.3e-5;
   double mCutTFForSparse = 1; // cut to stop THnSparse filling after mCutTrgForSparse triggers
   int mDoHitmapFilter = 1;    // do filtering of noise pixel vector
-  std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
-  int** mHitnumberLane /* = new int*[NStaves[lay]]*/;       // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
+  std::unordered_map<unsigned int, int>*** mHitPixelID_InStave = nullptr /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
+  int** mHitnumberLane = nullptr /* = new int*[NStaves[lay]]*/; // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
   double** mOccupancyLane /* = new double*[NStaves[lay]]*/; // IB : occupancy[stave][chip]; OB : occupancy[stave][Lane]
-  int*** mErrorCount /* = new int**[NStaves[lay]]*/;        // IB : errorcount[stave][FEE][errorid]
-  double** mChipPhi /* = new double*[NStaves[lay]]*/;       // IB/OB : mChipPhi[Stave][chip]
-  double** mChipZ /* = new double*[NStaves[lay]]*/;         // IB/OB : mChipZ[Stave][chip]
+  int*** mErrorCount = nullptr /* = new int**[NStaves[lay]]*/;  // IB : errorcount[stave][FEE][errorid]
+  double** mChipPhi = nullptr /* = new double*[NStaves[lay]]*/; // IB/OB : mChipPhi[Stave][chip]
+  double** mChipZ = nullptr /* = new double*[NStaves[lay]]*/;   // IB/OB : mChipZ[Stave][chip]
 
-  int** mChipStat /* = new double*[NStaves[lay]]*/; // IB/OB : mChipStat[Stave][chip]
+  int** mChipStat = nullptr /* = new double*[NStaves[lay]]*/; // IB/OB : mChipStat[Stave][chip]
   int mNoisyPixelNumber[7][48] = { { 0 } };
 
   int mMaxGeneralAxisRange = -3;  // the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
@@ -128,23 +128,23 @@ class ITSFhrTask final : public TaskInterface
   const float mLength[NLayer] = { 27.1, 27.1, 27.1, 84.3, 84.3, 147.5, 147.5 }; // Sensetive area length
 
   // General plots
-  TH1D* mErrorPlots;
-  TH2I* mErrorVsFeeid;
-  TH2Poly* mGeneralOccupancy;  // Max Occuapncy(chip/hic) in one stave
-  TH2Poly* mGeneralNoisyPixel; // Noisy pixel number in one stave
+  TH1D* mErrorPlots = nullptr;
+  TH2I* mErrorVsFeeid = nullptr;
+  TH2Poly* mGeneralOccupancy = nullptr;  // Max Occuapncy(chip/hic) in one stave
+  TH2Poly* mGeneralNoisyPixel = nullptr; // Noisy pixel number in one stave
 
   // Occupancy and hit-map
-  THnSparseI* mStaveHitmap[48];
-  TH2D* mDeadChipPos;
-  TH2D* mAliveChipPos;
-  TH2D* mTotalDeadChipPos;
-  TH2D* mTotalAliveChipPos;
-  TH2D* mChipStaveOccupancy;
-  TH2I* mChipStaveEventHitCheck;
-  TH1D* mOccupancyPlot;
+  THnSparseI* mStaveHitmap[48] = {};
+  TH2D* mDeadChipPos = nullptr;
+  TH2D* mAliveChipPos = nullptr;
+  TH2D* mTotalDeadChipPos = nullptr;
+  TH2D* mTotalAliveChipPos = nullptr;
+  TH2D* mChipStaveOccupancy = nullptr;
+  TH2I* mChipStaveEventHitCheck = nullptr;
+  TH1D* mOccupancyPlot = nullptr;
   bool mIgnoreRampUpData = true;
   // Geometry decoder
-  o2::its::GeometryTGeo* mGeom;
+  o2::its::GeometryTGeo* mGeom = nullptr;
 };
 } // namespace o2::quality_control_modules::its
 
