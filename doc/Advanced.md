@@ -1368,11 +1368,13 @@ the "tasks" path.
         ],
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
         "disableLastCycle": "true",         "": "Last cycle, upon EndOfStream, is not published. (default: false)",
-        "dataSource": {                     "": "Data source of the QC Task.",
-          "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",
-          "name": "tst-raw",                "": "Name of Data Sampling Policy. Only for \"dataSamplingPolicy\" source.",
-          "query" : "raw:TST/RAWDATA/0",    "": "Query of the data source. Only for \"direct\" source."
-        },
+        "dataSources": [{                   "": "Data sources of the QC Task. The following are supported",
+          "type": "dataSamplingPolicy",     "": "Type of the data source",
+          "name": "tst-raw",                "": "Name of Data Sampling Policy"
+        }, {
+          "type": "direct",                 "": "connects directly to another output",
+          "query": "raw:TST/RAWDATA/0",     "": "input spec query, as expected by DataDescriptorQueryBuilder"
+        }],
         "taskParameters": {                 "": "User Task parameters which are then accessible as a key-value map.",
           "myOwnKey": "myOwnValue",         "": "An example of a key and a value. Nested structures are not supported"
         },
