@@ -23,7 +23,6 @@
 #include <QualityControl/QcInfoLogger.h>
 #include <QualityControl/ActivityHelpers.h>
 #include <QualityControl/RepoPathUtils.h>
-#include <QualityControl/Reductor.h>
 #include <QualityControl/UserCodeInterface.h>
 #include <CCDB/BasicCCDBManager.h>
 #include <DataFormatsCTP/Configuration.h>
@@ -36,7 +35,6 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::repository;
-using namespace o2::quality_control_modules::ctp;
 using namespace o2::ctp;
 
 void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
@@ -44,8 +42,25 @@ void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
   mConfig = TrendingConfigCTP(getID(), config);
 }
 
-void CTPTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
+void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
+  // // read out the CTPConfiguration
+  std::string run = std::to_string(t.activity.mId);
+  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
+
+  // get the indeces of the classes we want to trend
+  std::vector<ctp::CTPClass> ctpcls = mCTPconfig.getCTPClasses();
+  std::vector<int> clslist = mCTPconfig.getTriggerClassList();
+  for (size_t i = 0; i < clslist.size(); i++) {
+    for (size_t j = 0; j < mNumOfClasses; j++) {
+      if (ctpcls[i].name.find(mClassNames[j]) != std::string::npos) {
+        mClassIndex[j] = ctpcls[i].descriptorIndex + 1;
+        break;
+      }
+    }
+  }
+
   // Preparing data structure of TTree
   for (const auto& source : mConfig.dataSources) {
     mReductors.emplace(source.name, root_class_factory::create<TH1ctpReductor>(source.moduleName, source.reductorName));
@@ -55,6 +70,11 @@ void CTPTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("time", &mTime);
   for (const auto& [sourceName, reductor] : mReductors) {
+    reductor->SetMTVXIndex(mClassIndex[0]);
+    reductor->SetMVBAIndex(mClassIndex[1]);
+    reductor->SetTVXDCMIndex(mClassIndex[2]);
+    reductor->SetTVXEMCIndex(mClassIndex[3]);
+    reductor->SetTVXPHOIndex(mClassIndex[4]);
     mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
   }
 
@@ -81,13 +101,10 @@ void CTPTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterfac
             : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
 
-  map<string, string> metadata; // can be empty
-
-  std::string run = std::to_string(t.activity.mId);
-  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
-
-  bool foundInputs = false;
+  ILOG(Info, Support) << "time stamp from activity " << t.timestamp << ENDM;
+  ILOG(Info, Support) << "run number from activity " << t.activity.mId << ENDM;
+  // map<string, string> metadata; // can be empty
+  bool inputMissing = false;
 
   for (auto& dataSource : mConfig.dataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
@@ -97,18 +114,17 @@ void CTPTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterfac
     }
     ILOG(Info, Support) << "Got MO " << mo << ENDM;
     TObject* obj = mo ? mo->getObject() : nullptr;
-    if (obj) {
-      foundInputs = true;
-      mReductors[dataSource.name]->update(obj);
+    if (!obj) {
+      ILOG(Info, Support) << "inputs not found" << ENDM;
+      inputMissing = true;
+      return;
     }
+    mReductors[dataSource.name]->update(obj);
   }
 
-  if (!foundInputs) {
-    ILOG(Info, Support) << "inputs not found" << ENDM;
-    return;
+  if (!inputMissing) {
+    mTrend->Fill();
   }
-
-  mTrend->Fill();
 }
 
 void CTPTrendingTask::generatePlots()
@@ -124,100 +140,55 @@ void CTPTrendingTask::generatePlots()
   }
 
   int index = 0;
-  int inputIndex = 0;
-  int classIndex = 0;
-
-  auto ctpClasses = mCTPconfig.getCTPClasses();
-  auto ctpInputs = mCTPconfig.getCTPInputs();
-
-  std::vector<int> nonExistingInputs = { 11, 12, 19, 20, 23, 24, 30, 31, 32, 33, 34, 35, 36, 45, 46, 47 }; // histograms for these inputs are not defined in the config
-
-  const int numberOfInputs = 48 - nonExistingInputs.size();
-  ILOG(Info, Support) << "numberOfInputs.  " << numberOfInputs << ENDM;
-
-  std::vector<int> trendedInputIndex;
-  std::vector<int> trendedClassIndex;
-  for (int i = 0; i < ctpInputs.size(); i++) {
-    auto input = ctpInputs[i];
-    if (std::find(nonExistingInputs.begin(), nonExistingInputs.end(), input.getIndex()) != std::end(nonExistingInputs)) {
-      ILOG(Info, Support) << "Input " << input.getIndex() << " should not exist!!" << ENDM;
-      continue;
-    }
-    if (trendedInputIndex.size() == 0)
-      trendedInputIndex.push_back(input.getIndex());
-    else if (std::find(trendedInputIndex.begin(), trendedInputIndex.end(), input.getIndex()) != std::end(trendedInputIndex))
-      continue;
-    else
-      trendedInputIndex.push_back(input.getIndex());
-  }
-
-  for (int i = 0; i < ctpClasses.size(); i++) {
-    auto ctpClass = ctpClasses[i];
-    if (i == 0)
-      trendedClassIndex.push_back(ctpClass.getIndex());
-    else if (std::find(trendedClassIndex.begin(), trendedClassIndex.end(), ctpClass.getIndex()) != std::end(trendedClassIndex))
-      continue;
-    else
-      trendedClassIndex.push_back(ctpClass.getIndex());
-  }
-
-  ILOG(Info, Support) << "Generating " << trendedClassIndex.size() + trendedInputIndex.size() << " plots." << ENDM;
 
   for (const auto& plot : mConfig.plots) {
 
-    if (index < numberOfInputs && index != trendedInputIndex[inputIndex] - 1) {
-      index++;
-      continue;
-    } else if (index >= numberOfInputs && index - numberOfInputs != trendedClassIndex[classIndex]) {
-      index++;
-      continue;
-    } else {
-      // Before we generate any new plots, we have to delete existing under the same names.
-      // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
-      if (mPlots.count(plot.name)) {
-        getObjectsManager()->stopPublishing(plot.name);
-        delete mPlots[plot.name];
-      }
-
-      auto* c = new TCanvas();
-      ILOG(Info, Support) << plot.varexp << " " << plot.selection << " " << plot.option << ENDM;
-      mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
-
-      c->SetName(plot.name.c_str());
-      c->SetTitle(plot.title.c_str());
-
-      if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
-        if (index < numberOfInputs)
-          histo->SetTitle(ctpInputs[inputIndex].name.c_str());
-        else
-          histo->SetTitle(ctpClasses[classIndex].name.c_str());
-        histo->GetYaxis()->SetTitle("rate [Hz]");
-        c->Update();
-
-        if (plot.varexp.find(":time") != std::string::npos) {
-          histo->GetXaxis()->SetTimeDisplay(1);
-          // It deals with highly congested dates labels
-          histo->GetXaxis()->SetNdivisions(505);
-          // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
-          histo->GetXaxis()->SetTimeOffset(0.0);
-          histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
-        } else if (plot.varexp.find(":meta.runNumber") != std::string::npos) {
-          histo->GetXaxis()->SetNoExponent(true);
-        }
-        histo->BufferEmpty();
-
-      } else {
-        ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
-      }
-
-      mPlots[plot.name] = c;
-      getObjectsManager()->startPublishing(c);
-
-      if (index < numberOfInputs)
-        inputIndex++;
-      else
-        classIndex++;
-      index++;
+    // Before we generate any new plots, we have to delete existing under the same names.
+    // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
+    if (mPlots.count(plot.name)) {
+      getObjectsManager()->stopPublishing(plot.name);
+      delete mPlots[plot.name];
     }
+
+    if (index > 4 && mClassIndex[index - 5] == 65) {
+      ILOG(Info, Support) << "Class " << mClassNames[index - 5] << " is not trended." << ENDM;
+      index++;
+      continue;
+    }
+
+    auto* c = new TCanvas();
+    ILOG(Info, Support) << plot.varexp << " " << plot.selection << " " << plot.option << ENDM;
+    mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
+
+    c->SetName(plot.name.c_str());
+
+    if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
+      if (index < 5)
+        histo->SetTitle(mInputNames[index].c_str());
+      else
+        histo->SetTitle(mClassNames[index - 5].c_str());
+      histo->GetYaxis()->SetTitle("rate [Hz]");
+      c->Update();
+
+      if (plot.varexp.find(":time") != std::string::npos) {
+        histo->GetXaxis()->SetTimeDisplay(1);
+        // It deals with highly congested dates labels
+        histo->GetXaxis()->SetNdivisions(505);
+        // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
+        histo->GetXaxis()->SetTimeOffset(0.0);
+        histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+      } else if (plot.varexp.find(":meta.runNumber") != std::string::npos) {
+        histo->GetXaxis()->SetNoExponent(true);
+      }
+      histo->BufferEmpty();
+
+    } else {
+      ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
+    }
+
+    mPlots[plot.name] = c;
+    getObjectsManager()->startPublishing(c);
+
+    index++;
   }
 }

@@ -18,7 +18,7 @@
 
 #include "QualityControl/Reductor.h"
 
-namespace o2::quality_control_modules::ctp
+namespace o2::quality_control::postprocessing
 {
 
 /// \brief A Reductor which obtains the characteristics of TH1 including the bin contents.
@@ -33,19 +33,48 @@ class TH1ctpReductor : public quality_control::postprocessing::Reductor
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
   void update(TObject* obj) override;
+  void SetMTVXIndex(int in)
+  {
+    mMTVXIndex = in;
+  }
+  void SetMVBAIndex(int in)
+  {
+    mMVBAIndex = in;
+  }
+  void SetTVXDCMIndex(int in)
+  {
+    mTVXDCMIndex = in;
+  }
+  void SetTVXPHOIndex(int in)
+  {
+    mTVXPHOIndex = in;
+  }
+  void SetTVXEMCIndex(int in)
+  {
+    mTVXEMCIndex = in;
+  }
 
  private:
   static constexpr int nInputs = 48;
-  static constexpr int nClasses = 64;
+  int mMTVXIndex = 65;
+  int mMVBAIndex = 65;
+  int mTVXDCMIndex = 65;
+  int mTVXPHOIndex = 65;
+  int mTVXEMCIndex = 65;
+
   struct {
     Double_t mean;
     Double_t stddev;
     Double_t entries;
     Double_t inputs[nInputs];
-    Double_t classContent[nClasses];
+    Double_t classContentMTVX;
+    Double_t classContentMVBA;
+    Double_t classContentTVXDMC;
+    Double_t classContentTVXEMC;
+    Double_t classContentTVXPHO;
   } mStats;
 };
 
-} // namespace o2::quality_control_modules::ctp
+} // namespace o2::quality_control::postprocessing
 
 #endif // QUALITYCONTROL_TH1CTPREDUCTOR_H

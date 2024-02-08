@@ -17,7 +17,7 @@
 #include <TH1.h>
 #include "CTP/TH1ctpReductor.h"
 
-namespace o2::quality_control_modules::ctp
+namespace o2::quality_control::postprocessing
 {
 
 void* TH1ctpReductor::getBranchAddress()
@@ -27,7 +27,7 @@ void* TH1ctpReductor::getBranchAddress()
 
 const char* TH1ctpReductor::getBranchLeafList()
 {
-  return Form("mean/D:stddev:entries:inputs[%i]:classContent[%i]", nInputs, nClasses);
+  return Form("mean/D:stddev:entries:inputs[%i]:classContentMTVX:classContentMVBA:classContentTVXDMC:classContentTVXEMC:classContentTVXPHO", nInputs);
 }
 
 void TH1ctpReductor::update(TObject* obj)
@@ -38,12 +38,14 @@ void TH1ctpReductor::update(TObject* obj)
     mStats.entries = histo->GetEntries();
     mStats.stddev = histo->GetStdDev();
     mStats.mean = histo->GetMean();
-    for (int i = 0; i < nInputs; i++) {
-      mStats.inputs[i] = histo->GetBinContent(i + 1);
+    for (int i = 1; i < nInputs + 1; i++) {
+      mStats.inputs[i] = histo->GetBinContent(i);
     }
-    for (int i = 0; i < nClasses; i++) {
-      mStats.classContent[i] = histo->GetBinContent(i + 1);
-    }
+    mStats.classContentMTVX = histo->GetBinContent(mMTVXIndex);
+    mStats.classContentMVBA = histo->GetBinContent(mMVBAIndex);
+    mStats.classContentTVXDMC = histo->GetBinContent(mTVXDCMIndex);
+    mStats.classContentTVXEMC = histo->GetBinContent(mTVXEMCIndex);
+    mStats.classContentTVXPHO = histo->GetBinContent(mTVXPHOIndex);
   }
 }
-} // namespace o2::quality_control_modules::ctp
+} // namespace o2::quality_control::postprocessing
