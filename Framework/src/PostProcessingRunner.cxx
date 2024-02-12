@@ -285,6 +285,7 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
 
   mPublicationCallback(mObjectManager->getNonOwningArray());
   mTaskState = TaskState::Finished;
+  mObjectManager->stopPublishingAll();
 }
 
 const std::string& PostProcessingRunner::getID() const

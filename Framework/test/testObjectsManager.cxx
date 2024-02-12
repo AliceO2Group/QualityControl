@@ -94,6 +94,12 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
   BOOST_CHECK_THROW(objectsManager.stopPublishing("content"), ObjectNotFoundError);
   BOOST_CHECK_THROW(objectsManager.stopPublishing("asdf"), ObjectNotFoundError);
+
+  objectsManager.startPublishing(&s);
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
+  objectsManager.stopPublishingAll();
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
+  BOOST_CHECK_NO_THROW(objectsManager.stopPublishingAll());
 }
 
 BOOST_AUTO_TEST_CASE(getters_test)
