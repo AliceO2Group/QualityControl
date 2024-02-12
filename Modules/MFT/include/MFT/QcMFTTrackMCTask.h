@@ -18,15 +18,18 @@
 #ifndef QC_MFT_TRACK_MC_TASK_H
 #define QC_MFT_TRACK_MC_TASK_H
 
-#include "QualityControl/TaskInterface.h"
+// ROOT
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TEfficiency.h>
+// O2
 #include <DataFormatsITSMFT/TopologyDictionary.h>
-
 #include "SimulationDataFormat/MCTrack.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "DataFormatsMFT/TrackMFT.h"
-#include <TEfficiency.h>
+// QualityControl
+#include "QualityControl/TaskInterface.h"
+
 class TH1D;
 class TH2D;
 
@@ -63,17 +66,17 @@ class QcMFTTrackMCTask : public TaskInterface
  private:
   std::vector<std::vector<InfoStruct>> info;
 
-  std::unique_ptr<TH1D> hNumRecoValid_pt = nullptr;
-  std::unique_ptr<TH1D> hNumRecoFake_pt = nullptr;
-  std::unique_ptr<TH1D> hDenTrue_pt = nullptr;
+  std::unique_ptr<TH1D> hRecoValid_pt = nullptr;
+  std::unique_ptr<TH1D> hRecoFake_pt = nullptr;
+  std::unique_ptr<TH1D> hTrue_pt = nullptr;
 
-  std::unique_ptr<TH1D> hNumRecoValid_eta = nullptr;
-  std::unique_ptr<TH1D> hNumRecoFake_eta = nullptr;
-  std::unique_ptr<TH1D> hDenTrue_eta = nullptr;
+  std::unique_ptr<TH1D> hRecoValid_eta = nullptr;
+  std::unique_ptr<TH1D> hRecoFake_eta = nullptr;
+  std::unique_ptr<TH1D> hTrue_eta = nullptr;
 
-  std::unique_ptr<TH1D> hNumRecoValid_phi = nullptr;
-  std::unique_ptr<TH1D> hNumRecoFake_phi = nullptr;
-  std::unique_ptr<TH1D> hDenTrue_phi = nullptr;
+  std::unique_ptr<TH1D> hRecoValid_phi = nullptr;
+  std::unique_ptr<TH1D> hRecoFake_phi = nullptr;
+  std::unique_ptr<TH1D> hTrue_phi = nullptr;
 
   std::unique_ptr<TEfficiency> hEfficiency_pt = nullptr;
   std::unique_ptr<TEfficiency> hEfficiency_phi = nullptr;
@@ -84,6 +87,7 @@ class QcMFTTrackMCTask : public TaskInterface
 
   std::unique_ptr<TH1D> hPrimaryReco_pt = nullptr;
   std::unique_ptr<TH1D> hPrimaryGen_pt = nullptr;
+
   std::unique_ptr<TH1D> hResolution_pt = nullptr;
 
   int mRunNumber = 0;
