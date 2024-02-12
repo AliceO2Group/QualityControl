@@ -93,8 +93,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
       }
     } else {
       ILOG(Warning, Support)
-        << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings"
-        << ENDM;
+        << "Could not retrieve an existing TTree for this task" << ENDM;
     }
   }
   for (const auto& source : mConfig.dataSources) {

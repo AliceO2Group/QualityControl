@@ -60,7 +60,7 @@ void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef servic
         mo->setIsOwner(false);
       }
     } else {
-      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings" << ENDM;
+      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task." << ENDM;
     }
   }
   if (mTrend == nullptr) {
