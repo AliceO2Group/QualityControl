@@ -233,6 +233,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
                              //  static const Int_t numCham = 7;
+  static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogErrorDevel, 1, 600); // send it only every 10 minutes
 
   // for (auto&& input : ctx.inputs()) {
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
@@ -245,7 +246,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       mDecoder->setUpStream(ptrToPayload, (long int)payloadSize);
       if (!mDecoder->decodeBufferFast()) {
-        ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
+        ILOG_INST.log(msgLimit, "Error decoding the Superpage !");
         break;
       }
 
