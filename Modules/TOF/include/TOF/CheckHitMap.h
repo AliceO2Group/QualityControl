@@ -58,9 +58,9 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   std::string mRefMapCcdbPath = "/TOF/Calib/FEELIGHT";
   /// Timestamp to get on CCDB for the ref. map
   int mRefMapTimestamp = -1;
-  int mNWithHits = 0;                /// Number of half strips with hits
-  int mNEnabled = 0;                 /// Number of enabled half strips
-  int mTrheshold = 317;              /// Threshold of agreement between read and enabled half strips
+  int mNWithHits = 0;                 /// Number of half strips with hits
+  int mNEnabled = 0;                  /// Number of enabled half strips
+  int mTrheshold = 317;               /// Threshold of agreement between read and enabled half strips
   bool mEnablePadPerMismatch = false; /// Flag to enable showing where the mismatch happens in the plot with TPads
 
   ClassDefOverride(CheckHitMap, 2);
