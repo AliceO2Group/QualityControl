@@ -33,7 +33,8 @@ namespace o2::quality_control_modules::tof
 {
 
 void CheckHitMap::configure()
-{ utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
+{
+  utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
   utils::parseStrParameter(mCustomParameters, "RefMapCcdbPath", mRefMapCcdbPath);
   utils::parseIntParameter(mCustomParameters, "RefMapTimestamp", mRefMapTimestamp);
   utils::parseBooleanParameter(mCustomParameters, "EnablePadPerMismatch", mEnablePadPerMismatch);
@@ -115,7 +116,7 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result = Quality::Good;
       const auto mNMishmatching = mHitMoreThanRef.size() + mRefMoreThanHit.size();
       if (mNMishmatching > mTrheshold) {
-          result = Quality::Bad;
+        result = Quality::Bad;
         if (mNWithHits > mNEnabled) {
           mShifterMessages.AddMessage(Form("Hits %i > enabled %i (Thr. %i), %zu Mismatch", mNWithHits, mNEnabled, mTrheshold, mNMishmatching));
         } else {
@@ -156,7 +157,7 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
     msgPhos->SetFillStyle(3004);
     msgPhos->AddText("PHOS");
-    if (mEnablePadPerMismatch) { // Adding pads to highlight mismatches
+    if (mEnablePadPerMismatch) {             // Adding pads to highlight mismatches
       for (const auto p : mHitMoreThanRef) { // Pads for when hits are more than the reference map
         float xl = h->GetXaxis()->GetBinLowEdge(p.first);
         float xu = h->GetXaxis()->GetBinUpEdge(p.first);
