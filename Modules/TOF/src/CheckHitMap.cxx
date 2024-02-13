@@ -123,15 +123,6 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           mShifterMessages.AddMessage(Form("Hits %i < enabled %i (Thr. %i), %zu Mismatch", mNWithHits, mNEnabled, mTrheshold, mNMishmatching));
         }
       }
-
-      /*result = Quality::Good;
-      if ((mNWithHits - mNEnabled) > mTrheshold) {
-        mShifterMessages.AddMessage(Form("Hits %i > enabled %i (Thr. %i)", mNWithHits, mNEnabled, mTrheshold));
-        result = Quality::Bad;
-      } else if ((mNWithHits - mNEnabled) < mTrheshold) {
-        mShifterMessages.AddMessage(Form("Hits %i < enabled %i (Thr. %i)", mNWithHits, mNEnabled, mTrheshold));
-        result = Quality::Bad;
-      }*/
       return result;
     }
   }
