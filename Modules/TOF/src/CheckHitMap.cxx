@@ -33,10 +33,10 @@ namespace o2::quality_control_modules::tof
 {
 
 void CheckHitMap::configure()
-{
-  utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
+{ utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
   utils::parseStrParameter(mCustomParameters, "RefMapCcdbPath", mRefMapCcdbPath);
   utils::parseIntParameter(mCustomParameters, "RefMapTimestamp", mRefMapTimestamp);
+  utils::parseBooleanParameter(mCustomParameters, "EnablePadPerMismatch", mEnablePadPerMismatch);
   mPhosModuleMessage.clearQualityMessages();
   mPhosModuleMessage.configureEnabledFlag(mCustomParameters);
   mShifterMessages.mMessageWhenBad = "Call TOF on-call";
@@ -65,7 +65,7 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     } else if (mEnableReferenceHitMap) { // Histogram is non empty. Here we should check that it is in agreement with the reference from CCDB
       // Getting the reference map
       const auto* refmap = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::tof::TOFFEElightInfo>(mRefMapCcdbPath, mRefMapTimestamp);
-      if (!mHistoRefHitMap) {
+      if (!mHistoRefHitMap) { // Check that binning is compatible with Monitoring Object?
         ILOG(Debug, Devel) << "making new refmap " << refmap << ENDM;
         mHistoRefHitMap.reset(static_cast<TH2F*>(h->Clone("ReferenceHitMap")));
       }
@@ -87,23 +87,51 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
       mNWithHits = 0;
       mNEnabled = 0;
+      mHitMoreThanRef.clear();
+      mRefMoreThanHit.clear();
+      bool hasHit = false;
+      bool hasRef = false;
       for (int i = 1; i <= h->GetNbinsX(); i++) {
         for (int j = 1; j <= h->GetNbinsY(); j++) {
+          hasHit = false;
+          hasRef = false;
           if (h->GetBinContent(i, j) > 0.0) { // Yes hit
             mNWithHits++;
+            hasHit = true;
           }
           if (mHistoRefHitMap->GetBinContent(i, j) > 0.0) { // Ch. enabled
             mNEnabled++;
+            hasRef = true;
+          }
+          if (hasHit && !hasRef) {
+            mHitMoreThanRef.push_back(std::pair<int, int>(i, j));
+          }
+          if (!hasHit && hasRef) {
+            mRefMoreThanHit.push_back(std::pair<int, int>(i, j));
           }
         }
       }
 
+      result = Quality::Good;
+      const auto mNMishmatching = mHitMoreThanRef.size() + mRefMoreThanHit.size();
+      if (mNMishmatching > mTrheshold) {
+          result = Quality::Bad;
+        if (mNWithHits > mNEnabled) {
+          mShifterMessages.AddMessage(Form("Hits %i > enabled %i (Thr. %i), %zu Mismatch", mNWithHits, mNEnabled, mTrheshold, mNMishmatching));
+        } else {
+          mShifterMessages.AddMessage(Form("Hits %i < enabled %i (Thr. %i), %zu Mismatch", mNWithHits, mNEnabled, mTrheshold, mNMishmatching));
+        }
+      }
+
+      /*result = Quality::Good;
       if ((mNWithHits - mNEnabled) > mTrheshold) {
         mShifterMessages.AddMessage(Form("Hits %i > enabled %i (Thr. %i)", mNWithHits, mNEnabled, mTrheshold));
+        result = Quality::Bad;
       } else if ((mNWithHits - mNEnabled) < mTrheshold) {
         mShifterMessages.AddMessage(Form("Hits %i < enabled %i (Thr. %i)", mNWithHits, mNEnabled, mTrheshold));
-      }
-      result = Quality::Bad;
+        result = Quality::Bad;
+      }*/
+      return result;
     }
   }
   return result;
@@ -120,6 +148,7 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     auto* h = static_cast<TH2F*>(mo->getObject());
     if (checkResult != Quality::Good) {
       auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+      // mShifterMessages.setPosition(0.6, 0.9, 0.9, 1.0);
     }
     auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, Quality::Good, "bl");
     if (!msgPhos) {
@@ -127,6 +156,44 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
     msgPhos->SetFillStyle(3004);
     msgPhos->AddText("PHOS");
+    if (mEnablePadPerMismatch) { // Adding pads to highlight mismatches
+      for (const auto p : mHitMoreThanRef) { // Pads for when hits are more than the reference map
+        float xl = h->GetXaxis()->GetBinLowEdge(p.first);
+        float xu = h->GetXaxis()->GetBinUpEdge(p.first);
+        float yl = h->GetYaxis()->GetBinLowEdge(p.second);
+        float yu = h->GetYaxis()->GetBinUpEdge(p.second);
+
+        TPaveText* pad = new TPaveText(xl, yl, xu, yu);
+
+        pad->SetName(Form("hits more than ref_%i_%i", p.first));
+        h->GetListOfFunctions()->Add(pad);
+        pad->SetBorderSize(1);
+        pad->SetFillColor(kBlack);
+        // pad->SetFillStyle(3005);
+        pad->AddText(" ");
+
+        ILOG(Warning, Support) << "Adding extra pad to " << mo->GetName() << " in position along x: " << xl << " - " << xu << " and y: " << yl << " - " << yu << ENDM;
+      }
+
+      for (const auto p : mRefMoreThanHit) { // Pads for when hits are less than the reference map
+        float xl = h->GetXaxis()->GetBinLowEdge(p.first);
+        float xu = h->GetXaxis()->GetBinUpEdge(p.first);
+        float yl = h->GetYaxis()->GetBinLowEdge(p.second);
+        float yu = h->GetYaxis()->GetBinUpEdge(p.second);
+
+        TPaveText* pad = new TPaveText(xl, yl, xu, yu);
+
+        pad->SetName(Form("hits more than ref_%i_%i", p.first));
+        h->GetListOfFunctions()->Add(pad);
+        pad->SetBorderSize(1);
+        pad->SetFillColor(kRed);
+        // pad->SetFillStyle(3004);
+        pad->AddText(" ");
+
+        ILOG(Warning, Support) << "Adding extra pad to " << mo->GetName() << " in position along x: " << xl << " - " << xu << " and y: " << yl << " - " << yu << ENDM;
+      }
+    }
+
   } else {
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName() << ENDM;
     return;
