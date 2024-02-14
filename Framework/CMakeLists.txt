@@ -192,7 +192,6 @@ set(EXE_OLD_NAMES
   qcRunBasic
   qcRunAdvanced
   qcRunReadout
-  qcRunReadoutForDataDump
   repositoryBenchmark
   qcRunPostProcessing
   qcRunPostProcessingOCC
