@@ -9,7 +9,7 @@ target_sources(O2QcMFT PRIVATE
                src/QcMFTClusterTask.cxx
                src/QcMFTTrackCheck.cxx
                src/QcMFTTrackTask.cxx
-               src/QCMFTTrackMCTask.cxx
+               src/QcMFTTrackMCTask.cxx
                src/QcMFTReadoutCheck.cxx
                src/QcMFTReadoutTask.cxx
                src/QcMFTReadoutTrend.cxx
