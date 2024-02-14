@@ -39,7 +39,7 @@ void TH1ctpReductor::update(TObject* obj)
     mStats.stddev = histo->GetStdDev();
     mStats.mean = histo->GetMean();
     for (int i = 1; i < nInputs + 1; i++) {
-      mStats.inputs[i] = histo->GetBinContent(i);
+      mStats.inputs[i - 1] = histo->GetBinContent(i);
     }
     mStats.classContentMTVX = histo->GetBinContent(mMTVXIndex);
     mStats.classContentMVBA = histo->GetBinContent(mMVBAIndex);
