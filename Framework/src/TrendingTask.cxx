@@ -85,7 +85,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
-    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {
@@ -94,8 +94,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
       }
     } else {
       ILOG(Warning, Support)
-        << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings"
-        << ENDM;
+        << "Could not retrieve an existing TTree for this task" << ENDM;
     }
   }
   for (const auto& source : mConfig.dataSources) {
