@@ -157,7 +157,7 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
         TPaveText* pad = new TPaveText(xl, yl, xu, yu);
 
-        pad->SetName(Form("hits more than ref_%i_%i", p.first));
+        pad->SetName(Form("hits_more_than_ref_%i_%i", p.first, p.second));
         h->GetListOfFunctions()->Add(pad);
         pad->SetBorderSize(1);
         pad->SetFillColor(kBlack);
@@ -175,7 +175,7 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
         TPaveText* pad = new TPaveText(xl, yl, xu, yu);
 
-        pad->SetName(Form("hits more than ref_%i_%i", p.first));
+        pad->SetName(Form("ref_more_than_hits_%i_%i", p.first, p.second));
         h->GetListOfFunctions()->Add(pad);
         pad->SetBorderSize(1);
         pad->SetFillColor(kRed);
