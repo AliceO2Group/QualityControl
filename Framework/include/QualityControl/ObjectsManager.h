@@ -79,6 +79,9 @@ class ObjectsManager
    */
   void stopPublishing(const std::string& objectName);
 
+  /// \brief Stop publishing all registered objects
+  void stopPublishingAll();
+
   /**
    * Check whether an object is already being published
    * @param objectName

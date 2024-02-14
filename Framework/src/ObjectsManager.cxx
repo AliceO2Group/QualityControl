@@ -113,6 +113,12 @@ void ObjectsManager::stopPublishing(const string& objectName)
   mMonitorObjects->Remove(mo);
 }
 
+void ObjectsManager::stopPublishingAll()
+{
+  removeAllFromServiceDiscovery();
+  mMonitorObjects->Clear();
+}
+
 bool ObjectsManager::isBeingPublished(const string& name)
 {
   return (mMonitorObjects->FindObject(name.c_str()) != nullptr);
