@@ -71,7 +71,7 @@ class CTPTrendingTask : public PostProcessingInterface
   std::map<std::string, TObject*> mPlots;
 
   std::unique_ptr<TTree> mTrend;
-  std::unordered_map<std::string, std::unique_ptr<TH1ctpReductor>> mReductors;
+  std::unordered_map<std::string, std::unique_ptr<o2::quality_control_modules::ctp::TH1ctpReductor>> mReductors;
 };
 
 } // namespace o2::quality_control::postprocessing

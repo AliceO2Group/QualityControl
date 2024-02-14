@@ -16,15 +16,15 @@
 #ifndef QUALITYCONTROL_TH1CTPREDUCTOR_H
 #define QUALITYCONTROL_TH1CTPREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
-namespace o2::quality_control::postprocessing
+namespace o2::quality_control_modules::ctp
 {
 
 /// \brief A Reductor which obtains the characteristics of TH1 including the bin contents.
 /// Based on the example by Piotr Jan Konopka
 /// It produces a branch in the format: "mean/D:stddev:entries:inputs[%i]:classes[%i]"
-class TH1ctpReductor : public quality_control::postprocessing::Reductor
+class TH1ctpReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TH1ctpReductor() = default;
@@ -75,6 +75,6 @@ class TH1ctpReductor : public quality_control::postprocessing::Reductor
   } mStats;
 };
 
-} // namespace o2::quality_control::postprocessing
+} // namespace o2::quality_control_modules::ctp
 
 #endif // QUALITYCONTROL_TH1CTPREDUCTOR_H

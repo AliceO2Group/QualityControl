@@ -63,7 +63,7 @@ void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef servic
 
   // Preparing data structure of TTree
   for (const auto& source : mConfig.dataSources) {
-    mReductors.emplace(source.name, root_class_factory::create<TH1ctpReductor>(source.moduleName, source.reductorName));
+    mReductors.emplace(source.name, root_class_factory::create<o2::quality_control_modules::ctp::TH1ctpReductor>(source.moduleName, source.reductorName));
   }
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());

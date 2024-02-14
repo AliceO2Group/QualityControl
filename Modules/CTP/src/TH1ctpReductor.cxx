@@ -17,7 +17,7 @@
 #include <TH1.h>
 #include "CTP/TH1ctpReductor.h"
 
-namespace o2::quality_control::postprocessing
+namespace o2::quality_control_modules::ctp
 {
 
 void* TH1ctpReductor::getBranchAddress()
@@ -48,4 +48,4 @@ void TH1ctpReductor::update(TObject* obj)
     mStats.classContentTVXPHO = histo->GetBinContent(mTVXPHOIndex);
   }
 }
-} // namespace o2::quality_control::postprocessing
+} // namespace o2::quality_control_modules::ctp
