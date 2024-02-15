@@ -95,11 +95,20 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
   BOOST_CHECK_THROW(objectsManager.stopPublishing("content"), ObjectNotFoundError);
   BOOST_CHECK_THROW(objectsManager.stopPublishing("asdf"), ObjectNotFoundError);
 
+  // unpublish all
   objectsManager.startPublishing(&s);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
   objectsManager.stopPublishingAll();
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
   BOOST_CHECK_NO_THROW(objectsManager.stopPublishingAll());
+
+  // unpublish after deletion
+  auto s2 = new TObjString("content");
+  objectsManager.startPublishing(s2);
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
+  delete s2;
+  objectsManager.stopPublishing(s2);
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(getters_test)
