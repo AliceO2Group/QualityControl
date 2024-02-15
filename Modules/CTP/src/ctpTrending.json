@@ -45,35 +45,35 @@
           {
             "name": "L0_3_rate",
             "title": "L0_3_rate",
-            "varexp": "inputs.inputs[3]/60:time",
+            "varexp": "inputs.inputs[2]/60:time", "":"index of the intputs starts at 1, but in the array, we start at 0",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_6_rate",
             "title": "L0_6_rate",
-            "varexp": "inputs.inputs[6]/60:time",
+            "varexp": "inputs.inputs[5]/60:time",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_14_rate",
             "title": "L0_14_rate",
-            "varexp": "inputs.inputs[14]/60:time",
+            "varexp": "inputs.inputs[13]/60:time",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_21_rate",
             "title": "L0_21_rate",
-            "varexp": "inputs.inputs[21]/60:time",
+            "varexp": "inputs.inputs[20]/60:time",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_22_rate",
             "title": "L0_22_rate",
-            "varexp": "inputs.inputs[22]/60:time",
+            "varexp": "inputs.inputs[21]/60:time",
             "selection": "",
             "option": "*L"
           },
