@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "QcZDCRawTask": {
+      "Raw": {
         "active": "true",
         "className": "o2::quality_control_modules::zdc::ZDCRawDataTask",
         "moduleName": "QcZDC",
@@ -126,7 +126,7 @@
             },
             "dataSource": [{
               "type": "Task",
-              "name": "QcZDCRawTask",
+              "name": "Raw",
               "MOs": ["hpedSummary", "hAlignPlotShift", "herrorSummary"]
             }]
           }
@@ -142,7 +142,7 @@
         {
           "condition": "random",
           "fraction": "0.1",
-          "seed": "1234"
+          "seed": "0"
         }
       ],
       "blocking": "false"

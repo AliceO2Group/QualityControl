@@ -57,6 +57,10 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     (void)moName;
     if (mo->getName() == "h_summary_ADC") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+        return Quality::Null;
+      }
       // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamADC.size());
       if ((int)h->GetNbinsX() != (int)mVectParamADC.size()) {
         return Quality::Null;
@@ -90,6 +94,10 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     mStringETDC = "";
     if (mo->getName() == "h_summary_TDC") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+        return Quality::Null;
+      }
       // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamTDC.size());
       if ((int)h->GetNbinsX() != (int)mVectParamTDC.size()) {
         return Quality::Null;
@@ -176,6 +184,10 @@ void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 void ZDCRecDataCheck::setQualityInfo(std::shared_ptr<MonitorObject> mo, int color, std::string text)
 {
   auto* h = dynamic_cast<TH1F*>(mo->getObject());
+  if (h == nullptr) {
+    ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+    return;
+  }
   TLatex* msg = new TLatex(mPosMsgADCX, mPosMsgADCY, text.c_str());
   msg->SetNDC();
   msg->SetTextSize(16);
@@ -258,10 +270,10 @@ void ZDCRecDataCheck::setChName(std::string channel, std::string type)
 {
   sCheck chCheck;
   chCheck.ch = channel;
-  if (type.compare("ADC") == 0) {
+  if (type == "ADC") {
     mVectParamADC.push_back(chCheck);
   }
-  if (type.compare("TDC") == 0) {
+  if (type == "TDC") {
     mVectParamTDC.push_back(chCheck);
   }
 }
@@ -269,7 +281,7 @@ void ZDCRecDataCheck::setChName(std::string channel, std::string type)
 void ZDCRecDataCheck::setChCheck(int index, std::string type)
 {
   std::vector<std::string> tokenString;
-  if (type.compare("ADC") == 0 && index < (int)mVectParamADC.size()) {
+  if (type == "ADC" && index < (int)mVectParamADC.size()) {
     if (const auto param = mCustomParameters.find(mVectParamADC.at(index).ch); param != mCustomParameters.end()) {
       tokenString = tokenLine(param->second, ";");
 
@@ -279,7 +291,7 @@ void ZDCRecDataCheck::setChCheck(int index, std::string type)
       mVectParamADC.at(index).maxE = atof(tokenString.at(0).c_str()) + atof(tokenString.at(2).c_str());
     }
   }
-  if (type.compare("TDC") == 0 && index < (int)mVectParamTDC.size()) {
+  if (type == "TDC" && index < (int)mVectParamTDC.size()) {
     if (const auto param = mCustomParameters.find(mVectParamTDC.at(index).ch); param != mCustomParameters.end()) {
       tokenString = tokenLine(param->second, ";");
 

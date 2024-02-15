@@ -41,12 +41,6 @@ struct PostProcessingConfigZDC : PostProcessingConfig {
     return (entry != parameters.end());
   }
 
-  template <typename T>
-  const T getParameter(std::string name) const;
-
-  template <typename T>
-  const T getParameter(std::string name, T defaultValue) const;
-
   struct DataSource {
     std::string path;
     std::string name;
@@ -56,32 +50,6 @@ struct PostProcessingConfigZDC : PostProcessingConfig {
   std::vector<DataSource> dataSourcesADC;
   std::vector<DataSource> dataSourcesTDC;
 };
-
-template <typename T>
-const T PostProcessingConfigZDC::getParameter(std::string name) const
-{
-  T result{};
-  auto entry = parameters.find(name);
-  if (entry != parameters.end()) {
-    std::istringstream istr(entry->second);
-    istr >> result;
-  }
-
-  return result;
-}
-
-template <typename T>
-const T PostProcessingConfigZDC::getParameter(std::string name, T defaultValue) const
-{
-  T result = defaultValue;
-  auto entry = parameters.find(name);
-  if (entry != parameters.end()) {
-    std::istringstream istr(entry->second);
-    istr >> result;
-  }
-
-  return result;
-}
 
 } // namespace o2::quality_control_modules::zdc
 
