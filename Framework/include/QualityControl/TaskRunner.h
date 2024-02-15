@@ -159,6 +159,7 @@ class TaskRunner : public framework::Task
   uint64_t mDataReceivedInCycle = 0;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
   AliceO2::Common::Timer mTimerDurationCycle;
+  int mNumberObjectsRegisteredAtStart = 0;
 };
 
 } // namespace o2::quality_control::core
