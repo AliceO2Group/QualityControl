@@ -7,5 +7,8 @@
 
 #pragma link C++ class o2::quality_control_modules::ctp::CTPCountersTask + ;
 #pragma link C++ class o2::quality_control_modules::ctp::RawDataReaderCheck + ;
+#pragma link C++ class o2::quality_control_modules::ctp::TH1ctpReductor + ;
+#pragma link C++ class o2::quality_control::postprocessing::CTPTrendingTask + ;
+#pragma link C++ class o2::quality_control::postprocessing::TrendingConfigCTP + ;
 
 #endif

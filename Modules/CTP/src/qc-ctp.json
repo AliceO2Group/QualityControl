@@ -56,7 +56,7 @@
         "dataSource": [{
           "type": "Task",
           "name": "CTPRawData",
-          "MOs": ["bcMTVX"]
+          "MOs": ["bcMTVX","inputs","classes"]
         }]
       }
     }

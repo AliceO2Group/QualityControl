@@ -45,7 +45,7 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize CTPRawDataReaderTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mHistoInputs = new TH1F("inputs", "Inputs distribution", 48, 0, 48);
-  mHistoClasses = new TH1F("classes", "Classes distribution", 64, 0, 64);
+  mHistoClasses = new TH1F("classes", "Classes distribution", 65, 0, 65);
   mHistoMTVXBC = new TH1F("bcMTVX", "BC position of MTVX", 3564, 0, 3564);
   getObjectsManager()->startPublishing(mHistoInputs);
   getObjectsManager()->startPublishing(mHistoClasses);

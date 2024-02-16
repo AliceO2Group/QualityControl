@@ -1,0 +1,129 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "536238",
+        "start" : "1683755568367",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "postprocessing": {
+        "periodSeconds": "60"
+      }
+    },
+    "postprocessing": {
+      "TrendingCTP": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::CTPTrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "CTP",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "CTP/MO/RawData",
+            "names": ["inputs","classes"],
+            "reductorName": "o2::quality_control::postprocessing::TH1ctpReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "L0_3_rate",
+            "title": "L0_3_rate",
+            "varexp": "inputs.inputs[2]/60:time", "":"index of the intputs starts at 1, but in the array, we start at 0",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_6_rate",
+            "title": "L0_6_rate",
+            "varexp": "inputs.inputs[5]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_14_rate",
+            "title": "L0_14_rate",
+            "varexp": "inputs.inputs[13]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_21_rate",
+            "title": "L0_21_rate",
+            "varexp": "inputs.inputs[20]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_22_rate",
+            "title": "L0_22_rate",
+            "varexp": "inputs.inputs[21]/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_MTVX_rate",
+            "title": "Class_MTVX_rate",
+            "varexp": "classes.classContentMTVX/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_MVBA_rate",
+            "title": "Class_MVBA_rate",
+            "varexp": "classes.classContentMVBA/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_TVXDCM_rate",
+            "title": "Class_TVXDCM_rate",
+            "varexp": "classes.classContentTVXDMC/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_TVXEMC_rate",
+            "title": "Class_TVXEMC_rate",
+            "varexp": "classes.classContentTVXEMC/60:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_TVXPH0_rate",
+            "title": "Class_TVXPH0_rate",
+            "varexp": "classes.classContentTVXPHO/60:time",
+            "selection": "",
+            "option": "*L"
+          }
+
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:CTP/MO/RawData/inputs"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
