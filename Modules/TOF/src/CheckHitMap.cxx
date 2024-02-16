@@ -26,6 +26,7 @@
 
 // ROOT
 #include "TLine.h"
+#include "TLatex.h"
 
 using namespace std;
 
@@ -37,6 +38,8 @@ void CheckHitMap::configure()
   utils::parseBooleanParameter(mCustomParameters, "EnableReferenceHitMap", mEnableReferenceHitMap);
   utils::parseStrParameter(mCustomParameters, "RefMapCcdbPath", mRefMapCcdbPath);
   utils::parseIntParameter(mCustomParameters, "RefMapTimestamp", mRefMapTimestamp);
+  utils::parseIntParameter(mCustomParameters, "MaxHitMoreThanRef", mMaxHitMoreThanRef);
+  utils::parseIntParameter(mCustomParameters, "MaxRefMoreThanHit", mMaxRefMoreThanHit); /// by defoult it is to 317 = 5 % of the total enabled channels
   utils::parseBooleanParameter(mCustomParameters, "EnablePadPerMismatch", mEnablePadPerMismatch);
   mPhosModuleMessage.clearQualityMessages();
   mPhosModuleMessage.configureEnabledFlag(mCustomParameters);
@@ -84,8 +87,8 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         const int crate = det[0] * 4 + det[4] / 12;
         const int icrate = mHistoRefHitMap->GetXaxis()->FindBin(0.25f * crate);
         mHistoRefHitMap->SetBinContent(icrate, istrip, 1);
-        // ILOG(Debug, Devel) << "setting channel " << i << " as enabled: crate " << crate << " -> " << icrate << "/" << mHistoRefHitMap->GetNbinsX() << ", strip " << strip << " -> " << istrip << "/" << mHistoRefHitMap->GetNbinsY() << ENDM;
       }
+
       mNWithHits = 0;
       mNEnabled = 0;
       mHitMoreThanRef.clear();
@@ -114,15 +117,20 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
 
       result = Quality::Good;
-      const auto mNMishmatching = mHitMoreThanRef.size() + mRefMoreThanHit.size();
-      if (mNMishmatching > mTrheshold) {
+      const auto mNMishmatching_HitMoreThanRef = mHitMoreThanRef.size();
+      const auto mNMishmatching_RefMoreThanHit = mRefMoreThanHit.size();
+      const auto mNMishmatching = mRefMoreThanHit.size() + mHitMoreThanRef.size();
+      if (mNMishmatching_HitMoreThanRef > mMaxHitMoreThanRef || mNMishmatching_RefMoreThanHit > mMaxRefMoreThanHit) {
         result = Quality::Bad;
-        if (mNWithHits > mNEnabled) {
-          mShifterMessages.AddMessage(Form("Hits %i > enabled %i (Thr. %i), %zu Mismatch", mNWithHits, mNEnabled, mTrheshold, mNMishmatching));
-        } else {
-          mShifterMessages.AddMessage(Form("Hits %i < enabled %i (Thr. %i), %zu Mismatch", mNWithHits, mNEnabled, mTrheshold, mNMishmatching));
+        mShifterMessages.AddMessage(Form("Hits %i, enabled %i, %zu total Mismatch", mNWithHits, mNEnabled, mNMishmatching));
+        if (mNMishmatching_HitMoreThanRef > mMaxHitMoreThanRef) {
+          mShifterMessages.AddMessage(Form("%zu has hit but not ref > %i Thr.", mNMishmatching_HitMoreThanRef, mMaxHitMoreThanRef));
+        }
+        if (mNMishmatching_RefMoreThanHit > mMaxRefMoreThanHit) {
+          mShifterMessages.AddMessage(Form("%zu has ref but not hit > %i Thr.", mNMishmatching_RefMoreThanHit, mMaxRefMoreThanHit));
         }
       }
+
       return result;
     }
   }
@@ -140,13 +148,13 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     auto* h = static_cast<TH2F*>(mo->getObject());
     if (checkResult != Quality::Good) {
       auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
-      // mShifterMessages.setPosition(0.6, 0.9, 0.9, 1.0);
     }
     auto msgPhos = mPhosModuleMessage.MakeMessagePad(h, Quality::Good, "bl");
     if (!msgPhos) {
       return;
     }
     msgPhos->SetFillStyle(3004);
+    msgPhos->SetTextSize(30);
     msgPhos->AddText("PHOS");
     if (mEnablePadPerMismatch) {             // Adding pads to highlight mismatches
       for (const auto p : mHitMoreThanRef) { // Pads for when hits are more than the reference map
@@ -157,11 +165,10 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
         TPaveText* pad = new TPaveText(xl, yl, xu, yu);
 
-        pad->SetName(Form("hits_more_than_ref_%i_%i", p.first, p.second));
+        // pad->SetName(Form("hits more than ref_%i_%i", p.first));
         h->GetListOfFunctions()->Add(pad);
         pad->SetBorderSize(1);
-        pad->SetFillColor(kBlack);
-        // pad->SetFillStyle(3005);
+        pad->SetFillColor(kMagenta);
         pad->AddText(" ");
 
         ILOG(Warning, Support) << "Adding extra pad to " << mo->GetName() << " in position along x: " << xl << " - " << xu << " and y: " << yl << " - " << yu << ENDM;
@@ -175,7 +182,7 @@ void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
         TPaveText* pad = new TPaveText(xl, yl, xu, yu);
 
-        pad->SetName(Form("ref_more_than_hits_%i_%i", p.first, p.second));
+        // pad->SetName(Form("hits more than ref_%i_%i", p.first));
         h->GetListOfFunctions()->Add(pad);
         pad->SetBorderSize(1);
         pad->SetFillColor(kRed);
