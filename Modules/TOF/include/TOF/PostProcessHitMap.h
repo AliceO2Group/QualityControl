@@ -69,6 +69,7 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   int mRefMapTimestamp;        /// Timestamp of the hitmap to fetch (initialized from the configure method)
   std::string mCCDBPath;       /// CCDB path of the MO (initialized from the configure method)
+  std::string mCCDBPathObject; /// CCDB name of the MO (initialized from the configure method)
   std::string mRefMapCcdbPath; /// CCDB path of the RefMap (initialized from the configure method)
   /// Reference hit map taken from the CCDB and translated into QC binning
   std::shared_ptr<TH2F> mHistoRefHitMap = nullptr; /// TOF reference hit map
