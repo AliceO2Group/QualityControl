@@ -50,8 +50,6 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   MessagePad mShifterMessages;
   /// Message regarding the PHOS module (hole)
   MessagePad mPhosModuleMessage{ "PHOS", 13.f, 38.f, 16.f, 53.f }; // Values corresponding to the PHOS hole
-  /// Name of the accepted MO
-  static constexpr char mAcceptedName[] = "HitMapNoiseFiltered";
   /// Flag to enable or disable the check with respect to the reference map
   bool mEnableReferenceHitMap = true;
   /// Name of the Path to get on CCDB for the ref. map
