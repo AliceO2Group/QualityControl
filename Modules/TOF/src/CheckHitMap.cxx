@@ -24,10 +24,6 @@
 #include "DataFormatsTOF/TOFFEElightInfo.h"
 #include "TOFBase/Geo.h"
 
-// ROOT
-#include "TLine.h"
-#include "TLatex.h"
-
 using namespace std;
 
 namespace o2::quality_control_modules::tof
