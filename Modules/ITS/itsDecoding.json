@@ -29,7 +29,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query": "linkerrors:ITS/LinkErrors/0;decerrors:ITS/ChipErrors/0"

@@ -29,7 +29,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query": "filter:ITS/RAWDATA"
@@ -47,7 +46,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
                     "name": "RAWDATA"
@@ -88,7 +86,6 @@
         "moduleName": "QcITS",
         "detectorName": "ITS",
         "cycleDurationSeconds": "180",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",

@@ -21,7 +21,6 @@
         "moduleName": "QcSkeleton",
         "detectorName" : "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"
@@ -36,7 +35,6 @@
         "moduleName": "QcSkeleton",
         "detectorName" : "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"
@@ -51,7 +49,6 @@
         "moduleName": "QcSkeleton",
         "detectorName" : "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"

@@ -29,7 +29,6 @@
         "moduleName": "QcCPV",
         "detectorName": "CPV",
         "cycleDurationSeconds": "30",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0;clusters:CPV/CLUSTERS/0;ctrigrec:CPV/CLUSTERTRIGRECS/0;calibdigits:CPV/CALIBDIGITS/0;rawerrors:CPV/RAWHWERRORS/0;peds:CPV/CPV_Pedestals;badmap:CPV/CPV_BadMap;gains:CPV/CPV_Gains"

@@ -29,7 +29,6 @@
         "moduleName": "QcCTP",
         "detectorName": "CTP",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",

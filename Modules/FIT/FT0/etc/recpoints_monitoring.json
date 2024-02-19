@@ -29,7 +29,6 @@
           "moduleName": "QcFT0",
           "detectorName": "FT0",
           "cycleDurationSeconds": "10",
-          "maxNumberCycles": "-1",
           "dataSource": {
               "type": "direct",
               "query": "recpoints:FT0/RECPOINTS/0;channels:FT0/RECCHDATA/0"

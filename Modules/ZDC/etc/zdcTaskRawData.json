@@ -29,7 +29,6 @@
         "moduleName": "QcZDC",
         "detectorName": "ZDC",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",

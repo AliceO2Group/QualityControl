@@ -29,7 +29,6 @@
         "moduleName": "QcExample",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "aod-data:AOD/TRACK:PAR/0"

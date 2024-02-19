@@ -33,7 +33,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst2"
@@ -46,7 +45,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst1"

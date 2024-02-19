@@ -29,7 +29,6 @@
           "moduleName": "QcFT0",
           "detectorName": "FT0",
           "cycleDurationSeconds": "60",
-          "maxNumberCycles": "-1",
           "dataSource": {
               "type": "direct",
               "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0"

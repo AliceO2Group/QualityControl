@@ -29,7 +29,6 @@
         "moduleName": "QcFV0",
         "detectorName": "FV0",
         "cycleDurationSeconds": "300",
-        "maxNumberCycles": "-1",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",

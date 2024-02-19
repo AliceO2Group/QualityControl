@@ -22,7 +22,6 @@
         "moduleName": "QcMuonChambers",
         "detectorName": "MCH",
         "cycleDurationSeconds": "300",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "digits:MCH/DIGITS"

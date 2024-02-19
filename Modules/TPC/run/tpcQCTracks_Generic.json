@@ -29,7 +29,6 @@
         "moduleName": "QcTPC",
         "detectorName": "TPC",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "inputTracks:TPC/TRACKS/0"

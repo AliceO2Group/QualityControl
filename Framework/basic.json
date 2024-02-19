@@ -48,7 +48,6 @@
           {"cycleDurationSeconds": 10, "validitySeconds": 35},
           {"cycleDurationSeconds": 12, "validitySeconds": 1}
         ],
-        "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",

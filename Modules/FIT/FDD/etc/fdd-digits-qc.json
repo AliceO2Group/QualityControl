@@ -29,7 +29,6 @@
           "moduleName": "QcFDD",
           "detectorName": "FDD",
           "cycleDurationSeconds": "60",
-          "maxNumberCycles": "-1",
           "dataSource": {
               "type": "direct",
               "query": "digits:FDD/DIGITSBC/0;channels:FDD/DIGITSCH/0"

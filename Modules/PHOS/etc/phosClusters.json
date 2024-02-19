@@ -29,7 +29,6 @@
           "moduleName": "QcPHOS",
           "detectorName": "PHS",
           "cycleDurationSeconds": "100",
-          "maxNumberCycles": "-1",
           "dataSource": {
             "type": "dataSamplingPolicy",
             "name": "phos-clu"

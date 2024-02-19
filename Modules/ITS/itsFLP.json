@@ -29,7 +29,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
                     "name": "RAWDATA"
@@ -55,7 +54,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
                     "name": "feedata"

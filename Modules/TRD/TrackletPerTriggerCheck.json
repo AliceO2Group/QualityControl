@@ -46,7 +46,6 @@
           "moduleName": "QcTRD",
           "detectorName": "TRD",
           "cycleDurationSeconds": "60",
-          "maxNumberCycles": "-1", "..........try this value..............":"-1",
           "dataSource": {
             "type": "direct",
             "query": "tracklets:TRD/TRACKLETS;digits:TRD/DIGITS;triggers:TRD/TRKTRGRD" ,"":"digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"

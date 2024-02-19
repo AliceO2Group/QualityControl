@@ -20,7 +20,6 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "5",
         "detectorName": "TST",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"
