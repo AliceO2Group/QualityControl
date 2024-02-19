@@ -56,7 +56,7 @@ class HmpidTaskClusters : public TaskInterface
   TH1F* hHMPIDchargeClus[7];
   TH1F* hHMPIDchargeMipClus[7];
   TH1F* hHMPIDclusX[7];
-  TH1F* hHMPIDclusY[7];  
+  TH1F* hHMPIDclusY[7];
   TH2F* hHMPIDpositionClus[7];
 
   std::vector<TObject*> mPublishedObjects;

@@ -61,10 +61,10 @@ class HmpidTaskMatches : public TaskInterface
   TH1F* mMatchInfoResidualsYTrackMIP[7];
   TH1F* mMatchInfoChargeClusterMIP[7];
   TH1F* mMatchInfoChargeClusterPhotons[7];
-  TH1F *mMatchInfoXMip[7];  
-  TH1F *mMatchInfoYMip[7];  
-  TH1F *mMatchInfoXTrack[7];  
-  TH1F *mMatchInfoYTrack[7];  
+  TH1F* mMatchInfoXMip[7];
+  TH1F* mMatchInfoYMip[7];
+  TH1F* mMatchInfoXTrack[7];
+  TH1F* mMatchInfoYTrack[7];
   TH2F* mMatchInfoClusterMIPMap[7];
   TH2F* mMatchInfoThetaCherenkovVsMom[7];
 

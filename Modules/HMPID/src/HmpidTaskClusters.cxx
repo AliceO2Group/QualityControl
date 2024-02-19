@@ -169,7 +169,7 @@ void HmpidTaskClusters::reset()
     hHMPIDchargeClus[iCh]->Reset();
     hHMPIDchargeMipClus[iCh]->Reset();
     hHMPIDclusX[iCh]->Reset();
-    hHMPIDclusY[iCh]->Reset();        
+    hHMPIDclusY[iCh]->Reset();
     hHMPIDpositionClus[iCh]->Reset();
   }
 }

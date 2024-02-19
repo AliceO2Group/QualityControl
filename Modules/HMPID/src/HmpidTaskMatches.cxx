@@ -73,7 +73,7 @@ void HmpidTaskMatches::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mMatchInfoXMip[iCh]);
     getObjectsManager()->startPublishing(mMatchInfoYMip[iCh]);
     getObjectsManager()->startPublishing(mMatchInfoXTrack[iCh]);
-    getObjectsManager()->startPublishing(mMatchInfoXTrack[iCh]);    
+    getObjectsManager()->startPublishing(mMatchInfoXTrack[iCh]);
     getObjectsManager()->startPublishing(mMatchInfoThetaCherenkovVsMom[iCh]);
   }
 }
@@ -123,7 +123,7 @@ void HmpidTaskMatches::monitorData(o2::framework::ProcessingContext& ctx)
     mMatchInfoXMip[ch]->Fill(xMip);
     mMatchInfoYMip[ch]->Fill(yMip);
     mMatchInfoXTrack[ch]->Fill(xTrk);
-    mMatchInfoYTrack[ch]->Fill(yTrk);    
+    mMatchInfoYTrack[ch]->Fill(yTrk);
     mMatchInfoClusterMIPMap[ch]->Fill(xMip, yMip);
     mMatchInfoThetaCherenkovVsMom[ch]->Fill(TMath::Abs(matchHMP.getHmpMom()), matchHMP.getHMPsignal());
   } // match info loop
@@ -150,7 +150,7 @@ void HmpidTaskMatches::BookHistograms()
     mMatchInfoXMip[iCh] = new TH1F(Form("MipX%i", iCh), Form("X MIP in HMPID Chamber %i;  X (cm); Entries/1 cm", iCh), 133, 0, 133);
     mMatchInfoYMip[iCh] = new TH1F(Form("MipY%i", iCh), Form("Y MIP in HMPID Chamber %i;  Y (cm); Entries/1 cm", iCh), 125, 0, 125);
     mMatchInfoXTrack[iCh] = new TH1F(Form("TrackX%i", iCh), Form("X Track in HMPID Chamber %i;  X (cm); Entries/1 cm", iCh), 133, 0, 133);
-    mMatchInfoYTrack[iCh] = new TH1F(Form("TrackY%i", iCh), Form("Y Track in HMPID Chamber %i;  Y (cm); Entries/1 cm", iCh), 125, 0, 125);    
+    mMatchInfoYTrack[iCh] = new TH1F(Form("TrackY%i", iCh), Form("Y Track in HMPID Chamber %i;  Y (cm); Entries/1 cm", iCh), 125, 0, 125);
     mMatchInfoThetaCherenkovVsMom[iCh] = new TH2F(Form("ThetavsMom%i", iCh), Form("ThetaCherenkov Vs Mom chamber %i; #it{p} (GeV/#it{c}); #theta_{Ckov} (rad);", iCh), 100, 0., 10., 1000, 0., 1.);
   }
   //
