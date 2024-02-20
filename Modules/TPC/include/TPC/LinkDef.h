@@ -40,6 +40,7 @@
 #pragma link C++ class o2::quality_control_modules::tpc::TPCAggregator + ;
 #pragma link C++ class o2::quality_control_modules::tpc::SACZeroScaleReductor + ;
 #pragma link C++ class o2::quality_control_modules::tpc::TrackClusters + ;
+#pragma link C++ class o2::quality_control_modules::tpc::VDriftCalibReductor + ;
 
 #pragma link C++ function o2::quality_control_modules::tpc::addAndPublish + ;
 #pragma link C++ function o2::quality_control_modules::tpc::toVector + ;
