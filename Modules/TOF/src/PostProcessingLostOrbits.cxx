@@ -69,6 +69,9 @@ void PostProcessingLostOrbits::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
+  if (mHistoOrbitsInTFEfficiency)
+    mHistoOrbitsInTFEfficiency->Reset();
+
   TH1F* tempPerCrateHisto[72];   // 72 crates
   for (int i = 0; i < 72; i++) { // loop over crates
     tempPerCrateHisto[i] = nullptr;
