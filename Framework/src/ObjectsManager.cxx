@@ -61,6 +61,10 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object)
 {
+  if (!object) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    return;
+  }
   if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << "), will remove it and add the new one" << ENDM;
     stopPublishing(object->GetName());
@@ -104,7 +108,11 @@ void ObjectsManager::removeAllFromServiceDiscovery()
 
 void ObjectsManager::stopPublishing(TObject* object)
 {
-  stopPublishing(object->GetName());
+  if (object) {
+    stopPublishing(object->GetName());
+  } else {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+  }
 }
 
 void ObjectsManager::stopPublishing(const string& objectName)
@@ -171,6 +179,10 @@ void ObjectsManager::setDefaultDrawOptions(const std::string& objectName, const 
 
 void ObjectsManager::setDefaultDrawOptions(TObject* obj, const std::string& options)
 {
+  if (!obj) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    return;
+  }
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDrawOptionsKey, options);
 }
@@ -183,6 +195,10 @@ void ObjectsManager::setDisplayHint(const std::string& objectName, const std::st
 
 void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
+  if (!obj) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    return;
+  }
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }

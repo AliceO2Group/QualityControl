@@ -165,4 +165,17 @@ BOOST_AUTO_TEST_CASE(drawOptions_test)
   BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), "gridy logy");
 }
 
+BOOST_AUTO_TEST_CASE(feed_with_nullptr)
+{
+  Config config;
+  config.taskName = "test";
+  config.consulUrl = "";
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
+
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(nullptr));
+  BOOST_CHECK_NO_THROW(objectsManager.setDefaultDrawOptions(nullptr, ""));
+  BOOST_CHECK_NO_THROW(objectsManager.setDisplayHint(nullptr, ""));
+  BOOST_CHECK_NO_THROW(objectsManager.stopPublishing(nullptr));
+}
+
 } // namespace o2::quality_control::core
