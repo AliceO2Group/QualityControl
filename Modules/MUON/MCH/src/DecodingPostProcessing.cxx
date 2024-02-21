@@ -76,6 +76,7 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
 
   auto obj = mCcdbObjects.find(errorsSourceName());
   if (obj != mCcdbObjects.end()) {
+    mErrorsOnCycle.reset();
     mErrorsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
@@ -83,9 +84,11 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
   // Decoding errors plotters
   //----------------------------------
 
+  mErrorsPlotter.reset();
   mErrorsPlotter = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/");
   mErrorsPlotter->publish(getObjectsManager());
 
+  mErrorsPlotterOnCycle.reset();
   mErrorsPlotterOnCycle = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/LastCycle/");
   mErrorsPlotterOnCycle->publish(getObjectsManager());
 }
@@ -100,6 +103,7 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
 
   auto obj = mCcdbObjects.find(hbPacketsSourceName());
   if (obj != mCcdbObjects.end()) {
+    mHBPacketsOnCycle.reset();
     mHBPacketsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
@@ -107,9 +111,11 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
   // HeartBeat packets plotters
   //----------------------------------
 
+  mHBPacketsPlotter.reset();
   mHBPacketsPlotter = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/", mFullHistos);
   mHBPacketsPlotter->publish(getObjectsManager());
 
+  mHBPacketsPlotterOnCycle.reset();
   mHBPacketsPlotterOnCycle = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/LastCycle/", mFullHistos);
   mHBPacketsPlotterOnCycle->publish(getObjectsManager());
 }
@@ -124,6 +130,7 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
 
   auto obj = mCcdbObjects.find(syncStatusSourceName());
   if (obj != mCcdbObjects.end()) {
+    mSyncStatusOnCycle.reset();
     mSyncStatusOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
@@ -131,9 +138,11 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
   // Sync status  plotters
   //----------------------------------
 
+  mSyncStatusPlotter.reset();
   mSyncStatusPlotter = std::make_unique<FECSyncStatusPlotter>("SyncErrors/");
   mSyncStatusPlotter->publish(getObjectsManager());
 
+  mSyncStatusPlotterOnCycle.reset();
   mSyncStatusPlotterOnCycle = std::make_unique<FECSyncStatusPlotter>("SyncErrors/LastCycle/");
   mSyncStatusPlotterOnCycle->publish(getObjectsManager());
 }
