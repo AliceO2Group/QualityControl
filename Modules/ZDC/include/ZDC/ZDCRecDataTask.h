@@ -18,8 +18,6 @@
 #define QC_MODULE_ZDC_ZDCZDCRECDATATASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "ZDCBase/Constants.h"
-#include "ZDCSimulation/ZDCSimParam.h"
 #include "DataFormatsZDC/BCRecData.h"
 #include "DataFormatsZDC/RecEventFlat.h"
 #include "DataFormatsZDC/ZDCEnergy.h"
@@ -29,7 +27,6 @@
 #include "ZDCSimulation/Digitizer.h"
 #include <TH1.h>
 #include <TH2.h>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -41,7 +38,7 @@ namespace o2::quality_control_modules::zdc
 {
 
 /// \brief Quality Control ZDC Rec Task
-/// \author My Name
+/// \author Carlo Puggioni
 class ZDCRecDataTask final : public TaskInterface
 {
  public:
@@ -130,8 +127,6 @@ class ZDCRecDataTask final : public TaskInterface
   int fNumBinY = 0;
   double fMinBinY = 0;
   double fMaxBinY = 0;
-  int mIdhTDC = 0;
-  int mIdhADC = 0;
   // TH1F* mHistogram = nullptr;
 };
 
