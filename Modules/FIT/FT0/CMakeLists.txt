@@ -46,6 +46,10 @@ add_root_dictionary(O2QcFT0
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
+install(FILES etc/ft0-digits.json
+              etc/ft0-post-processing.json
+        DESTINATION Modules/FIT/FT0/etc)
+
 # ---- Executables ----
 # keep commented as an example
 
