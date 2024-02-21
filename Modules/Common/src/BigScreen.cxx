@@ -17,9 +17,7 @@
 
 #include "Common/BigScreen.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/ActivityHelpers.h"
 #include <TDatime.h>
 #include <TPaveText.h>
@@ -35,12 +33,7 @@ namespace o2::quality_control_modules::common
 void BigScreen::configure(const boost::property_tree::ptree& config)
 {
   mConfig = BigScreenConfig(getID(), config);
-}
 
-//_________________________________________________________________________________________
-
-void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
-{
   mColors[Quality::Null.getName()] = kViolet - 6;
   mColors[Quality::Bad.getName()] = kRed;
   mColors[Quality::Medium.getName()] = kOrange - 3;
@@ -94,9 +87,16 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
 
     index += 1;
   }
-
   mCanvas = std::make_unique<TCanvas>("BigScreen", "QC Big Screen", 800, 600);
   getObjectsManager()->startPublishing(mCanvas.get());
+}
+
+//_________________________________________________________________________________________
+
+void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
+{
+  mCanvas->Clear();
+  mCanvas->cd();
 }
 
 //_________________________________________________________________________________________
