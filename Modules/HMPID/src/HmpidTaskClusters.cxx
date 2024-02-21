@@ -44,6 +44,8 @@ HmpidTaskClusters::~HmpidTaskClusters()
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     delete hHMPIDchargeClus[iCh];
     delete hHMPIDchargeMipClus[iCh];
+    delete hHMPIDclusX[7];
+    delete hHMPIDclusY[7];
     delete hHMPIDpositionClus[iCh];
   }
 }
@@ -64,6 +66,8 @@ void HmpidTaskClusters::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(hHMPIDchargeClus[iCh]);
     getObjectsManager()->startPublishing(hHMPIDchargeMipClus[iCh]);
     getObjectsManager()->startPublishing(hHMPIDpositionClus[iCh]);
+    getObjectsManager()->startPublishing(hHMPIDclusX[iCh]);
+    getObjectsManager()->startPublishing(hHMPIDclusY[iCh]);
     getObjectsManager()->setDefaultDrawOptions(hHMPIDpositionClus[iCh], "colz");
     getObjectsManager()->setDisplayHint(hHMPIDpositionClus[iCh], "colz");
   }
@@ -75,13 +79,11 @@ void HmpidTaskClusters::initialize(o2::framework::InitContext& /*ctx*/)
 
 void HmpidTaskClusters::startOfActivity(const Activity& /*activity*/)
 {
-  ILOG(Debug, Devel) << "startOfActivity" << ENDM;
   reset();
 }
 
 void HmpidTaskClusters::startOfCycle()
 {
-  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
 void HmpidTaskClusters::monitorData(o2::framework::ProcessingContext& ctx)
@@ -113,6 +115,8 @@ void HmpidTaskClusters::monitorData(o2::framework::ProcessingContext& ctx)
         if (clusters[j].size() >= 3 && clusters[j].size() <= 7) {
           hHMPIDchargeMipClus[chamber]->Fill(clusters[j].q());
         }
+        hHMPIDclusX[chamber]->Fill(clusters[j].x());
+        hHMPIDclusY[chamber]->Fill(clusters[j].y());
         hHMPIDpositionClus[chamber]->Fill(clusters[j].x(), clusters[j].y());
       }
     } // cluster loop
@@ -124,18 +128,15 @@ void HmpidTaskClusters::monitorData(o2::framework::ProcessingContext& ctx)
 
 void HmpidTaskClusters::endOfCycle()
 {
-
-  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
 void HmpidTaskClusters::endOfActivity(const Activity& /*activity*/)
 {
-  ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 }
 
 void HmpidTaskClusters::BookHistograms()
 {
-  hClusMultEv = new TH1F("ClusMultEve", "HMPID Cluster multiplicity per event", 500, 0, 500);
+  hClusMultEv = new TH1F("ClusMultEve", "HMPID Cluster multiplicity per event", 1000, 0, 1000);
 
   ThClusMult = new TProfile("ClusMult", "HMPID Cluster multiplicity per chamber;Chamber Id;# of clusters/event", 7, 0., 7.);
   ThClusMult->Sumw2();
@@ -147,8 +148,10 @@ void HmpidTaskClusters::BookHistograms()
   ThClusMult->SetStats(0);
 
   for (Int_t iCh = 0; iCh < 7; iCh++) {
-    hHMPIDchargeClus[iCh] = new TH1F(Form("CluQ%i", iCh), Form("Cluster Charge in HMPID Chamber %i ; Entries/1 ADC; Q (ADC)", iCh), 2000, 0, 2000);
-    hHMPIDchargeMipClus[iCh] = new TH1F(Form("MipCluQ%i", iCh), Form("MIP Cluster Charge in HMPID Chamber %i;Entries/1 ADC;Q (ADC)", iCh), 2000, 200, 2200);
+    hHMPIDchargeClus[iCh] = new TH1F(Form("CluQ%i", iCh), Form("Cluster Charge in HMPID Chamber %i; Q (ADC); Entries/1 ADC", iCh), 2000, 0, 2000);
+    hHMPIDchargeMipClus[iCh] = new TH1F(Form("MipCluQ%i", iCh), Form("MIP Cluster Charge in HMPID Chamber %i; Q (ADC); Entries/1 ADC", iCh), 2000, 200, 2200);
+    hHMPIDclusX[iCh] = new TH1F(Form("ClusX%i", iCh), Form("X Cluster in HMPID Chamber %i;  X (cm); Entries/1 cm", iCh), 133, 0, 133);
+    hHMPIDclusY[iCh] = new TH1F(Form("ClusY%i", iCh), Form("Y Cluster in HMPID Chamber %i;  Y (cm); Entries/1 cm", iCh), 125, 0, 125);
     hHMPIDpositionClus[iCh] = new TH2F(Form("ClusterPoistion%i", iCh), Form("Cluster Position in HMPID Chamber %i; X (cm); Y (cm)", iCh), 133, 0, 133, 125, 0, 125); // cmxcm
     hHMPIDpositionClus[iCh]->SetStats(0);
   }
@@ -165,6 +168,8 @@ void HmpidTaskClusters::reset()
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     hHMPIDchargeClus[iCh]->Reset();
     hHMPIDchargeMipClus[iCh]->Reset();
+    hHMPIDclusX[iCh]->Reset();
+    hHMPIDclusY[iCh]->Reset();
     hHMPIDpositionClus[iCh]->Reset();
   }
 }
