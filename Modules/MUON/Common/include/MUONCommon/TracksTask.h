@@ -52,8 +52,14 @@ class TracksTask /*final*/ : public TaskInterface
   bool assertInputs(o2::framework::ProcessingContext& ctx);
   bool getBooleanParam(const char* paramName) const;
 
+  template <class T>
+  T getParameter(std::string parName, const T defaultValue, const o2::quality_control::core::Activity& activity);
+  template <class T>
+  T getParameter(std::string parName, const T defaultValue);
+
  private:
   std::map<GID::Source, std::unique_ptr<TrackPlotter>> mTrackPlotters;
+  std::map<GID::Source, std::unique_ptr<TrackPlotter>> mTrackPlottersWithCuts;
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
   o2::globaltracking::RecoContainer mRecoCont;
   GID::mask_t mSrc = GID::getSourcesMask("MCH-MID");
@@ -66,6 +72,30 @@ class TracksTask /*final*/ : public TaskInterface
   // MFT-MCH-MID
   gsl::span<const o2::dataformats::GlobalFwdTrack> mMFTMCHMIDTracks;
 };
+
+template <class T>
+T TracksTask::getParameter(std::string parName, const T defaultValue, const o2::quality_control::core::Activity& activity)
+{
+  T result = defaultValue;
+  auto parOpt = mCustomParameters.atOptional(parName, activity);
+  if (parOpt.has_value()) {
+    std::stringstream ss(parOpt.value());
+    ss >> result;
+  }
+  return result;
+}
+
+template <class T>
+T TracksTask::getParameter(std::string parName, const T defaultValue)
+{
+  T result = defaultValue;
+  auto parOpt = mCustomParameters.atOptional(parName);
+  if (parOpt.has_value()) {
+    std::stringstream ss(parOpt.value());
+    ss >> result;
+  }
+  return result;
+}
 
 } // namespace o2::quality_control_modules::muon
 

@@ -14,11 +14,15 @@
 
 #include "MUONCommon/HistPlotter.h"
 #include "MUONCommon/MuonTrack.h"
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 
 #include "ReconstructionDataFormats/GlobalTrackID.h"
 #include <DataFormatsGlobalTracking/RecoContainer.h>
+#include "MFTTracking/Constants.h"
 
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TProfile.h>
 
 #include <fmt/core.h>
@@ -26,22 +30,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-/*
-namespace o2::mch
-{
-class Cluster;
-class ROFRecord;
-class TrackMCH;
-class Digit;
-} // namespace o2::mch
 
-namespace o2::dataformats
-{
-class TrackMCHMID;
-class GlobalFwdTrack;
-}
-*/
 using GID = o2::dataformats::GlobalTrackID;
+
+using namespace o2::quality_control_modules::common;
+
+using MuonCutFunc = std::function<bool(const o2::quality_control_modules::muon::MuonTrack&)>;
+using DiMuonCutFunc = std::function<bool(const o2::quality_control_modules::muon::MuonTrack&, const o2::quality_control_modules::muon::MuonTrack&)>;
 
 namespace o2::quality_control_modules::muon
 {
@@ -49,11 +44,24 @@ namespace o2::quality_control_modules::muon
 class TrackPlotter : public HistPlotter
 {
  public:
-  TrackPlotter(int maxTracksPerTF, GID::Source source, std::string path);
+  static constexpr Double_t sLastMFTPlaneZ = o2::mft::constants::mft::LayerZCoordinate()[9];
+
+  TrackPlotter(int maxTracksPerTF, GID::Source source, std::string path, bool fullHistos = false);
   ~TrackPlotter() = default;
 
  public:
+  void setMuonCuts(const std::vector<MuonCutFunc>& cuts) { mMuonCuts = cuts; }
+  void setDiMuonCuts(const std::vector<DiMuonCutFunc>& cuts) { mDiMuonCuts = cuts; }
+
+  void addMuonCut(const MuonCutFunc f) { mMuonCuts.push_back(f); }
+  void addDiMuonCut(const DiMuonCutFunc f) { mDiMuonCuts.push_back(f); }
+
   void fillHistograms(const o2::globaltracking::RecoContainer& recoCont);
+  void setFirstTForbit(int orbit) { mFirstTForbit = orbit; }
+
+  void endOfCycle();
+
+  const std::vector<std::pair<MuonTrack, bool>>& getMuonTracks() const { return mMuonTracks; }
 
  private:
   /** create histograms related to tracks */
@@ -65,41 +73,111 @@ class TrackPlotter : public HistPlotter
   template <typename T>
   std::unique_ptr<T> createHisto(const char* name, const char* title,
                                  int nbins, double xmin, double xmax,
+                                 bool optional,
+                                 bool statBox = false,
+                                 const char* drawOptions = "",
+                                 const char* displayHints = "");
+  template <typename T>
+  std::unique_ptr<T> createHisto(const char* name, const char* title,
+                                 int nbins, double xmin, double xmax,
+                                 int nbinsy, double ymin, double ymax,
+                                 bool optional,
                                  bool statBox = false,
                                  const char* drawOptions = "",
                                  const char* displayHints = "");
 
   /** fill histograms related to a single track */
-  bool fillTrackHistos(const MuonTrack& track);
+  void fillTrackHistos(const MuonTrack& track);
 
   /** fill histograms for track pairs */
-  void fillTrackPairHistos(gsl::span<const MuonTrack> tracks);
+  void fillTrackPairHistos(gsl::span<const std::pair<MuonTrack, bool>> tracks);
+
+  void normalizePlot(TH1* h);
 
   GID::Source mSrc;
   std::string mPath;
 
-  std::unique_ptr<TH1F> mTrackBC;                         ///< BC associated to the track
-  std::unique_ptr<TH1F> mTrackBCWidth;                    ///< BC width associated to the track
-  std::unique_ptr<TH1> mTrackDT;                          ///< time difference between MFT/MCH/MID tracks segments
-  std::array<std::unique_ptr<TH1F>, 3> mNofTracksPerTF;   ///< number of tracks per TF
-  std::array<std::unique_ptr<TH1F>, 3> mTrackDCA;         ///< DCA (cm) of the track
-  std::array<std::unique_ptr<TH1F>, 3> mTrackEta;         ///< eta of the track
-  std::array<std::unique_ptr<TH1F>, 3> mTrackPDCA;        ///< p (GeV/c) x DCA (cm) of the track
-  std::array<std::unique_ptr<TH1F>, 3> mTrackPhi;         ///< phi (in degrees) of the track
-  std::array<std::unique_ptr<TH1F>, 3> mTrackPt;          ///< Pt (Gev/c^2) of the track
-  std::array<std::unique_ptr<TH1F>, 3> mTrackRAbs;        ///< R at absorber end of the track
+  bool mFullHistos;
 
-  std::unique_ptr<TH1F> mMinv; ///< invariant mass of unlike-sign track pairs
+  uint32_t mFirstTForbit{ 0 };
+  int mNOrbitsPerTF{ -1 };
+
+  std::vector<std::pair<MuonTrack, bool>> mMuonTracks;
+
+  std::vector<MuonCutFunc> mMuonCuts;
+  std::vector<DiMuonCutFunc> mDiMuonCuts;
+
+  std::unique_ptr<TH1DRatio> mTrackBC;                         ///< BC associated to the track
+  std::unique_ptr<TH1D> mTrackDT;                              ///< time difference between MCH/MID tracks segments
+  std::array<std::unique_ptr<TH1D>, 3> mNofTracksPerTF;        ///< number of tracks per TF
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackChi2OverNDF; ///< chi2/ndf for the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackDCA;         ///< DCA (cm) of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackEta;         ///< eta of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPDCA;        ///< p (GeV/c) x DCA (cm) of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPhi;         ///< phi (in degrees) of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPt;          ///< Pt (Gev/c) of the track
+  std::unique_ptr<TH1DRatio> mTrackQOverPt;                    ///< Q / Pt of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackRAbs;        ///< R at absorber end of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPhi;      ///< phi (in degrees) vs. eta of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPt;       ///< Pt (Gev/c) vs. eta of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackPhiPt;       ///< Pt (Gev/c) vs. phi (in degrees) of the track
+
+  std::unique_ptr<TH2DRatio> mTrackPosAtMFT; ///< MCH track poisiton at MFT exit
+  std::unique_ptr<TH2DRatio> mTrackPosAtMID; ///< MCH track poisiton at MID entrance
+
+  std::unique_ptr<TH1D> mMatchChi2MCHMID;
+
+  // plots specific to MFT-MCH(-MID) matched tracks
+  std::unique_ptr<TH1D> mMatchNMFTCandidates;
+  std::unique_ptr<TH1D> mMatchScoreMFTMCH;
+  std::unique_ptr<TH1D> mMatchChi2MFTMCH;
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaCorr;   ///< correlation between MCH and global track parameters - eta
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackDEtaVsEta; ///< deviation between MCH and global track parameters - eta
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackPhiCorr;   ///< correlation between MCH and global track parameters - phi
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackDPhiVsPhi; ///< deviation between MCH and global track parameters - phi
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackPtCorr;    ///< correlation between MCH and global track parameters - pT
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackDPtVsPt;   ///< deviation between MCH and global track parameters - pT
+
+  std::unique_ptr<TH1DRatio> mMinvFull; ///< invariant mass of unlike-sign track pairs
+  std::unique_ptr<TH1DRatio> mMinv;     ///< invariant mass background of unlike-sign track pairs
+  std::unique_ptr<TH1DRatio> mMinvBgd;  ///< invariant mass background of unlike-sign, out-of-time track pairs
+  std::unique_ptr<TH1DRatio> mDimuonDT; ///< time difference between di-muon tracks
 };
 
 template <typename T>
 std::unique_ptr<T> TrackPlotter::createHisto(const char* name, const char* title,
                                              int nbins, double xmin, double xmax,
+                                             bool optional,
                                              bool statBox,
                                              const char* drawOptions,
                                              const char* displayHints)
 {
-  auto h = std::make_unique<T>(name, title, nbins, xmin, xmax);
+  if (optional && !mFullHistos) {
+    return nullptr;
+  }
+  std::string fullTitle = std::string("[") + GID::getSourceName(mSrc) + "] " + title;
+  auto h = std::make_unique<T>(name, fullTitle.c_str(), nbins, xmin, xmax);
+  if (!statBox) {
+    h->SetStats(0);
+  }
+  histograms().emplace_back(HistInfo{ h.get(), drawOptions, displayHints });
+  return h;
+}
+
+template <typename T>
+std::unique_ptr<T> TrackPlotter::createHisto(const char* name, const char* title,
+                                             int nbins, double xmin, double xmax,
+                                             int nbinsy, double ymin, double ymax,
+                                             bool optional,
+                                             bool statBox,
+                                             const char* drawOptions,
+                                             const char* displayHints)
+{
+  if (optional && !mFullHistos) {
+    return nullptr;
+  }
+  std::string fullTitle = std::string("[") + GID::getSourceName(mSrc) + "] " + title;
+  auto h = std::make_unique<T>(name, fullTitle.c_str(), nbins, xmin, xmax, nbinsy, ymin, ymax);
   if (!statBox) {
     h->SetStats(0);
   }

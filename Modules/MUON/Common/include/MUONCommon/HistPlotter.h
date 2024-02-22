@@ -36,13 +36,18 @@ class HistPlotter
   /** reset all histograms */
   void reset();
 
+  virtual void endOfCycle() {}
+
   std::vector<HistInfo>& histograms() { return mHistograms; }
   const std::vector<HistInfo>& histograms() const { return mHistograms; }
 
   virtual void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager);
+  virtual void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, HistInfo& hinfo);
+  virtual void unpublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager);
 
  private:
   std::vector<HistInfo> mHistograms;
+  std::vector<HistInfo> mPublishedHistograms;
 };
 
 } // namespace o2::quality_control_modules::muon

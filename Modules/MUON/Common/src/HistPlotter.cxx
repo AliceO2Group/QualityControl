@@ -17,12 +17,25 @@
 namespace o2::quality_control_modules::muon
 {
 
+void HistPlotter::publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, HistInfo& hinfo)
+{
+  objectsManager->startPublishing(hinfo.object);
+  objectsManager->setDefaultDrawOptions(hinfo.object, hinfo.drawOptions);
+  objectsManager->setDisplayHint(hinfo.object, hinfo.displayHints);
+  mPublishedHistograms.push_back(hinfo);
+}
+
 void HistPlotter::publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager)
 {
   for (auto hinfo : mHistograms) {
-    objectsManager->startPublishing(hinfo.object);
-    objectsManager->setDefaultDrawOptions(hinfo.object, hinfo.drawOptions);
-    objectsManager->setDisplayHint(hinfo.object, hinfo.displayHints);
+    publish(objectsManager, hinfo);
+  }
+}
+
+void HistPlotter::unpublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager)
+{
+  for (auto hinfo : mPublishedHistograms) {
+    objectsManager->stopPublishing(hinfo.object);
   }
 }
 

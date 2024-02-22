@@ -6,5 +6,7 @@
 #pragma link C++ class o2::quality_control_modules::muon::TrackPlotter + ;
 #pragma link C++ class o2::quality_control_modules::muon::TracksTask + ;
 #pragma link C++ class o2::quality_control_modules::muon::TracksCheck + ;
+#pragma link C++ class o2::quality_control_modules::muon::TracksPostProcessing + ;
+#pragma link C++ class o2::quality_control_modules::muon::MatchingEfficiencyCheck + ;
 
 #endif
