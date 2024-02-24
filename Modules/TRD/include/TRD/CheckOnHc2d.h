@@ -17,15 +17,13 @@
 #ifndef QC_MODULE_TRD_TRDCHECKONHC2D_H
 #define QC_MODULE_TRD_TRDCHECKONHC2D_H
 
-
 // O2
 #include "CCDB/BasicCCDBManager.h"
 #include "DataFormatsTRD/NoiseCalibration.h"
 #include <DataFormatsTRD/Constants.h>
 
-//QC
+// QC
 #include "QualityControl/CheckInterface.h"
-
 
 using namespace o2::trd::constants;
 
