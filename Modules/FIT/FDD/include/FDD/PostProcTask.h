@@ -19,6 +19,8 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "FITCommon/DetectorFIT.h"
+
 #include "CCDB/CcdbApi.h"
 #include "CommonConstants/LHCConstants.h"
 #include "DataFormatsFDD/LookUpTable.h"
@@ -53,7 +55,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
 
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static std::size_t sNCHANNELS_PM = 20;
-
+  using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFDD;
  private:
   std::string mPathGrpLhcIf;
   std::string mPathDigitQcTask;
@@ -63,9 +65,9 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   int mNumOrbitsInTF;
   const unsigned int mNumTriggers = 5;
 
-  std::map<o2::fdd::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
-  std::map<int, std::string> mMapDigitTrgNames;
-  std::map<unsigned int, std::string> mMapBasicTrgBits;
+  typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
+  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   o2::ccdb::CcdbApi mCcdbApi;
 

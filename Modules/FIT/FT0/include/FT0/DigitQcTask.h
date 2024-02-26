@@ -40,6 +40,7 @@
 #include "FT0Base/Geometry.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
+#include "FITCommon/DetectorFIT.h"
 
 using namespace o2::quality_control::core;
 
@@ -67,7 +68,7 @@ class DigitQcTask final : public TaskInterface
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   constexpr static float sCFDChannel2NS = 0.01302; // CFD channel width in ns
-
+  using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
  private:
   // three ways of computing cycle duration:
   // 1) number of time frames
@@ -94,9 +95,10 @@ class DigitQcTask final : public TaskInterface
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<uint8_t, bool> mMapPMhash2isAside;
-  std::map<unsigned int, std::string> mMapDigitTrgNames;
-  std::map<unsigned int, std::string> mMapChTrgNames;
-  std::map<unsigned int, std::string> mMapBasicTrgBits;
+  typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
+  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
+
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
 

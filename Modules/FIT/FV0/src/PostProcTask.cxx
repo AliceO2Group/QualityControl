@@ -22,7 +22,6 @@
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
-#include "FITCommon/HelperFIT.h"
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -146,35 +145,18 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateTrgCharge->SetLineColor(kBlue);
   mRateTrgNchan->SetLineColor(kOrange);
 
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kNumberADC, "NumberADC" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsCFDinADCgate, "IsCFDinADCgate" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLate, "IsTimeInfoLate" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsAmpHigh, "IsAmpHigh" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
-
-  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
-  for (const auto& entry : mMapChTrgNames) {
+  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits.size(), 0, mMapPMbits.size());
+  for (const auto& entry : mMapPMbits) {
     std::string stBitName = "! " + entry.second;
     mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
   }
   getObjectsManager()->startPublishing(mHistChDataNegBits.get());
   getObjectsManager()->setDefaultDrawOptions(mHistChDataNegBits.get(), "COLZ");
 
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrAOut" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "OrAIn" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgCharge, "TrgCharge" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "TrgNChan" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
-  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  for (const auto& entry : mMapDigitTrgNames) {
+  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
+  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
+  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
+  for (const auto& entry : mMapTechTrgBits) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcTrgOutOfBunchColl->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -270,8 +252,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
 
-  mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFV0;
-  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapBasicTrgBits);
+  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapTrgBits);
   mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), "", "TimeInWindowFraction", Form("FV0 Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "FV0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
@@ -651,7 +632,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 
   mHistBcPattern->Reset();
   for (int i = 0; i < sBCperOrbit + 1; i++) {
-    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+    for (int j = 0; j < mMapTechTrgBits.size() + 1; j++) {
       mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
   }
@@ -660,15 +641,15 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
   for (int i = 0; i < sBCperOrbit + 1; i++) {
-    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+    for (int j = 0; j < mMapTechTrgBits.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
         mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0);
       }
     }
   }
 
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapDigitTrgNames.size()));
-  for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapTechTrgBits.size()));
+  for (int iBin = 1; iBin < mMapTechTrgBits.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
     const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, sBCperOrbit, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);

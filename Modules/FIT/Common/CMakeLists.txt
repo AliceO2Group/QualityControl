@@ -3,6 +3,7 @@ set(MODULE_NAME "O2QcFITCommon")
 # ---- Files ----
 
 set(SRCS
+  src/DetectorFIT.cxx
   src/HelperCommon.cxx
   src/HelperFIT.cxx
   src/HelperHist.cxx
@@ -11,11 +12,13 @@ set(SRCS
 )
 
 set(HEADERS
+  include/FITCommon/DetectorFIT.h
   include/FITCommon/HelperCommon.h
   include/FITCommon/HelperFIT.h
   include/FITCommon/HelperHist.h
   include/FITCommon/HelperLUT.h
   include/FITCommon/DigitSync.h
+  include/FITCommon/PostProcHelper.h
 )
 
 # ---- Library ----
