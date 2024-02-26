@@ -52,7 +52,7 @@
           "minDCACutY" : "10.f"
         },
 	"grpGeomRequest" : {
-          "geomRequest": "Aligned",
+          "geomRequest": "None",
           "askGRPECS": "false",
           "askGRPLHCIF": "false",
           "askGRPMagField": "true",
