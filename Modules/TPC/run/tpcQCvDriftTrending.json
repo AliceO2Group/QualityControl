@@ -10,7 +10,9 @@
         },
         "Activity": {
           "number": "",
-          "type": ""
+          "type": "",
+          "start": "", 
+          "end": ""
         },
         "monitoring": {
           "url": "infologger:///debug?qc"
@@ -28,6 +30,7 @@
       "postprocessing": {
         "CalibQC": {
           "active": "true",
+          "resumeTrend": "false", 
           "className": "o2::quality_control::postprocessing::TrendingTask",
           "moduleName": "QualityControl",
           "detectorName": "TPC",
@@ -35,7 +38,7 @@
           "dataSources": [
             {
               "type": "condition",
-              "path": "TPC/Calib",
+              "path": "TPC/Calib/",
               "names": [ "VDriftTgl" ],
               "reductorName": "o2::quality_control_modules::tpc::VDriftCalibReductor",
               "moduleName": "QcTPC"
@@ -55,7 +58,7 @@
             "userorcontrol"
           ],
           "updateTrigger": [
-            "10 seconds" 
+            "newobject:ccdb:TPC/Calib/VDriftTgl/"
           ],
           "stopTrigger": [
             "userorcontrol"
