@@ -65,6 +65,7 @@ struct SliceTrendingTaskConfig : PostProcessingConfig {
     std::string name;
     std::string reductorName;
     std::vector<std::vector<float>> axisDivision;
+    std::vector<std::vector<std::string>> sliceLabels;
     std::string moduleName;
   };
 

@@ -136,6 +136,7 @@ void SliceTrendingTask::trendValues(const Trigger& t,
       TObject* obj = mo ? mo->getObject() : nullptr;
 
       mAxisDivision[dataSource.name] = dataSource.axisDivision;
+      mSliceLabel[dataSource.name] = dataSource.sliceLabels;
 
       if (obj) {
         mReductors[dataSource.name]->update(obj, *mSources[dataSource.name],
@@ -183,7 +184,7 @@ void SliceTrendingTask::generatePlots()
     c->SetTitle(plot.title.c_str());
 
     TitleSettings titlesettings{ plot.legendObservableX, plot.legendObservableY, plot.legendUnitX, plot.legendUnitY, plot.legendCentmodeX, plot.legendCentmodeY };
-    drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName], titlesettings);
+    drawCanvasMO(c, plot.varexp, plot.name, plot.option, plot.graphErrors, mAxisDivision[varName], mSliceLabel[varName], titlesettings);
 
     int NumberPlots = 1;
     if (plot.varexp.find(":time") != std::string::npos || plot.varexp.find(":run") != std::string::npos) { // we plot vs time, multiple plots on canvas possible
@@ -245,7 +246,7 @@ void SliceTrendingTask::generatePlots()
 } // void SliceTrendingTask::generatePlots()
 
 void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
-                                     const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis, const TitleSettings& titlesettings)
+                                     const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis, const std::vector<std::vector<std::string>>& sliceLabels, const TitleSettings& titlesettings)
 {
   // Determine the order of the plot (1 - histo, 2 - graph, ...)
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
@@ -282,6 +283,15 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
   const int nEntriesRuns = mTrend->GetBranch("meta")->GetEntries();
   const int nEntriesData = mTrend->GetBranch(varName.data())->GetEntries();
 
+  bool useSliceLabels = false;
+  if (axis.size() == 1 && sliceLabels.size() == 1) { // currently we use custom labels only in the 1D case
+    if (axis[0].size() - 1 != sliceLabels[0].size() && sliceLabels[0].size() > 0) {
+      ILOG(Warning, Support) << "Slicing of 1D Objects: Labels do not match number of slices, using ranges as slice names" << ENDM;
+    } else {
+      useSliceLabels = true;
+    }
+  }
+
   // Fill the graph(errors) to be published.
   if (trendType == "time" || trendType == "run") {
 
@@ -310,7 +320,13 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
 
         iEntry++;
       }
-      graphErrors->SetTitle((dataRetrieveVector->at(p)).title.data());
+
+      if (!useSliceLabels) {
+        graphErrors->SetTitle((dataRetrieveVector->at(p)).title.data());
+      } else {
+        graphErrors->SetTitle(sliceLabels[0][p].data());
+      }
+
       myReader.Restart();
 
       if (!err.empty()) {
@@ -352,7 +368,8 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
         iEntry++;
       }
 
-      const std::string_view title = (dataRetrieveVector->at(p)).title;
+      const std::string_view title = useSliceLabels ? sliceLabels[0][p] : (dataRetrieveVector->at(p)).title;
+      // const std::string_view title = (dataRetrieveVector->at(p)).title;
       const auto posDivider = title.find("RangeX");
       if (posDivider != std::string_view::npos) {
         auto rawtitle = title.substr(posDivider, -1);
@@ -608,7 +625,7 @@ std::string SliceTrendingTask::beautifyTitle(const std::string_view rawtitle, co
   std::string beautified;
   int indexrangeX = rawtitle.find("RangeX"),
       indexrangeY = rawtitle.find("RangeY");
-  if (settings.observableX != "None" && indexrangeY != std::string::npos) {
+  if (settings.observableX != "None" && indexrangeX != std::string::npos) {
     auto rangestring = rawtitle.substr(indexrangeX);
     rangestring = rangestring.substr(0, rangestring.find("]") + 1);
     if (!settings.observableX.length()) {
@@ -631,5 +648,10 @@ std::string SliceTrendingTask::beautifyTitle(const std::string_view rawtitle, co
       beautified += " " + rangehandler(rangestring, settings.observableY, settings.unitY, centmode);
     }
   }
+
+  if (beautified == "") {
+    beautified = rawtitle;
+  }
+
   return beautified;
 }
