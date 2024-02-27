@@ -198,7 +198,7 @@ void ObjectsManager::setDefaultDrawOptions(const std::string& objectName, const 
 void ObjectsManager::setDefaultDrawOptions(TObject* obj, const std::string& options)
 {
   if (!obj) {
-    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::setDefaultDrawOptions" << ENDM;
     return;
   }
   MonitorObject* mo = getMonitorObject(obj->GetName());
@@ -214,7 +214,7 @@ void ObjectsManager::setDisplayHint(const std::string& objectName, const std::st
 void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
   if (!obj) {
-    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::setDisplayHint" << ENDM;
     return;
   }
   MonitorObject* mo = getMonitorObject(obj->GetName());
@@ -228,7 +228,7 @@ void ObjectsManager::setValidity(ValidityInterval validityInterval)
     if (mo) {
       mo->setValidity(validityInterval);
     } else {
-      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+      ILOG(Error, Devel) << "ObjectsManager::setValidity : dynamic_cast returned nullptr." << ENDM;
     }
   }
 }
@@ -240,7 +240,7 @@ void ObjectsManager::updateValidity(validity_time_t validityTime)
     if (mo) {
       mo->updateValidity(validityTime);
     } else {
-      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+      ILOG(Error, Devel) << "ObjectsManager::updateValidity : dynamic_cast returned nullptr." << ENDM;
     }
   }
 }
