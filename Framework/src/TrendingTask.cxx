@@ -80,6 +80,15 @@ bool TrendingTask::canContinueTrend(TTree* tree)
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
+  // removing leftovers from any previous runs
+  mTrend.reset();
+  for (auto [name, object] : mPlots) {
+    getObjectsManager()->stopPublishing(object);
+    delete object;
+  }
+  mPlots.clear();
+  mReductors.clear();
+
   // Preparing data structure of TTree
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
@@ -208,7 +217,7 @@ void TrendingTask::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
+      getObjectsManager()->stopPublishing(mPlots[plot.name]);
       delete mPlots[plot.name];
     }
 

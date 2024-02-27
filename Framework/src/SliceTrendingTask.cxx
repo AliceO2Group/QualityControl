@@ -47,6 +47,16 @@ void SliceTrendingTask::configure(const boost::property_tree::ptree& config)
 
 void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
+  // removing leftovers from any previous runs
+  mTrend.reset();
+  for (auto [name, object] : mPlots) {
+    getObjectsManager()->stopPublishing(object);
+    delete object;
+  }
+  mPlots.clear();
+  mReductors.clear();
+  mSources.clear();
+
   // Prepare the data structure of the trending TTree.
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
@@ -169,7 +179,7 @@ void SliceTrendingTask::generatePlots()
   for (const auto& plot : mConfig.plots) {
     // Delete the existing plots before regenerating them.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
+      getObjectsManager()->stopPublishing(mPlots[plot.name]);
       delete mPlots[plot.name];
     }
 
