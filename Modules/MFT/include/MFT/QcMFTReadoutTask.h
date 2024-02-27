@@ -89,8 +89,6 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   float mY[936] = { 0 };
 
   // histos
-  std::unique_ptr<TH1F> mRDHSummary = nullptr;
-  std::unique_ptr<TH1F> mDDWSummary = nullptr;
   std::unique_ptr<TH1F> mSummaryChipOk = nullptr;
   std::unique_ptr<TH1F> mSummaryChipWarning = nullptr;
   std::unique_ptr<TH1F> mSummaryChipError = nullptr;

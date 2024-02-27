@@ -29,7 +29,6 @@
           "moduleName" : "QcMFT",
           "detectorName" : "MFT",
           "cycleDurationSeconds" : "30",
-          "maxNumberCycles" : "-1",
           "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
           "dataSource" : {
             "type" : "dataSamplingPolicy",

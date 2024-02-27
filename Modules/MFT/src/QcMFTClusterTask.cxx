@@ -16,32 +16,35 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 ///
-
+// C++
+#include <gsl/span>
+#include <string>
+#include <vector>
 // ROOT
-#include <TCanvas.h>
 #include <TH1.h>
-#include <TH2F.h>
-
+#include <TH2.h>
+#include <TString.h>
+#include <TAxis.h>
 // O2
-#include <DataFormatsITSMFT/Cluster.h>
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
 #include <Framework/TimingInfo.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
-#include <DataFormatsITSMFT/ClusterTopology.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
-#include "CCDB/CCDBTimeStampUtils.h"
-#include "MFTTracking/IOUtils.h"
-#include "MFTBase/GeometryTGeo.h"
-#include <DetectorsBase/GeometryManager.h>
+#include <MFTTracking/IOUtils.h>
+#include <CommonConstants/LHCConstants.h>
+#include <DataFormatsITSMFT/ClusterPattern.h>
+#include <DataFormatsITSMFT/TopologyDictionary.h>
+#include <Framework/ProcessingContext.h>
+#include <Framework/ServiceRegistryRef.h>
+#include <MFTTracking/Cluster.h>
 
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTClusterTask.h"
 #include "MFT/QcMFTUtilTables.h"
-
-// C++
-#include <fstream>
+#include "QualityControl/ObjectsManager.h"
+#include "QualityControl/TaskInterface.h"
 
 using namespace o2::mft;
 o2::itsmft::ChipMappingMFT mMFTMapper;
@@ -65,11 +68,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize QcMFTClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
-
   // loading custom parameters
   auto maxClusterROFSize = 5000;
   if (auto param = mCustomParameters.find("maxClusterROFSize"); param != mCustomParameters.end()) {
@@ -82,14 +80,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Debug, Devel) << "Custom parameter - maxDuration: " << param->second << ENDM;
     maxDuration = stof(param->second);
   }
-
-  auto timeBinSize = 0.01f;
-  if (auto param = mCustomParameters.find("timeBinSize"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - timeBinSize: " << param->second << ENDM;
-    timeBinSize = stof(param->second);
-  }
-
-  auto NofTimeBins = static_cast<int>(maxDuration / timeBinSize);
 
   auto ROFLengthInBC = 198;
   if (auto param = mCustomParameters.find("ROFLengthInBC"); param != mCustomParameters.end()) {
@@ -193,10 +183,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "logx logy");
 
-  mNOfClustersTime = std::make_unique<TH1F>("mNOfClustersTime", "Number of clusters per time bin; time (s); # entries", NofTimeBins, 0, maxDuration);
-  mNOfClustersTime->SetMinimum(0.1);
-  getObjectsManager()->startPublishing(mNOfClustersTime.get());
-
   mClustersBC = std::make_unique<TH1F>("mClustersBC", "Clusters per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
   mClustersBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mClustersBC.get());
@@ -274,8 +260,9 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
   const auto clustersROFs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
 
-  if (clusters.size() < 1)
+  if (clusters.empty()) {
     return;
+  }
 
   // get cluster patterns and iterator
   auto clustersPattern = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
@@ -297,8 +284,6 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill the clusters time histograms
   for (const auto& rof : clustersROFs) {
     mClustersROFSize->Fill(rof.getNEntries());
-    float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
-    mNOfClustersTime->Fill(seconds, rof.getNEntries());
     mClustersBC->Fill(rof.getBCData().bc, rof.getNEntries());
   }
 
@@ -364,7 +349,6 @@ void QcMFTClusterTask::reset()
   mClusterOccupancySummary->Reset();
   mClusterZ->Reset();
   mClustersROFSize->Reset();
-  mNOfClustersTime->Reset();
   mClustersBC->Reset();
   for (int i = 0; i < 20; i++) {
     mClusterChipOccupancyMap[i]->Reset();
