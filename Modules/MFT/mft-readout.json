@@ -58,7 +58,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "Readout",
-            "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mZoneSummaryChipWarning", "mZoneSummaryChipError", "mZoneSummaryChipFault", "mRDHSummary"]
+            "MOs"  : ["mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mZoneSummaryChipWarning", "mZoneSummaryChipError", "mZoneSummaryChipFault"]
         } ]
       }
     },
