@@ -440,6 +440,189 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
 }
 ```
 
+### The ReferenceComparatorTask class
+
+This task draws a given set of plots in comparison with their corresponding references, both as superimposed histograms and as current/reference ratio histograms.
+
+#### Configuration
+
+Currently the source of reference data is specified as a run-type and beam-type specific **referenceRun** number. This will be modified unce a centralized way of accessing reference plots will become available in the framework.
+The `notOlderThan` option allows to ignore monitor objects that are older than a given number of seconds. A value of -1 means "no limit".
+
+The input MonitorObjects to be processed are logically divided in **dataGroups**. Each group is identified by an input path, an output path and a list of **inputObjects**. The input objects are searched within the `inputPath`, and the output plots are stored inside the `outputPath`.
+In the example configuration below, the relationship between the input and output histograms is the following:
+* `MCH/MO/Tracks/WithCuts/TrackEta`
+    * `TracksMCH/WithCuts/TrackEta` (current and reference plots drawn superimposed in the same canvas)
+    * `TracksMCH/WithCuts/TrackEta_RefRatio` (ratio between current and reference plots)
+* `MFT/MO/Tracks/mMFTTrackEta`
+    * `TracksMFT/mMFTTrackEta` (current and reference plots drawn superimposed in the same canvas)
+    * `TracksMCH/mMFTTrackEta_RefRatio` (ratio between current and reference plots)
+
+By default, each reference plot is scaled such that its integral matches that of the current plot.
+However, the normalization can be disabled selectively for each plot by appending `":noscale"` to the plot name.
+
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "RefComp": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::ReferenceComparatorTask",
+        "moduleName": "QualityControl",
+        "detectorName": "MCH",
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "notOlderThan" : "300",
+              "referenceRun" : "539339"
+            }
+          },
+          "PHYSICS": {
+            "PROTON-PROTON": {
+              "referenceRun" : "539339"
+            },
+            "Pb-Pb": {
+              "referenceRun" : "539339"
+            }
+          }
+        },
+        "dataGroups": [
+          {
+            "name": "TracksMCH",
+            "inputPath": "MCH/MO/Tracks",
+            "outputPath": "TracksMCH",
+            "inputObjects": [
+              "TrackEta:noscale",
+              "TrackPhi",
+              "TrackEtaPhi",
+              "WithCuts/TrackEta:noscale",
+              "WithCuts/TrackPhi",
+              "WithCuts/TrackEtaPhi"
+            ]
+          },
+          {
+            "name": "TracksMFT",
+            "inputPath": "MFT/MO/Tracks",
+            "outputPath": "TracksMFT",
+            "inputObjects": [
+              "mMFTTrackEta"
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
+```
+
+### The ReferenceValidatorTask class
+
+This task takes the output of the [ReferenceComparatorTask](#the-referencecomparatortask-class) and compares the plots with their references to assess their compatibility.
+The comparison can be either based on the average bin-by-bin relative deviation, or a standard chi2 test.
+The plots can be grouped together in the configuration, and the overall comparison result in each group is shown in a way similar to the [BigScreen](#the-bigscreen-class) task, with one colored box for each group.
+
+In addition, one canvas for each group shows a detailed summary of the comparison results for each of the plots in the group.
+
+#### Configuration
+The **method** parameter defines the method used to compare the MOs with their corresponding references. The goodness of the comparison is controlled by the **threshold** parameter.
+Possible values are:
+* `Deviation` (default): the comparison is based on the average bin-by-bin relative deviation between current plot and reference. The **threshold** parameter represents in this case the maximum allowed deviation. For eample, a value of `0.1` represents a maximum allowed deviation of 10%.
+* `Chi2`: the comparison is based on a standard chi2 test of the compatibility between the current plot and the reference. The **threshold** parameter represents in this case the minimum allowed chi2 probabaility. This method is only meaningful for plots that have statistically correct errors.
+
+Currently the source of reference data is specified as a run-type and beam-type specific **referenceRun** number. This will be modified unce a centralized way of accessing reference plots will become available in the framework.
+
+The following options allow to configure the appearence and behavior of the task:
+
+* `notOlderThan`: ignore monitor objects that are older than a given number of seconds. A value of -1 means "no limit".
+* `nRows`/`nCols`: size of the X-Y grid
+* `borderWidth`: size of the border around the boxes
+
+The MonitorObjects to be monitored and displayed are passed as **dataGroups**, each containing **inputObjects** for a specific, line-separated group. 
+Each group is identified by a **name**.
+
+The **inputObjects** list should contain MonitorObject names in a given group.
+
+
+
+Here is a complete example of `ReferenceComparatorTask` configuration:
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "RefCompTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::ReferenceComparatorTask",
+        "moduleName": "QualityControl",
+        "detectorName": "GLO",
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "method" : "Deviation",
+              "threshold" : "0.1",
+              "notOlderThan" : "300",
+              "nRows" : "4",
+              "nCols" : "5",
+              "borderWidth" : "5"
+            }
+          },
+          "PHYSICS": {
+            "PROTON-PROTON": {
+              "referenceRun" : "535427"
+            },
+            "Pb-Pb": {
+              "referenceRun" : "539339"
+            }
+          }
+        },
+        "dataGroups": [
+          {
+            "name": "ITS",
+            "inputObjects": [
+              "ITS/MO/ITSTrackTask/NClusters",
+              "ITS/MO/ITSClusterTask/General/General_Occupancy",
+              "qc/ITS/MO/ITSTrackTask/AngularDistribution"
+            ]
+          },
+          {
+            "name": "MCH",
+            "inputObjects": [
+              "MCH/MO/Digits/RatesSignal/MeanRate",
+              "MCH/MO/Digits/Trends/RatesSignal/ChamberRates",
+              "MCH/MO/Tracks/TrackEta",
+              "MCH/MO/Tracks/TrackPhi"
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol", "10 minutes"
+        ]
+      }
+    }
+  }
+}
+```
+
 ### The QualityTask class
 
 This task allows to trend a set of QualityObjects (QO) stored in the QCDB, and to display their name and value in human-readable format on a canvas (see the figure below).

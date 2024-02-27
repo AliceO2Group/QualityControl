@@ -16,8 +16,15 @@ target_sources(O2QcCommon
                        src/TRFCollectionTaskConfig.cxx
                        src/QualityTask.cxx
                        src/QualityTaskConfig.cxx
+                       src/BigScreenCanvas.cxx
                        src/BigScreen.cxx
                        src/BigScreenConfig.cxx
+                       src/ReferenceComparatorAlgo.cxx
+                       src/ReferenceComparatorTask.cxx
+                       src/ReferenceComparatorTaskConfig.cxx
+                       src/ReferenceComparatorCheck.cxx
+                       src/ReferenceValidatorTask.cxx
+                       src/ReferenceValidatorTaskConfig.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -47,7 +54,11 @@ add_root_dictionary(O2QcCommon
                             include/Common/WorstOfAllAggregator.h
                             include/Common/TRFCollectionTask.h
                             include/Common/QualityTask.h
+                            include/Common/BigScreenCanvas.h
                             include/Common/BigScreen.h
+                            include/Common/ReferenceComparatorTask.h
+                            include/Common/ReferenceComparatorCheck.h
+                            include/Common/ReferenceValidatorTask.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Ratio.h
                             include/Common/TH2Ratio.h
