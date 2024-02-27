@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_TH1REDUCTOR_H
 #define QUALITYCONTROL_TH1REDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2::quality_control_modules::common
 {
@@ -25,7 +25,7 @@ namespace o2::quality_control_modules::common
 ///
 /// A Reductor which obtains the most popular characteristics of TH1.
 /// It produces a branch in the format: "mean/D:stddev:entries"
-class TH1Reductor : public quality_control::postprocessing::Reductor
+class TH1Reductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TH1Reductor() = default;

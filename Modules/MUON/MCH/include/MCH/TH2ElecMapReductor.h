@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_TH2ELECMAPREDUCTOR_H
 #define QUALITYCONTROL_TH2ELECMAPREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "MCHRawCommon/DataFormats.h"
 #include "MCHRawElecMap/Mapper.h"
 #include <limits>
@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::muonchambers
 ///
 /// A Reductor which extracts the average features from a 2D map in electronics coordinates
 
-class TH2ElecMapReductor : public quality_control::postprocessing::Reductor
+class TH2ElecMapReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TH2ElecMapReductor(float min = std::numeric_limits<float>::min(), float max = std::numeric_limits<float>::max());

@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_TH2XLINEREDUCTOR_H
 #define QUALITYCONTROL_TH2XLINEREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include <vector>
 
 namespace o2::quality_control_modules::its
@@ -26,7 +26,7 @@ namespace o2::quality_control_modules::its
 /// for each y bin (each row of the TH2)
 ///
 /// A Reductor which obtains specific characteristics of TH2.
-class TH2XlineReductor : public quality_control::postprocessing::Reductor
+class TH2XlineReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   TH2XlineReductor() = default;

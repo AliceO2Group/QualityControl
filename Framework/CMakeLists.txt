@@ -97,7 +97,8 @@ add_library(O2QualityControl
   src/TimekeeperAsynchronous.cxx
   src/WorkflowType.cxx
   src/TimekeeperFactory.cxx
-  src/RootFileStorage.cxx)
+  src/RootFileStorage.cxx
+  src/ReductorHelpers.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -191,7 +192,6 @@ set(EXE_OLD_NAMES
   qcRunBasic
   qcRunAdvanced
   qcRunReadout
-  qcRunReadoutForDataDump
   repositoryBenchmark
   qcRunPostProcessing
   qcRunPostProcessingOCC

@@ -190,7 +190,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.initTriggers)) {
-      doInitialize({ TriggerType::UserOrControl });
+      doInitialize({ TriggerType::UserOrControl, false, mTaskConfig.activity });
     }
   } else if (mTaskState == TaskState::Running) {
     ILOG(Debug, Devel) << "Requested start, but the user task is already running - doing nothing." << ENDM;
@@ -205,7 +205,7 @@ void PostProcessingRunner::stop()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.stopTriggers)) {
-      doFinalize({ TriggerType::UserOrControl });
+      doFinalize({ TriggerType::UserOrControl, false, mTaskConfig.activity });
     }
   } else if (mTaskState == TaskState::Finished) {
     ILOG(Debug, Devel) << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
@@ -285,6 +285,7 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
 
   mPublicationCallback(mObjectManager->getNonOwningArray());
   mTaskState = TaskState::Finished;
+  mObjectManager->stopPublishingAll();
 }
 
 const std::string& PostProcessingRunner::getID() const

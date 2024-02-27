@@ -108,7 +108,15 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(const std::string& ta
       ts.multipleCycleDurations.push_back(std::pair{ cycleDuration, validity });
     }
   }
-  ts.dataSource = readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree);
+  if (taskTree.count("dataSources") > 0) {
+    for (const auto& [_key, dataSourceTree] : taskTree.get_child("dataSources")) {
+      (void)_key;
+      ts.dataSources.push_back(readSpecEntry<DataSourceSpec>(taskID, dataSourceTree, wholeTree));
+    }
+  } else {
+    ts.dataSources = { readSpecEntry<DataSourceSpec>(taskID, taskTree.get_child("dataSource"), wholeTree) };
+  }
+
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.critical = taskTree.get<bool>("critical", ts.critical);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);

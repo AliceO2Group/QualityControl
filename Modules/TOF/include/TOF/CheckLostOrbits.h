@@ -1,0 +1,51 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+///
+/// \file   CheckLostOrbits.h
+/// \author Francesca Ercolessi
+/// \brief  Checker for lost orbits
+///
+
+#ifndef QC_MODULE_TOF_CHECKLOSTORBITS_H
+#define QC_MODULE_TOF_CHECKLOSTORBITS_H
+
+#include "QualityControl/CheckInterface.h"
+#include "Base/MessagePad.h"
+
+namespace o2::quality_control_modules::tof
+{
+
+class CheckLostOrbits : public o2::quality_control::checker::CheckInterface
+{
+ public:
+  /// Default constructor
+  CheckLostOrbits() = default;
+  /// Destructor
+  ~CheckLostOrbits() override = default;
+
+  // Override interface
+  void configure() override;
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
+  std::string getAcceptedType() override;
+
+ private:
+  MessagePad mShifterMessages{ "", 0.15, 0.65, 0.4, 0.85 };
+  /// To select to check link inefficiencies (if recovery does not work)
+  double mFractionThr = 0.9;
+
+  ClassDefOverride(CheckLostOrbits, 2);
+};
+
+} // namespace o2::quality_control_modules::tof
+
+#endif // QC_MODULE_TOF_CHECKLOSTORBITS_H

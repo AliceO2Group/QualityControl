@@ -16,7 +16,7 @@
 #ifndef QUALITYCONTROL_CLUSTERSIZEREDUCTOR_H
 #define QUALITYCONTROL_CLUSTERSIZEREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include "MCH/Helpers.h"
 #include "MCHRawCommon/DataFormats.h"
 #include "MCHRawElecMap/Mapper.h"
@@ -29,7 +29,7 @@ namespace o2::quality_control_modules::muonchambers
 ///
 /// A Reductor which obtains the most popular characteristics of TH1.
 
-class ClusterSizeReductor : public quality_control::postprocessing::Reductor
+class ClusterSizeReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   ClusterSizeReductor();

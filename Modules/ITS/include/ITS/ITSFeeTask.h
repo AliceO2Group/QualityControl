@@ -60,6 +60,30 @@ class ITSFeeTask final : public TaskInterface
     } indexWord;
   };
 
+  // TODO: use proper casting and extend to full word
+  struct CalibrationWordUserField { // CDW GBT word user field
+    union {
+      uint16_t word0 = 0x0;
+      struct {
+        uint16_t rowid : 9;  // Mask Stage / row
+        uint8_t runtype : 7; // Run type
+      } content;
+    } userField0;
+    union {
+      uint16_t word1 = 0x0;
+      struct {
+        uint16_t loopvalue : 16; // Loop value
+      } content;
+    } userField1;
+    union {
+      uint16_t word2 = 0x0;
+      struct {
+        uint16_t confdb : 13; // config version
+        uint8_t cdwver : 3;   // CDW version
+      } content;
+    } userField2;
+  };
+
   struct GBTITSHeaderWord { // IHW GBT word
     union {
       uint64_t word0 = 0x0;
@@ -163,6 +187,7 @@ class ITSFeeTask final : public TaskInterface
   int mPayloadParseEvery_n_HBF_per_TF = 32; // -1 to disable, 1 to process all the HBFs
   int mPayloadParseEvery_n_TF = 1;          // Use >= 1 values
   bool mEnableIHWReading = 0;
+  bool mDecodeCDW = 0;
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
@@ -171,8 +196,13 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mDecodingCheck; // summary of errors during custom decoding of specific bytes (see plot description)
   TH2I* mRDHSummary;
   TH2I* mRDHSummaryCumulative; // RDH plot which does NOT reset at every QC cycle
-  TH2I* mLaneStatus[NFlags];   // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH2I* mLaneStatus[NFlags];   // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU.
+  // Misconfiguration plot
   TH2I* mTrailerCount;
+  // Calibration plots
+  TH1I* mCalibrationWordCount;
+  TH2I* mCalibStage;
+  TH2I* mCalibLoop;
   TH2I* mActiveLanes;
   TH2I* mLaneStatusCumulative[NFlags];
   TH2Poly* mLaneStatusOverview[2] = { 0x0 }; // Warning and Error/Fatal

@@ -43,22 +43,24 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   /// Reference hit map taken from the CCDB and translated into QC binning
   std::shared_ptr<TH2F> mHistoRefHitMap = nullptr;    /// TOF reference hit map
   std::shared_ptr<TH2F> mHistoBinaryHitMap = nullptr; /// TOF binary (yes or no) hit map
+  std::vector<std::pair<int, int>> mHitMoreThanRef;
+  std::vector<std::pair<int, int>> mRefMoreThanHit;
 
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
   /// Message regarding the PHOS module (hole)
   MessagePad mPhosModuleMessage{ "PHOS", 13.f, 38.f, 16.f, 53.f }; // Values corresponding to the PHOS hole
-  /// Name of the accepted MO
-  static constexpr char mAcceptedName[] = "HitMap";
   /// Flag to enable or disable the check with respect to the reference map
-  bool mEnableReferenceHitMap = false;
+  bool mEnableReferenceHitMap = true;
   /// Name of the Path to get on CCDB for the ref. map
   std::string mRefMapCcdbPath = "/TOF/Calib/FEELIGHT";
   /// Timestamp to get on CCDB for the ref. map
   int mRefMapTimestamp = -1;
-  int mNWithHits = 0; /// Number of half strips with hits
-  int mNEnabled = 0;  /// Number of enabled half strips
-  int mTrheshold = 0; /// Threshold of agreement between read and enabled half strips
+  int mNWithHits = 0;                 /// Number of half strips with hits
+  int mNEnabled = 0;                  /// Number of enabled half strips
+  int mMaxHitMoreThanRef = 2;         /// Maximum number of Hits more than Ref that is accepted
+  int mMaxRefMoreThanHit = 317;       /// Maximum number of Refs more than Hits that is accepted (usual 5%of enabled channels)
+  bool mEnablePadPerMismatch = false; /// Flag to enable showing where the mismatch happens in the plot with TPads
 
   ClassDefOverride(CheckHitMap, 2);
 };

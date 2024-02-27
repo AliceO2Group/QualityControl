@@ -16,7 +16,7 @@
 
 using namespace o2::quality_control_modules::emcal;
 
-BadChannelMapReductor::BadChannelMapReductor() : Reductor(), mGeometry(nullptr), mStats()
+BadChannelMapReductor::BadChannelMapReductor() : ReductorTObject(), mGeometry(nullptr), mStats()
 {
   mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }

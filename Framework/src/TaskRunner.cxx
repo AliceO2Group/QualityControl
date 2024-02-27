@@ -254,7 +254,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  if (dataInputs.expected == dataInputs.seen || timerInputs.seen > 0) {
+  if ((dataInputs.expected == dataInputs.seen && conditionInputs.expected == conditionInputs.seen) || timerInputs.seen > 0) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
@@ -351,7 +351,11 @@ void TaskRunner::start(ServiceRegistryRef services)
   }
 
   try {
+    auto objectsPublishedBeforeStart = mObjectsManager->getNumberPublishedObjects();
     startOfActivity();
+    auto objectsPublishedAfterStart = mObjectsManager->getNumberPublishedObjects();
+    mNumberObjectsRegisteredAtStart = static_cast<int64_t>(objectsPublishedAfterStart) - objectsPublishedBeforeStart;
+
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
@@ -369,7 +373,16 @@ void TaskRunner::stop()
       mCycleNumber++;
       mCycleOn = false;
     }
+    auto objectsPublishedBeforeStop = mObjectsManager->getNumberPublishedObjects();
     endOfActivity();
+    auto objectsPublishedAfterStop = mObjectsManager->getNumberPublishedObjects();
+    auto numberObjectsDeregisteredAtStop = static_cast<int64_t>(objectsPublishedBeforeStop) - objectsPublishedAfterStop;
+    if (mNumberObjectsRegisteredAtStart != numberObjectsDeregisteredAtStop) {
+      ILOG(Error, Support) << "The number of objects registered at Start Of Run is not equal to the number deregistered at End Of Run "
+                           << "(" << mNumberObjectsRegisteredAtStart << " vs. " << numberObjectsDeregisteredAtStop << ")."
+                           << " This should be fixed, otherwise the QC task might crash at second Start Of Run!!!" << ENDM;
+    }
+
     mTask->reset();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService

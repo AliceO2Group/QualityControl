@@ -39,13 +39,13 @@ struct TaskSpec {
 
   // minimal valid spec
   TaskSpec(std::string taskName, std::string className, std::string moduleName, std::string detectorName,
-           int cycleDurationSeconds, DataSourceSpec dataSource)
+           int cycleDurationSeconds, std::vector<DataSourceSpec> dataSources)
     : taskName(std::move(taskName)),
       className(std::move(className)),
       moduleName(std::move(moduleName)),
       detectorName(std::move(detectorName)),
       cycleDurationSeconds(cycleDurationSeconds),
-      dataSource(std::move(dataSource))
+      dataSources(std::move(dataSources))
   {
   }
 
@@ -56,7 +56,7 @@ struct TaskSpec {
   std::string detectorName = "Invalid";
   int cycleDurationSeconds = -1;                                      // simple syntax
   std::vector<std::pair<size_t, size_t>> multipleCycleDurations = {}; // complex syntax: multiple durations can be set for different intervals
-  DataSourceSpec dataSource;
+  std::vector<DataSourceSpec> dataSources;
   // advanced
   bool active = true;
   bool critical = true;

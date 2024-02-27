@@ -16,12 +16,10 @@
 #ifndef QUALITYCONTROL_REDUCTOR_H
 #define QUALITYCONTROL_REDUCTOR_H
 
-#include <TObject.h>
-
 namespace o2::quality_control::postprocessing
 {
 
-/// \brief An interface for storing data derived from QC objects into a TTree
+/// \brief An interface for storing columnar data into a TTree
 class Reductor
 {
  public:
@@ -36,9 +34,6 @@ class Reductor
   /// \brief Branch leaf list getter
   /// \return A C string with a description of a branch format, formatted accordingly to the TTree interface
   virtual const char* getBranchLeafList() = 0;
-  /// \brief Fill the data structure with new data
-  /// \param An object to be reduced
-  virtual void update(TObject* obj) = 0;
 };
 
 } // namespace o2::quality_control::postprocessing

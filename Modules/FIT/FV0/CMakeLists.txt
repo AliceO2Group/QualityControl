@@ -45,6 +45,10 @@ add_root_dictionary(O2QcFV0
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FV0
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
+install(FILES etc/fv0-digits.json
+              etc/fv0-post-processing.json
+        DESTINATION Modules/FIT/FV0/etc)
+
 # ---- Test(s) ----
 
 #set(TEST_SRCS test/testQcFV0.cxx) # uncomment to reenable the test which was empty

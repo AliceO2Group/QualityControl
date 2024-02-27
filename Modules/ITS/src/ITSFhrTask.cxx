@@ -244,7 +244,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSFhrTask::createErrorTriggerPlots()
 {
-  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, (float)o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mErrorPlots->SetMinimum(0);
   mErrorPlots->SetFillColor(kRed);
   getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots
@@ -255,7 +255,7 @@ void ITSFhrTask::createGeneralPlots()
 
   createErrorTriggerPlots();
 
-  mErrorVsFeeid = new TH2I("General/ErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
+  mErrorVsFeeid = new TH2I("General/ErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, (float)o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mErrorVsFeeid->SetMinimum(0);
   mErrorVsFeeid->SetStats(0);
   getObjectsManager()->startPublishing(mErrorVsFeeid);
@@ -388,7 +388,8 @@ void ITSFhrTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  if (ctx.services().get<o2::framework::TimingInfo>().globalRunNumberChanged) {
+  if (mGeom == nullptr) {
+    ILOG(Warning, Devel) << "Created new instance of mGeom" << ENDM;
     mGeom = o2::its::GeometryTGeo::Instance();
     mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
   }

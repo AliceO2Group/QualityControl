@@ -16,14 +16,14 @@
 #ifndef QC_MODULE_TPC_SACZEROSCALEREDUCTOR_H
 #define QC_MODULE_TPC_SACZEROSCALEREDUCTOR_H
 
-#include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 
 namespace o2::quality_control_modules::tpc
 {
 
 /// \brief A Reductor of SAC 0 scale factors for TPC A and C side.
 
-class SACZeroScaleReductor : public quality_control::postprocessing::Reductor
+class SACZeroScaleReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
   SACZeroScaleReductor() = default;

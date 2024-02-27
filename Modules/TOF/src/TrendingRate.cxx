@@ -143,7 +143,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       }
       const float overall = hs->Integral();
       if (overall <= 0.f) {
-        ILOG(Info, Support) << "no signal for BC index " << ibc << ENDM;
+        ILOG(Warning, Support) << "no signal for BC index " << ibc << ENDM;
         delete hb;
         delete hs;
 
@@ -151,7 +151,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       }
       const float background = hb->Integral();
       if (background <= 0.f) {
-        ILOG(Info, Support) << "no background for BC index " << ibc << ENDM;
+        ILOG(Warning, Support) << "no background for BC index " << ibc << ENDM;
         delete hb;
         delete hs;
 
@@ -159,7 +159,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       }
       const float prob = (overall - background) / overall;
       if ((1.f - prob) < 0.f) {
-        ILOG(Info, Support) << "Probability is 1, can't comute mu" << ENDM;
+        ILOG(Warning, Support) << "Probability is 1, can't comute mu" << ENDM;
         delete hb;
         delete hs;
 
@@ -180,7 +180,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       sumw += rate;
       pilup += mu / prob * rate;
       ratetot += rate;
-      ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
+      //ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
       delete hb;
       delete hs;
     }
@@ -251,13 +251,15 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
 
   for (auto& dataSource : mConfig.dataSources) {
     auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
-    if (!mo) {
+    TObject* obj = mo ? mo->getObject() : nullptr;
+    if (!obj) {
+      ILOG(Error, Support) << "No MO retrieved from qcdb, name: " << dataSource.name << " - path:" << dataSource.path << " - timestamp" << t.timestamp << ENDM;
       continue;
     }
     ILOG(Debug, Support) << "Got MO " << mo << ENDM;
     if (dataSource.name == "HitMap") {
       foundHitMap = true;
-      TH2F* hmap = dynamic_cast<TH2F*>(mo->getObject());
+      TH2F* hmap = dynamic_cast<TH2F*>(obj);
       if (hmap) {
         TH2F hcopy(*hmap);
         hcopy.Divide(hmap);

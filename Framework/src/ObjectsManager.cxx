@@ -108,10 +108,22 @@ void ObjectsManager::removeAllFromServiceDiscovery()
 
 void ObjectsManager::stopPublishing(TObject* object)
 {
-  if (object) {
-    stopPublishing(object->GetName());
-  } else {
+  if (!object) {
     ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    return;
+  }
+  // We look for the MonitorObject which observes the provided object by comparing its address
+  // This way, we avoid invoking any methods of the provided object, thus we can stop publishing it even after it is deleted
+  TObject* objectToRemove = nullptr;
+  for (auto moAsTObject : *mMonitorObjects) {
+    auto mo = dynamic_cast<MonitorObject*>(moAsTObject);
+    if (mo && mo->getObject() == object) {
+      objectToRemove = moAsTObject;
+      continue;
+    }
+  }
+  if (objectToRemove) {
+    mMonitorObjects->Remove(objectToRemove);
   }
 }
 
@@ -119,6 +131,12 @@ void ObjectsManager::stopPublishing(const string& objectName)
 {
   auto* mo = dynamic_cast<MonitorObject*>(getMonitorObject(objectName));
   mMonitorObjects->Remove(mo);
+}
+
+void ObjectsManager::stopPublishingAll()
+{
+  removeAllFromServiceDiscovery();
+  mMonitorObjects->Clear();
 }
 
 bool ObjectsManager::isBeingPublished(const string& name)

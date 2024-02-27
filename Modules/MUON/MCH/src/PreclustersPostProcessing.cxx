@@ -96,10 +96,11 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
   //----------------------------------
   // Efficiency plotters
   //----------------------------------
-
+  mEfficiencyPlotter.reset();
   mEfficiencyPlotter = std::make_unique<EfficiencyPlotter>("Efficiency/", hElecHistoRef, mFullHistos);
   mEfficiencyPlotter->publish(getObjectsManager());
 
+  mEfficiencyPlotterOnCycle.reset();
   mEfficiencyPlotterOnCycle = std::make_unique<EfficiencyPlotter>("Efficiency/LastCycle/", hElecHistoRef, mFullHistos);
   mEfficiencyPlotterOnCycle->publish(getObjectsManager());
 
@@ -107,6 +108,7 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
   // Efficiency trends
   //----------------------------------
 
+  mEfficiencyTrendsPlotter.reset();
   mEfficiencyTrendsPlotter = std::make_unique<EfficiencyTrendsPlotter>("Trends/", hElecHistoRef, mFullHistos);
   mEfficiencyTrendsPlotter->publish(getObjectsManager());
 }
@@ -121,6 +123,7 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
 
   auto obj = mCcdbObjects.find(clusterChargeSourceName());
   if (obj != mCcdbObjects.end()) {
+    mClusterChargeOnCycle.reset();
     mClusterChargeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
   }
 
@@ -138,9 +141,11 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
   // Cluster charge plotters
   //----------------------------------
 
+  mClusterChargePlotter.reset();
   mClusterChargePlotter = std::make_unique<ClusterChargePlotter>("ClusterCharge/", histoRef, mFullHistos);
   mClusterChargePlotter->publish(getObjectsManager());
 
+  mClusterChargePlotterOnCycle.reset();
   mClusterChargePlotterOnCycle = std::make_unique<ClusterChargePlotter>("ClusterCharge/LastCycle/", histoRef, mFullHistos);
   mClusterChargePlotterOnCycle->publish(getObjectsManager());
 
@@ -148,6 +153,7 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
   // Cluster charge trends
   //----------------------------------
 
+  mClusterChargeTrendsPlotter.reset();
   mClusterChargeTrendsPlotter = std::make_unique<ClusterChargeTrendsPlotter>("Trends/", histoRef, mFullHistos);
   mClusterChargeTrendsPlotter->publish(getObjectsManager());
 }
@@ -162,6 +168,7 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
 
   auto obj = mCcdbObjects.find(clusterSizeSourceName());
   if (obj != mCcdbObjects.end()) {
+    mClusterSizeOnCycle.reset();
     mClusterSizeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
   }
 
@@ -179,9 +186,11 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
   // Cluster size plotters
   //----------------------------------
 
+  mClusterSizePlotter.reset();
   mClusterSizePlotter = std::make_unique<ClusterSizePlotter>("ClusterSize/", histoRef, mFullHistos);
   mClusterSizePlotter->publish(getObjectsManager());
 
+  mClusterSizePlotterOnCycle.reset();
   mClusterSizePlotterOnCycle = std::make_unique<ClusterSizePlotter>("ClusterSize/LastCycle/", histoRef, mFullHistos);
   mClusterSizePlotterOnCycle->publish(getObjectsManager());
 
@@ -189,6 +198,7 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
   // Cluster size trends
   //----------------------------------
 
+  mClusterSizeTrendsPlotter.reset();
   mClusterSizeTrendsPlotter = std::make_unique<ClusterSizeTrendsPlotter>("Trends/", histoRef, mFullHistos);
   mClusterSizeTrendsPlotter->publish(getObjectsManager());
 }
@@ -207,6 +217,7 @@ void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistry
   // Detector quality histogram
   //--------------------------------------------------
 
+  mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");

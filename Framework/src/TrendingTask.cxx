@@ -19,6 +19,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorHelpers.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/ActivityHelpers.h"
@@ -84,7 +85,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
-    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {
@@ -93,8 +94,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
       }
     } else {
       ILOG(Warning, Support)
-        << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings"
-        << ENDM;
+        << "Could not retrieve an existing TTree for this task" << ENDM;
     }
   }
   for (const auto& source : mConfig.dataSources) {
@@ -149,21 +149,10 @@ void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
   mMetaData.runNumber = t.activity.mId;
 
   for (auto& dataSource : mConfig.dataSources) {
-
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
-    if (dataSource.type == "repository") {
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
-      TObject* obj = mo ? mo->getObject() : nullptr;
-      if (obj) {
-        mReductors[dataSource.name]->update(obj);
-      }
-    } else if (dataSource.type == "repository-quality") {
-      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
-      if (qo) {
-        mReductors[dataSource.name]->update(qo.get());
-      }
-    } else {
-      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
+    if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
+      ILOG(Error, Support) << "Failed to update reductor for data sources with path '" << dataSource.path
+                           << "', name '" << dataSource.name
+                           << "', type '" << dataSource.type << "'." << ENDM;
     }
   }
 

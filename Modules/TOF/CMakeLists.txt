@@ -18,15 +18,19 @@ target_sources(O2QcTOF
                       src/CheckHitMap.cxx
                       src/CheckNoise.cxx
                       src/CheckSlotPartMask.cxx
+                      src/CheckLostOrbits.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
                       src/PostProcessHitMap.cxx
+                      src/PostProcessingLostOrbits.cxx
                       # Trending
                       src/TrendingHits.cxx
                       src/TrendingRate.cxx
                       src/TrendingCalibLHCphase.cxx
                       # Trending config
                       src/TrendingConfigTOF.cxx
+                      # Reductors
+                      src/TH1ReductorTOF.cxx
                       # Utilities
                 )
 
@@ -70,15 +74,19 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckHitMap.h
                             include/TOF/CheckNoise.h
                             include/TOF/CheckSlotPartMask.h
+                            include/TOF/CheckLostOrbits.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
                             include/TOF/PostProcessHitMap.h
+                            include/TOF/PostProcessingLostOrbits.h
                             # Trending
                             include/TOF/TrendingHits.h
                             include/TOF/TrendingRate.h
                             include/TOF/TrendingCalibLHCphase.h
                             # Trending config
                             include/TOF/TrendingConfigTOF.h
+                            # Reductors
+                            include/TOF/TH1ReductorTOF.h
                             # Utilities
                             include/Base/Counter.h
                             include/Base/MessagePad.h
