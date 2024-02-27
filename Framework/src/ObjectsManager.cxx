@@ -62,7 +62,7 @@ ObjectsManager::~ObjectsManager()
 void ObjectsManager::startPublishing(TObject* object)
 {
   if (!object) {
-    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::startPublishing" << ENDM;
     return;
   }
   if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
