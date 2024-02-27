@@ -173,7 +173,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
       // We don't make a fuss over it, because we might be just waiting for the first version of such object.
       // It should not happen often though, so having a warning makes sense.
       ILOG(Warning, Devel) << "Could not find the file '" << fullObjectPath << "' in the db '"
-                             << databaseUrl << "' for given Activity settings (" << activity << "). Zeroes and empty strings are treated as wildcards." << ENDM;
+                           << databaseUrl << "' for given Activity settings (" << activity << "). Zeroes and empty strings are treated as wildcards." << ENDM;
       return gInvalidValidityInterval;
     } else if (objects.size() > 1) {
       ILOG(Warning, Support) << "Expected just one metadata entry for object '" << fullObjectPath << "'. Trying to continue by using the first." << ENDM;
