@@ -61,6 +61,10 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object)
 {
+  if (!object) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::startPublishing" << ENDM;
+    return;
+  }
   if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << "), will remove it and add the new one" << ENDM;
     stopPublishing(object->GetName());
@@ -104,6 +108,10 @@ void ObjectsManager::removeAllFromServiceDiscovery()
 
 void ObjectsManager::stopPublishing(TObject* object)
 {
+  if (!object) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    return;
+  }
   // We look for the MonitorObject which observes the provided object by comparing its address
   // This way, we avoid invoking any methods of the provided object, thus we can stop publishing it even after it is deleted
   TObject* objectToRemove = nullptr;
@@ -189,6 +197,10 @@ void ObjectsManager::setDefaultDrawOptions(const std::string& objectName, const 
 
 void ObjectsManager::setDefaultDrawOptions(TObject* obj, const std::string& options)
 {
+  if (!obj) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::setDefaultDrawOptions" << ENDM;
+    return;
+  }
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDrawOptionsKey, options);
 }
@@ -201,6 +213,10 @@ void ObjectsManager::setDisplayHint(const std::string& objectName, const std::st
 
 void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
+  if (!obj) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::setDisplayHint" << ENDM;
+    return;
+  }
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }
@@ -212,7 +228,7 @@ void ObjectsManager::setValidity(ValidityInterval validityInterval)
     if (mo) {
       mo->setValidity(validityInterval);
     } else {
-      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+      ILOG(Error, Devel) << "ObjectsManager::setValidity : dynamic_cast returned nullptr." << ENDM;
     }
   }
 }
@@ -224,7 +240,7 @@ void ObjectsManager::updateValidity(validity_time_t validityTime)
     if (mo) {
       mo->updateValidity(validityTime);
     } else {
-      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+      ILOG(Error, Devel) << "ObjectsManager::updateValidity : dynamic_cast returned nullptr." << ENDM;
     }
   }
 }
