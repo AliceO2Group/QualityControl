@@ -38,7 +38,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
   }
   std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
   if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
-    ILOG(Error, Support) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
+    ILOG(Error, Support) << "Incorrect vector with DecodingError limits, check .json"<< ENDM;
     doFlatCheck = true;
   }
   std::vector<float> vDecErrorLimitsRatio = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimitsRatio", ""));
