@@ -83,11 +83,13 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
 
   auto obj = mCcdbObjects.find(rateSourceName());
   if (obj != mCcdbObjects.end()) {
+    mElecMapOnCycle.reset();
     mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
   obj = mCcdbObjects.find(rateSignalSourceName());
   if (obj != mCcdbObjects.end()) {
+    mElecMapSignalOnCycle.reset();
     mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
 
@@ -118,15 +120,19 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   // Rate plotters
   //----------------------------------
 
+  mRatesPlotter.reset();
   mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
   mRatesPlotter->publish(getObjectsManager());
 
+  mRatesPlotterOnCycle.reset();
   mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
   mRatesPlotterOnCycle->publish(getObjectsManager());
 
+  mRatesPlotterSignal.reset();
   mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
   mRatesPlotterSignal->publish(getObjectsManager());
 
+  mRatesPlotterSignalOnCycle.reset();
   mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
   mRatesPlotterSignalOnCycle->publish(getObjectsManager());
 
@@ -134,9 +140,11 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   // Rate trends
   //----------------------------------
 
+  mRatesTrendsPlotter.reset();
   mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", hElecHistoRef, mFullHistos);
   mRatesTrendsPlotter->publish(getObjectsManager());
 
+  mRatesTrendsPlotterSignal.reset();
   mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", hElecSignalHistoRef, mFullHistos);
   mRatesTrendsPlotterSignal->publish(getObjectsManager());
 }
@@ -151,11 +159,13 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
 
   auto obj = mCcdbObjects.find(orbitsSourceName());
   if (obj != mCcdbObjects.end()) {
+    mDigitsOrbitsOnCycle.reset();
     mDigitsOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
   }
 
   obj = mCcdbObjects.find(orbitsSignalSourceName());
   if (obj != mCcdbObjects.end()) {
+    mDigitsSignalOrbitsOnCycle.reset();
     mDigitsSignalOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
   }
 
@@ -163,15 +173,19 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
   // Orbit plotters
   //----------------------------------
 
+  mOrbitsPlotter.reset();
   mOrbitsPlotter = std::make_unique<OrbitsPlotter>("Orbits/");
   mOrbitsPlotter->publish(getObjectsManager());
 
+  mOrbitsPlotterOnCycle.reset();
   mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
   mOrbitsPlotterOnCycle->publish(getObjectsManager());
 
+  mOrbitsPlotterSignal.reset();
   mOrbitsPlotterSignal = std::make_unique<OrbitsPlotter>("OrbitsSignal/");
   mOrbitsPlotterSignal->publish(getObjectsManager());
 
+  mOrbitsPlotterSignalOnCycle.reset();
   mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
   mOrbitsPlotterSignalOnCycle->publish(getObjectsManager());
 }
@@ -189,6 +203,7 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
   // Detector quality histogram
   //--------------------------------------------------
 
+  mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
