@@ -57,6 +57,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static std::size_t sNCHANNELS_PM = o2::fv0::Constants::nFv0ChannelsPlusRef;
   using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFV0;
+
  private:
   std::string mPathGrpLhcIf;
   std::string mPathDigitQcTask;
@@ -109,6 +110,16 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
 
   int mLowTimeThreshold{ -192 };
   int mUpTimeThreshold{ 192 };
+  std::string mTimestampMetaField{ "timestampTF" };
+  //
+  void setTimestampToMOs(long long timestamp);
+  // TO REMOVE
+  std::vector<unsigned int> mVecChannelIDs{};
+  std::vector<std::string> mVecHistsToDecompose{};
+  using HistDecomposed_t = TH1D;
+  using MapHistsDecomposed_t = std::map<std::string, std::map<unsigned int, std::shared_ptr<HistDecomposed_t>>>;
+  MapHistsDecomposed_t mMapHistsToDecompose{};
+  void decomposeHists(quality_control::postprocessing::Trigger trg);
 };
 
 } // namespace o2::quality_control_modules::fv0

@@ -69,6 +69,7 @@ class DigitQcTask final : public TaskInterface
 
   constexpr static float sCFDChannel2NS = 0.01302; // CFD channel width in ns
   using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFV0;
+
  private:
   // three ways of computing cycle duration:
   // 1) number of time frames
@@ -124,7 +125,6 @@ class DigitQcTask final : public TaskInterface
   typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
   typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
 
-
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
 
@@ -151,6 +151,9 @@ class DigitQcTask final : public TaskInterface
   int mTrgChargeLevelLow;
   int mTrgChargeLevelHigh;
   int mTrgOrGate;
+  // Timestamp
+  std::string mMetaAnchorOutput{};
+  std::string mTimestampMetaField{};
 
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
@@ -173,9 +176,6 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1D> mHistCycleDuration;
   std::unique_ptr<TH1D> mHistCycleDurationNTF;
   std::unique_ptr<TH1D> mHistCycleDurationRange;
-  std::map<unsigned int, TH1F*> mMapHistAmp1D;
-  std::map<unsigned int, TH1F*> mMapHistTime1D;
-  std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::unique_ptr<TH2F> mHistBCvsTrg;
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;

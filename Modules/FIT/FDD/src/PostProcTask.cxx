@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "CommonConstants/LHCConstants.h"
 #include "DataFormatsParameters/GRPLHCIFData.h"
+#include "Common/Utils.h"
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
@@ -48,6 +49,9 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   const char* configPath = Form("qc.postprocessing.%s", getID().c_str());
   const char* configCustom = Form("%s.custom", configPath);
   ILOG(Info, Support) << "configPath = " << configPath << ENDM;
+  auto cfgPath = [&configCustom](const std::string& entry) {
+    return Form("%s.%s", configCustom, entry.c_str());
+  };
 
   auto node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
   if (node) {
@@ -105,6 +109,17 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   mUpTimeThreshold = helper::getConfigFromPropertyTree<int>(config, Form("%s.upTimeThreshold", configCustom), 192);
   mLowAmpSat = helper::getConfigFromPropertyTree<double>(config, Form("%s.lowAmpSat", configCustom), 1.);
   mUpAmpSat = helper::getConfigFromPropertyTree<double>(config, Form("%s.upAmpSat", configCustom), 3600.);
+  mTimestampMetaField = helper::getConfigFromPropertyTree<std::string>(config, cfgPath("timestampMetaField"), "timestampTF");
+
+  // TO REMOVE
+  // VERY BAD SOLUTION, YOU SHOULDN'T USE IT
+  const std::string del = ",";
+  const std::string strChannelIDs = helper::getConfigFromPropertyTree<std::string>(config, cfgPath("channelIDs"), "");
+  const std::string strHistsToDecompose = helper::getConfigFromPropertyTree<std::string>(config, cfgPath("histsToDecompose"), "");
+  if (strChannelIDs.size() > 0 && strHistsToDecompose.size() > 0) {
+    mVecChannelIDs = helper::parseParameters<unsigned int>(strChannelIDs, del);
+    mVecHistsToDecompose = helper::parseParameters<std::string>(strHistsToDecompose, del);
+  }
 }
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -496,6 +511,52 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
       const std::string metadataValue = std::to_string(hBcVsFeeModulesForVtxTrg->Integral(1, sBCperOrbit, iBin, iBin));
       getObjectsManager()->getMonitorObject(mHistBcFeeOutOfBunchCollForVtxTrg->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
     }
+  }
+  decomposeHists(t);
+  setTimestampToMOs(ts);
+}
+void PostProcTask::decomposeHists(Trigger trg)
+{
+  for (const auto& histName : mVecHistsToDecompose) {
+    auto insertedMap = mMapHistsToDecompose.insert({ histName, {} });
+    auto& mapHists = insertedMap.first->second;
+
+    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, histName, trg.timestamp, trg.activity);
+    auto histSrcPtr = mo ? dynamic_cast<TH2F*>(mo->getObject()) : nullptr;
+
+    if (histSrcPtr == nullptr) {
+      continue;
+    }
+    const auto bins = histSrcPtr->GetYaxis()->GetNbins();
+    const auto binLow = histSrcPtr->GetYaxis()->GetXmin();
+    const auto binUp = histSrcPtr->GetYaxis()->GetXmax();
+
+    for (const auto& chID : mVecChannelIDs) {
+      auto insertedHistDst = mapHists.insert({ chID, nullptr });
+      auto& histDstPtr = insertedHistDst.first->second;
+      auto isInserted = insertedHistDst.second;
+      if (isInserted == true) {
+        // creation in first iter
+        const std::string suffix = std::string{ Form("%03i", chID) };
+        const std::string newHistName = histName + std::string{ "_" } + suffix;
+        const std::string newHistTitle = histSrcPtr->GetTitle() + std::string{ " " } + suffix;
+        histDstPtr = std::make_shared<HistDecomposed_t>(newHistName.c_str(), newHistTitle.c_str(), bins, binLow, binUp);
+        getObjectsManager()->startPublishing(histDstPtr.get());
+      }
+      histDstPtr->Reset();
+      // making projection
+      const auto binPos = chID + 1;
+      const std::unique_ptr<TH1D> proj(histSrcPtr->ProjectionY("proj", binPos, binPos));
+      histDstPtr->Add(proj.get());
+    }
+  }
+}
+
+void PostProcTask::setTimestampToMOs(long long timestamp)
+{
+  for (int iObj = 0; iObj < getObjectsManager()->getNumberPublishedObjects(); iObj++) {
+    auto mo = getObjectsManager()->getMonitorObject(iObj);
+    mo->addOrUpdateMetadata(mTimestampMetaField, std::to_string(timestamp));
   }
 }
 

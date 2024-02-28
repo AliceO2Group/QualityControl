@@ -39,11 +39,17 @@ class LevelCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   void updateBinsToIgnoreWithDCM();
+  void setTimestamp(const std::shared_ptr<MonitorObject>& moMetadata);
 
   std::string mBinsToIgnoreAsStr{ "" };
   std::string mPathDeadChannelMap{ "" };
   std::string mUrlCCDB{ "" };
   std::string mNameObjectToCheck{ "" };
+  std::string mMessagePrefixError{ "" };
+  std::string mMessagePrefixWarning{ "" };
+  std::string mTimestampMetaField{ "timestampMetaField" };
+  std::string mTimestampSource{ "" };
+  long long mTimestamp{ -1 }; // For fetching CCDB
   std::set<int> mBinsToIgnore{};
   bool mIsInvertedThrsh; // check if values should be upper
   std::string mSignCheck{ "" };
@@ -52,6 +58,7 @@ class LevelCheck : public o2::quality_control::checker::CheckInterface
   int mNumWarnings;
   int mNumErrors;
   std::vector<double> mVecLabelPos{ 0.15, 0.2, 0.85, 0.45 };
+  bool mIsFirstIter{ true };
   ClassDefOverride(LevelCheck, 1);
 };
 

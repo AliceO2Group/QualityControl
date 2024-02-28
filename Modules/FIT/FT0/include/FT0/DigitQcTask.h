@@ -69,6 +69,7 @@ class DigitQcTask final : public TaskInterface
 
   constexpr static float sCFDChannel2NS = 0.01302; // CFD channel width in ns
   using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
+
  private:
   // three ways of computing cycle duration:
   // 1) number of time frames
@@ -138,7 +139,9 @@ class DigitQcTask final : public TaskInterface
   int mPMbitsToCheck_ChID;
   int mLowTimeGate_ChID;
   int mUpTimeGate_ChID;
-
+  // Timestamp
+  std::string mMetaAnchorOutput{};
+  std::string mTimestampMetaField{};
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;

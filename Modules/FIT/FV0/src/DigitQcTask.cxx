@@ -24,6 +24,7 @@
 #include "Framework/InputRecord.h"
 #include "Framework/TimingInfo.h"
 #include "DataFormatsFV0/LookUpTable.h"
+#include "Common/Utils.h"
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
@@ -305,26 +306,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     mSetAllowedChIDsAmpVsTime.insert(entry);
   }
 
-  for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
-    auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
-    auto pairHistBits = mMapHistPMbits.insert({ chID, new TH1F(Form("Bits_channel%i", chID), Form("Bits, channel %i", chID), mMapPMbits.size(), 0, mMapPMbits.size()) });
-    for (const auto& entry : mMapPMbits) {
-      pairHistBits.first->second->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    }
-    if (pairHistAmp.second) {
-      getObjectsManager()->startPublishing(pairHistAmp.first->second);
-      mListHistGarbage->Add(pairHistAmp.first->second);
-    }
-    if (pairHistTime.second) {
-      mListHistGarbage->Add(pairHistTime.first->second);
-      getObjectsManager()->startPublishing(pairHistTime.first->second);
-    }
-    if (pairHistBits.second) {
-      mListHistGarbage->Add(pairHistBits.first->second);
-      getObjectsManager()->startPublishing(pairHistBits.first->second);
-    }
-  }
   for (const auto& chID : mSetAllowedChIDsAmpVsTime) {
     auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
     if (pairHistAmpVsTime.second) {
@@ -393,6 +374,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
     obj->SetTitle((string("FV0 ") + obj->GetTitle()).c_str());
   }
+  // Timestamp
+  mMetaAnchorOutput = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "metaAnchorOutput", "CycleDurationNTF");
+  mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");
 }
 
 void DigitQcTask::startOfActivity(const Activity& activity)
@@ -434,15 +418,6 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistPmTcmAverageTimeA->Reset();
   mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
-  for (auto& entry : mMapHistAmp1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistTime1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistPMbits) {
-    entry.second->Reset();
-  }
   for (auto& entry : mMapHistAmpVsTime) {
     entry.second->Reset();
   }
@@ -515,15 +490,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         mHistNumADC->Fill(chData.ChId);
       }
       mHistNumCFD->Fill(chData.ChId);
-      if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
-        mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
-        mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
-        for (const auto& entry : mMapPMbits) {
-          if ((chData.ChainQTC & (1 << entry.first))) {
-            mMapHistPMbits[chData.ChId]->Fill(entry.first);
-          }
-        }
-      }
       if (mSetAllowedChIDsAmpVsTime.size() != 0 && mSetAllowedChIDsAmpVsTime.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDsAmpVsTime.end()) {
         mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
       }
@@ -667,7 +633,7 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // add TF creation time for further match with filling scheme in PP in case of offline running
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
-  getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
+  getObjectsManager()->getMonitorObject(mMetaAnchorOutput)->addOrUpdateMetadata(mTimestampMetaField, std::to_string(mTFcreationTime));
 
   for (int channel = 1; channel <= sNCHANNELS_FV0_PLUSREF - 1; channel++) {
     float events_in_range = 0;
@@ -741,15 +707,6 @@ void DigitQcTask::reset()
   mHistPmTcmAverageTimeA->Reset();
   mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
-  for (auto& entry : mMapHistAmp1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistTime1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistPMbits) {
-    entry.second->Reset();
-  }
   for (auto& entry : mMapHistAmpVsTime) {
     entry.second->Reset();
   }

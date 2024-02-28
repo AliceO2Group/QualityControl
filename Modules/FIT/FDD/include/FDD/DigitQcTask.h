@@ -75,6 +75,7 @@ class DigitQcTask final : public TaskInterface
   constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
   constexpr static int cSideChOffSet = 8;
   using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFDD;
+
  private:
   // three ways of computing cycle duration:
   // 1) number of time frames
@@ -168,6 +169,9 @@ class DigitQcTask final : public TaskInterface
   int mTrgOrGate;
   int mBinMinADCSaturationCheck;
   int mBinMaxADCSaturationCheck;
+  // Timestamp
+  std::string mMetaAnchorOutput{};
+  std::string mTimestampMetaField{};
 
   // Object which will be published
   std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
@@ -194,9 +198,6 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1D> mHistCycleDuration;
   std::unique_ptr<TH1D> mHistCycleDurationNTF;
   std::unique_ptr<TH1D> mHistCycleDurationRange;
-  std::map<unsigned int, TH1F*> mMapHistAmp1D;
-  std::map<unsigned int, TH1F*> mMapHistTime1D;
-  std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::unique_ptr<TH2F> mHistBCvsTrg;
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;

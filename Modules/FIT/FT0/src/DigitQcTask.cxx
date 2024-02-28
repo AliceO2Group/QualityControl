@@ -396,6 +396,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mLowTimeGate_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "lowTimeGate_ChID", -192);
   mUpTimeGate_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "upTimeGate_ChID", 192);
   mHistChIDperBC = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelIDperBC", Form("FT0 ChannelID per BC, bad PM bit suppression %i, good PM checking %i, gate (%i,%i)", mBadPMbits_ChID, mGoodPMbits_ChID, mLowTimeGate_ChID, mUpTimeGate_ChID), sBCperOrbit, 0, sBCperOrbit, sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  // Timestamp
+  mMetaAnchorOutput = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "metaAnchorOutput", "CycleDurationNTF");
+  mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");
 }
 
 void DigitQcTask::startOfActivity(const Activity& activity)
@@ -732,7 +735,7 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // add TF creation time for further match with filling scheme in PP in case of offline running
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
-  getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
+  getObjectsManager()->getMonitorObject(mMetaAnchorOutput)->addOrUpdateMetadata(mTimestampMetaField, std::to_string(mTFcreationTime));
 
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)

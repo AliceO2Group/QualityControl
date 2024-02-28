@@ -37,51 +37,6 @@
 namespace o2::quality_control_modules::fit
 {
 
-template <typename DigitType, typename ChannelDataType>
-class HelperFIT
-{
- public:
-  using ChannelData_t = ChannelDataType;
-  using Digit_t = DigitType;
-  typedef decltype(std::declval<Digit_t>().mTriggers) Triggers_t;
-
-  const std::map<unsigned int, std::string> mMapPMbits = {
-    { ChannelData_t::kNumberADC, "NumberADC" },
-    { ChannelData_t::kIsDoubleEvent, "IsDoubleEvent" },
-    { ChannelData_t::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" },
-    { ChannelData_t::kIsCFDinADCgate, "IsCFDinADCgate" },
-    { ChannelData_t::kIsTimeInfoLate, "IsTimeInfoLate" },
-    { ChannelData_t::kIsAmpHigh, "IsAmpHigh" },
-    { ChannelData_t::kIsEventInTVDC, "IsEventInTVDC" },
-    { ChannelData_t::kIsTimeInfoLost, "IsTimeInfoLost" }
-  };
-};
-
-class HelperTrgFIT
-{
- public:
-  HelperTrgFIT() = delete;
-  ~HelperTrgFIT() = delete;
-  static const std::map<unsigned int, std::string> sMapTrgBits;
-  static const std::map<unsigned int, std::string> sMapBasicTrgBitsFDD;
-  static const std::map<unsigned int, std::string> sMapBasicTrgBitsFT0;
-  static const std::map<unsigned int, std::string> sMapBasicTrgBitsFV0;
-  static const std::array<std::vector<uint8_t>, 256> sArrDecomposed1Byte;
-  inline static std::array<std::vector<uint8_t>, 256> decompose1Byte()
-  {
-    std::array<std::vector<uint8_t>, 256> arrBitPos{};
-    for (int iByteValue = 0; iByteValue < arrBitPos.size(); iByteValue++) {
-      auto& vec = arrBitPos[iByteValue];
-      for (int iBit = 0; iBit < 8; iBit++) {
-        if (iByteValue & (1 << iBit)) {
-          vec.push_back(iBit);
-        }
-      }
-    }
-    return arrBitPos;
-  }
-};
-
 template <typename DigitType>
 struct DataTCM {
   using Digit_t = DigitType;
