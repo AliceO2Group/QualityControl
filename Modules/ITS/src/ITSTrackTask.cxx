@@ -44,6 +44,7 @@ ITSTrackTask::ITSTrackTask() : TaskInterface()
 ITSTrackTask::~ITSTrackTask() // make_shared objects will be delete automatically
 {
   delete hNClusters;
+  delete hNClustersPt;
   delete hVertexCoordinates;
   delete hVertexRvsZ;
   delete hVertexZ;
@@ -66,6 +67,12 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   nBCbins = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nBCbins", nBCbins);
   mDoNorm = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doNorm", mDoNorm);
   mInvMasses = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "InvMasses", mInvMasses);
+
+  // pt bins definition: 20 MeV/c width up to 1 GeV/c, 100 MeV/c afterwards
+  ptBins[0] = 0.;
+  for (int i = 1; i < 141; i++) {
+    ptBins[i] = i <= 50 ? ptBins[i - 1] + 0.02 : ptBins[i - 1] + 0.1;
+  }
 
   createAllHistos();
   publishHistos();
@@ -200,6 +207,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       hTrackPhi->getNum()->Fill(out.getPhi());
       hAngularDistribution->getNum()->Fill(Eta, out.getPhi());
       hNClusters->Fill(track.getNumberOfClusters());
+      hNClustersPt->Fill(track.getPt(), track.getNumberOfClusters());
 
       hTrackPtVsEta->Fill(out.getPt(), Eta);
       hTrackPtVsPhi->Fill(out.getPt(), out.getPhi());
@@ -402,6 +410,7 @@ void ITSTrackTask::reset()
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hAngularDistribution->Reset();
   hNClusters->Reset();
+  hNClustersPt->Reset();
   hTrackPhi->Reset();
   hTrackEta->Reset();
   hVerticesRof->Reset();
@@ -449,6 +458,11 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
   hNClusters->SetStats(0);
+
+  hNClustersPt = new TH2D("NClustersPt", "NClustersPt;#it{p}_{T} (GeV/#it{c}); Number of clusters per Track", 140, ptBins, 4, 3.5, 7.5);
+  addObject(hNClustersPt);
+  formatAxes(hNClustersPt, "#it{p}_{T} (GeV/#it{c})", "Number of clusters per Track", 1, 1.10);
+  hNClustersPt->SetStats(0);
 
   hTrackEta = std::make_unique<TH1DRatio>("EtaDistribution", "EtaDistribution", 40, -2.0, 2.0, true);
   if (mDoNorm) {
