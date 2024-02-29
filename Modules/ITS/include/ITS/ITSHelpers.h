@@ -24,6 +24,8 @@ std::vector<T> convertToArray(std::string input)
 
     if constexpr (std::is_same_v<T, int>) {
       result.push_back(std::stoi(token));
+    } else if constexpr (std::is_same_v<T, float>) {
+      result.push_back(std::strtof(token.c_str(), NULL));
     } else if constexpr (std::is_same_v<T, std::string>) {
       result.push_back(token);
     }
