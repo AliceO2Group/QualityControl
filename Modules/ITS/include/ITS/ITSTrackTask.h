@@ -71,6 +71,7 @@ class ITSTrackTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
+  TH2D* hNClustersPt;
   std::unique_ptr<TH1DRatio> hTrackEta;
   std::unique_ptr<TH1DRatio> hTrackPhi;
   TH1D* hVerticesRof;
@@ -114,6 +115,7 @@ class ITSTrackTask : public TaskInterface
   int nVertices = 0;
   double mChipBins[2125]; // x bins for cos(lambda) plot
   double mCoslBins[25];   // y bins for cos(lambda) plot
+  double ptBins[141];     // pt bins
 
   o2::itsmft::TopologyDictionary* mDict;
 };
