@@ -36,7 +36,6 @@
                 "moduleName": "QcTOF",
                 "detectorName": "TOF",
                 "cycleDurationSeconds": "60",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query_comment": "checking every matched track",

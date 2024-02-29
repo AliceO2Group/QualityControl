@@ -29,7 +29,6 @@
         "moduleName": "QcZDC",
         "detectorName": "ZDC",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "zdc-rec"

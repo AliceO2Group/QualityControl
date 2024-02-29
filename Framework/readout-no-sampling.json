@@ -29,7 +29,6 @@
         "moduleName": "QcDaq",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query" : "readout:ROUT/RAWDATA"

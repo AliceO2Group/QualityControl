@@ -31,7 +31,6 @@
         "taskName": "RecPoints",
         "detectorName": "FIT",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",

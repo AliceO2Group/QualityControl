@@ -20,7 +20,6 @@
         "moduleName": "QcMUONCommon",
         "detectorName": "MCH",
         "cycleDurationSeconds": "600",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "trackMCH:MCH/TRACKS;trackMCHROF:MCH/TRACKROFS;trackMCHTRACKCLUSTERS:MCH/TRACKCLUSTERS"

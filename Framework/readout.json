@@ -29,7 +29,6 @@
         "moduleName": "QcDaq",
         "detectorName": "DAQ",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "readout"

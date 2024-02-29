@@ -29,7 +29,6 @@
         "moduleName": "QcHMPID",
         "detectorName": "HMP",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "readout"

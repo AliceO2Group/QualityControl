@@ -27,7 +27,6 @@
         "moduleName": "QcGLO",
         "detectorName": "GLO",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query" : "ctfEncRepTPC:TPC/CTFENCREP/0;ctfEncRepITS:ITS/CTFENCREP/0"

@@ -29,7 +29,6 @@
         "moduleName": "QcCTP",
         "detectorName": "CTP",
         "cycleDurationSeconds": "30",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "readout"

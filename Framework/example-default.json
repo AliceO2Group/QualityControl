@@ -27,7 +27,6 @@
         "className": "o2::quality_control_modules::example::ExampleTask",
         "moduleName": "QcExample",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "ex1"
@@ -37,7 +36,6 @@
       "daqTask": {
         "className": "o2::quality_control_modules::daq::DaqTask",
         "moduleName": "QcDaq",
-        "maxNumberCycles": "-1",
         "cycleDurationSeconds": "10",
         "dataSource": {
           "type": "dataSamplingPolicy",

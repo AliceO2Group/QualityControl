@@ -29,7 +29,6 @@
             "moduleName": "QcPHOS",
             "detectorName": "PHS",
             "cycleDurationSeconds": "10",
-            "maxNumberCycles": "-1",
             "dataSource": {
               "type": "direct",
               "query": "rawerr:PHS/RAWHWERRORS;fitquality:PHS/CELLFITQA;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0"

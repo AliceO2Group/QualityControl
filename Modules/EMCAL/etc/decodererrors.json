@@ -26,7 +26,6 @@
                 "moduleName": "QcEMCAL",
                 "detectorName": "EMC",
                 "cycleDurationSeconds": "60",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query": "rawerrors:EMC/DECODERERR"

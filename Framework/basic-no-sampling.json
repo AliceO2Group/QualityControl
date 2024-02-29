@@ -29,7 +29,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query" : "tst-rawdata:TST/RAWDATA/0"

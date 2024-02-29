@@ -20,7 +20,6 @@
         "moduleName": "QcMuonChambers",
         "detectorName": "MCH",
         "cycleDurationSeconds": "300",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS"

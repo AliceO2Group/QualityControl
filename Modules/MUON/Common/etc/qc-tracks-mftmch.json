@@ -20,7 +20,6 @@
         "moduleName": "QcMUONCommon",
         "detectorName": "GLO",
         "cycleDurationSeconds": "600",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "trackMCH:MCH/TRACKS;trackMCHROF:MCH/TRACKROFS;trackMCHTRACKCLUSTERS:MCH/TRACKCLUSTERS;mchtrackdigits:MCH/CLUSTERDIGITS;trackMFT:MFT/TRACKS;trackMFTROF:MFT/MFTTrackROF;trackMFTClIdx:MFT/TRACKCLSID;alpparMFT:MFT/ALPIDEPARAM;fwdtracks:GLO/GLFWD"

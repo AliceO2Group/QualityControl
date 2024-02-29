@@ -36,7 +36,6 @@
         "moduleName": "QcExample",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",     "": "10 seconds minimum",
-        "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "direct",

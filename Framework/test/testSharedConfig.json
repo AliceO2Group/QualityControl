@@ -22,7 +22,6 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "detectorName": "TST",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -52,7 +51,6 @@
           "name": "tpcclust"
         },
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "taskParameters": {
           "parameter1": "100002",
           "parameter2": "c'est quoi"
@@ -70,7 +68,6 @@
           "name": "tpcclust"
         },
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "location": "remote"
       },
       "defTask": {
