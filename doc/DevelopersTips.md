@@ -322,7 +322,8 @@ psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (sel
 6. `cd /var/lib/pgsql/.globus `
 7. backup the old files
 8. copy hostcert and hostkey
-9 chmod 600 them
+9. chmod 600 them
+10. Make sure that `.globus` and the two files are owned by the user `postgres`
 
 ### ControlWorkflows
 
