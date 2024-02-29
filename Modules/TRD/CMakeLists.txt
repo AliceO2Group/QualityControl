@@ -2,7 +2,9 @@
 
 add_library(O2QcTRD)
 
+<<<<<<< HEAD
 target_sources(O2QcTRD PRIVATE
+              src/CalibReductorTRD.cxx 
               src/TrackletCountCheck.cxx
               src/PulsePositionCheck.cxx
               src/TrackingTask.cxx
@@ -32,6 +34,7 @@ install(TARGETS O2QcTRD
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcTRD HEADERS
+                    include/TRD/CalibReductorTRD.h
                     include/TRD/TrackletCountCheck.h
                     include/TRD/PulsePositionCheck.h
                     include/TRD/TrackingTask.h
