@@ -54,6 +54,9 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
     std::vector<std::vector<float>> axisBoundaries;
     std::vector<float> singleAxis;
 
+    std::vector<std::vector<std::string>> sliceLabels;
+    std::vector<std::string> singleAxisLabels;
+
     if (const auto& multiAxisValues = dataSourceConfig.second.get_child_optional("axisDivision"); multiAxisValues.has_value()) {
       for (const auto& multiAxisValue : multiAxisValues.value()) {
         for (const auto& axis : multiAxisValue.second) {
@@ -61,6 +64,16 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
         }
         axisBoundaries.push_back(singleAxis);
         singleAxis.clear();
+      }
+    }
+
+    if (const auto& multiAxisLabels = dataSourceConfig.second.get_child_optional("sliceLabels"); multiAxisLabels.has_value()) {
+      for (const auto& multiAxisLabel : multiAxisLabels.value()) {
+        for (const auto& axis : multiAxisLabel.second) {
+          singleAxisLabels.push_back(std::string(axis.second.data()));
+        }
+        sliceLabels.push_back(singleAxisLabels);
+        singleAxisLabels.clear();
       }
     }
 
@@ -72,6 +85,7 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
                                 sourceName.second.data(),
                                 dataSourceConfig.second.get<std::string>("reductorName"),
                                 axisBoundaries,
+                                sliceLabels,
                                 dataSourceConfig.second.get<std::string>("moduleName") });
       }
     } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
@@ -81,12 +95,14 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
                               dataSourceConfig.second.get<std::string>("name"),
                               dataSourceConfig.second.get<std::string>("reductorName"),
                               axisBoundaries,
+                              sliceLabels,
                               dataSourceConfig.second.get<std::string>("moduleName") });
     } else {
       throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + id + ".dataSources'");
     }
 
     axisBoundaries.clear();
+    sliceLabels.clear();
   }
 }
 

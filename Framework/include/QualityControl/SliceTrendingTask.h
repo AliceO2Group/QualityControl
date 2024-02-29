@@ -81,7 +81,7 @@ class SliceTrendingTask : public PostProcessingInterface
   void trendValues(const Trigger& t, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
   void drawCanvasMO(TCanvas* thisCanvas, const std::string& var,
-                    const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis, const TitleSettings& titlesettings);
+                    const std::string& name, const std::string& opt, const std::string& err, const std::vector<std::vector<float>>& axis, const std::vector<std::vector<std::string>>& sliceLabels, const TitleSettings& titlesettings);
   void getUserAxisRange(const std::string& graphAxisRange, float& limitLow, float& limitUp);
   void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
   void getTrendVariables(const std::string& inputvar, std::string& sourceName, std::string& variableName, std::string& trend);
@@ -102,6 +102,7 @@ class SliceTrendingTask : public PostProcessingInterface
   std::unordered_map<std::string, std::vector<SliceInfo>*> mSources;
   std::unordered_map<std::string, int> mNumberPads;
   std::unordered_map<std::string, std::vector<std::vector<float>>> mAxisDivision;
+  std::unordered_map<std::string, std::vector<std::vector<std::string>>> mSliceLabel;
 };
 
 } // namespace o2::quality_control::postprocessing
