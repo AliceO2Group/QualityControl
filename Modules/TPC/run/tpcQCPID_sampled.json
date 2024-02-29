@@ -35,7 +35,7 @@
           "name": "tpc-tracks"
         },
         "taskParameters": {
-          "cutMinNCluster": "60", "cutAbsTgl": "1.", "cutMindEdxTot": "10.", "cutMaxdEdxTot": "70.", "cutMinpTPC": "0.05", "cutMaxpTPC": "20.", "cutMinpTPCMIPs": "0.45", "cutMaxpTPCMIPs": "0.55"
+          "cutMinNCluster": "60", "cutAbsTgl": "1.", "cutMindEdxTot": "10.", "cutMaxdEdxTot": "70.", "cutMinpTPC": "0.05", "cutMaxpTPC": "20.", "cutMinpTPCMIPs": "0.45", "cutMaxpTPCMIPs": "0.55" , "createCanvas" : "1"
         },
         "location": "remote"
       }
