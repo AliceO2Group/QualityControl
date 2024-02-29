@@ -16,23 +16,29 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 ///
-
+// C++
+#include <gsl/span>
+#include <string>
+#include <vector>
 // ROOT
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TAxis.h>
+#include <TString.h>
 // O2
 #include <DataFormatsITSMFT/Digit.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
 #include <Framework/TimingInfo.h>
+#include <Framework/ProcessingContext.h>
+#include <Framework/ServiceRegistryRef.h>
+#include <Framework/ProcessingContext.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
+#include <CommonConstants/LHCConstants.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTDigitTask.h"
 #include "MFT/QcMFTUtilTables.h"
-// C++
-#include <fstream>
 
 namespace o2::quality_control_modules::mft
 {
@@ -46,15 +52,14 @@ QcMFTDigitTask::~QcMFTDigitTask()
 
 void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize QcMFTDigitTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTDigitTask" << ENDM;
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  // loading custom parameters
   if (auto param = mCustomParameters.find("FLP"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - FLP: " << param->second << ENDM;
     mCurrentFLP = stoi(param->second);
   }
 
-  // loading custom parameters
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
     mNoiseScan = stoi(param->second);
@@ -240,11 +245,15 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
   mMergerTest->Fill(-1); // To test what happenes with the normalisation when merged.
   // get the digits
   const auto digits = ctx.inputs().get<gsl::span<o2::itsmft::Digit>>("randomdigit");
-  if (digits.size() < 1)
+  if (digits.empty()) {
     return;
+  }
 
   // get the number of rofs
   const auto rofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("digitsrof");
+  if (rofs.empty()) {
+    return;
+  }
   auto nROFs = rofs.size();
 
   // keep track of normalisation of the different histograms in the underflow
@@ -389,11 +398,11 @@ int QcMFTDigitTask::getIndexChipOccupancyMap(int vectorChipOccupancyMapIndex)
   int vectorOccupancyMapHalf = int(vectorChipOccupancyMapIndex / 2);
 
   int occupancyMapIndex;
-  if (vectorOccupancyMapHalf == 0)
+  if (vectorOccupancyMapHalf == 0) {
     occupancyMapIndex = vectorChipOccupancyMapIndex + mCurrentFLP * 2;
-  else
+  } else {
     occupancyMapIndex = (vectorChipOccupancyMapIndex % 2) + (4 - mCurrentFLP) * 2 + numberOfOccupancyMaps / 2;
-
+  }
   //  fill the array of vector ID for corresponding hit map
   //  (opposite matching)
   mVectorIndexOfOccupancyMaps[occupancyMapIndex] = vectorChipOccupancyMapIndex;
@@ -412,18 +421,20 @@ int QcMFTDigitTask::getVectorIndexPixelOccupancyMap(int chipIndex)
 int QcMFTDigitTask::getChipIndexPixelOccupancyMap(int vectorIndex)
 {
   int vectorHalf = 0;
-  if (int(vectorIndex / mNumberOfPixelMapsPerFLP[mCurrentFLP]) < 1)
+  if (int(vectorIndex / mNumberOfPixelMapsPerFLP[mCurrentFLP]) < 1) {
     vectorHalf = 0;
-  else
+  } else {
     vectorHalf = 1;
+  }
 
   int chipIndex = vectorIndex + vectorHalf * (-mNumberOfPixelMapsPerFLP[mCurrentFLP] + numberOfChips / 2);
 
   int maxDisk = 0;
-  if (vectorHalf == 0)
+  if (vectorHalf == 0) {
     maxDisk = mCurrentFLP;
-  else
+  } else {
     maxDisk = 4 - mCurrentFLP;
+  }
 
   for (int idisk = 0; idisk < maxDisk; idisk++)
     chipIndex = chipIndex + mNumberOfPixelMapsPerFLP[idisk];

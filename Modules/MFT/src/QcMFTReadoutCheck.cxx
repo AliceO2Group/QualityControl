@@ -73,20 +73,12 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
     (void)moName;
 
-    if (mo->getName() == "mDDWSummary") {
-      // get the histogram
-      auto* hDDW = dynamic_cast<TH1F*>(mo->getObject());
-      // normalise it using the underflow bin as normalisation factor
-      float den = hDDW->GetBinContent(0);
-      for (int i = 1; i < 4; i++) {
-        float num = hDDW->GetBinContent(i);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hDDW->SetBinContent(i, ratio);
-      }
-    }
-
     if (mo->getName() == "mSummaryChipOk") {
       auto* hOK = dynamic_cast<TH1F*>(mo->getObject());
+      if (hOK == nullptr) {
+        ILOG(Error, Support) << "Could not cast mSummaryChipOK to TH1F." << ENDM;
+        return Quality::Null;
+      }
       float den = hOK->GetBinContent(0); // normalisation stored in the uderflow bin
 
       for (int iBin = 0; iBin < hOK->GetNbinsX(); iBin++) {
@@ -99,6 +91,10 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     if (mo->getName() == "mSummaryChipFault") {
       resetVector(mVectorOfFaultBins);
       auto* hFault = dynamic_cast<TH1F*>(mo->getObject());
+      if (hFault == nullptr) {
+        ILOG(Error, Support) << "Could not cast mSummaryChipFault to TH1F." << ENDM;
+        return Quality::Null;
+      }
       float den = hFault->GetBinContent(0); // normalisation stored in the uderflow bin
 
       for (int iBin = 0; iBin < hFault->GetNbinsX(); iBin++) {
@@ -116,6 +112,10 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     if (mo->getName() == "mSummaryChipError") {
       resetVector(mVectorOfErrorBins);
       auto* hError = dynamic_cast<TH1F*>(mo->getObject());
+      if (hError == nullptr) {
+        ILOG(Error, Support) << "Could not cast mSummaryChipError to TH1F." << ENDM;
+        return Quality::Null;
+      }
       float den = hError->GetBinContent(0); // normalisation stored in the uderflow bin
 
       for (int iBin = 0; iBin < hError->GetNbinsX(); iBin++) {
@@ -133,6 +133,10 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     if (mo->getName() == "mSummaryChipWarning") {
       resetVector(mVectorOfWarningBins);
       auto* hWarning = dynamic_cast<TH1F*>(mo->getObject());
+      if (hWarning == nullptr) {
+        ILOG(Error, Support) << "Could not cast mSummaryChipWarning to TH1F." << ENDM;
+        return Quality::Null;
+      }
       float den = hWarning->GetBinContent(0); // normalisation stored in the uderflow bin
 
       for (int iBin = 0; iBin < hWarning->GetNbinsX(); iBin++) {
@@ -149,6 +153,10 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
     if (mo->getName() == "mZoneSummaryChipWarning") {
       auto* hWarningSummary = dynamic_cast<TH2F*>(mo->getObject());
+      if (hWarningSummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast mZoneSummaryChipWarning to TH2F." << ENDM;
+        return Quality::Null;
+      }
 
       float den = hWarningSummary->GetBinContent(0, 0); // normalisation stored in the underflow bin
 
@@ -163,6 +171,10 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
     if (mo->getName() == "mZoneSummaryChipError") {
       auto* hErrorSummary = dynamic_cast<TH2F*>(mo->getObject());
+      if (hErrorSummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast mZoneSummaryChipError to TH2F." << ENDM;
+        return Quality::Null;
+      }
 
       float den = hErrorSummary->GetBinContent(0, 0); // normalisation stored in the underflow bin
 
@@ -177,6 +189,10 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
     if (mo->getName() == "mZoneSummaryChipFault") {
       auto* hFaultSummary = dynamic_cast<TH2F*>(mo->getObject());
+      if (hFaultSummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast mZoneSummaryChipFault to TH2F." << ENDM;
+        return Quality::Null;
+      }
 
       float den = hFaultSummary->GetBinContent(0, 0); // normalisation stored in the underflow bin
 
@@ -186,17 +202,6 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
           float ratio = (den > 0) ? (num / den) : 0.0;
           hFaultSummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
         }
-      }
-    }
-
-    if (mo->getName() == "mRDHSummary") {
-      auto* hSLS = dynamic_cast<TH1F*>(mo->getObject());
-      float den = hSLS->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hSLS->GetNbinsX(); iBin++) {
-        float num = hSLS->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hSLS->SetBinContent(iBin + 1, ratio);
       }
     }
 
@@ -258,20 +263,26 @@ Quality QcMFTReadoutCheck::checkQualityStatus(TH1F* histo, std::vector<int>& vec
       result = Quality::Good;
   }
   if (strcmp(histo->GetName(), "mSummaryChipError") == 0) {
-    if (vector.size() > mErrorThresholdBad)
+    if (vector.size() > mErrorThresholdBad) {
       result = Quality::Bad;
-    if (vector.size() > mErrorThresholdMedium && vector.size() <= mErrorThresholdBad)
+    }
+    if (vector.size() > mErrorThresholdMedium && vector.size() <= mErrorThresholdBad) {
       result = Quality::Medium;
-    if (vector.size() <= mErrorThresholdMedium)
+    }
+    if (vector.size() <= mErrorThresholdMedium) {
       result = Quality::Good;
+    }
   }
   if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0) {
-    if (vector.size() > mWarningThresholdBad)
+    if (vector.size() > mWarningThresholdBad) {
       result = Quality::Bad;
-    if (vector.size() > mWarningThresholdMedium && vector.size() <= mWarningThresholdBad)
+    }
+    if (vector.size() > mWarningThresholdMedium && vector.size() <= mWarningThresholdBad) {
       result = Quality::Medium;
-    if (vector.size() <= mWarningThresholdMedium)
+    }
+    if (vector.size() <= mWarningThresholdMedium) {
       result = Quality::Good;
+    }
   }
 
   return result;

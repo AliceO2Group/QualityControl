@@ -15,7 +15,8 @@
 /// \author Guillermo Contreras
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
-
+// C++
+#include <string>
 // Fair
 #include <fairlogger/Logger.h>
 // ROOT

@@ -40,6 +40,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTUtilTables.h"
 #include "QualityControl/UserCodeInterface.h"
+#include "QualityControl/CustomParameters.h"
 
 using namespace std;
 
@@ -48,7 +49,6 @@ namespace o2::quality_control_modules::mft
 
 void QcMFTDigitCheck::configure()
 {
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("ZoneThresholdMedium"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - ZoneThresholdMedium: " << param->second << ENDM;
     mZoneThresholdMedium = stoi(param->second);
@@ -71,32 +71,40 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     (void)moName;
 
     if (mo->getName() == "mDigitChipOccupancy") {
-      auto* hChipOccupancy = dynamic_cast<TH1F*>(mo->getObject());
+      auto* hDigitChipOccupancy = dynamic_cast<TH1F*>(mo->getObject());
+      if (hDigitChipOccupancy == nullptr) {
+        ILOG(Error, Support) << "Could not cast mDigitChipOccupancy to TH1F." << ENDM;
+        return Quality::Null;
+      }
 
-      float den = hChipOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
+      float den = hDigitChipOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
 
-      for (int iBin = 0; iBin < hChipOccupancy->GetNbinsX(); iBin++) {
-        if (hChipOccupancy->GetBinContent(iBin + 1) == 0) {
-          hChipOccupancy->Fill(937); // number of chips with zero digits stored in the overflow bin
+      for (int iBin = 0; iBin < hDigitChipOccupancy->GetNbinsX(); iBin++) {
+        if (hDigitChipOccupancy->GetBinContent(iBin + 1) == 0) {
+          hDigitChipOccupancy->Fill(937); // number of chips with zero digits stored in the overflow bin
         }
-        float num = hChipOccupancy->GetBinContent(iBin + 1);
+        float num = hDigitChipOccupancy->GetBinContent(iBin + 1);
         float ratio = (den > 0) ? (num / den) : 0.0;
-        hChipOccupancy->SetBinContent(iBin + 1, ratio);
+        hDigitChipOccupancy->SetBinContent(iBin + 1, ratio);
       }
     }
 
     if (mo->getName() == "mDigitOccupancySummary") {
-      auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
+      auto* hDigitOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
+      if (hDigitOccupancySummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast mDigitOccupancySummary to TH2F." << ENDM;
+        return Quality::Null;
+      }
 
-      float den = hOccupancySummary->GetBinContent(0, 0); // normalisation stored in the uderflow bin
-      float nEmptyBins = 0;                               // number of empty zones stored here
+      float den = hDigitOccupancySummary->GetBinContent(0, 0); // normalisation stored in the uderflow bin
+      float nEmptyBins = 0;                                    // number of empty zones stored here
 
-      for (int iBinX = 0; iBinX < hOccupancySummary->GetNbinsX(); iBinX++) {
-        for (int iBinY = 0; iBinY < hOccupancySummary->GetNbinsY(); iBinY++) {
-          float num = hOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1);
+      for (int iBinX = 0; iBinX < hDigitOccupancySummary->GetNbinsX(); iBinX++) {
+        for (int iBinY = 0; iBinY < hDigitOccupancySummary->GetNbinsY(); iBinY++) {
+          float num = hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1);
           float ratio = (den > 0) ? (num / den) : 0.0;
-          hOccupancySummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
-          if ((hOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
+          hDigitOccupancySummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
+          if ((hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
             nEmptyBins = nEmptyBins + 1;
           }
         }
@@ -124,6 +132,10 @@ void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
   map<string, string> headers;
   map<std::string, std::string> filter;
   auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp);
+  if (calib == nullptr) {
+    ILOG(Error, Support) << "Could not retrieve deadmap from CCDB." << ENDM;
+    return;
+  }
   for (int i = 0; i < calib->size(); i++) {
     if (calib->isFullChipMasked(i)) {
       mMaskedChips.push_back(i);
@@ -206,8 +218,9 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           for (int i = 0; i < 21; i++) {
             int binX = MFTTable.mBinX[idx][i];
             int binY = MFTTable.mBinY[idx][i];
-            if (binX == -1 || binY == -1)
+            if (binX == -1 || binY == -1) {
               continue;
+            }
             TBox* b = new TBox(h->GetXaxis()->GetBinLowEdge(binX), h->GetYaxis()->GetBinLowEdge(binY), h->GetXaxis()->GetBinWidth(binX) + h->GetXaxis()->GetBinLowEdge(binX), h->GetYaxis()->GetBinWidth(binY) + h->GetYaxis()->GetBinLowEdge(binY));
             b->SetFillStyle(4055);
             b->SetFillColor(15);
@@ -220,11 +233,11 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
 
   if (mo->getName().find("mDigitOccupancySummary") != std::string::npos) {
-    auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
+    auto* hDigitOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
     TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
     TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
-    hOccupancySummary->GetListOfFunctions()->Add(msg1);
-    hOccupancySummary->GetListOfFunctions()->Add(msg2);
+    hDigitOccupancySummary->GetListOfFunctions()->Add(msg1);
+    hDigitOccupancySummary->GetListOfFunctions()->Add(msg2);
     msg1->SetName(Form("%s_msg", mo->GetName()));
     msg2->SetName(Form("%s_msg2", mo->GetName()));
     if (checkResult == Quality::Good) {

@@ -53,28 +53,6 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps
   auto chipMapData = mapMFT.getChipMappingData();
 
-  // Defining DDW summary histogram
-  //==============================================
-  mDDWSummary = std::make_unique<TH1F>("mDDWSummary", "DDW Summary", 3, 0.5, 3.5);
-  getObjectsManager()->startPublishing(mDDWSummary.get());
-  mDDWSummary->GetXaxis()->SetBinLabel(1, "Warning");
-  mDDWSummary->GetXaxis()->SetBinLabel(2, "Error");
-  mDDWSummary->GetXaxis()->SetBinLabel(3, "Fault");
-  mDDWSummary->GetYaxis()->SetTitle("#Entries per DDW");
-  mDDWSummary->SetStats(0);
-
-  // Defining RDH summary histogram
-  //==============================================
-  mRDHSummary = std::make_unique<TH1F>("mRDHSummary", "RDH Summary", 5, -0.5, 4.5);
-  getObjectsManager()->startPublishing(mRDHSummary.get());
-  mRDHSummary->GetXaxis()->SetBinLabel(1, "Missing data");
-  mRDHSummary->GetXaxis()->SetBinLabel(2, "Warning");
-  mRDHSummary->GetXaxis()->SetBinLabel(3, "Error");
-  mRDHSummary->GetXaxis()->SetBinLabel(4, "Fault");
-  mRDHSummary->GetXaxis()->SetBinLabel(5, "RDH");
-  mRDHSummary->GetYaxis()->SetTitle("#Entries per DDW");
-  mRDHSummary->SetStats(0);
-
   // Defining chip summary histograms
   //==============================================
   int nChips = 936;
@@ -223,24 +201,12 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto feeID = o2::raw::RDHUtils::getFEEID(rdh);
     // get detector field
     uint32_t summaryLaneStatus = o2::raw::RDHUtils::getDetectorField(rdh);
-    // fill histogram bin with #entries
-    mRDHSummary->Fill(4);
-    // fill status if set
-    if (summaryLaneStatus & (1 << 0))
-      mRDHSummary->Fill(0); // missing data
-    if (summaryLaneStatus & (1 << 1))
-      mRDHSummary->Fill(1); // warning
-    if (summaryLaneStatus & (1 << 2))
-      mRDHSummary->Fill(2); // error
-    if (summaryLaneStatus & (1 << 3))
-      mRDHSummary->Fill(3); // fault
     // check if last rdh in HBF and get the DDW word
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
       auto const* ddw = reinterpret_cast<const MFTDDW*>(it.data());
       uint16_t ddwIndex = ddw->indexWord.indexBits.id;
       if (ddwIndex == 0xE4) { // it is a diagnostic data word
         // fill histogram bin with #DDW
-        mDDWSummary->Fill(-1);                 // counter stored in the underflow bin!
         mSummaryChipOk->Fill(-1);              // counter stored in the underflow bin!
         mSummaryChipWarning->Fill(-1);         // counter stored in the underflow bin!
         mSummaryChipError->Fill(-1);           // counter stored in the underflow bin!
@@ -248,7 +214,6 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
         mZoneSummaryChipWarning->Fill(-1, -1); // counter stored in the underflow bin!
         mZoneSummaryChipError->Fill(-1, -1);   // counter stored in the underflow bin!
         mZoneSummaryChipFault->Fill(-1, -1);   // counter stored in the underflow bin!
-        mRDHSummary->Fill(-1);                 // counter stored in the underflow bin!
         uint64_t ddwLaneStatus = ddw->laneWord.laneBits.laneStatus;
         uint16_t rdhFeeIndex = feeID;
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
@@ -256,8 +221,9 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (int i = 0; i < nLanes; i++) {
           int idx = RUindex * nLanes + i;
           // check if it is a valide lane
-          if (mChipIndex[idx] == -1)
+          if (mChipIndex[idx] == -1) {
             continue;
+          }
           // get the two bits corresponding to the lane i
           int MFTlaneStatus = ((ddwLaneStatus >> (i * 2)) & (3));
           // get zone for summary histos
@@ -269,18 +235,15 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
           if (MFTlaneStatus == 1) {
             mSummaryChipWarning->Fill(mChipIndex[idx]);
-            mDDWSummary->Fill(1);
             mZoneSummaryChipWarning->Fill(xBin, yBin);
           }
           if (MFTlaneStatus == 2) {
             mSummaryChipError->Fill(mChipIndex[idx]);
             mZoneSummaryChipError->Fill(xBin, yBin);
-            mDDWSummary->Fill(2);
           }
           if (MFTlaneStatus == 3) {
             mSummaryChipFault->Fill(mChipIndex[idx]);
             mZoneSummaryChipFault->Fill(xBin, yBin);
-            mDDWSummary->Fill(3);
           }
         } // end loop over lanes
       }   // end if is a DDW
@@ -303,7 +266,6 @@ void QcMFTReadoutTask::reset()
   // clean all the monitor objects here
 
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
-  mDDWSummary->Reset();
   mSummaryChipError->Reset();
   mSummaryChipFault->Reset();
   mSummaryChipWarning->Reset();
@@ -311,7 +273,6 @@ void QcMFTReadoutTask::reset()
   mZoneSummaryChipWarning->Reset();
   mZoneSummaryChipError->Reset();
   mZoneSummaryChipFault->Reset();
-  mRDHSummary->Reset();
 }
 
 void QcMFTReadoutTask::generateChipIndex()
