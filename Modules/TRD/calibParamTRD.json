@@ -6,13 +6,13 @@
         "host": "ccdb-test.cern.ch:8080"
       },
       "Activity": {
-        "number": ""
+        "number": "526486"
       },
       "conditionDB": {
         "url": "alice-ccdb.cern.ch"
       },
       "postprocessing": {
-      "matchAnyRunNumber": "true"
+        "matchAnyRunNumber": "true"
       }
     },
     "postprocessing": {
@@ -26,7 +26,9 @@
           {
             "type": "condition",
             "path": "TRD/Calib",
-            "names": [ "CalVdriftExB" ],
+            "names": [
+              "CalVdriftExB"
+            ],
             "reductorName": "o2::quality_control_modules::trd::CalibReductorTRD",
             "moduleName": "QcTRD"
           }
@@ -34,7 +36,7 @@
         "plots": [
           {
             "name": "vdrift_trend",
-            "title": "vDrift trend",
+            "title": "vDrift mean trend",
             "varexp": "CalVdriftExB.vdriftmean:time",
             "selection": "",
             "option": "*L",
@@ -42,13 +44,34 @@
             "graphXRange": "",
             "graphAxisLabel": "vdrift:time",
             "graphErrors": "0:CalVdriftExB.vdrifterr"
+          },
+          {
+            "name": "vdrift_trend2",
+            "title": "vDrift trend",
+            "varexp": "CalVdriftExB.vdrift[]:runNumber",
+            "selection": "",
+            "option": "*L",
+            "graphYRange": "-2:3.5",
+            "graphXRange": "",
+            "graphAxisLabel": "vdrift:time"
+          },
+          {
+            "name": "exb_trend",
+            "title": "ExB mean trend",
+            "varexp": "CalVdriftExB.exbmean:time",
+            "selection": "",
+            "option": "*L",
+            "graphYRange": "-2.0:2.0",
+            "graphXRange": "",
+            "graphAxisLabel": "ExB:time",
+            "graphErrors": "0:CalVdriftExB.exberr"
           }
         ],
         "initTrigger": [
           "userorcontrol"
         ],
         "updateTrigger": [
-          "foreachobject:ccdb:TRD/Calib/CalVdriftExB"
+          "newobject:ccdb:TRD/Calib/CalVdriftExB"
         ],
         "stopTrigger": [
           "userorcontrol"

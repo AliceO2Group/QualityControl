@@ -11,7 +11,7 @@
 
 ///
 /// \file   CalibReductorTRD.cxx
-/// \author
+/// \author Salman Malik
 ///
 
 #include "TRD/CalibReductorTRD.h"
@@ -28,21 +28,29 @@ void* CalibReductorTRD::getBranchAddress()
 
 const char* CalibReductorTRD::getBranchLeafList()
 {
-  return "vdriftmean/F:vdrifterr/F";
+  return "vdrift[540]/F:vdriftmean/F:vdrifterr/F:exbmean/F:exberr/F";
 }
 
 bool CalibReductorTRD::update(ConditionRetriever& retriever)
 {
   if (auto retvdrift = retriever.retrieve<o2::trd::CalVdriftExB>()) {
-    double sum = 0;
-    double sumSq = 0;
+    double sumVdrift = 0, sumSqVdrift = 0;
+    double sumExb = 0, sumSqExb = 0;
+
     for (int i = 0; i < o2::trd::constants::MAXCHAMBER; i++) {
-      double vdrift = retvdrift->getVdrift(i);
-      sum += vdrift;
-      sumSq += vdrift * vdrift;
+      mStats.vdrift[i] = retvdrift->getVdrift(i);
+      sumVdrift += retvdrift->getVdrift(i);
+      sumSqVdrift += retvdrift->getVdrift(i) * retvdrift->getVdrift(i);
+      sumExb += retvdrift->getExB(i);
+      sumSqExb += retvdrift->getExB(i) * retvdrift->getExB(i);
     }
-    mStats.vdriftmean = sum / o2::trd::constants::MAXCHAMBER;
-    mStats.vdrifterr = std::sqrt(sumSq / o2::trd::constants::MAXCHAMBER - mStats.vdriftmean * mStats.vdriftmean);
+
+    mStats.vdriftmean = sumVdrift / o2::trd::constants::MAXCHAMBER;
+    mStats.vdrifterr = std::sqrt(sumSqVdrift / o2::trd::constants::MAXCHAMBER - mStats.vdriftmean * mStats.vdriftmean);
+
+    mStats.exbmean = sumExb / o2::trd::constants::MAXCHAMBER;
+    mStats.exberr = std::sqrt(sumSqExb / o2::trd::constants::MAXCHAMBER - mStats.exbmean * mStats.exbmean);
+
     return true;
   }
   return false;
