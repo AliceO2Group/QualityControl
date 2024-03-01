@@ -410,7 +410,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_latest)
   mo1->setValidity({ 10, 30 });
   f.backend->storeMO(mo1);
 
-  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, 0, "LHC66", "passName1", "qc" });
+  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, "NONE", "LHC66", "passName1", "qc" });
   BOOST_REQUIRE(moBack != nullptr);
   auto h1Back = dynamic_cast<TH1F*>(moBack->getObject());
   BOOST_REQUIRE(h1Back != nullptr);
