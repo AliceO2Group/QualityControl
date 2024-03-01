@@ -50,7 +50,7 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 {
   core::Activity activity;
   if (auto runType = metadata.find(metadata_keys::runType); runType != metadata.end()) {
-    if(isOnlyDigits(runType->second)) {
+    if (isOnlyDigits(runType->second)) {
       // we probably got the former representation of run types, i.e. an integer. We convert it as best
       // as we can using O2's ECSDataAdapter
       activity.mType = parameters::GRPECS::RunTypeNames[std::stoi(runType->second)];
@@ -81,7 +81,7 @@ core::Activity asActivity(const boost::property_tree::ptree& tree, const std::st
 {
   core::Activity activity;
   if (auto runType = tree.get_optional<std::string>(metadata_keys::runType); runType.has_value()) {
-    if(isOnlyDigits(runType.value())) {
+    if (isOnlyDigits(runType.value())) {
       // we probably got the former representation of run types, i.e. an integer. We convert it as best
       // as we can using O2's ECSDataAdapter
       activity.mType = parameters::GRPECS::RunTypeNames[std::stoi(runType.value())];
