@@ -280,6 +280,7 @@ set(TEST_SRCS
     test/testUserCodeInterface.cxx
     test/testCustomParameters.cxx
     test/testStringUtils.cxx
+    test/testRunnerUtils.cxx
 )
 
 set(TEST_ARGS
@@ -298,6 +299,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""
