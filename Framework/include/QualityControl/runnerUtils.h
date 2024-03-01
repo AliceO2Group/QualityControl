@@ -61,6 +61,7 @@ T computeNumericalActivityField(framework::ServiceRegistryRef services, const st
   return result;
 }
 
+std::string_view translateIntegerRunType(const std::string& runType);
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity);
 
 std::string indentTree(int level);

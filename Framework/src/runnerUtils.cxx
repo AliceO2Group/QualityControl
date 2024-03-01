@@ -68,20 +68,29 @@ bool is_unsigned_integer(const std::string& s)
                                     s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
+/**
+ * If the runType is of legacy type, i.e. an integer, it will be replaced by the corresponding string representation.
+ * In case we cannot find a string representation we use "NONE".
+ * @param runType
+ */
+std::string_view translateIntegerRunType(const std::string& runType)
+{
+  // runType used to be an integer. If we find an integer in a config file, the risk is that it is translated directly to a string (2->"2").
+  // We must rather translate the integer into the corresponding run type string if at all possible.if (is_unsigned_integer(runType)) {
+  try {
+    ILOG(Warning, Ops) << "Activity type was provided as an integer. A matching activity type could be found: " << parameters::GRPECS::RunTypeNames.at(std::stoi(runType)) << ". Consider using the string representation of the run type." << ENDM;
+    return parameters::GRPECS::RunTypeNames.at(std::stoi(runType));
+  } catch (std::out_of_range& exc) {
+    ILOG(Warning, Ops) << "Activity type was provided as an integer. No matching activity type could be find. Using 'NONE'." << ENDM;
+    return "NONE";
+  }
+}
+
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
   auto runNumber = computeNumericalActivityField<int>(services, "runNumber", fallbackActivity.mId);
   std::string runType = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", fallbackActivity.mType);
-  // runType used to be an integer. If we find an integer in a config file, the risk is that it is translated directly to a string (2->"2").
-  // We must rather translate the integer into the corresponding run type string if at all possible.
-  if (is_unsigned_integer(runType)) {
-    try {
-      runType = parameters::GRPECS::RunTypeNames.at(std::stoi(runType));
-    } catch (std::out_of_range& exc) {
-      ILOG(Warning, Ops) << "Activity type was provided as an integer. No matching activity type could be find. Using 'NONE'." << ENDM;
-      runType = "NONE";
-    }
-  }
+  runType = translateIntegerRunType(runType);
   auto runStartTimeMs = computeNumericalActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
   auto runEndTimeMs = computeNumericalActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);

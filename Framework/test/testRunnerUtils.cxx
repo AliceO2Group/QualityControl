@@ -10,28 +10,29 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testStringUtils.cxx
+/// \file    testRunnerUtils.cxx
 /// \author  Barthelemy von Haller
 ///
 
-#include "QualityControl/stringUtils.h"
+#include "QualityControl/runnerUtils.h"
 
-#define BOOST_TEST_MODULE Triggers test
+#define BOOST_TEST_MODULE RunnerUtils test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
+#include <Framework/ConfigParamRegistry.h>
+#include <Framework/DataProcessorSpec.h>
 #include <boost/test/unit_test.hpp>
 
 using namespace o2::quality_control::core;
+using namespace std;
 
-BOOST_AUTO_TEST_CASE(test_is_number)
+BOOST_AUTO_TEST_CASE(test_computeActivity)
 {
-  BOOST_CHECK_EQUAL(isOnlyDigits("1"), true);
-  BOOST_CHECK_EQUAL(isOnlyDigits("-1"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("1000000"), true);
-  BOOST_CHECK_EQUAL(isOnlyDigits("0.1"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits(".2"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("x"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("1x"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("......"), false);
+  string runType;
+  BOOST_CHECK_EQUAL(translateIntegerRunType("0"), "NONE");
+  BOOST_CHECK_EQUAL(translateIntegerRunType("1"), "PHYSICS");
+  BOOST_CHECK_EQUAL(translateIntegerRunType("18"), "CALIBRATION_VRESETD");
+  BOOST_CHECK_EQUAL(translateIntegerRunType("34"), "NONE");
+  BOOST_CHECK_EQUAL(translateIntegerRunType("-134"), "NONE");
 }
