@@ -44,8 +44,8 @@ HmpidTaskClusters::~HmpidTaskClusters()
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     delete hHMPIDchargeClus[iCh];
     delete hHMPIDchargeMipClus[iCh];
-    delete hHMPIDclusX[7];
-    delete hHMPIDclusY[7];
+    delete hHMPIDclusX[iCh];
+    delete hHMPIDclusY[iCh];
     delete hHMPIDpositionClus[iCh];
   }
 }
