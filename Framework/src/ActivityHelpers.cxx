@@ -20,6 +20,9 @@
 #include <CCDB/BasicCCDBManager.h>
 #include "QualityControl/ObjectMetadataKeys.h"
 
+#include <DataFormatsParameters/ECSDataAdapters.h>
+#include <QualityControl/stringUtils.h>
+
 using namespace o2::quality_control::repository;
 
 namespace o2::quality_control::core::activity_helpers
@@ -47,7 +50,13 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 {
   core::Activity activity;
   if (auto runType = metadata.find(metadata_keys::runType); runType != metadata.end()) {
-    activity.mType = runType->second;
+    if(isOnlyDigits(runType->second)) {
+      // we probably got the former representation of run types, i.e. an integer. We convert it as best
+      // as we can using O2's ECSDataAdapter
+      activity.mType = parameters::GRPECS::RunTypeNames[std::stoi(runType->second)];
+    } else {
+      activity.mType = runType->second;
+    }
   }
   if (auto runNumber = metadata.find(metadata_keys::runNumber); runNumber != metadata.end()) {
     activity.mId = std::strtol(runNumber->second.c_str(), nullptr, 10);
@@ -72,7 +81,13 @@ core::Activity asActivity(const boost::property_tree::ptree& tree, const std::st
 {
   core::Activity activity;
   if (auto runType = tree.get_optional<std::string>(metadata_keys::runType); runType.has_value()) {
-    activity.mType = runType.value();
+    if(isOnlyDigits(runType.value())) {
+      // we probably got the former representation of run types, i.e. an integer. We convert it as best
+      // as we can using O2's ECSDataAdapter
+      activity.mType = parameters::GRPECS::RunTypeNames[std::stoi(runType.value())];
+    } else {
+      activity.mType = runType.value();
+    }
   }
   if (auto runNumber = tree.get_optional<int>(metadata_keys::runNumber); runNumber.has_value()) {
     activity.mId = runNumber.value();

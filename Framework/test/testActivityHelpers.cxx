@@ -212,3 +212,28 @@ TEST_CASE("test_overlappingActivity")
     CHECK(result == expectation);
   }
 }
+
+TEST_CASE("test_backward_compatible_activity_type")
+{
+  SECTION("metadata map")
+  {
+    std::map<std::string, std::string> metadata = {
+      { metadata_keys::runType, "2" }, // technical
+    };
+
+    Activity activity = activity_helpers::asActivity(metadata, "test_provenance");
+
+    CHECK(activity.mType == "TECHNICAL");
+    std::cout << "type " << activity << std::endl;
+  }
+
+  SECTION("property tree")
+  {
+    boost::property_tree::ptree tree;
+    tree.put(metadata_keys::runType, "2");
+
+    Activity activity = activity_helpers::asActivity(tree, "test_provenance");
+
+    CHECK(activity.mType == "TECHNICAL");
+  }
+}

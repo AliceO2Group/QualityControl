@@ -280,7 +280,9 @@ set(TEST_SRCS
     test/testRepoPathUtils.cxx
     test/testQualitiesToFlagCollectionConverter.cxx
     test/testUserCodeInterface.cxx
-  )
+    test/testCustomParameters.cxx
+    test/testStringUtils.cxx
+)
 
 set(TEST_ARGS
     ""
@@ -297,6 +299,8 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
+    ""
     ""
     ""
     ""

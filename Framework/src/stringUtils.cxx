@@ -80,4 +80,10 @@ bool parseBoolParam(const CustomParameters& customParameters, const std::string&
   }
 }
 
+bool isOnlyDigits(std::string s)
+{
+  return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+
 } // namespace o2::quality_control::core
