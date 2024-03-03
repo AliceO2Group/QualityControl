@@ -115,12 +115,6 @@ void ITSClusterTask::startOfCycle()
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  if (mGeom == nullptr) {
-    ILOG(Warning, Devel) << "Created new instance of mGeom" << ENDM;
-    mGeom = o2::its::GeometryTGeo::Instance();
-    mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
-  }
-
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
@@ -128,6 +122,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::map<std::string, std::string> metadata;
     mDict = TaskInterface::retrieveConditionAny<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary", metadata, ts);
     ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
+    o2::its::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::its::GeometryTGeo>("ITS/Config/Geometry", metadata, ts));
+    mGeom = o2::its::GeometryTGeo::Instance();
+    ILOG(Debug, Devel) << "Loaded new instance of mGeom" << ENDM;
   }
 
   std::chrono::time_point<std::chrono::high_resolution_clock> start;

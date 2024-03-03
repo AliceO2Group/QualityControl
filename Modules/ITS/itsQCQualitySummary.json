@@ -68,16 +68,6 @@
                     "DoHitmapFilter": "1",
                     "PhysicalOccupancyIB": "1.7e-3",
                     "PhysicalOccupancyOB": "4.3e-5"
-                },
-	        "grpGeomRequest" : {
-                    "geomRequest": "Aligned",
-                    "askGRPECS": "false",
-                    "askGRPLHCIF": "false",
-                    "askGRPMagField": "false",
-                    "askMatLUT": "false",
-                    "askTime": "false",
-                    "askOnceAllButField": "true",
-                    "needPropagatorD":  "false"
                 }
             },
  "ITSClusterTask": {
