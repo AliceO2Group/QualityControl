@@ -50,7 +50,7 @@
             "title": "vDrift trend",
             "varexp": "CalVdriftExB.vdrift[]:runNumber",
             "selection": "",
-            "option": "*L",
+            "option": "colz logz",
             "graphYRange": "-2:3.5",
             "graphXRange": "",
             "graphAxisLabel": "vdrift:time"
