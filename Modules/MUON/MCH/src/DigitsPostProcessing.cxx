@@ -103,9 +103,6 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
     ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
                       << AliceO2::InfoLogger::InfoLogger::endm;
     hElecHistoRef = obj->second.get<TH2F>();
-  } else {
-    ILOG(Info, Devel) << "Could not load reference plot \"" << obj->second.mPath << "/" << obj->second.mName << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
   }
 
   TH2F* hElecSignalHistoRef{ nullptr };
