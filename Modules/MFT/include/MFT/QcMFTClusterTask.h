@@ -101,6 +101,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   // dictionary
   const o2::itsmft::TopologyDictionary* mDict = nullptr;
 
+  o2::mft::GeometryTGeo* mGeom = nullptr;
   // where the geometry file is stored
   std::string mGeomPath;
 

@@ -29,6 +29,7 @@
 #include "Common/TH2Ratio.h"
 // O2
 #include "CommonConstants/LHCConstants.h"
+#include "MFTBase/GeometryTGeo.h"
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control_modules::common;
@@ -57,6 +58,8 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   void reset() override;
 
  private:
+  o2::mft::GeometryTGeo* mGeom = nullptr;
+
   std::unique_ptr<TH1FRatio> mNumberOfTracksPerTF = nullptr;
   std::unique_ptr<TH1FRatio> mTrackNumberOfClusters = nullptr;
   std::unique_ptr<TH1FRatio> mCATrackNumberOfClusters = nullptr;
