@@ -72,6 +72,7 @@ For a general overview of our (O2) software, organization and processes, please 
         * [Custom merging](doc/Advanced.md#custom-merging)
         * [QC with DPL Analysis](doc/Advanced.md#qc-with-dpl-analysis)
     * [Solving performance issues](doc/Advanced.md#solving-performance-issues)
+    * [Understanding and reducing memory footprint](doc/Advanced.md#understanding-and-reducing-memory-footprint)
     * [CCDB / QCDB](doc/Advanced.md#ccdb--qcdb)
         * [Accessing objects in CCDB](doc/Advanced.md#accessing-objects-in-ccdb)
         * [Access GRP objects with GRP Geom Helper](doc/Advanced.md#access-grp-objects-with-grp-geom-helper)

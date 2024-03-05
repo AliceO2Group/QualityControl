@@ -29,6 +29,8 @@ Advanced topics
    * [Dispatcher](#dispatcher)
    * [QC Tasks](#qc-tasks)
    * [Mergers](#mergers)
+* [Understanding and reducing memory footprint](#understanding-and-reducing-memory-footprint)
+  * [Analysing memory usage with valgrind](#analysing-memory-usage-with-valgrind)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Accessing objects in CCDB](#accessing-objects-in-ccdb)
    * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
@@ -716,6 +718,50 @@ The following points might help avoid backpressure:
 - use less or smaller objects
 - if an object has its custom Merge() method, check if it could be optimized
 - enable multi-layer Mergers to split the computations across multiple processes (config parameter "mergersPerLayer")
+
+# Understanding and reducing memory footprint
+
+When developing a QC module, please be considerate in terms of memory usage.
+Large histograms could be optionally enabled/disabled depending on the context that the QC is ran.
+Investigate if reducing the bin size (e.g. TH2D to TH2F) would still provide satisfactory results.
+Consider loading only the parts of detector geometry which are being used by a given task.
+
+## Analysing memory usage with valgrind
+
+0) Install valgrind, if not yet installed
+
+1) Run the QC workflow with argument `--child-driver 'valgrind --tool=massif'` (as well as any file reader / processing workflow you need to obtain data in QC)
+
+2) The workflow will run and save files massif.out.<pid>
+
+3) Generate a report for the file corresponding to the PID of the QC task:
+```
+ms_print massif.out.976329 > massif_abc_task.log
+```
+4) The generated report contains:
+- the command used to run the process
+- graph of the memory usage
+- grouped call stacks of all memory allocations on the heap (above certain threshold) within certain time intervals. 
+  The left-most call contains all the calls which lead to it, represented on the right.
+  For example, the call stack below means that the AbcTask created a TH2F histogram in the initalize method at the line 
+  AbcTask.cxx:82, which was 51,811,760B. In total, 130,269,568B worth of TH2F histograms were created in this time interval.
+```
+98.56% (256,165,296B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->50.12% (130,269,568B) 0xFCBD1A6: TArrayF::Set(int) [clone .part.0] (TArrayF.cxx:111)
+| ->50.12% (130,269,568B) 0xEC1DB1C: TH2F::TH2F(char const*, char const*, int, double, double, int, double, double) (TH2.cxx:3573)
+|   ->19.93% (51,811,760B) 0x32416518: make_unique<TH2F, char const (&)[16], char const (&)[22], unsigned int const&, int, unsigned int const&, int, int, int> (unique_ptr.h:1065)
+|   | ->19.93% (51,811,760B) 0x32416518: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:82)
+```
+5) To get a lightweight and more digestible output, consider running the massif report through the following command to get the summary of the calls only within a QC module. This essentially tells you how much memory a given line allocates.
+```
+[O2PDPSuite/latest] ~/alice/test-rss $> grep quality_control_modules massif_abc_task.log | sed 's/^.*[0-9][0-9]\.[0-9][0-9]\% //g' | sort | uniq
+(242,371,376B) 0x324166B2: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:88)
+(4,441,008B) 0x3241633F: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:76)
+(4,441,008B) 0x32416429: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:79)
+(51,811,760B) 0x32416518: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:82)
+(51,811,760B) 0x324165EB: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:85)
+```
+6) Consider reducing the size and number of the biggest histogram. Consider disabling histograms which will not be useful for async QC (no allocations, no startPublishing).
 
 # CCDB / QCDB
 
