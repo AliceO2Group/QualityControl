@@ -208,6 +208,11 @@ void QcMFTTrackTask::startOfCycle()
 
 void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  if (!mGeom) {
+    o2::mft::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::mft::GeometryTGeo>("MFT/Config/Geometry"));
+    mGeom = o2::mft::GeometryTGeo::Instance();
+    ILOG(Info, Support) << "GeometryTGeo loaded" << ENDM;
+  }
   auto mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
 
   // get the tracks

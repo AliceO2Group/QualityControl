@@ -248,7 +248,11 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     mDict = mDictPtr.get();
     ILOG(Info, Support) << "Dictionary loaded with size: " << mDict->getSize() << ENDM;
   }
-
+  if (!mGeom) {
+    o2::mft::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::mft::GeometryTGeo>("MFT/Config/Geometry"));
+    mGeom = o2::mft::GeometryTGeo::Instance();
+    ILOG(Info, Support) << "GeometryTGeo loaded" << ENDM;
+  }
   // normalisation for the summary histogram to TF
   mClusterOccupancySummary->Fill(-1, -1);
   mClusterOccupancy->Fill(-1);

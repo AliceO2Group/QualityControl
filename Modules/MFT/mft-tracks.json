@@ -41,7 +41,7 @@
           "TimeBinSize" : "0.1"
         },
         "grpGeomRequest" : {
-            "geomRequest": "Aligned",
+            "geomRequest": "None",
             "askGRPECS": "true",
             "askGRPLHCIF": "false",
             "askGRPMagField": "false",
