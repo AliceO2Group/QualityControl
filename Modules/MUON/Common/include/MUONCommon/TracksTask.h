@@ -30,12 +30,6 @@ using GID = o2::dataformats::GlobalTrackID;
 class TracksTask /*final*/ : public TaskInterface
 {
  public:
-  enum matchType : int8_t { MCH = 0,
-                            MCHMID,
-                            MFTMCH,
-                            MFTMCHMID,
-                            SIZE };
-
   TracksTask();
   ~TracksTask() override;
 
@@ -50,12 +44,8 @@ class TracksTask /*final*/ : public TaskInterface
  private:
   /** check whether all the expected inputs are present.*/
   bool assertInputs(o2::framework::ProcessingContext& ctx);
-  bool getBooleanParam(const char* paramName) const;
-
-  template <class T>
-  T getParameter(std::string parName, const T defaultValue, const o2::quality_control::core::Activity& activity);
-  template <class T>
-  T getParameter(std::string parName, const T defaultValue);
+  void createTrackHistos(const o2::quality_control::core::Activity& activity);
+  void removeTrackHistos();
 
  private:
   std::map<GID::Source, std::unique_ptr<TrackPlotter>> mTrackPlotters;
@@ -72,30 +62,6 @@ class TracksTask /*final*/ : public TaskInterface
   // MFT-MCH-MID
   gsl::span<const o2::dataformats::GlobalFwdTrack> mMFTMCHMIDTracks;
 };
-
-template <class T>
-T TracksTask::getParameter(std::string parName, const T defaultValue, const o2::quality_control::core::Activity& activity)
-{
-  T result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName, activity);
-  if (parOpt.has_value()) {
-    std::stringstream ss(parOpt.value());
-    ss >> result;
-  }
-  return result;
-}
-
-template <class T>
-T TracksTask::getParameter(std::string parName, const T defaultValue)
-{
-  T result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName);
-  if (parOpt.has_value()) {
-    std::stringstream ss(parOpt.value());
-    ss >> result;
-  }
-  return result;
-}
 
 } // namespace o2::quality_control_modules::muon
 

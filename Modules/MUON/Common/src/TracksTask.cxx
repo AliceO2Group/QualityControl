@@ -38,38 +38,6 @@ TracksTask::TracksTask()
 
 TracksTask::~TracksTask() = default;
 
-template <>
-std::string TracksTask::getParameter(std::string parName, const std::string defaultValue, const o2::quality_control::core::Activity& activity)
-{
-  std::string result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName, activity);
-  if (parOpt.has_value()) {
-    result = parOpt.value();
-  }
-  return result;
-}
-
-template <>
-std::string TracksTask::getParameter(std::string parName, const std::string defaultValue)
-{
-  std::string result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName);
-  if (parOpt.has_value()) {
-    result = parOpt.value();
-  }
-  return result;
-}
-
-bool TracksTask::getBooleanParam(const char* paramName) const
-{
-  if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
-    std::string p = param->second;
-    std::transform(p.begin(), p.end(), p.begin(), ::toupper);
-    return p == "TRUE";
-  }
-  return false;
-}
-
 GID::mask_t adaptSource(GID::mask_t src)
 {
   if (src[GID::Source::MFTMCHMID] == 1) {
@@ -97,19 +65,6 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
     TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
   }
 
-  bool fullHistos = getParameter<int>("fullHistos", 0) == 1;
-
-  double maxTracksPerTF = getParameter<double>("maxTracksPerTF", 400);
-  double cutRAbsMin = getParameter<double>("cutRAbsMin", 17.6);
-  double cutRAbsMax = getParameter<double>("cutRAbsMax", 89.5);
-  double cutEtaMin = getParameter<double>("cutEtaMin", -4.0);
-  double cutEtaMax = getParameter<double>("cutEtaMax", -2.5);
-  double cutPtMin = getParameter<double>("cutPtMin", 0.5);
-  double cutChi2Min = getParameter<double>("cutChi2Min", 0);
-  double cutChi2Max = getParameter<double>("cutChi2Max", 1000);
-  double nSigmaPDCA = getParameter<double>("nSigmaPDCA", 6);
-  double diMuonTimeCut = getParameter<double>("diMuonTimeCut", 100) / 1000;
-
   ILOG(Info, Support) << "loading sources" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   auto srcFixed = mSrc;
@@ -132,6 +87,27 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   }
   mDataRequest = std::make_shared<o2::globaltracking::DataRequest>();
   mDataRequest->requestTracks(srcFixed, false);
+}
+
+void TracksTask::createTrackHistos(const Activity& activity)
+{
+  bool fullHistos = getConfigurationParameter<int>(mCustomParameters, "fullHistos", 0, activity) == 1;
+
+  double maxTracksPerTF = getConfigurationParameter<double>(mCustomParameters, "maxTracksPerTF", 400, activity);
+  double cutRAbsMin = getConfigurationParameter<double>(mCustomParameters, "cutRAbsMin", 17.6, activity);
+  double cutRAbsMax = getConfigurationParameter<double>(mCustomParameters, "cutRAbsMax", 89.5, activity);
+  double cutEtaMin = getConfigurationParameter<double>(mCustomParameters, "cutEtaMin", -4.0, activity);
+  double cutEtaMax = getConfigurationParameter<double>(mCustomParameters, "cutEtaMax", -2.5, activity);
+  double cutPtMin = getConfigurationParameter<double>(mCustomParameters, "cutPtMin", 0.5, activity);
+  double cutChi2Min = getConfigurationParameter<double>(mCustomParameters, "cutChi2Min", 0, activity);
+  double cutChi2Max = getConfigurationParameter<double>(mCustomParameters, "cutChi2Max", 1000, activity);
+  double nSigmaPDCA = getConfigurationParameter<double>(mCustomParameters, "nSigmaPDCA", 6, activity);
+  double matchScoreMaxMFT = getConfigurationParameter<double>(mCustomParameters, "matchScoreMaxMFT", 1000, activity);
+  double diMuonTimeCut = getConfigurationParameter<double>(mCustomParameters, "diMuonTimeCut", 100, activity) / 1000;
+
+  int etaBins = getConfigurationParameter<int>(mCustomParameters, "etaBins", 200, activity);
+  int phiBins = getConfigurationParameter<int>(mCustomParameters, "phiBins", 180, activity);
+  int ptBins = getConfigurationParameter<int>(mCustomParameters, "ptBins", 300, activity);
 
   //======================================
   // Track plotters without cuts
@@ -139,7 +115,7 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   auto createPlotter = [&](GID::Source source, std::string path) {
     if (mSrc[source] == 1) {
       ILOG(Info, Devel) << "Creating plotter for path " << path << ENDM;
-      mTrackPlotters[source] = std::make_unique<muon::TrackPlotter>(maxTracksPerTF, source, path, fullHistos);
+      mTrackPlotters[source] = std::make_unique<muon::TrackPlotter>(maxTracksPerTF, etaBins, phiBins, ptBins, source, path, fullHistos);
       mTrackPlotters[source]->publish(getObjectsManager());
     }
   };
@@ -183,6 +159,12 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 
       return true;
     },
+    // MFT-MCH match score
+    [matchScoreMaxMFT](const MuonTrack& t) {
+      if (t.hasMFT() && t.hasMCH() && t.getMatchInfoFwd().getMFTMCHMatchingScore() > matchScoreMaxMFT)
+        return false;
+      return true;
+    },
     // MCH chi2 cut
     [cutChi2Min, cutChi2Max](const MuonTrack& t) { return ((t.getChi2OverNDFMCH() >= cutChi2Min) && (t.getChi2OverNDFMCH() <= cutChi2Max)); }
   };
@@ -195,7 +177,7 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   auto createPlotterWithCuts = [&](GID::Source source, std::string path) {
     if (mSrc[source] == 1) {
       ILOG(Info, Devel) << "Creating plotter for path " << path << ENDM;
-      mTrackPlottersWithCuts[source] = std::make_unique<muon::TrackPlotter>(maxTracksPerTF, source, path, fullHistos);
+      mTrackPlottersWithCuts[source] = std::make_unique<muon::TrackPlotter>(maxTracksPerTF, etaBins, phiBins, ptBins, source, path, fullHistos);
       mTrackPlottersWithCuts[source]->setMuonCuts(muonCuts);
       mTrackPlottersWithCuts[source]->setDiMuonCuts(diMuonCuts);
       mTrackPlottersWithCuts[source]->publish(getObjectsManager());
@@ -208,9 +190,25 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
   createPlotterWithCuts(GID::Source::MFTMCHMID, "MFT-MCH-MID/WithCuts/");
 }
 
+void TracksTask::removeTrackHistos()
+{
+  ILOG(Debug, Devel) << "Un-publishing objects" << ENDM;
+  for (auto& p : mTrackPlotters) {
+    p.second->unpublish(getObjectsManager());
+  }
+  for (auto& p : mTrackPlottersWithCuts) {
+    p.second->unpublish(getObjectsManager());
+  }
+
+  ILOG(Debug, Devel) << "Destroying objects" << ENDM;
+  mTrackPlotters.clear();
+  mTrackPlottersWithCuts.clear();
+}
+
 void TracksTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity : " << activity << ENDM;
+  createTrackHistos(activity);
 }
 
 void TracksTask::startOfCycle()
@@ -294,7 +292,7 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   if (mSrc[GID::MCH] == 1) {
     ILOG(Debug, Devel) << "Debug: MCH requested" << ENDM;
-    if (true || mRecoCont.isTrackSourceLoaded(GID::MCH)) {
+    if (mRecoCont.isTrackSourceLoaded(GID::MCH)) {
       ILOG(Debug, Devel) << "Debug: MCH source loaded" << ENDM;
       mTrackPlotters[GID::MCH]->fillHistograms(mRecoCont);
       mTrackPlottersWithCuts[GID::MCH]->fillHistograms(mRecoCont);
@@ -302,7 +300,7 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   if (mSrc[GID::MCHMID] == 1) {
     ILOG(Debug, Devel) << "Debug: MCHMID requested" << ENDM;
-    if (true || mRecoCont.isMatchSourceLoaded(GID::MCHMID)) {
+    if (mRecoCont.isMatchSourceLoaded(GID::MCHMID)) {
       ILOG(Debug, Devel) << "Debug: MCHMID source loaded" << ENDM;
       mTrackPlotters[GID::MCHMID]->fillHistograms(mRecoCont);
       mTrackPlottersWithCuts[GID::MCHMID]->fillHistograms(mRecoCont);
@@ -310,14 +308,14 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   if (mSrc[GID::MFTMCH] == 1) {
     ILOG(Debug, Devel) << "Debug: MFTMCH requested" << ENDM;
-    if (true || mRecoCont.isTrackSourceLoaded(GID::MFTMCH)) {
+    if (mRecoCont.isTrackSourceLoaded(GID::MFTMCH)) {
       mTrackPlotters[GID::MFTMCH]->fillHistograms(mRecoCont);
       mTrackPlottersWithCuts[GID::MFTMCH]->fillHistograms(mRecoCont);
     }
   }
   if (mSrc[GID::MFTMCHMID] == 1) {
     ILOG(Debug, Devel) << "Debug: MFTMCHMID requested" << ENDM;
-    if (true || mRecoCont.isTrackSourceLoaded(GID::MFTMCH)) {
+    if (mRecoCont.isTrackSourceLoaded(GID::MFTMCH)) {
       mTrackPlotters[GID::MFTMCHMID]->fillHistograms(mRecoCont);
       mTrackPlottersWithCuts[GID::MFTMCHMID]->fillHistograms(mRecoCont);
     }
@@ -338,6 +336,7 @@ void TracksTask::endOfCycle()
 void TracksTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+  removeTrackHistos();
 }
 
 void TracksTask::reset()

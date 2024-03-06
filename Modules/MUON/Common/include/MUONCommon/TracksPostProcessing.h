@@ -44,30 +44,7 @@ namespace o2::quality_control_modules::muon
 
 using namespace o2::quality_control::core;
 using GID = o2::dataformats::GlobalTrackID;
-
-class MatchingEfficiencyPlotterInterface : public HistPlotter
-{
- public:
-  MatchingEfficiencyPlotterInterface() = default;
-  virtual void update(repository::DatabaseInterface& qcdb, Trigger t, std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager) = 0;
-};
-
-template <class HIST>
-class MatchingEfficiencyPlotter : public MatchingEfficiencyPlotterInterface
-{
- public:
-  MatchingEfficiencyPlotter(std::string pathMatched, std::string pathMCH, std::string path, std::string plotName, int rebin);
-
-  void update(repository::DatabaseInterface& qcdb, Trigger t, std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager) override;
-
- private:
-  std::string mPlotPath[2];
-  std::string mPlotName[2];
-  uint64_t mTimestamp[2];
-  std::string mName;
-  std::shared_ptr<HIST> mHistMatchingEff;
-  int mRebin;
-};
+class MatchingEfficiencyPlotterInterface;
 
 /// \brief  A post-processing task which processes and trends MCH digits and produces plots.
 class TracksPostProcessing : public PostProcessingInterface
@@ -83,11 +60,12 @@ class TracksPostProcessing : public PostProcessingInterface
 
  private:
   void createTrackHistos();
+  void removeTrackHistos();
   void updateTrackHistos(Trigger t, repository::DatabaseInterface* qcdb);
 
   std::unique_ptr<TracksPostProcessingConfig> mConfig;
 
-  std::vector<std::unique_ptr<MatchingEfficiencyPlotterInterface>> mMatchingEfficiencyPlotters;
+  std::vector<std::shared_ptr<MatchingEfficiencyPlotterInterface>> mMatchingEfficiencyPlotters;
 };
 
 } // namespace o2::quality_control_modules::muon

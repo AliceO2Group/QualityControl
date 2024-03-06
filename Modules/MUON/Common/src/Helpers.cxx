@@ -19,6 +19,30 @@
 
 namespace o2::quality_control_modules::muon
 {
+template <>
+std::string getConfigurationParameter(o2::quality_control::core::CustomParameters customParameters, std::string parName, const std::string defaultValue)
+{
+  std::string result = defaultValue;
+  auto parOpt = customParameters.atOptional(parName);
+  if (parOpt.has_value()) {
+    result = parOpt.value();
+  }
+  return result;
+}
+
+template <>
+std::string getConfigurationParameter(o2::quality_control::core::CustomParameters customParameters, std::string parName, const std::string defaultValue, const o2::quality_control::core::Activity& activity)
+{
+  auto parOpt = customParameters.atOptional(parName, activity);
+  if (parOpt.has_value()) {
+    std::string result = parOpt.value();
+    return result;
+  }
+  return getConfigurationParameter<std::string>(customParameters, parName, defaultValue);
+}
+
+//_________________________________________________________________________________________
+
 TLine* addHorizontalLine(TH1& histo, double y,
                          int lineColor, int lineStyle,
                          int lineWidth)

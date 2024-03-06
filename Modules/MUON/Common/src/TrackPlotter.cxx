@@ -81,11 +81,16 @@ using namespace o2::dataformats;
 namespace o2::quality_control_modules::muon
 {
 
-TrackPlotter::TrackPlotter(int maxTracksPerTF, GID::Source source, std::string path, bool fullHistos) : mSrc(source),
-                                                                                                        mPath(path),
-                                                                                                        mFullHistos(fullHistos)
+TrackPlotter::TrackPlotter(int maxTracksPerTF,
+                           int etaBins, int phiBins, int ptBins,
+                           GID::Source source,
+                           std::string path,
+                           bool fullHistos)
+  : mSrc(source),
+    mPath(path),
+    mFullHistos(fullHistos)
 {
-  createTrackHistos(maxTracksPerTF);
+  createTrackHistos(maxTracksPerTF, etaBins, phiBins, ptBins);
   createTrackPairHistos();
 }
 
@@ -130,7 +135,7 @@ std::unique_ptr<TH2DRatio> TrackPlotter::createHisto(const char* name, const cha
   return h;
 }
 
-void TrackPlotter::createTrackHistos(int maxTracksPerTF)
+void TrackPlotter::createTrackHistos(int maxTracksPerTF, int etaBins, int phiBins, int ptBins)
 {
   mNofTracksPerTF[0] = createHisto<TH1D>(TString::Format("%sPositive/TracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame (+);Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, true, true, "logy");
   mNofTracksPerTF[1] = createHisto<TH1D>(TString::Format("%sNegative/TracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame (-);Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, true, true, "logy");
@@ -148,35 +153,35 @@ void TrackPlotter::createTrackHistos(int maxTracksPerTF)
   mTrackPDCA[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackPDCA", mPath.c_str()), "Track p#timesDCA (-);p#timesDCA (GeVcm/c);entries/s", 5000, 0, 5000, true, false, "hist");
   mTrackPDCA[2] = createHisto<TH1DRatio>(TString::Format("%sTrackPDCA", mPath.c_str()), "Track p#timesDCA;p#timesDCA (GeVcm/c);entries/s", 5000, 0, 5000, false, false, "hist");
 
-  mTrackPt[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackPt", mPath.c_str()), "Track p_{T} (+);p_{T} (GeV/c);entries/s", 300, 0, 30, true, false, "hist logy");
-  mTrackPt[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackPt", mPath.c_str()), "Track p_{T} (-);p_{T} (GeV/c);entries/s", 300, 0, 30, true, false, "hist logy");
-  mTrackPt[2] = createHisto<TH1DRatio>(TString::Format("%sTrackPt", mPath.c_str()), "Track p_{T};p_{T} (GeV/c);entries/s", 300, 0, 30, false, false, "hist logy");
+  mTrackPt[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackPt", mPath.c_str()), "Track p_{T} (+);p_{T} (GeV/c);entries/s", ptBins, 0, 30, true, false, "hist logy");
+  mTrackPt[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackPt", mPath.c_str()), "Track p_{T} (-);p_{T} (GeV/c);entries/s", ptBins, 0, 30, true, false, "hist logy");
+  mTrackPt[2] = createHisto<TH1DRatio>(TString::Format("%sTrackPt", mPath.c_str()), "Track p_{T};p_{T} (GeV/c);entries/s", ptBins, 0, 30, false, false, "hist logy");
 
   mTrackQOverPt = createHisto<TH1DRatio>(TString::Format("%sTrackQOverPt", mPath.c_str()), "Track q/p_{T};q/p_{T} (GeV/c)^{-1};entries/s", 200, -10, 10, false, false, "hist logy");
 
-  mTrackEta[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackEta", mPath.c_str()), "Track #eta (+);#eta;entries/s", 200, -4.5, -2, true, false, "hist");
-  mTrackEta[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackEta", mPath.c_str()), "Track #eta (-);#eta;entries/s", 200, -4.5, -2, true, false, "hist");
-  mTrackEta[2] = createHisto<TH1DRatio>(TString::Format("%sTrackEta", mPath.c_str()), "Track #eta;#eta;entries/s", 200, -4.5, -2, false, false, "hist");
+  mTrackEta[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackEta", mPath.c_str()), "Track #eta (+);#eta;entries/s", etaBins, -4.5, -2, true, false, "hist");
+  mTrackEta[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackEta", mPath.c_str()), "Track #eta (-);#eta;entries/s", etaBins, -4.5, -2, true, false, "hist");
+  mTrackEta[2] = createHisto<TH1DRatio>(TString::Format("%sTrackEta", mPath.c_str()), "Track #eta;#eta;entries/s", etaBins, -4.5, -2, false, false, "hist");
 
-  mTrackPhi[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackPhi", mPath.c_str()), "Track #phi (+);#phi (deg);entries/s", 360, -180, 180, true, false, "hist");
-  mTrackPhi[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackPhi", mPath.c_str()), "Track #phi (-);#phi (deg);entries/s", 360, -180, 180, true, false, "hist");
-  mTrackPhi[2] = createHisto<TH1DRatio>(TString::Format("%sTrackPhi", mPath.c_str()), "Track #phi;#phi (deg);entries/s", 360, -180, 180, false, false, "hist");
+  mTrackPhi[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackPhi", mPath.c_str()), "Track #phi (+);#phi (deg);entries/s", phiBins, -180, 180, true, false, "hist");
+  mTrackPhi[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackPhi", mPath.c_str()), "Track #phi (-);#phi (deg);entries/s", phiBins, -180, 180, true, false, "hist");
+  mTrackPhi[2] = createHisto<TH1DRatio>(TString::Format("%sTrackPhi", mPath.c_str()), "Track #phi;#phi (deg);entries/s", phiBins, -180, 180, false, false, "hist");
 
   mTrackRAbs[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackRAbs", mPath.c_str()), "Track R_{abs} (+);R_{abs} (cm);entries/s", 1000, 0, 100, true, false, "hist");
   mTrackRAbs[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackRAbs", mPath.c_str()), "Track R_{abs} (-);R_{abs} (cm);entries/s", 1000, 0, 100, true, false, "hist");
   mTrackRAbs[2] = createHisto<TH1DRatio>(TString::Format("%sTrackRAbs", mPath.c_str()), "Track R_{abs};R_{abs} (cm);entries/s", 1000, 0, 100, false, false, "hist");
 
-  mTrackEtaPhi[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackEtaPhi", mPath.c_str()), "Track #phi vs #eta (+);#eta;#phi", 50, -4.5, -2, 40, -180, 180, true, false, "colz");
-  mTrackEtaPhi[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackEtaPhi", mPath.c_str()), "Track #phi vs #eta (-);#eta;#phi", 50, -4.5, -2, 40, -180, 180, true, false, "colz");
-  mTrackEtaPhi[2] = createHisto<TH2DRatio>(TString::Format("%sTrackEtaPhi", mPath.c_str()), "Track #phi vs #eta;#eta;#phi", 50, -4.5, -2, 40, -180, 180, false, false, "colz");
+  mTrackEtaPhi[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackEtaPhi", mPath.c_str()), "Track #phi vs #eta (+);#eta;#phi", etaBins / 5, -4.5, -2, phiBins / 5, -180, 180, true, false, "colz");
+  mTrackEtaPhi[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackEtaPhi", mPath.c_str()), "Track #phi vs #eta (-);#eta;#phi", etaBins / 5, -4.5, -2, phiBins / 5, -180, 180, true, false, "colz");
+  mTrackEtaPhi[2] = createHisto<TH2DRatio>(TString::Format("%sTrackEtaPhi", mPath.c_str()), "Track #phi vs #eta;#eta;#phi", etaBins / 5, -4.5, -2, phiBins / 5, -180, 180, false, false, "colz");
 
-  mTrackEtaPt[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackEtaPt", mPath.c_str()), "Track p_{T} vs #eta (+);#eta;p_{T} (GeV/c)", 50, -4.5, -2, 50, 0, 30, true, false, "colz");
-  mTrackEtaPt[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackEtaPt", mPath.c_str()), "Track p_{T} vs #eta (-);#eta;p_{T} (GeV/c)", 50, -4.5, -2, 50, 0, 30, true, false, "colz");
-  mTrackEtaPt[2] = createHisto<TH2DRatio>(TString::Format("%sTrackEtaPt", mPath.c_str()), "Track p_{T} vs #eta;#eta;p_{T} (GeV/c)", 50, -4.5, -2, 50, 0, 30, false, false, "colz");
+  mTrackEtaPt[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackEtaPt", mPath.c_str()), "Track p_{T} vs #eta (+);#eta;p_{T} (GeV/c)", etaBins / 5, -4.5, -2, ptBins / 5, 0, 30, true, false, "colz");
+  mTrackEtaPt[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackEtaPt", mPath.c_str()), "Track p_{T} vs #eta (-);#eta;p_{T} (GeV/c)", etaBins / 5, -4.5, -2, ptBins / 5, 0, 30, true, false, "colz");
+  mTrackEtaPt[2] = createHisto<TH2DRatio>(TString::Format("%sTrackEtaPt", mPath.c_str()), "Track p_{T} vs #eta;#eta;p_{T} (GeV/c)", etaBins / 5, -4.5, -2, ptBins / 5, 0, 30, false, false, "colz");
 
-  mTrackPhiPt[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackPhiPt", mPath.c_str()), "Track p_{T} vs #phi (+);#phi;p_{T} (GeV/c)", 40, -180, 180, 50, 0, 30, true, false, "colz");
-  mTrackPhiPt[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackPhiPt", mPath.c_str()), "Track p_{T} vs #phi (-);#phi;p_{T} (GeV/c)", 40, -180, 180, 50, 0, 30, true, false, "colz");
-  mTrackPhiPt[2] = createHisto<TH2DRatio>(TString::Format("%sTrackPhiPt", mPath.c_str()), "Track p_{T} vs #phi;#phi;p_{T} (GeV/c)", 40, -180, 180, 50, 0, 30, false, false, "colz");
+  mTrackPhiPt[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackPhiPt", mPath.c_str()), "Track p_{T} vs #phi (+);#phi;p_{T} (GeV/c)", phiBins / 5, -180, 180, ptBins / 5, 0, 30, true, false, "colz");
+  mTrackPhiPt[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackPhiPt", mPath.c_str()), "Track p_{T} vs #phi (-);#phi;p_{T} (GeV/c)", phiBins / 5, -180, 180, ptBins / 5, 0, 30, true, false, "colz");
+  mTrackPhiPt[2] = createHisto<TH2DRatio>(TString::Format("%sTrackPhiPt", mPath.c_str()), "Track p_{T} vs #phi;#phi;p_{T} (GeV/c)", phiBins / 5, -180, 180, ptBins / 5, 0, 30, false, false, "colz");
 
   mTrackBC = createHisto<TH1DRatio>(TString::Format("%sTrackBC", mPath.c_str()), "Track BC;BC;entries/s", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, false, false, "hist");
 
@@ -185,29 +190,29 @@ void TrackPlotter::createTrackHistos(int maxTracksPerTF)
     mMatchChi2MFTMCH = createHisto<TH1D>(TString::Format("%sMatchChi2MFTMCH", mPath.c_str()), "Match #chi^{2} MFT-MCH;#chi^{2}", 1000, 0, 100, false, false, "hist");
     mMatchNMFTCandidates = createHisto<TH1D>(TString::Format("%sMatchNMFTCandidates", mPath.c_str()), "MFT Candidates;candidates", 1000, 0, 1000, false, false, "hist");
 
-    mTrackEtaCorr[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackEtaCorr", mPath.c_str()), "Track #eta - GLO vs MCH (+);#eta^{MCH};#eta^{GLO}", 50, -4.5, -2, 50, -4.5, -2, true, false, "colz");
-    mTrackEtaCorr[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackEtaCorr", mPath.c_str()), "Track #eta - GLO vs MCH (-);#eta^{MCH};#eta^{GLO}", 50, -4.5, -2, 50, -4.5, -2, true, false, "colz");
-    mTrackEtaCorr[2] = createHisto<TH2DRatio>(TString::Format("%sTrackEtaCorr", mPath.c_str()), "Track #eta - GLO vs MCH;#eta^{MCH};#eta^{GLO}", 50, -4.5, -2, 50, -4.5, -2, false, false, "colz");
+    mTrackEtaCorr[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackEtaCorr", mPath.c_str()), "Track #eta - GLO vs MCH (+);#eta^{MCH};#eta^{GLO}", etaBins / 5, -4.5, -2, etaBins / 5, -4.5, -2, true, false, "colz");
+    mTrackEtaCorr[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackEtaCorr", mPath.c_str()), "Track #eta - GLO vs MCH (-);#eta^{MCH};#eta^{GLO}", etaBins / 5, -4.5, -2, etaBins / 5, -4.5, -2, true, false, "colz");
+    mTrackEtaCorr[2] = createHisto<TH2DRatio>(TString::Format("%sTrackEtaCorr", mPath.c_str()), "Track #eta - GLO vs MCH;#eta^{MCH};#eta^{GLO}", etaBins / 5, -4.5, -2, etaBins / 5, -4.5, -2, false, false, "colz");
 
-    mTrackDEtaVsEta[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackDEtaVsEta", mPath.c_str()), "Track #eta^{GLO}-#eta^{MCH} vs #eta^{MCH} (+);#eta^{MCH};#eta^{GLO}-#eta^{MCH}", 50, -4.5, -2, 200, -1, 1, true, false, "colz");
-    mTrackDEtaVsEta[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackDEtaVsEta", mPath.c_str()), "Track #eta^{GLO}-#eta^{MCH} vs #eta^{MCH} (-);#eta^{MCH};#eta^{GLO}-#eta^{MCH}", 50, -4.5, -2, 200, -1, 1, true, false, "colz");
-    mTrackDEtaVsEta[2] = createHisto<TH2DRatio>(TString::Format("%sTrackDEtaVsEta", mPath.c_str()), "Track #eta^{GLO}-#eta^{MCH} vs #eta^{MCH};#eta^{MCH};#eta^{GLO}-#eta^{MCH}", 50, -4.5, -2, 200, -1, 1, false, false, "colz");
+    mTrackDEtaVsEta[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackDEtaVsEta", mPath.c_str()), "Track #eta^{GLO}-#eta^{MCH} vs #eta^{MCH} (+);#eta^{MCH};#eta^{GLO}-#eta^{MCH}", etaBins / 5, -4.5, -2, 200, -1, 1, true, false, "colz");
+    mTrackDEtaVsEta[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackDEtaVsEta", mPath.c_str()), "Track #eta^{GLO}-#eta^{MCH} vs #eta^{MCH} (-);#eta^{MCH};#eta^{GLO}-#eta^{MCH}", etaBins / 5, -4.5, -2, 200, -1, 1, true, false, "colz");
+    mTrackDEtaVsEta[2] = createHisto<TH2DRatio>(TString::Format("%sTrackDEtaVsEta", mPath.c_str()), "Track #eta^{GLO}-#eta^{MCH} vs #eta^{MCH};#eta^{MCH};#eta^{GLO}-#eta^{MCH}", etaBins / 5, -4.5, -2, 200, -1, 1, false, false, "colz");
 
-    mTrackPhiCorr[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackPhiCorr", mPath.c_str()), "Track #phi - GLO vs MCH (+);#phi^{MCH};#phi^{GLO}", 40, -180, 180, 40, -180, 180, true, false, "colz");
-    mTrackPhiCorr[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackPhiCorr", mPath.c_str()), "Track #phi - GLO vs MCH (-);#phi^{MCH};#phi^{GLO}", 40, -180, 180, 40, -180, 180, true, false, "colz");
-    mTrackPhiCorr[2] = createHisto<TH2DRatio>(TString::Format("%sTrackPhiCorr", mPath.c_str()), "Track #phi - GLO vs MCH;#phi^{MCH};#phi^{GLO}", 40, -180, 180, 40, -180, 180, false, false, "colz");
+    mTrackPhiCorr[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackPhiCorr", mPath.c_str()), "Track #phi - GLO vs MCH (+);#phi^{MCH};#phi^{GLO}", phiBins / 5, -180, 180, phiBins / 5, -180, 180, true, false, "colz");
+    mTrackPhiCorr[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackPhiCorr", mPath.c_str()), "Track #phi - GLO vs MCH (-);#phi^{MCH};#phi^{GLO}", phiBins / 5, -180, 180, phiBins / 5, -180, 180, true, false, "colz");
+    mTrackPhiCorr[2] = createHisto<TH2DRatio>(TString::Format("%sTrackPhiCorr", mPath.c_str()), "Track #phi - GLO vs MCH;#phi^{MCH};#phi^{GLO}", phiBins / 5, -180, 180, phiBins / 5, -180, 180, false, false, "colz");
 
-    mTrackDPhiVsPhi[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackDPhiVsPhi", mPath.c_str()), "Track #phi^{GLO}-#phi^{MCH} vs #phi^{MCH} (+);#phi^{MCH};#phi^{GLO}-#phi^{MCH}", 40, -180, 180, 200, -100, 100, true, false, "colz");
-    mTrackDPhiVsPhi[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackDPhiVsPhi", mPath.c_str()), "Track #phi^{GLO}-#phi^{MCH} vs #phi^{MCH} (-);#phi^{MCH};#phi^{GLO}-#phi^{MCH}", 40, -180, 180, 200, -100, 100, true, false, "colz");
-    mTrackDPhiVsPhi[2] = createHisto<TH2DRatio>(TString::Format("%sTrackDPhiVsPhi", mPath.c_str()), "Track #phi^{GLO}-#phi^{MCH} vs #phi^{MCH};#phi^{MCH};#phi^{GLO}-#phi^{MCH}", 40, -180, 180, 200, -100, 100, false, false, "colz");
+    mTrackDPhiVsPhi[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackDPhiVsPhi", mPath.c_str()), "Track #phi^{GLO}-#phi^{MCH} vs #phi^{MCH} (+);#phi^{MCH};#phi^{GLO}-#phi^{MCH}", phiBins / 5, -180, 180, 200, -100, 100, true, false, "colz");
+    mTrackDPhiVsPhi[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackDPhiVsPhi", mPath.c_str()), "Track #phi^{GLO}-#phi^{MCH} vs #phi^{MCH} (-);#phi^{MCH};#phi^{GLO}-#phi^{MCH}", phiBins / 5, -180, 180, 200, -100, 100, true, false, "colz");
+    mTrackDPhiVsPhi[2] = createHisto<TH2DRatio>(TString::Format("%sTrackDPhiVsPhi", mPath.c_str()), "Track #phi^{GLO}-#phi^{MCH} vs #phi^{MCH};#phi^{MCH};#phi^{GLO}-#phi^{MCH}", phiBins / 5, -180, 180, 200, -100, 100, false, false, "colz");
 
-    mTrackPtCorr[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackPtCorr", mPath.c_str()), "Track p_{T} - GLO vs MCH (+);p_{T}^{MCH};p_{T}^{GLO}", 50, 0, 30, 50, 0, 30, true, false, "colz");
-    mTrackPtCorr[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackPtCorr", mPath.c_str()), "Track p_{T} - GLO vs MCH (-);p_{T}^{MCH};p_{T}^{GLO}", 50, 0, 30, 50, 0, 30, true, false, "colz");
-    mTrackPtCorr[2] = createHisto<TH2DRatio>(TString::Format("%sTrackPtCorr", mPath.c_str()), "Track p_{T} - GLO vs MCH;p_{T}^{MCH};p_{T}^{GLO}", 50, 0, 30, 50, 0, 30, false, false, "colz");
+    mTrackPtCorr[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackPtCorr", mPath.c_str()), "Track p_{T} - GLO vs MCH (+);p_{T}^{MCH};p_{T}^{GLO}", ptBins / 5, 0, 30, ptBins / 5, 0, 30, true, false, "colz");
+    mTrackPtCorr[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackPtCorr", mPath.c_str()), "Track p_{T} - GLO vs MCH (-);p_{T}^{MCH};p_{T}^{GLO}", ptBins / 5, 0, 30, ptBins / 5, 0, 30, true, false, "colz");
+    mTrackPtCorr[2] = createHisto<TH2DRatio>(TString::Format("%sTrackPtCorr", mPath.c_str()), "Track p_{T} - GLO vs MCH;p_{T}^{MCH};p_{T}^{GLO}", ptBins / 5, 0, 30, ptBins / 5, 0, 30, false, false, "colz");
 
-    mTrackDPtVsPt[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackDPtVsPt", mPath.c_str()), "Track p_{T}^{GLO}-p_{T}^{MCH} vs p_{T}^{MCH} (+);p_{T}^{MCH};p_{T}^{GLO}-p_{T}^{MCH}", 50, 0, 30, 200, -10, 10, true, false, "colz");
-    mTrackDPtVsPt[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackDPtVsPt", mPath.c_str()), "Track p_{T}^{GLO}-p_{T}^{MCH} vs p_{T}^{MCH} (-);p_{T}^{MCH};p_{T}^{GLO}-p_{T}^{MCH}", 50, 0, 30, 200, -10, 10, true, false, "colz");
-    mTrackDPtVsPt[2] = createHisto<TH2DRatio>(TString::Format("%sTrackDPtVsPt", mPath.c_str()), "Track p_{T}^{GLO}-p_{T}^{MCH} vs p_{T}^{MCH};p_{T}^{MCH};p_{T}^{GLO}-p_{T}^{MCH}", 50, 0, 30, 200, -10, 10, false, false, "colz");
+    mTrackDPtVsPt[0] = createHisto<TH2DRatio>(TString::Format("%sPositive/TrackDPtVsPt", mPath.c_str()), "Track p_{T}^{GLO}-p_{T}^{MCH} vs p_{T}^{MCH} (+);p_{T}^{MCH};p_{T}^{GLO}-p_{T}^{MCH}", ptBins / 5, 0, 30, 200, -10, 10, true, false, "colz");
+    mTrackDPtVsPt[1] = createHisto<TH2DRatio>(TString::Format("%sNegative/TrackDPtVsPt", mPath.c_str()), "Track p_{T}^{GLO}-p_{T}^{MCH} vs p_{T}^{MCH} (-);p_{T}^{MCH};p_{T}^{GLO}-p_{T}^{MCH}", ptBins / 5, 0, 30, 200, -10, 10, true, false, "colz");
+    mTrackDPtVsPt[2] = createHisto<TH2DRatio>(TString::Format("%sTrackDPtVsPt", mPath.c_str()), "Track p_{T}^{GLO}-p_{T}^{MCH} vs p_{T}^{MCH};p_{T}^{MCH};p_{T}^{GLO}-p_{T}^{MCH}", ptBins / 5, 0, 30, 200, -10, 10, false, false, "colz");
   }
 
   if (mSrc == GID::MCHMID || mSrc == GID::MFTMCHMID) {

@@ -31,6 +31,9 @@
 using namespace o2::quality_control_modules::muon;
 using namespace o2::quality_control::repository;
 
+namespace o2::quality_control_modules::muon
+{
+
 //_________________________________________________________________________________________
 // Helper function for retrieving a MonitorObject from the QCDB, in the form of a std::pair<std::shared_ptr<MonitorObject>, bool>
 // A non-null MO is returned in the first element of the pair if the MO is found in the QCDB
@@ -83,14 +86,34 @@ T* getPlotFromMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
   // Get ROOT object
   TObject* obj = mo ? mo->getObject() : nullptr;
-  if (!obj) {
-    return nullptr;
-  }
-
-  // Get histogram object
-  T* h = dynamic_cast<T*>(obj);
-  return h;
+  return dynamic_cast<T*>(obj);
 }
+
+class MatchingEfficiencyPlotterInterface : public HistPlotter
+{
+ public:
+  MatchingEfficiencyPlotterInterface() = default;
+  ~MatchingEfficiencyPlotterInterface() = default;
+  virtual void update(repository::DatabaseInterface& qcdb, Trigger t, std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager) = 0;
+};
+
+template <class HIST>
+class MatchingEfficiencyPlotter : public MatchingEfficiencyPlotterInterface
+{
+ public:
+  MatchingEfficiencyPlotter(std::string pathMatched, std::string pathMCH, std::string path, std::string plotName, int rebin);
+  ~MatchingEfficiencyPlotter() = default;
+
+  void update(repository::DatabaseInterface& qcdb, Trigger t, std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager) override;
+
+ private:
+  std::string mPlotPath[2];
+  std::string mPlotName[2];
+  uint64_t mTimestamp[2];
+  std::string mName;
+  std::shared_ptr<HIST> mHistMatchingEff;
+  int mRebin;
+};
 
 template <class HIST>
 MatchingEfficiencyPlotter<HIST>::MatchingEfficiencyPlotter(std::string pathMatched, std::string pathMCH, std::string path, std::string plotName, int rebin)
@@ -134,9 +157,11 @@ void MatchingEfficiencyPlotter<HIST>::update(repository::DatabaseInterface& qcdb
     if (!h) {
       return;
     }
-    h->Rebin(mRebin);
+
+    if (mRebin != 1) {
+      h->Rebin(mRebin);
+    }
     mHistMatchingEff.reset(h);
-    mHistMatchingEff->Sumw2();
     mHistMatchingEff->SetStats(0);
     mHistMatchingEff->SetNameTitle(name, title);
     mHistMatchingEff->SetMarkerSize(0.25);
@@ -173,7 +198,7 @@ void TracksPostProcessing::createTrackHistos()
     auto pathMatched = dataSource.plotsPath;
     auto pathRef = dataSource.refsPath;
     auto path = dataSource.outputPath;
-    mMatchingEfficiencyPlotters.emplace_back(std::make_unique<MatchingEfficiencyPlotter<TH1>>(dataSource.plotsPath, dataSource.refsPath, dataSource.outputPath, dataSource.name, dataSource.rebin));
+    mMatchingEfficiencyPlotters.emplace_back(std::make_shared<MatchingEfficiencyPlotter<TH1>>(dataSource.plotsPath, dataSource.refsPath, dataSource.outputPath, dataSource.name, dataSource.rebin));
   }
 
   for (auto& plot : mMatchingEfficiencyPlotters) {
@@ -183,17 +208,27 @@ void TracksPostProcessing::createTrackHistos()
 
 //_________________________________________________________________________________________
 
+void TracksPostProcessing::removeTrackHistos()
+{
+  for (auto& plot : mMatchingEfficiencyPlotters) {
+    plot->unpublish(getObjectsManager());
+  }
+  mMatchingEfficiencyPlotters.clear();
+}
+
+//_________________________________________________________________________________________
+
 void TracksPostProcessing::configure(const boost::property_tree::ptree& config)
 {
   mConfig = std::make_unique<TracksPostProcessingConfig>(getID(), config);
-
-  createTrackHistos();
 }
 
 //_________________________________________________________________________________________
 
 void TracksPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 {
+  removeTrackHistos();
+  createTrackHistos();
 }
 
 //_________________________________________________________________________________________
@@ -219,3 +254,5 @@ void TracksPostProcessing::update(Trigger t, framework::ServiceRegistryRef servi
 void TracksPostProcessing::finalize(Trigger t, framework::ServiceRegistryRef)
 {
 }
+
+} // namespace o2::quality_control_modules::muon

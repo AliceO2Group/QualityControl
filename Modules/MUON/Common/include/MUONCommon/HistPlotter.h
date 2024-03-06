@@ -24,7 +24,7 @@ class HistPlotter
 {
  public:
   HistPlotter() = default;
-  ~HistPlotter() = default;
+  virtual ~HistPlotter() = default;
 
  public:
   struct HistInfo {

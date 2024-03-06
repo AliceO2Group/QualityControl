@@ -24,7 +24,7 @@
 namespace o2::quality_control_modules::muon
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \brief  Check whether the matching efficiency is within some configurable limits
 ///
 /// \author Andrea Ferrero
 class MatchingEfficiencyCheck : public o2::quality_control::checker::CheckInterface
@@ -46,11 +46,6 @@ class MatchingEfficiencyCheck : public o2::quality_control::checker::CheckInterf
   ClassDefOverride(MatchingEfficiencyCheck, 1);
 
  private:
-  template <class T>
-  T getParameter(std::string parName, const T defaultValue, const o2::quality_control::core::Activity& activity);
-  template <class T>
-  T getParameter(std::string parName, const T defaultValue);
-
   void initRange(std::string key);
   std::optional<std::pair<double, double>> getRange(std::string key);
 
@@ -59,30 +54,6 @@ class MatchingEfficiencyCheck : public o2::quality_control::checker::CheckInterf
   std::map<std::string, std::vector<std::pair<double, double>>> mIntervals;
   std::map<std::string, Quality> mQualities;
 };
-
-template <class T>
-T MatchingEfficiencyCheck::getParameter(std::string parName, const T defaultValue, const o2::quality_control::core::Activity& activity)
-{
-  T result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName, activity);
-  if (parOpt.has_value()) {
-    std::stringstream ss(parOpt.value());
-    ss >> result;
-  }
-  return result;
-}
-
-template <class T>
-T MatchingEfficiencyCheck::getParameter(std::string parName, const T defaultValue)
-{
-  T result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName);
-  if (parOpt.has_value()) {
-    std::stringstream ss(parOpt.value());
-    ss >> result;
-  }
-  return result;
-}
 
 } // namespace o2::quality_control_modules::muon
 

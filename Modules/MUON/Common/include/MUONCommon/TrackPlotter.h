@@ -30,6 +30,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 using GID = o2::dataformats::GlobalTrackID;
 
@@ -46,7 +47,7 @@ class TrackPlotter : public HistPlotter
  public:
   static constexpr Double_t sLastMFTPlaneZ = o2::mft::constants::mft::LayerZCoordinate()[9];
 
-  TrackPlotter(int maxTracksPerTF, GID::Source source, std::string path, bool fullHistos = false);
+  TrackPlotter(int maxTracksPerTF, int etaBins, int phiBins, int ptBins, GID::Source source, std::string path, bool fullHistos = false);
   ~TrackPlotter() = default;
 
  public:
@@ -65,7 +66,7 @@ class TrackPlotter : public HistPlotter
 
  private:
   /** create histograms related to tracks */
-  void createTrackHistos(int maxTracksPerTF);
+  void createTrackHistos(int maxTracksPerTF, int etaBins, int phiBins, int ptBins);
   /** create histograms related to track pairs */
   void createTrackPairHistos();
 

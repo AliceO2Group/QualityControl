@@ -15,36 +15,16 @@
 ///
 
 #include "MUONCommon/MatchingEfficiencyCheck.h"
+#include "MUONCommon/Helpers.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include <DataFormatsQualityControl/FlagReasons.h>
+#include <CommonUtils/StringUtils.h>
 #include <TH1.h>
 #include <TLine.h>
 
 namespace o2::quality_control_modules::muon
 {
-
-template <>
-std::string MatchingEfficiencyCheck::getParameter(std::string parName, const std::string defaultValue, const o2::quality_control::core::Activity& activity)
-{
-  std::string result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName, activity);
-  if (parOpt.has_value()) {
-    result = parOpt.value();
-  }
-  return result;
-}
-
-template <>
-std::string MatchingEfficiencyCheck::getParameter(std::string parName, const std::string defaultValue)
-{
-  std::string result = defaultValue;
-  auto parOpt = mCustomParameters.atOptional(parName);
-  if (parOpt.has_value()) {
-    result = parOpt.value();
-  }
-  return result;
-}
-
 void MatchingEfficiencyCheck::configure() {}
 
 void MatchingEfficiencyCheck::startOfActivity(const Activity& activity)
@@ -66,20 +46,6 @@ static std::string getBaseName(std::string name)
   return ((pos < std::string::npos) ? name.substr(pos + 1) : name);
 }
 
-static std::vector<std::string> getTokens(std::string str, std::string sep)
-{
-  std::vector<std::string> result;
-  size_t pos = 0;
-  while (pos < str.size()) {
-    size_t pos2 = str.find(sep, pos);
-    size_t count = pos2 - pos;
-    auto token = str.substr(pos, count);
-    pos = (pos2 == std::string::npos) ? pos2 : pos2 + 1;
-    result.push_back(token);
-  }
-  return result;
-}
-
 void MatchingEfficiencyCheck::initRange(std::string key)
 {
   // Get acceptable range for this histogram
@@ -89,14 +55,14 @@ void MatchingEfficiencyCheck::initRange(std::string key)
   }
 
   std::string parKey = std::string("range:") + key;
-  std::string parValue = getParameter<std::string>(parKey, "", mActivity);
+  std::string parValue = getConfigurationParameter<std::string>(mCustomParameters, parKey, "", mActivity);
 
-  auto tokens = getTokens(parValue, ":");
+  auto tokens = o2::utils::Str::tokenize(parValue, ':', false, true);
   if (tokens.empty()) {
     return;
   }
 
-  auto range = getTokens(tokens[0], ",");
+  auto range = o2::utils::Str::tokenize(tokens[0], ',', false, true);
   if (range.size() == 2) {
     double min = std::stod(range[0]);
     double max = std::stod(range[1]);
@@ -106,7 +72,7 @@ void MatchingEfficiencyCheck::initRange(std::string key)
   if (tokens.size() > 1) {
     std::vector<std::pair<double, double>> intervals;
     for (size_t ti = 1; ti < tokens.size(); ti++) {
-      auto interval = getTokens(tokens[ti], ",");
+      auto interval = o2::utils::Str::tokenize(tokens[ti], ',', false, true);
       if (interval.size() == 2) {
         double xmin = std::stod(interval[0]);
         double xmax = std::stod(interval[1]);
@@ -182,6 +148,7 @@ Quality MatchingEfficiencyCheck::check(std::map<std::string, std::shared_ptr<Mon
       for (int bin = i.first; bin <= i.second; bin++) {
         if (hist->GetBinContent(bin) < range->first || hist->GetBinContent(bin) > range->second) {
           mQualities[moName] = Quality::Bad;
+          mQualities[moName].addReason(o2::quality_control::FlagReasonFactory::BadTracking(), "Matching efficiency not in the expected range");
           break;
         }
       }
