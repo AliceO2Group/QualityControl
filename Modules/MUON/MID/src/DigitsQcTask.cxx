@@ -43,6 +43,15 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mROFTimeDiff->SetOption("colz");
   getObjectsManager()->startPublishing(mROFTimeDiff.get());
 
+  mNbLBEmpty = std::make_unique<TH1F>("NbLBEmpty", "NbLocalBoardEmpty", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbLBEmpty.get());
+
+  mNbLBHighRate = std::make_unique<TH1F>("NbLBHighRate", "NbLocalBoardHighRate", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mNbLBHighRate.get());
+
+  mLBHighRate = std::make_unique<TH1F>("LBHighRate", "LocalBoardHigherRate", 1, 0, 1.);
+  getObjectsManager()->startPublishing(mLBHighRate.get());
+
   std::array<string, 4> chId{ "11", "12", "21", "22" };
 
   for (size_t ich = 0; ich < 5; ++ich) {
@@ -102,6 +111,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(const Activity& /*activity*/)
 {
+  reset();
 }
 
 void DigitsQcTask::startOfCycle()
@@ -167,6 +177,7 @@ void DigitsQcTask::endOfCycle()
 
 void DigitsQcTask::endOfActivity(const Activity& /*activity*/)
 {
+  reset();
 }
 
 void DigitsQcTask::resetDisplayHistos()
@@ -188,6 +199,9 @@ void DigitsQcTask::reset()
 
   mNbDigitTF->Reset();
   mROFTimeDiff->Reset();
+  mNbLBEmpty->Reset();
+  mNbLBHighRate->Reset();
+  mLBHighRate->Reset();
 
   for (auto& histo : mMultHitB) {
     histo->Reset();

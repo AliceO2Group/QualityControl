@@ -120,14 +120,20 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   for (auto& item : *moMap) {
     if (item.second->getName() == "LocalBoardsMap") {
       if (mHistoHelper.getNTFs() > 0) {
-        int nEmptyLB = 0;
-        int nBadLB = 0;
+        nEmptyLB = 0;
+        nBadLB = 0;
+        maxVal = 0;
+        minVal = 1000;
         auto histo = static_cast<TH2F*>(item.second->getObject());
         mHistoHelper.normalizeHistoTokHz(histo);
         for (int bx = 1; bx < 15; bx++) {
           for (int by = 1; by < 37; by++) {
             if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
               double val = histo->GetBinContent(bx, by);
+              if (val > maxVal)
+                maxVal = val;
+              if (val < minVal)
+                minVal = val;
               if (val == 0) {
                 nEmptyLB++;
               } else if (val > mLocalBoardThreshold) {
@@ -158,6 +164,22 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         }
         mQualityMap[item.second->getName()] = qual;
       } // if mNTFInSeconds > 0.
+    }
+    if (item.second->getName() == "NbLBEmpty") {
+      auto histo = static_cast<TH1F*>(item.second->getObject());
+      histo->SetBins(1, nEmptyLB - 0.5, nEmptyLB + 0.5);
+      histo->Fill(nEmptyLB);
+    }
+    if (item.second->getName() == "NbLBHighRate") {
+      auto histo = static_cast<TH1F*>(item.second->getObject());
+      histo->SetBins(1, nBadLB - 0.5, nBadLB + 0.5);
+      histo->Fill(nBadLB);
+      histo->SetBinContent(1, nBadLB);
+    }
+    if (item.second->getName() == "LBHighRate") {
+      auto histo = static_cast<TH1F*>(item.second->getObject());
+      histo->SetBins(1, maxVal - 0.5, maxVal + 0.5);
+      histo->Fill(maxVal);
     }
   }
   return result;
