@@ -30,12 +30,6 @@ using GID = o2::dataformats::GlobalTrackID;
 class TracksTask /*final*/ : public TaskInterface
 {
  public:
-  enum matchType : int8_t { MCH = 0,
-                            MCHMID,
-                            MFTMCH,
-                            MFTMCHMID,
-                            SIZE };
-
   TracksTask();
   ~TracksTask() override;
 
@@ -50,10 +44,12 @@ class TracksTask /*final*/ : public TaskInterface
  private:
   /** check whether all the expected inputs are present.*/
   bool assertInputs(o2::framework::ProcessingContext& ctx);
-  bool getBooleanParam(const char* paramName) const;
+  void createTrackHistos(const o2::quality_control::core::Activity& activity);
+  void removeTrackHistos();
 
  private:
   std::map<GID::Source, std::unique_ptr<TrackPlotter>> mTrackPlotters;
+  std::map<GID::Source, std::unique_ptr<TrackPlotter>> mTrackPlottersWithCuts;
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
   o2::globaltracking::RecoContainer mRecoCont;
   GID::mask_t mSrc = GID::getSourcesMask("MCH-MID");
