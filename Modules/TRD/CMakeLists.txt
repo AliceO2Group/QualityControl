@@ -2,8 +2,21 @@
 
 add_library(O2QcTRD)
 
-target_sources(O2QcTRD PRIVATE src/TrackletCountCheck.cxx  src/PulsePositionCheck.cxx  src/TrackingTask.cxx  src/PulseHeightTrackMatch.cxx  src/TrackletsCheck.cxx  src/TrackletsTask.cxx  src/PulseHeightCheck.cxx  src/RawData.cxx  src/DigitsTask.cxx
-                             src/TRDTrending.cxx src/TrendingTaskConfigTRD.cxx src/PulseHeightPostProcessing.cxx src/TRDHelpers.cxx)
+target_sources(O2QcTRD PRIVATE
+              src/TrackletCountCheck.cxx
+              src/PulsePositionCheck.cxx
+              src/TrackingTask.cxx
+              src/PulseHeightTrackMatch.cxx
+              src/TrackletsCheck.cxx
+              src/TrackletsTask.cxx
+              src/PulseHeightCheck.cxx
+              src/RawData.cxx
+              src/RawDataCheck.cxx
+              src/DigitsTask.cxx
+              src/TRDTrending.cxx
+              src/TrendingTaskConfigTRD.cxx
+              src/PulseHeightPostProcessing.cxx
+              src/TRDHelpers.cxx)
 
 target_include_directories(
   O2QcTRD
@@ -18,21 +31,21 @@ install(TARGETS O2QcTRD
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_root_dictionary(O2QcTRD
-                    HEADERS
-  include/TRD/TrackletCountCheck.h
-  include/TRD/PulsePositionCheck.h
-  include/TRD/TrackingTask.h
-  include/TRD/PulseHeightTrackMatch.h
-  include/TRD/TrackletsCheck.h
-  include/TRD/TrackletsTask.h
-  include/TRD/TRDHelpers.h
-  include/TRD/PulseHeightCheck.h
-  include/TRD/RawData.h
-  include/TRD/PulseHeightPostProcessing.h
-                            include/TRD/DigitsTask.h
-                            include/TRD/TRDTrending.h
-                            include/TRD/TrendingTaskConfigTRD.h
+add_root_dictionary(O2QcTRD HEADERS
+                    include/TRD/TrackletCountCheck.h
+                    include/TRD/PulsePositionCheck.h
+                    include/TRD/TrackingTask.h
+                    include/TRD/PulseHeightTrackMatch.h
+                    include/TRD/TrackletsCheck.h
+                    include/TRD/TrackletsTask.h
+                    include/TRD/TRDHelpers.h
+                    include/TRD/PulseHeightCheck.h
+                    include/TRD/RawData.h
+                    include/TRD/RawDataCheck.h
+                    include/TRD/PulseHeightPostProcessing.h
+                    include/TRD/DigitsTask.h
+                    include/TRD/TRDTrending.h
+                    include/TRD/TrendingTaskConfigTRD.h
                     LINKDEF include/TRD/LinkDef.h)
 
 # ---- Test(s) ----
