@@ -73,7 +73,7 @@ class Check
   void endOfActivity(const core::Activity& activity);
 
   // TODO: Unique Input string
-  static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
+  static o2::header::DataDescription createCheckDataDescription(const std::string& checkName, size_t hash_length = 4);
 
   UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
