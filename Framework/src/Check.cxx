@@ -260,14 +260,17 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     checkAllObjects,
     allowBeautify,
     std::move(inputs),
-    createOutputSpec(checkSpec.checkName),
+    createOutputSpec(checkSpec.detectorName, checkSpec.checkName),
     commonSpec.conditionDBUrl
   };
 }
 
-framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
+framework::OutputSpec Check::createOutputSpec(const std::string& detector, const std::string& checkName)
 {
-  return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
+  using Origin = o2::header::DataOrigin;
+  Origin header;
+  header.runtimeInit(std::string{ "C" }.append(detector.substr(0, Origin::size)).c_str());
+  return { header, createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
 void Check::startOfActivity(const core::Activity& activity)

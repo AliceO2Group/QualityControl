@@ -72,7 +72,7 @@ class Check
   void startOfActivity(const core::Activity& activity);
   void endOfActivity(const core::Activity& activity);
 
-  //TODO: Unique Input string
+  // TODO: Unique Input string
   static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
 
   UpdatePolicyType getUpdatePolicyType() const;
@@ -81,7 +81,7 @@ class Check
 
   // todo: probably make CheckFactory
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
-  static framework::OutputSpec createOutputSpec(const std::string& checkName);
+  static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
 
  private:
   void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);
