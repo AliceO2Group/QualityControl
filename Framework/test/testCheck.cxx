@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(test_check_long_description)
   BOOST_REQUIRE_EQUAL(check.getInputs().size(), 1);
   BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QTST", "skeletonTask", 0, Lifetime::Sporadic }));
 
-  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "CDET", "singleCheckL9fdb", 0, Lifetime::Sporadic }));
+  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "CDET", "singleCheckLa881", 0, Lifetime::Sporadic }));
 }
 
 std::shared_ptr<MonitorObject> dummyMO(const std::string& objName)

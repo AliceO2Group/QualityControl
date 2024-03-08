@@ -29,6 +29,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <QualityControl/AggregatorRunner.h>
 
@@ -42,24 +43,6 @@ using namespace std;
 namespace o2::quality_control::checker
 {
 
-namespace hash
-{
-
-// simple implementation of djb2 hash that returns hexa representation of hash value of desired length (0-16)
-auto djb2(const std::string& input, size_t hash_length) -> std::string
-{
-  unsigned long hash = 5381;
-  for (const auto c : input) {
-    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-  }
-
-  std::stringstream ss;
-  ss << std::hex << hash;
-  return std::move(ss).str().substr(0, hash_length);
-};
-
-} // namespace hash
-
 /// Static functions
 o2::header::DataDescription Check::createCheckDataDescription(const std::string& checkName, size_t hashLength)
 {
@@ -67,18 +50,7 @@ o2::header::DataDescription Check::createCheckDataDescription(const std::string&
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
 
-  o2::header::DataDescription description{};
-
-  // if checkName is longer than DataDescription size (16B) we take hash of the checkName and use it in the description name.
-  // The created description will be composed of 16-hashLength B with hashLength B of hash appended to the end of the description.
-  // eg.: "theVeryLongestCheckName" -> "theVeryLonge4676" for hashLength == 4
-  if (checkName.size() <= o2::header::DataDescription::size) {
-    description.runtimeInit(checkName.c_str());
-    return description;
-  } else {
-    description.runtimeInit(checkName.substr(0, o2::header::DataDescription::size - hashLength).append(hash::djb2(checkName, hashLength)).c_str());
-    return description;
-  }
+  return common::hash::createDataDescription(checkName, hashLength);
 }
 
 /// Members

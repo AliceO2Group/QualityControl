@@ -60,7 +60,7 @@ class PostProcessingDevice : public framework::Task
   /// \brief Unified DataOrigin for Post-processing tasks
   static header::DataOrigin createPostProcessingDataOrigin(const std::string& detectorCode);
   /// \brief Unified DataDescription naming scheme for all Post-processing tasks
-  static header::DataDescription createPostProcessingDataDescription(const std::string& taskName);
+  static header::DataDescription createPostProcessingDataDescription(const std::string& taskName, size_t hashLength = 4);
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)

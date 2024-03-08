@@ -53,7 +53,7 @@ std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorCo
 TEST_CASE("test_aggregator_runner_static")
 {
   CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop")));
-  CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("0123456789012345")));
+  CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("012345678901a4a0")));
   CHECK_THROWS_AS(AggregatorRunner::createAggregatorRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
 

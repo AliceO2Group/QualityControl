@@ -109,7 +109,7 @@ class AggregatorRunner : public framework::Task
   static framework::DataProcessorLabel getLabel() { return { "qc-aggregator" }; }
   static std::string createAggregatorRunnerIdString() { return "qc-aggregator"; };
   static std::string createAggregatorRunnerName();
-  static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
+  static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName, size_t hashSize = 4);
 
   /// \brief Compute the detector name to be used in the infologger for this runner.
   /// Compute the detector name to be used in the infologger for this runner.

@@ -48,6 +48,7 @@
 #include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/WorkflowType.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <string>
 #include <TFile.h>
@@ -291,17 +292,13 @@ header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorC
   return origin;
 }
 
-header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName)
+header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName, size_t hashSize)
 {
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
-  o2::header::DataDescription description;
-  if (taskName.length() > header::DataDescription::size) {
-    ILOG(Warning, Devel) << "Task name \"" << taskName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
-  }
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
-  return description;
+
+  return common::hash::createDataDescription(taskName, hashSize);
 }
 
 header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)
