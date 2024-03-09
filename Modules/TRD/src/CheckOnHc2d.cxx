@@ -27,6 +27,7 @@
 
 using namespace std;
 using namespace o2::quality_control;
+using Helper = o2::trd::HelperMethods;
 
 namespace o2::quality_control_modules::trd
 {
@@ -40,10 +41,23 @@ void CheckOnHc2d::configure()
     mTimestamp = o2::ccdb::getCurrentTimestamp();
     ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
   }
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setTimestamp(mTimestamp);
 
-  mChamberStatus = mgr.get<std::array<int, MAXCHAMBER>>("TRD/Calib/DCSDPsFedChamberStatus");
+  if (auto param = mCustomParameters.find("ccdbPath"); param != mCustomParameters.end()) {
+    mCcdbPath = mCustomParameters["ccdbPath"];
+    ILOG(Debug, Support) << "configure() : using ccdb path = " << mCcdbPath << ENDM;
+  } else {
+
+    ILOG(Warning, Trace) << "provided ccdb path in config not found" << ENDM;
+    mCcdbPath = "TRD/Calib/DCSDPsFedChamberStatus";
+    ILOG(Warning, Trace) << "using ccdb path =" << mCcdbPath << ENDM;
+  }
+
+  // auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  // mgr.setTimestamp(mTimestamp);
+  // mChamberStatus = mgr.get<std::array<int, MAXCHAMBER>>("TRD/Calib/DCSDPsFedChamberStatus");
+
+  mChamberStatus = retrieveConditionAny<std::array<int, MAXCHAMBER>>(mCcdbPath, {}, mTimestamp);
+
   if (mChamberStatus == nullptr) {
     ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
   }
@@ -63,43 +77,91 @@ Quality CheckOnHc2d::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if (!h) {
         ILOG(Debug, Trace) << "Requested Object Not Found" << ENDM;
         return overAllQuality;
+        // return result1;
       }
 
       result1 = Quality::Good;
-
-      for (int i = 0; i < h->GetNbinsX(); i++) {
-        for (int j = 0; j < h->GetNbinsY(); j++) {
+      // int nMaskedHC = 0;
+      // int nMaskedChInASec;
+      for (int i = 0; i < h->GetNbinsX(); i++) { // loop along sector_side
+        // nMaskedChInASec = 0;
+        for (int j = 0; j < h->GetNbinsY(); j++) { // loop along stack_layer
           double content = h->GetBinContent(i, j);
-          if (content == 0) {
-            result1 = Quality::Bad;
-            result1.addReason(FlagReasonFactory::Unknown(), "some half chambers are empty");
-            return result1;
-          }
-        }
-      }
+
+          if (content == 0) { // if half-chamber is empty
+            int sector = i / 2;
+            int side = i % 2;
+            int stack = j / NLAYER;
+            int layer = j % NLAYER;
+            int det = Helper::getDetector(sector, stack, layer);
+            int hcid = det * 2 + side;
+
+            if (!TRDHelpers::isHalfChamberMasked(hcid, mChamberStatus)) { // if half-chamber is not masked
+              result1 = Quality::Bad;
+              result1.addReason(FlagReasonFactory::Unknown(), "some half chambers are empty while they are not masked!");
+              return result1;
+            } // endif chamber is not masked
+
+            // else{
+            //   nMaskedHC++;
+            //   nMaskedChInASec++;
+            //   if(nMaskedHC >  int(NCHAMBER*2*0.4) ){ // if nMaskedHC is greator than 40% of all chambers
+            //     result1 = Quality::Bad;
+            //     result1.addReason(FlagReasonFactory::Unknown(), "more than 40 percent chambers are masked!");
+            //     return result1;
+            //   }
+            //   if(nMaskedChInASec == NCHAMBERPERSEC){ //if entire sector is masked
+            //     result1 = Quality::Bad;
+            //     result1.addReason(FlagReasonFactory::Unknown(), "some sectors are entirely masked");
+            //     return result1;
+            //   }
+            // }
+
+          } // endif empty half-chamber
+        }   // stack_layer loop ends
+      }     // sector_side loop ends
 
       result2 = Quality::Good;
-
+      int nMaskedHC = 0;        // total number of masked half-chamber
+      int nMaskedHChInASec = 1; // total number of masked half-chamber in a sector
+      int currentSector = -1, oldSector = -1;
       for (int hcid = 0; hcid < MAXCHAMBER * 2; ++hcid) {
+        currentSector = Helper::getSector(hcid / 2);
         if (TRDHelpers::isHalfChamberMasked(hcid, mChamberStatus)) {
           ILOG(Debug, Trace) << "Masked half Chamber id =" << hcid << ENDM;
-          result2 = Quality::Bad;
-          result2.addReason(FlagReasonFactory::Unknown(), "some chmabers are masked");
-          return result2;
-        }
-      }
+          nMaskedHC++;
+          if (nMaskedHC > (NCHAMBER * 2 * 0.4)) { // if nMaskedHC is greator than 40% of all chambers
+            result2 = Quality::Bad;
+            result2.addReason(FlagReasonFactory::Unknown(), "more than 40 percent chambers are masked!");
+            return result2;
+          }
+          if (oldSector == currentSector) { // if chambers are masked within same sector
+            nMaskedHChInASec++;
+            if (nMaskedHChInASec == NCHAMBERPERSEC * 2) { // if entire sector is masked
+              result2 = Quality::Bad;
+              result2.addReason(FlagReasonFactory::Unknown(), "some sectors are entirely masked");
+              return result2;
+            }
+          } else {
+            nMaskedHChInASec = 1;
+          }
+        } // endif masked chamber
+        oldSector = currentSector;
+      } // hcid loop ends
 
       overAllQuality = Quality::Good;
       if (result1 == Quality::Good && result2 == Quality::Good) {
-        overAllQuality = Quality::Bad;
+        overAllQuality = Quality::Good;
+        overAllQuality.addReason(FlagReasonFactory::Unknown(), "All unmasked chambers working well!");
         return overAllQuality;
       }
     }
   }
   return overAllQuality;
+  // return result1;
 }
 
-std::string CheckOnHc2d::getAcceptedType() { return "TH1"; }
+std::string CheckOnHc2d::getAcceptedType() { return "TH2"; }
 
 void CheckOnHc2d::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

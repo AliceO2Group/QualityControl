@@ -54,6 +54,7 @@ class CheckOnHc2d : public o2::quality_control::checker::CheckInterface
   o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
   const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;
   std::shared_ptr<Activity> mActivity;
+  std::string mCcdbPath;
 
   ClassDefOverride(CheckOnHc2d, 3);
 };
