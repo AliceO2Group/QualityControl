@@ -76,14 +76,17 @@ bool is_unsigned_integer(const std::string& s)
 std::string_view translateIntegerRunType(const std::string& runType)
 {
   // runType used to be an integer. If we find an integer in a config file, the risk is that it is translated directly to a string (2->"2").
-  // We must rather translate the integer into the corresponding run type string if at all possible.if (is_unsigned_integer(runType)) {
-  try {
-    ILOG(Warning, Ops) << "Activity type was provided as an integer. A matching activity type could be found: " << parameters::GRPECS::RunTypeNames.at(std::stoi(runType)) << ". Consider using the string representation of the run type." << ENDM;
-    return parameters::GRPECS::RunTypeNames.at(std::stoi(runType));
-  } catch (std::out_of_range& exc) {
-    ILOG(Warning, Ops) << "Activity type was provided as an integer. No matching activity type could be find. Using 'NONE'." << ENDM;
-    return "NONE";
+  // We must rather translate the integer into the corresponding run type string if at all possible.
+  if (is_unsigned_integer(runType)) {
+    try {
+      ILOG(Warning, Ops) << "Activity type was provided as an integer. A matching activity type could be found: " << parameters::GRPECS::RunTypeNames.at(std::stoi(runType)) << ". Consider using the string representation of the run type." << ENDM;
+      return parameters::GRPECS::RunTypeNames.at(std::stoi(runType));
+    } catch (std::out_of_range& exc) {
+      ILOG(Warning, Ops) << "Activity type was provided as an integer. No matching activity type could be find. Using 'NONE'." << ENDM;
+      return "NONE";
+    }
   }
+  return runType;
 }
 
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)

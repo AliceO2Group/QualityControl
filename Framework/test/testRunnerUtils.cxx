@@ -33,6 +33,8 @@ BOOST_AUTO_TEST_CASE(test_computeActivity)
   BOOST_CHECK_EQUAL(translateIntegerRunType("0"), "NONE");
   BOOST_CHECK_EQUAL(translateIntegerRunType("1"), "PHYSICS");
   BOOST_CHECK_EQUAL(translateIntegerRunType("18"), "CALIBRATION_VRESETD");
-  BOOST_CHECK_EQUAL(translateIntegerRunType("34"), "NONE");
-  BOOST_CHECK_EQUAL(translateIntegerRunType("-134"), "NONE");
+  BOOST_CHECK_EQUAL(translateIntegerRunType("34"), "NONE"); // unknown
+  BOOST_CHECK_EQUAL(translateIntegerRunType("-134"), "-134"); // not a uint
+  BOOST_CHECK_EQUAL(translateIntegerRunType("NONE"), "NONE");
+  BOOST_CHECK_EQUAL(translateIntegerRunType("bla"), "bla");
 }
