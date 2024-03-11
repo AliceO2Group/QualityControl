@@ -44,13 +44,13 @@ namespace o2::quality_control::checker
 {
 
 /// Static functions
-o2::header::DataDescription Check::createCheckDataDescription(const std::string& checkName, size_t hashLength)
+o2::header::DataDescription Check::createCheckDataDescription(const std::string& checkName)
 {
   if (checkName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
 
-  return common::hash::createDataDescription(checkName, hashLength);
+  return quality_control::core::createDataDescription(checkName, Check::descriptionHashLength);
 }
 
 /// Members

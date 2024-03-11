@@ -96,13 +96,13 @@ header::DataOrigin PostProcessingDevice::createPostProcessingDataOrigin(const st
   return origin;
 }
 
-header::DataDescription PostProcessingDevice::createPostProcessingDataDescription(const std::string& taskName, size_t hashLength)
+header::DataDescription PostProcessingDevice::createPostProcessingDataDescription(const std::string& taskName)
 {
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for pp-task's data description"));
   }
 
-  return common::hash::createDataDescription(taskName, hashLength);
+  return quality_control::core::createDataDescription(taskName, PostProcessingDevice::descriptionHashLength);
 }
 
 void PostProcessingDevice::start(ServiceRegistryRef services)

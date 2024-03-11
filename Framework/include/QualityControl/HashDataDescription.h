@@ -17,11 +17,21 @@
 
 #include <Headers/DataHeader.h>
 
-namespace o2::common::hash
+namespace o2::quality_control::core
 {
 
-o2::header::DataDescription createDataDescription(const std::string& name, size_t hash_length = 4);
+/// \brief Creates DataDescription from given name.
+///
+/// If the length of the name is <= 16 (hardcoded in DataDescription) it creates DataDescription from the original name.
+/// However, if the length of the name is > 16, it will create hash of the whole name and replace ending hashLength of bytes
+/// of the name with hexa representation of computed hash.
+/// eg.: name == "veryLongNameThatIsLongerThan16B" with hashLengh == 4 will result in "veryLongNameABCD", where ABCD
+/// is the hash create inside the function
+///
+/// \param name - name which should cut and hashed
+/// \param hashLenght - number of bytes which will overwrite the end of the name
+o2::header::DataDescription createDataDescription(const std::string& name, size_t hashLength);
 
-} // namespace o2::common::hash
+} // namespace o2::quality_control::core
 
 #endif

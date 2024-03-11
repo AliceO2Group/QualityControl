@@ -14,7 +14,10 @@
 
 #include "QualityControl/HashDataDescription.h"
 
-namespace o2::common::hash
+namespace o2::quality_control::core
+{
+
+namespace hash
 {
 
 // creates hash of input string and returns hexadecimal representation
@@ -24,6 +27,8 @@ auto to_hexa(const std::string& input, size_t hash_length) -> std::string
   ss << std::hex << std::hash<std::string>{}(input);
   return std::move(ss).str().substr(0, hash_length);
 };
+
+} // namespace hash
 
 o2::header::DataDescription createDataDescription(const std::string& name, size_t hashLength)
 {
@@ -42,4 +47,4 @@ o2::header::DataDescription createDataDescription(const std::string& name, size_
   }
 }
 
-} // namespace o2::common::hash
+} // namespace o2::quality_control::core

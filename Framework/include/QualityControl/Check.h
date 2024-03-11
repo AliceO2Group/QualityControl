@@ -43,6 +43,10 @@ struct CheckSpec;
 /// \author Rafal Pacholek
 class Check
 {
+  /// \brief Number of bytes in data description used for hashing of Check descrition names. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// Constructor
   /**
@@ -73,7 +77,7 @@ class Check
   void endOfActivity(const core::Activity& activity);
 
   // TODO: Unique Input string
-  static o2::header::DataDescription createCheckDataDescription(const std::string& checkName, size_t hash_length = 4);
+  static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
 
   UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;

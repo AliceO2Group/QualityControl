@@ -292,13 +292,13 @@ header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorC
   return origin;
 }
 
-header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName, size_t hashSize)
+header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName)
 {
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
 
-  return common::hash::createDataDescription(taskName, hashSize);
+  return quality_control::core::createDataDescription(taskName, TaskRunner::taskDescriptionHashLength);
 }
 
 header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)

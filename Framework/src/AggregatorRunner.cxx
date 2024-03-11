@@ -130,12 +130,12 @@ void AggregatorRunner::prepareInputs()
   }
 }
 
-header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(const std::string& aggregatorName, size_t hashSize)
+header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(const std::string& aggregatorName)
 {
   if (aggregatorName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
-  return common::hash::createDataDescription(aggregatorName, hashSize);
+  return quality_control::core::createDataDescription(aggregatorName, AggregatorRunner::descriptionHashLength);
 }
 
 std::string AggregatorRunner::createAggregatorRunnerName()

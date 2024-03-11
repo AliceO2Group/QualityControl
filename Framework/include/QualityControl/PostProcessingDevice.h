@@ -36,6 +36,10 @@ struct PostProcessingRunnerConfig;
 /// \author Piotr Konopka
 class PostProcessingDevice : public framework::Task
 {
+  /// \brief Number of bytes in data description used for hashing DataDescription. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// \brief Constructor
   ///
@@ -60,7 +64,7 @@ class PostProcessingDevice : public framework::Task
   /// \brief Unified DataOrigin for Post-processing tasks
   static header::DataOrigin createPostProcessingDataOrigin(const std::string& detectorCode);
   /// \brief Unified DataDescription naming scheme for all Post-processing tasks
-  static header::DataDescription createPostProcessingDataDescription(const std::string& taskName, size_t hashLength = 4);
+  static header::DataDescription createPostProcessingDataDescription(const std::string& taskName);
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
@@ -78,4 +82,4 @@ class PostProcessingDevice : public framework::Task
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_POSTPROCESSINGDEVICE_H
+#endif // QUALITYCONTROL_POSTPROCESSINGDEVICE_H
