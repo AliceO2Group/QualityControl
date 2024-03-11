@@ -9,7 +9,7 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#include <iostream>
+#include <iomanip>
 #include <sstream>
 
 #include "QualityControl/HashDataDescription.h"
@@ -20,29 +20,36 @@ namespace o2::quality_control::core
 namespace hash
 {
 
+// djb2 is used instead of std::hash<std::string> to be consistent over different architectures
+auto djb2(const std::string& input) -> size_t
+{
+  size_t hash = 5381;
+  for (const auto c : input) {
+    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  }
+  return hash;
+}
+
 // creates hash of input string and returns hexadecimal representation
-auto to_hexa(const std::string& input, size_t hash_length) -> std::string
+// if created hash has smaller amount of digits than requested, required number of zeros is appended
+auto to_hex(const std::string& input, size_t hashLength) -> std::string
 {
   std::stringstream ss;
-  ss << std::hex << std::hash<std::string>{}(input);
-  return std::move(ss).str().substr(0, hash_length);
+  ss << std::setfill('0') << std::left << std::setw(hashLength) << std::noshowbase << std::hex << djb2(input);
+  return std::move(ss).str().substr(0, hashLength);
 };
 
 } // namespace hash
 
-o2::header::DataDescription createDataDescription(const std::string& name, size_t hashLength)
+auto createDataDescription(const std::string& name, size_t hashLength) -> o2::header::DataDescription
 {
   o2::header::DataDescription description{};
+
   if (name.size() <= o2::header::DataDescription::size) {
     description.runtimeInit(name.c_str());
     return description;
   } else {
-
-    std::stringstream ss{};
-    ss << std::hex << std::hash<std::string>{}(name);
-
-    description.runtimeInit(name.substr(0, o2::header::DataDescription::size - hashLength).append(hash::to_hexa(name, hashLength)).c_str());
-    std::cout << description.str << "\n";
+    description.runtimeInit(name.substr(0, o2::header::DataDescription::size - hashLength).append(hash::to_hex(name, hashLength)).c_str());
     return description;
   }
 }

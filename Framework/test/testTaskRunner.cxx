@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner_static)
 {
   BOOST_CHECK_EQUAL(TaskRunner::createTaskDataOrigin("DET"), DataOrigin("QDET"));
   BOOST_CHECK(TaskRunner::createTaskDataDescription("qwertyuiop") == DataDescription("qwertyuiop"));
-  BOOST_CHECK(TaskRunner::createTaskDataDescription("012345678901234567890") == DataDescription("012345678901a4a0"));
+  BOOST_CHECK(TaskRunner::createTaskDataDescription("012345678901234567890") == DataDescription("012345678901639b"));
   BOOST_CHECK_THROW(TaskRunner::createTaskDataDescription(""), AliceO2::Common::FatalException);
   BOOST_CHECK_EQUAL(TaskRunner::createTaskRunnerIdString(), "qc-task");
 }
