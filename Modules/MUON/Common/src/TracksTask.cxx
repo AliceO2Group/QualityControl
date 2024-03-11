@@ -60,11 +60,6 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 {
   ILOG(Debug, Devel) << "initialize TracksTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  ILOG(Info, Support) << "loading geometry" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  if (!o2::base::GeometryManager::isGeometryLoaded()) {
-    TaskInterface::retrieveConditionAny<TObject>("GLO/Config/Geometry");
-  }
-
   ILOG(Info, Support) << "loading sources" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   auto srcFixed = mSrc;
