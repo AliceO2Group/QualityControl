@@ -130,19 +130,23 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           for (int by = 1; by < 37; by++) {
             if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
               double val = histo->GetBinContent(bx, by);
-              if (val > maxVal)
+              if (val > maxVal) {
                 maxVal = val;
-              if (val < minVal)
+              }
+              if (val < minVal) {
                 minVal = val;
+              }
               if (val == 0) {
                 nEmptyLB++;
               } else if (val > mLocalBoardThreshold) {
                 nBadLB++;
               }
-              if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33))
-                by += 3; // zones 1 board
-              else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25)))
-                by += 1; // zones 2 boards
+              if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) {
+                by += 3;
+              } // zones 1 board
+              else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
+                by += 1;
+              } // zones 2 boards
             }
           }
         }
@@ -166,20 +170,25 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       } // if mNTFInSeconds > 0.
     }
     if (item.second->getName() == "NbLBEmpty") {
-      auto histo = static_cast<TH1F*>(item.second->getObject());
-      histo->SetBins(1, nEmptyLB - 0.5, nEmptyLB + 0.5);
-      histo->Fill(nEmptyLB);
+      auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+      if (histo) {
+        histo->SetBins(1, nEmptyLB - 0.5, nEmptyLB + 0.5);
+        histo->Fill(nEmptyLB);
+      }
     }
     if (item.second->getName() == "NbLBHighRate") {
-      auto histo = static_cast<TH1F*>(item.second->getObject());
-      histo->SetBins(1, nBadLB - 0.5, nBadLB + 0.5);
-      histo->Fill(nBadLB);
-      histo->SetBinContent(1, nBadLB);
+      auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+      if (histo) {
+        histo->SetBins(1, nBadLB - 0.5, nBadLB + 0.5);
+        histo->Fill(nBadLB);
+      }
     }
     if (item.second->getName() == "LBHighRate") {
-      auto histo = static_cast<TH1F*>(item.second->getObject());
-      histo->SetBins(1, maxVal - 0.5, maxVal + 0.5);
-      histo->Fill(maxVal);
+      auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+      if (histo) {
+        histo->SetBins(1, maxVal - 0.5, maxVal + 0.5);
+        histo->Fill(maxVal);
+      }
     }
   }
   return result;
