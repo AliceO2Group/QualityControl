@@ -159,6 +159,7 @@ void RawQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "startOfActivity" << ENDM;
   // printf(" =================== > test startOfActivity RAW \n");
+  reset();
 }
 
 void RawQcTask::startOfCycle()
@@ -266,6 +267,7 @@ void RawQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "endOfActivity" << ENDM;
   // printf(" =================== > test endOfActivity RAW \n");
+  reset();
 }
 
 void RawQcTask::reset()

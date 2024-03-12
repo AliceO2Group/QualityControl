@@ -50,6 +50,11 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   double mLocalBoardThreshold = 400; ///! Threshold on board multiplicity (kHz)
   int mNbBadLocalBoard = 10;         ///! Maximum number of local boards above threshold
 
+  int nEmptyLB = 0;
+  int nBadLB = 0;
+  double maxVal = 0;
+  double minVal = 1000;
+
   std::unordered_map<std::string, Quality> mQualityMap; ///! Quality map
 
   HistoHelper mHistoHelper; ///! Histogram helper

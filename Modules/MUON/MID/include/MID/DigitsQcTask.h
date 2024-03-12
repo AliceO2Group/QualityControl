@@ -65,6 +65,10 @@ class DigitsQcTask final : public TaskInterface
 
   std::unique_ptr<TH1F> mNbDigitTF{ nullptr };
 
+  std::unique_ptr<TH1F> mNbLBEmpty{ nullptr };
+  std::unique_ptr<TH1F> mNbLBHighRate{ nullptr };
+  std::unique_ptr<TH1F> mLBHighRate{ nullptr };
+
   std::array<std::unique_ptr<TH1F>, 5> mMultHitB{};
   std::array<std::unique_ptr<TH1F>, 5> mMultHitNB{};
   std::unique_ptr<TH1F> mMeanMultiHits;

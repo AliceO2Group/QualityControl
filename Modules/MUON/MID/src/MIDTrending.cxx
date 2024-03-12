@@ -132,10 +132,6 @@ void MIDTrending::generatePlots(repository::DatabaseInterface& qcdb)
 
   for (const auto& plot : mConfig.plots) {
 
-    // TEST VR
-    // if (plot.varexp.find("binContent") == std::string::npos)
-    //  continue;
-
     mCanvasMID.push_back(std::make_unique<TCanvas>(plot.name.c_str(), plot.title.c_str()));
     mCanvasMID[mPlot].get()->cd();
 
