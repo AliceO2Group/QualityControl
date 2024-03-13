@@ -13,6 +13,7 @@
 #include <sstream>
 
 #include "QualityControl/HashDataDescription.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
@@ -32,7 +33,7 @@ auto djb2(const std::string& input) -> size_t
 
 // creates hash of input string and returns hexadecimal representation
 // if created hash has smaller amount of digits than requested, required number of zeros is appended
-auto to_hex(const std::string& input, size_t hashLength) -> std::string
+auto toHex(const std::string& input, size_t hashLength) -> std::string
 {
   std::stringstream ss;
   ss << std::setfill('0') << std::left << std::setw(hashLength) << std::noshowbase << std::hex << djb2(input);
@@ -40,6 +41,11 @@ auto to_hex(const std::string& input, size_t hashLength) -> std::string
 };
 
 } // namespace hash
+
+std::string createDescriptionWithHash(const std::string& input, size_t hashLength)
+{
+  return input.substr(0, o2::header::DataDescription::size - hashLength).append(hash::toHex(input, hashLength));
+}
 
 auto createDataDescription(const std::string& name, size_t hashLength) -> o2::header::DataDescription
 {
@@ -49,7 +55,9 @@ auto createDataDescription(const std::string& name, size_t hashLength) -> o2::he
     description.runtimeInit(name.c_str());
     return description;
   } else {
-    description.runtimeInit(name.substr(0, o2::header::DataDescription::size - hashLength).append(hash::to_hex(name, hashLength)).c_str());
+    const auto descriptionWithHash = createDescriptionWithHash(name, hashLength);
+    ILOG(Warning) << "Too long data description name [" << name << "] changed to [" << descriptionWithHash << "]";
+    description.runtimeInit(descriptionWithHash.c_str());
     return description;
   }
 }

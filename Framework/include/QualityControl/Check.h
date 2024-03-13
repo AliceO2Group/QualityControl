@@ -85,7 +85,7 @@ class Check
 
   // todo: probably make CheckFactory
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
-  static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
+  static framework::OutputSpec createOutputSpec(const std::string& checkName);
 
  private:
   void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);
