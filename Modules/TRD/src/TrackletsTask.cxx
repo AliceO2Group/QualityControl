@@ -138,15 +138,11 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
 
-  if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
-    mChamberStatus = ptr.get();
-    // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
-    if (mChamberStatus) {
-      TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
-    } else {
-      ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
-    }
+  // LB: Chamber Status cannot be loaded only once, it should always take check object
+  auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
+  mChamberStatus = ptr.get();
+  if (mChamberStatus) {
+    TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
   }
 
   // Fill histograms

@@ -146,16 +146,12 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
 
-  if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
-    mChamberStatus = ptr.get();
-    // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
-    if (mChamberStatus) {
-      // LB: no half chamber distribution map for Digits, pass it as null pointer
-      TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, nullptr, mLayers, NCOLUMN);
-    } else {
-      ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
-    }
+  // LB: Chamber Status cannot be loaded only once, it should always check object
+  auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
+  mChamberStatus = ptr.get();
+  if (mChamberStatus) {
+    // LB: no half chamber distribution map for Digits, pass it as null pointer
+    TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, nullptr, mLayers, NCOLUMN);
   }
 
   // fill histograms
