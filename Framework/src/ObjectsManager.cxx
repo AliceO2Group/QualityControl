@@ -131,6 +131,7 @@ void ObjectsManager::stopPublishing(const string& objectName)
 {
   auto* mo = dynamic_cast<MonitorObject*>(getMonitorObject(objectName));
   mMonitorObjects->Remove(mo);
+  mMonitorObjects->Compress();
 }
 
 void ObjectsManager::stopPublishingAll()
