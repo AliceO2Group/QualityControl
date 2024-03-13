@@ -43,6 +43,10 @@ struct CheckSpec;
 /// \author Rafal Pacholek
 class Check
 {
+  /// \brief Number of bytes in data description used for hashing of Check descrition names. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// Constructor
   /**

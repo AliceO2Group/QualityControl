@@ -77,6 +77,10 @@ class ObjectsManager;
 /// \author Barthelemy von Haller
 class TaskRunner : public framework::Task
 {
+  /// \brief Number of bytes in data description used for hashing of Task names. See HashDataDescription.h for details
+  static constexpr size_t taskDescriptionHashLength = 4;
+  static_assert(taskDescriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// \brief Constructor
   ///

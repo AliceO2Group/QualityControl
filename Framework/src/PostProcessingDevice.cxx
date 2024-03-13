@@ -21,6 +21,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <Common/Exceptions.h>
 #include <Framework/CallbackService.h>
@@ -100,12 +101,8 @@ header::DataDescription PostProcessingDevice::createPostProcessingDataDescriptio
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for pp-task's data description"));
   }
-  o2::header::DataDescription description;
-  if (taskName.length() > header::DataDescription::size) {
-    ILOG(Warning, Devel) << "PP Task name \"" << taskName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
-  }
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
-  return description;
+
+  return quality_control::core::createDataDescription(taskName, PostProcessingDevice::descriptionHashLength);
 }
 
 void PostProcessingDevice::start(ServiceRegistryRef services)

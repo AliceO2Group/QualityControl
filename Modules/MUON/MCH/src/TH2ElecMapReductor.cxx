@@ -187,7 +187,9 @@ void TH2ElecMapReductor::update(TObject* obj)
 
       deNumPads[cathode][deIndex] += 1;
 
-      Float_t stat = hr->getDen()->GetBinContent(i, j);
+      // here we assume that if the number of bins differs between numerator and denominator,
+      // the denominator contains a single common scaling factor in the first bin (uniform scaling)
+      Float_t stat = (hr->getNum()->GetNcells() == hr->getDen()->GetNcells()) ? hr->getDen()->GetBinContent(i, j) : hr->getDen()->GetBinContent(1, 1);
       if (stat == 0) {
         deNumPadsNoStat[cathode][deIndex] += 1;
         continue;

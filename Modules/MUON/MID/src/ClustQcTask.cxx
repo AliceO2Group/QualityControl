@@ -123,6 +123,7 @@ void ClustQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ClustQcTask::startOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "startOfActivity" << ENDM;
+  reset();
 }
 
 void ClustQcTask::startOfCycle()
@@ -193,22 +194,15 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClustQcTask::endOfCycle()
 {
-  // ILOG(Info, Devel) << "endOfCycle" << ENDM;
-  // printf(" =================== > test endOfCycle Clust \n");
 }
 
 void ClustQcTask::endOfActivity(const Activity& /*activity*/)
 {
-  // ILOG(Info, Devel) << "endOfActivity" << ENDM;
-  // printf(" =================== > test endOfActivity Clust \n");
+  reset();
 }
 
 void ClustQcTask::reset()
 {
-  // clean all the monitor objects here
-
-  // ILOG(Info, Devel) << "Resetting the histogram" << ENDM;
-  // printf(" =================== > test reset Clust \n");
   mNbClusterTF->Reset();
 
   mClusterMap11->Reset();

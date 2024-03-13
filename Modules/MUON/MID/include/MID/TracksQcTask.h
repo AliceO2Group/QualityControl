@@ -63,6 +63,7 @@ class TracksQcTask final : public TaskInterface
   std::shared_ptr<TH1F> mTrackPT{ nullptr };
 
   std::shared_ptr<TProfile> mTrackRatio44{ nullptr };
+  std::shared_ptr<TH1F> mGTrackRatio44{ nullptr };
   std::shared_ptr<TProfile> mTrackBDetRatio44{ nullptr };
   std::shared_ptr<TProfile> mTrackNBDetRatio44{ nullptr };
   std::shared_ptr<TProfile> mTrackLocRatio44{ nullptr };
