@@ -53,6 +53,14 @@ o2::header::DataDescription Check::createCheckDataDescription(const std::string&
   return description;
 }
 
+o2::header::DataOrigin Check::createCheckDataOrigin(const std::string& detector)
+{
+  using Origin = o2::header::DataOrigin;
+  Origin header;
+  header.runtimeInit(std::string{ "C" }.append(detector.substr(0, Origin::size - 1)).c_str());
+  return header;
+}
+
 /// Members
 Check::Check(CheckConfig config)
   : mCheckConfig(std::move(config))
@@ -267,10 +275,7 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
 
 framework::OutputSpec Check::createOutputSpec(const std::string& detector, const std::string& checkName)
 {
-  using Origin = o2::header::DataOrigin;
-  Origin header;
-  header.runtimeInit(std::string{ "C" }.append(detector.substr(0, Origin::size)).c_str());
-  return { header, createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
+  return { createCheckDataOrigin(detector), createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
 void Check::startOfActivity(const core::Activity& activity)
