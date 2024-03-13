@@ -10,7 +10,7 @@
       * [Environment loading](#environment-loading)
    * [Execution](#execution)
       * [Basic workflow](#basic-workflow)
-      * [Readout chain (optional)](#readout-chain-\(optional\))
+      * [Readout chain (optional)](#readout-chain-optional)
          * [Getting real data from readout](#getting-real-data-from-readout)
          * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
       * [Post-processing example](#post-processing-example)

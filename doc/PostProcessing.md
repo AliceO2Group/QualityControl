@@ -7,16 +7,14 @@
    * [The post-processing framework](#the-post-processing-framework)
       * [Post-processing interface](#post-processing-interface)
       * [Configuration](#configuration)
-         * [Triggers configuration](#triggers-configuration)
+   * [Definition and access of user-specific configuration](#definition-and-access-of-user-specific-configuration)
       * [Running it](#running-it)
    * [Convenience classes](#convenience-classes)
       * [The TrendingTask class](#the-trendingtask-class)
-         * [Configuration](#configuration-1)
       * [The SliceTrendingTask class](#the-slicetrendingtask-class)
-         * [Configuration](#configuration-2)
       * [The QualityTask class](#the-qualitytask-class)
-         * [Configuration](#configuration-3)
       * [The TRFCollectionTask class](#the-trfcollectiontask-class)
+      * [The BigScreen class](#the-bigscreen-class)
    * [More examples](#more-examples)
 <!--te-->
 
