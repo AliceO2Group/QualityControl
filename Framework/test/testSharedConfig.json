@@ -130,7 +130,18 @@
           ]
         }]
       },
-      "checkAll": {
+      "singleCheckLongDescription": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "dataSource": [{
+          "type": "Task",
+          "name": "skeletonTask",
+          "MOs": [
+            "example"
+          ]
+        }]
+      },"checkAll": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",

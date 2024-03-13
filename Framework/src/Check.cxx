@@ -29,6 +29,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <QualityControl/AggregatorRunner.h>
 
@@ -48,9 +49,8 @@ o2::header::DataDescription Check::createCheckDataDescription(const std::string&
   if (checkName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
-  o2::header::DataDescription description;
-  description.runtimeInit(std::string(checkName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
-  return description;
+
+  return quality_control::core::createDataDescription(checkName, Check::descriptionHashLength);
 }
 
 /// Members

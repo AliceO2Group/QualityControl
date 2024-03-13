@@ -62,6 +62,7 @@ add_library(O2QualityControl
   src/InfrastructureSpecReader.cxx
   src/Check.cxx
   src/Aggregator.cxx
+  src/HashDataDescription.cxx
   src/ServiceDiscovery.cxx
   src/Triggers.cxx
   src/TriggerHelpers.cxx

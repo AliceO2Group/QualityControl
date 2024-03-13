@@ -54,7 +54,7 @@ using namespace o2::configuration;
 
 /**
  * Test description
- * 
+ *
  * Test a complex configuration with 3 tasks and 4 checks.
  * Checks sources contain several tasks with different policies.
  *
