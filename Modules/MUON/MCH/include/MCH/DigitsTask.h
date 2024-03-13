@@ -62,8 +62,6 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
   void reset() override;
 
  private:
-  void storeOrbit(const uint64_t& orb);
-  void addDefaultOrbitsInTF();
   void plotDigit(const o2::mch::Digit& digit);
   void updateOrbits();
   void resetOrbits();
@@ -89,16 +87,11 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
 
   o2::mch::DigitFilter mIsSignalDigit;
 
-  uint32_t mNOrbits[FecId::sFeeNum][FecId::sLinkNum];
-  uint32_t mLastOrbitSeen[FecId::sFeeNum][FecId::sLinkNum];
-  int mNOrbitsPerTF{ -1 };
+  uint32_t mNOrbits{ 0 };
 
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
   std::unique_ptr<TH2FRatio> mHistogramOccupancyElec;       // Occupancy histogram (Elec view)
   std::unique_ptr<TH2FRatio> mHistogramSignalOccupancyElec; // Occupancy histogram (Elec view) for signal-like digits
-
-  // TH2F* mHistNum;
-  // TH2F* mHistDen;
 
   std::unique_ptr<TH2F> mHistogramDigitsOrbitElec;
   std::unique_ptr<TH2F> mHistogramDigitsSignalOrbitElec;
