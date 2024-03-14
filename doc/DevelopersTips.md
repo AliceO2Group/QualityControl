@@ -322,9 +322,9 @@ psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (sel
 6. `cd /var/lib/pgsql/.globus `
 7. backup the old files
 8. copy hostcert and hostkey
-9. chmod 600 them
+9 chmod 600 them
 10. Make sure that `.globus` and the two files are owned by the user `postgres`
-
+    
 ### ControlWorkflows
 
 #### Parameter `qcConfiguration` in tasks
@@ -527,4 +527,23 @@ then
   # we override activity values, as QC_production.json might have only placeholders
   o2-qc --remote-batch QC_fullrun.root --config "json://QC_production.json" -b --override-values "qc.config.Activity.number=523897;qc.config.Activity.passName=apass2;qc.config.Activity.periodName=LHC22m"
 fi
+```
+
+## Common QCDB cleanup tasks
+
+In general:
+- DO NOT USE `truncate` ! `truncate is unstable and any mistake can have dire consequences.
+- All the scripts take the arguments `--dry-run`, `--print-list` and `--one-by-one`. Use them. Proceed with the actual deletion only, when you have thoroughly verified the output of a `print-list` and a `dry-run`
+- Deletion commands can only be run on the QCDB server itself.
+
+#### Remove all objects in a path
+We use the script `o2-qc-repo-delete-time-interval` with an interval covering 0 to many years in the future.
+```shell
+o2-qc-repo-delete-time-interval --url http://localhost:8083 --log-level 10 --from 0 --to 1994150839053 --only-path-no-subdir --path qc/TRD/MO/Tracklets/layer1 --dry-run
+```
+
+#### Move objects from one path to another
+It is important to put the full destination path, including the name of the folder we are moving.
+```shell
+o2-qc-repo-move-objects --url http://localhost:8083 --log-level 10 --path qc/TRD/MO/TrackletsTask/triggerspertimeframe --new-path qc/TRD/MO/Tracklets/triggerspertimeframe --dry-run
 ```
