@@ -79,6 +79,9 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
                                                                    "The format is \"full.path.to.key=value[;full.path.to.key=value]\"." } });
   workflowOptions.push_back(
     ConfigParamSpec{ "configKeyValues", VariantType::String, "", { "Semicolon separated key=value strings (e.g.: 'TPCHwClusterer.peakChargeThreshold=4;...')" } });
+
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-infologger", VariantType::Bool, false, { "Disable entirely the infologger." } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -151,15 +154,20 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
     // we set the infologger levels as soon as possible to avoid spamming
     auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
-    auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", true);
-    auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+
+    if (config.options().get<bool>("no-infologger")) {
+      quality_control::core::QcInfoLogger::disable();
+    } else {
+      auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", true);
+      auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+      ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
+      ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+    }
     auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
     auto rotateMaxBytes = configTree.get<u_long>("qc.config.infologger.filterRotateMaxBytes", 0);
     auto rotateMaxFiles = configTree.get<u_int>("qc.config.infologger.filterRotateMaxFiles", 0);
     std::string debugInDiscardFile = configTree.get<std::string>("qc.config.infologger.debugInDiscardFile", "false");
     auto debugInDiscardFileBool = debugInDiscardFile == "true";
-    ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
-    ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
     ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), rotateMaxBytes, rotateMaxFiles, 0, !debugInDiscardFileBool /*Do not store Debug messages in file*/);
 
     std::string id = "runQC";

@@ -23,6 +23,7 @@ namespace o2::quality_control::core
 AliceO2::InfoLogger::InfoLogger* QcInfoLogger::instance;
 AliceO2::InfoLogger::InfoLoggerContext* QcInfoLogger::mContext;
 QcInfoLogger::_init QcInfoLogger::_initializer;
+bool QcInfoLogger::disabled = false;
 
 void QcInfoLogger::setFacility(const std::string& facility)
 {
@@ -59,6 +60,13 @@ void QcInfoLogger::setPartition(const std::string& partitionName)
   ILOG(Debug, Devel) << "IL: Partition set to " << partitionName << ENDM;
 }
 
+void QcInfoLogger::disable(bool disabled)
+{
+  QcInfoLogger::disabled = disabled;
+  ILOG_INST.filterDiscardDebug(true);
+  ILOG_INST.filterDiscardLevel(1);
+}
+
 using namespace std;
 
 void QcInfoLogger::init(const std::string& facility,
@@ -77,6 +85,10 @@ void QcInfoLogger::init(const std::string& facility,
   // Set the proper discard filters
   ILOG_INST.filterDiscardDebug(discardFileParameters.debug);
   ILOG_INST.filterDiscardLevel(discardFileParameters.fromLevel);
+  if (disabled) {
+    ILOG_INST.filterDiscardDebug(true);
+    ILOG_INST.filterDiscardLevel(1);
+  }
   if (!discardFileParameters.discardFile.empty()) {
     ILOG_INST.filterDiscardSetFile(discardFileParameters.discardFile.c_str(), discardFileParameters.rotateMaxBytes, discardFileParameters.rotateMaxFiles, 0, !discardFileParameters.debugInDiscardFile /*Do not store Debug messages in file*/);
   }

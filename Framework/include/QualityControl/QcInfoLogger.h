@@ -71,6 +71,7 @@ class QcInfoLogger
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
                    const std::string& partitionName = "");
+  static void disable(bool disabled = true);
 
   // build a default infologger
   static class _init
@@ -91,6 +92,7 @@ class QcInfoLogger
   // if we keep the default infologger it will any ways be valid till the end of the process.
   static AliceO2::InfoLogger::InfoLogger* instance;
   static AliceO2::InfoLogger::InfoLoggerContext* mContext;
+  static bool disabled; // disabled basically means that we enforce discarding debug and level 1+
 };
 
 } // namespace o2::quality_control::core
