@@ -212,8 +212,8 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
           samplingPoliciesForRemoteTasks.insert({ dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
         } else {
           throw std::runtime_error(
-            "Configuration error: unsupported dataSource '" + dataSource.name + "' for a remote QC Task '" +
-            taskSpec.taskName + "'");
+            "Configuration error: dataSource '" + dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + //
+            "' does not have a supported type. Remote QC tasks can subscribe only to data sampling policies outputs.");
         }
       }
     }
@@ -294,8 +294,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
           samplingPoliciesForRemoteTasks.insert({ dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
         } else {
           throw std::runtime_error(
-            "Configuration error: unsupported dataSource '" + dataSource.name + "' for a remote QC Task '" +
-            taskSpec.taskName + "'");
+            "Configuration error: dataSource '" + dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + //
+            "' does not have a supported type. Remote QC tasks can subscribe only to data sampling policies outputs.");
         }
       }
 
