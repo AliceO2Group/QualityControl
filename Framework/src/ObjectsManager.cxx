@@ -124,6 +124,7 @@ void ObjectsManager::stopPublishing(TObject* object)
   }
   if (objectToRemove) {
     mMonitorObjects->Remove(objectToRemove);
+    mMonitorObjects->Compress();
   }
 }
 
