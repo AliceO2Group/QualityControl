@@ -34,13 +34,13 @@ namespace o2::quality_control_modules::trd
 
 void CheckOnHc2d::configure()
 {
-  if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
-    mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
-    ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
-  } else {
-    mTimestamp = o2::ccdb::getCurrentTimestamp();
-    ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
-  }
+  // if (auto param = mCustomParameters.find("ccdbtimestamp"); param != mCustomParameters.end()) {
+  //   mTimestamp = std::stol(mCustomParameters["ccdbtimestamp"]);
+  //   ILOG(Debug, Support) << "configure() : using ccdbtimestamp = " << mTimestamp << ENDM;
+  // } else {
+  //   mTimestamp = o2::ccdb::getCurrentTimestamp();
+  //   ILOG(Debug, Support) << "configure() : using default timestam of now = " << mTimestamp << ENDM;
+  // }
 
   if (auto param = mCustomParameters.find("ccdbPath"); param != mCustomParameters.end()) {
     mCcdbPath = mCustomParameters["ccdbPath"];
@@ -56,11 +56,9 @@ void CheckOnHc2d::configure()
   // mgr.setTimestamp(mTimestamp);
   // mChamberStatus = mgr.get<std::array<int, MAXCHAMBER>>("TRD/Calib/DCSDPsFedChamberStatus");
 
-  mChamberStatus = retrieveConditionAny<std::array<int, MAXCHAMBER>>(mCcdbPath, {}, mTimestamp);
+  // mChamberStatus = retrieveConditionAny<std::array<int, MAXCHAMBER>>(mCcdbPath, {}, mTimestamp);
 
-  if (mChamberStatus == nullptr) {
-    ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
-  }
+  
 }
 
 Quality CheckOnHc2d::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -78,6 +76,12 @@ Quality CheckOnHc2d::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         ILOG(Debug, Trace) << "Requested Object Not Found" << ENDM;
         return overAllQuality;
         // return result1;
+      }
+      auto timeStamp = mo->getValidity().getMin();
+      mChamberStatus = retrieveConditionAny<std::array<int, MAXCHAMBER>>(mCcdbPath, {}, timeStamp);
+
+      if (mChamberStatus == nullptr) {
+        ILOG(Info, Support) << "mChamberStatus is null, no chamber status to display" << ENDM;
       }
 
       result1 = Quality::Good;
