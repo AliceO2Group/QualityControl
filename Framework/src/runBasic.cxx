@@ -121,7 +121,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     DataProcessorSpec printer{
       .name = "printer",
       .inputs = Inputs{
-        { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+        { "checked-mo", "CTST", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
       .algorithm = adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>(),
       .labels = { { "resilient" } }
     };
@@ -130,7 +130,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     DataProcessorSpec printer{
       .name = "printer",
       .inputs = Inputs{
-        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+        { "checked-mo", "CTST", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
       .algorithm = adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>(),
       .labels = { { "resilient" } }
 

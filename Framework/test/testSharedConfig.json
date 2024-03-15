@@ -122,6 +122,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
           "name": "skeletonTask",
@@ -134,6 +135,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
           "name": "skeletonTask",
@@ -145,6 +147,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnAll",
         "dataSource": [{
           "type": "Task",
@@ -159,6 +162,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
@@ -173,6 +177,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnAnyNonZero",
         "dataSource": [{
           "type": "Task",
@@ -187,6 +192,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
           "name": "xyzTaskID"
@@ -196,6 +202,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnEachSeparately",
         "dataSource": [{
           "type": "Task",
@@ -210,6 +217,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnAny",
         "dataSource": [{
           "type": "PostProcessing",
@@ -217,6 +225,42 @@
           "MOs": [
             "example"
           ]
+        }]
+      },
+      "dataSizeCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "skeletonTask",
+          "MOs": ["example"]
+        }]
+      },
+      "dataSizeCheck2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "skeletonTask",
+          "MOs": ["example"]
+        }]
+      },
+      "someNumbersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "skeletonTask",
+          "MOs": ["example"]
         }]
       }
     },
@@ -299,7 +343,7 @@
         }, {
           "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
           "name": "dataSizeCheck2",
-          "QOs": ["someNumbersTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
+          "QOs": ["skeletonTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
         }]
       }
     }

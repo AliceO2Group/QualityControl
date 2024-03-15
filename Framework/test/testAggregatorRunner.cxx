@@ -108,7 +108,7 @@ TEST_CASE("test_aggregator_onAnyNonZero")
   QualityObjectsType result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Good);
 
-  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Bad);
 }
@@ -139,7 +139,7 @@ TEST_CASE("test_aggregator_quality_filter")
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Medium);
 
   // Add someNumbersCheck/example=bad return bad
-  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Bad);
 
@@ -148,8 +148,8 @@ TEST_CASE("test_aggregator_quality_filter")
   qoMap.clear();
   qoMap["dataSizeCheck1/q1"] = make_shared<QualityObject>(Quality::Good, "dataSizeCheck1/q1");
   qoMap["dataSizeCheck1/q2"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck1/q2");
-  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck2/someNumbersTask/example");
-  qoMap["dataSizeCheck2/someNumbersTask/example2"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example2");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck2/skeletonTask/example");
+  qoMap["dataSizeCheck2/skeletonTask/example2"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example2");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Medium);
 }
