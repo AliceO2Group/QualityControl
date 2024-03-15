@@ -79,18 +79,13 @@ class Check
   // TODO: Unique Input string
   static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
 
-  /// \brief creates DataOrigin for Check task in form CDET
-  ///
-  /// \param detector Name of the detector to be used. If longer than 3B it will be truncated
-  static o2::header::DataOrigin createCheckDataOrigin(const std::string& detector);
-
   UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
 
   // todo: probably make CheckFactory
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
-  static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
+  static framework::OutputSpec createOutputSpec(const std::string& checkName);
 
  private:
   void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);
