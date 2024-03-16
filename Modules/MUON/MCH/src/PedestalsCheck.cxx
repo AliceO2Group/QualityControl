@@ -16,18 +16,12 @@
 
 #include "MCH/PedestalsCheck.h"
 #include "MUONCommon/Helpers.h"
-#include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingSegContour/CathodeSegmentationContours.h"
 
-#include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TCanvas.h>
 #include <TLine.h>
-#include <TList.h>
-#include <TMath.h>
 #include <TPaveText.h>
-#include <TColor.h>
 
 using namespace std;
 using namespace o2::quality_control_modules::muon;

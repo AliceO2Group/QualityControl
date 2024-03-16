@@ -14,22 +14,13 @@
 /// \author Andrea Ferrero
 ///
 
-#include <TCanvas.h>
-#include <TFile.h>
-
-#include "MUONCommon/Helpers.h"
-#include "Headers/RAWDataHeader.h"
-#include "Framework/CallbackService.h"
-#include "Framework/ControlService.h"
-#include "Framework/Task.h"
-#include "DPLUtils/DPLRawParser.h"
-#include "QualityControl/QcInfoLogger.h"
 #include "MCH/PedestalsTask.h"
 #include "MCH/Helpers.h"
-#include "DataFormatsMCH/DsChannelGroup.h"
+#include "MUONCommon/Helpers.h"
+#include "Headers/RAWDataHeader.h"
+#include "DPLUtils/DPLRawParser.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingInterface/CathodeSegmentation.h"
-#include "MCHRawElecMap/Mapper.h"
 #include "MCHCalibration/PedestalChannel.h"
 #ifdef MCH_HAS_MAPPING_FACTORY
 #include "MCHMappingFactory/CreateSegmentation.h"
@@ -39,8 +30,6 @@
 using namespace std;
 using namespace o2::framework;
 using namespace o2::quality_control_modules::muon;
-
-#define MCH_FFEID_MAX (31 * 2 + 1)
 
 namespace o2
 {
@@ -63,7 +52,6 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos);
 
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
 

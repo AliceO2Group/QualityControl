@@ -19,7 +19,6 @@
 #include "MCH/Helpers.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
-#include "MCHRawElecMap/Mapper.h"
 #include <string>
 
 namespace o2::quality_control::core
@@ -37,9 +36,9 @@ class PreclustersCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  PreclustersCheck();
+  PreclustersCheck() = default;
   /// Destructor
-  ~PreclustersCheck() override;
+  ~PreclustersCheck() override = default;
 
   // Override interface
   void configure() override;
@@ -65,12 +64,7 @@ class PreclustersCheck : public o2::quality_control::checker::CheckInterface
 
   QualityChecker mQualityChecker;
 
-  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
-  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
-  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
-
-  ClassDefOverride(PreclustersCheck, 1);
+  ClassDefOverride(PreclustersCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

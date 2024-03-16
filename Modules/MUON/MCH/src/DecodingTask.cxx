@@ -37,11 +37,18 @@ using namespace o2::quality_control_modules::muon;
 namespace o2::quality_control_modules::muonchambers
 {
 
-using namespace o2;
-using namespace o2::framework;
-using namespace o2::mch;
-using namespace o2::mch::raw;
-using RDH = o2::header::RDHAny;
+template <typename T>
+void DecodingTask::publishObject(T* histo, std::string drawOption, std::string displayHints, bool statBox, bool isExpert)
+{
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  getObjectsManager()->startPublishing(histo);
+  getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+  getObjectsManager()->setDisplayHint(histo, displayHints);
+}
 
 //_____________________________________________________________________________
 
@@ -90,7 +97,6 @@ void DecodingTask::initialize(o2::framework::InitContext& /*ic*/)
 
   // expected bunch-crossing value in heart-beat packets
   mHBExpectedBc = getConfigurationParameter<int>(mCustomParameters, "HBExpectedBc", mHBExpectedBc);
-
 
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
 

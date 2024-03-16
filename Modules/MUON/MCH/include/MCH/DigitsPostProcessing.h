@@ -20,12 +20,12 @@
 #define QC_MODULE_MCH_PP_DIGITS_H
 
 #include "MCH/PostProcessingConfigMCH.h"
-#include "QualityControl/PostProcessingInterface.h"
-#include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/RatesPlotter.h"
 #include "MCH/RatesTrendsPlotter.h"
 #include "MCH/OrbitsPlotter.h"
+#include "Common/TH2Ratio.h"
+#include "QualityControl/PostProcessingInterface.h"
 
 namespace o2::quality_control::repository
 {

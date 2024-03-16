@@ -109,19 +109,6 @@ class DecodingTask /*final*/ : public TaskInterface
   std::vector<TH1*> mAllHistograms;
 };
 
-template <typename T>
-void DecodingTask::publishObject(T* histo, std::string drawOption, std::string displayHints, bool statBox, bool isExpert)
-{
-  histo->SetOption(drawOption.c_str());
-  if (!statBox) {
-    histo->SetStats(0);
-  }
-  mAllHistograms.push_back(histo);
-  getObjectsManager()->startPublishing(histo);
-  getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
-  getObjectsManager()->setDisplayHint(histo, displayHints);
-}
-
 } // namespace o2::quality_control_modules::muonchambers
 
 #endif // QC_MODULE_MCH_DECODINGTASK_H

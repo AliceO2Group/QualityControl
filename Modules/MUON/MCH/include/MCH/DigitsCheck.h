@@ -20,7 +20,6 @@
 #include "MCH/Helpers.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
-#include "MCHRawElecMap/Mapper.h"
 #include <string>
 
 namespace o2::quality_control::core
@@ -71,10 +70,7 @@ class DigitsCheck : public o2::quality_control::checker::CheckInterface
 
   QualityChecker mQualityChecker;
 
-  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
-
-  ClassDefOverride(DigitsCheck, 1);
+  ClassDefOverride(DigitsCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

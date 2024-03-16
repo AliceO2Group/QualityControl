@@ -15,14 +15,8 @@
 /// \author Sebastien Perrin
 ///
 
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TGraph.h>
-#include <TFile.h>
-#include <algorithm>
-
 #include "MCH/DigitsTask.h"
+#include "MCH/Helpers.h"
 #include "MUONCommon/Helpers.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/DataDecoder.h"
@@ -31,15 +25,15 @@
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DetectorsRaw/HBFUtils.h>
-#include "MCHConstants/DetectionElements.h"
 #include "MCHGlobalMapping/DsIndex.h"
+
+#include <TH1.h>
+#include <TH2.h>
 
 using namespace std;
 using namespace o2::mch;
 using namespace o2::mch::raw;
 using namespace o2::quality_control_modules::muon;
-
-static int nCycles = 0;
 
 namespace o2
 {
@@ -48,22 +42,28 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-DigitsTask::DigitsTask() : TaskInterface()
+template <typename T>
+void DigitsTask::publishObject(T* histo, std::string drawOption, bool statBox, bool isExpert)
 {
-  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  if (mFullHistos || (isExpert == false)) {
+    getObjectsManager()->startPublishing(histo);
+    getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+  }
 }
-
-DigitsTask::~DigitsTask() {}
 
 void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
+
   // flag to enable extra disagnostics plots; it also enables on-cycle plots
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos);
-
-  mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
 
   const uint32_t nElecXbins = NumberOfDualSampas;
 
@@ -217,8 +217,6 @@ void DigitsTask::endOfCycle()
   // update mergeable ratios
   mHistogramOccupancyElec->update();
   mHistogramSignalOccupancyElec->update();
-
-  nCycles += 1;
 }
 
 void DigitsTask::endOfActivity(const Activity& /*activity*/)

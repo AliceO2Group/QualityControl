@@ -16,8 +16,6 @@
 
 #include "MCH/DigitsCheck.h"
 #include "MUONCommon/Helpers.h"
-#include <MCHConstants/DetectionElements.h>
-#include <MCHRawElecMap/Mapper.h>
 #include "QualityControl/MonitorObject.h"
 
 // ROOT
@@ -37,8 +35,6 @@ namespace o2::quality_control_modules::muonchambers
 
 void DigitsCheck::configure()
 {
-  mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
 }
 
 void DigitsCheck::startOfActivity(const Activity& activity)

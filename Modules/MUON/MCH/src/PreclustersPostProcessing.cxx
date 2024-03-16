@@ -18,9 +18,7 @@
 
 #include "MCH/PreclustersPostProcessing.h"
 #include "MUONCommon/Helpers.h"
-#include "MCH/PostProcessingConfigMCH.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <TDatime.h>
 
 using namespace o2::quality_control_modules::muonchambers;
 using namespace o2::quality_control_modules::muon;

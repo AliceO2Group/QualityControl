@@ -21,10 +21,8 @@
 #include "MUONCommon/Helpers.h"
 #include <MCHMappingInterface/Segmentation.h>
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
 #include <TH2.h>
-#include <TDatime.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;

@@ -16,8 +16,6 @@
 #include "MCH/PreclustersCheck.h"
 #include "MCH/Helpers.h"
 #include "MUONCommon/Helpers.h"
-#include <MCHConstants/DetectionElements.h>
-#include <MCHRawElecMap/Mapper.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
 
@@ -35,16 +33,6 @@ using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
-
-PreclustersCheck::PreclustersCheck()
-{
-  mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
-}
-
-PreclustersCheck::~PreclustersCheck() {}
 
 void PreclustersCheck::configure()
 {
