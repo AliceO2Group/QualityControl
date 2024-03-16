@@ -37,7 +37,7 @@ namespace o2::quality_control_modules::fit
 void LevelCheck::updateBinsToIgnoreWithDCM()
 {
   if (mPathDeadChannelMap.size() > 0) {
-    const auto deadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap);
+    const auto deadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, {}, mTimestamp);
     for (unsigned chID = 0; chID < deadChannelMap->map.size(); chID++) {
       if (!deadChannelMap->isChannelAlive(chID)) {
         mBinsToIgnore.insert(chID);
@@ -48,6 +48,11 @@ void LevelCheck::updateBinsToIgnoreWithDCM()
 
 void LevelCheck::configure()
 {
+  mMessagePrefixWarning = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "messagePrefixWarning", "Warning in bin idxs: ");
+  mMessagePrefixError = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "messagePrefixError", "Error in bin idxs: ");
+  mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");
+  mTimestampSource = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampSource", "metadata");
+
   mThreshWarning = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "thresholdWarning", 0.9);
   mThreshError = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "thresholdError", 0.8);
   mNameObjectToCheck = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "nameObjectToCheck", "CFD_efficiency");
@@ -77,14 +82,32 @@ void LevelCheck::configure()
   }
   // Automatic selection of bins to ignore
   // Dead channel map
-  updateBinsToIgnoreWithDCM();
   mBinsToIgnoreAsStr = std::to_string(mBinsToIgnore.size());
+}
+
+void LevelCheck::setTimestamp(const std::shared_ptr<MonitorObject>& moMetadata)
+{
+  // Getting timestamp
+  if (mTimestampSource == "metadata") {
+    const auto iterMetadata = moMetadata->getMetadataMap().find(mTimestampMetaField);
+    const bool isFound = iterMetadata != moMetadata->getMetadataMap().end();
+    if (isFound) {
+      mTimestamp = std::stoll(iterMetadata->second);
+    } else {
+      ILOG(Error) << "Cannot find timestamp metadata field " << mTimestampMetaField << " . Setting timestamp to -1" << ENDM;
+      mTimestamp = -1;
+    }
+  } else if (mTimestampSource == "current") {
+    mTimestamp = -1;
+  } else {
+    mTimestamp = -1;
+    ILOG(Error) << "Uknown timestamp source " << mTimestampSource << " . Setting timestamp to -1" << ENDM;
+  }
 }
 
 Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
-
   for (const auto& entry : *moMap) {
     const auto& mo = entry.second;
     if (mo->getName() == mNameObjectToCheck) {
@@ -92,12 +115,21 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       if (h == nullptr) {
         ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1* => Quality::Bad" << ENDM;
         result = Quality::Bad;
+        result.addReason(FlagReasonFactory::Unknown(), "Cannot get TH1 object from DB");
         continue;
+      }
+      if (mIsFirstIter) {
+        setTimestamp(mo);
+        // Automatic selection of bins to ignore
+        // Dead channel map
+        updateBinsToIgnoreWithDCM();
+        mBinsToIgnoreAsStr = std::to_string(mBinsToIgnore.size());
+        mIsFirstIter = false;
       }
 
       result = Quality::Good;
-      mNumErrors = 0;
-      mNumWarnings = 0;
+      std::vector<int> vecWarnings{};
+      std::vector<int> vecErrors{};
       for (int bin = 0; bin < h->GetNbinsX(); bin++) {
         if (mBinsToIgnore.find(bin) != mBinsToIgnore.end()) {
           continue;
@@ -106,20 +138,33 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         const bool isError = (val < mThreshError && !mIsInvertedThrsh) || (val > mThreshError && mIsInvertedThrsh);
         const bool isWarning = (val < mThreshWarning && !mIsInvertedThrsh) || (val > mThreshWarning && mIsInvertedThrsh);
         if (isError) {
-          if (result.isBetterThan(Quality::Bad)) {
-            result.set(Quality::Bad);
-          }
-          mNumErrors++;
-          const std::string message = "Ratio " + mSignCheck + "\"Error\" threshold in element " + std::to_string(bin);
-          result.addReason(FlagReasonFactory::Unknown(), message);
+          vecErrors.push_back(bin);
           continue;
         } else if (isWarning) {
-          if (result.isBetterThan(Quality::Medium))
-            result.set(Quality::Medium);
-          mNumWarnings++;
-          const std::string message = "Ratio " + mSignCheck + "\"Warning\" threshold in element " + std::to_string(bin);
-          result.addReason(FlagReasonFactory::Unknown(), message);
+          vecWarnings.push_back(bin);
         }
+      }
+      mNumErrors = vecWarnings.size();
+      mNumWarnings = vecErrors.size();
+      auto funcInt2Str = [](std::string accum, int bin) { return std::move(accum) + ", " + std::to_string(bin); };
+      auto vecToStr = [&funcInt2Str](auto&& vec) -> std::string {
+        return vec.size() > 0 ? std::accumulate(std::next(vec.begin()), vec.end(), std::to_string(vec[0]), funcInt2Str) : "";
+      };
+      if (mNumErrors > 0) {
+        if (result.isBetterThan(Quality::Bad)) {
+          result.set(Quality::Bad);
+        }
+        const std::string strErrors = vecToStr(vecErrors);
+        const std::string message = mMessagePrefixError + strErrors;
+        result.addReason(FlagReasonFactory::Unknown(), message);
+      }
+      if (mNumWarnings > 0) {
+        if (result.isBetterThan(Quality::Medium)) {
+          result.set(Quality::Medium);
+        }
+        const std::string strWarnings = vecToStr(vecErrors);
+        const std::string message = mMessagePrefixWarning + strWarnings;
+        result.addReason(FlagReasonFactory::Unknown(), message);
       }
     }
   }

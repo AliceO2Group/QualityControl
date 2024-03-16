@@ -28,7 +28,7 @@
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
-#include "FITCommon/HelperFIT.h"
+
 namespace o2::quality_control_modules::ft0
 {
 
@@ -78,7 +78,6 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   const std::tuple<int, float, float> binsTime{ 500, -2500, 2500 };
   const std::tuple<int, float, float> binsBC{ 3564, 0, 3564 };
-  mMapTrgBits = HelperTrgFIT::sMapBasicTrgBitsFT0;
   mTrgPos_minBias = mMapTrgBits.size();
   mMapTrgBits.insert({ mTrgPos_minBias, "MinBias" });
   mTrgPos_allEvents = mMapTrgBits.size();

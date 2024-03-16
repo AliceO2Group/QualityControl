@@ -40,6 +40,7 @@
 #include "DataFormatsFDD/ChannelData.h"
 #include "QualityControl/TaskInterface.h"
 #include "FDDBase/Constants.h"
+#include "FITCommon/DetectorFIT.h"
 
 using namespace o2::quality_control::core;
 
@@ -73,6 +74,7 @@ class DigitQcTask final : public TaskInterface
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static float sCFDChannel2NS = o2::fdd::timePerTDC; // CFD channel width in ns
   constexpr static int cSideChOffSet = 8;
+  using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFDD;
 
  private:
   // three ways of computing cycle duration:
@@ -122,8 +124,11 @@ class DigitQcTask final : public TaskInterface
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<uint8_t, bool> mMapPMhash2isAside;
-  std::map<int, std::string> mMapDigitTrgNames;
-  std::map<o2::fdd::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+
+  typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
+  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
+
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
   std::array<int, 16> ChVertexArray;
@@ -164,6 +169,9 @@ class DigitQcTask final : public TaskInterface
   int mTrgOrGate;
   int mBinMinADCSaturationCheck;
   int mBinMaxADCSaturationCheck;
+  // Timestamp
+  std::string mMetaAnchorOutput{};
+  std::string mTimestampMetaField{};
 
   // Object which will be published
   std::unique_ptr<TH2F> mHist2CorrTCMchAndPMch;
@@ -190,9 +198,6 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1D> mHistCycleDuration;
   std::unique_ptr<TH1D> mHistCycleDurationNTF;
   std::unique_ptr<TH1D> mHistCycleDurationRange;
-  std::map<unsigned int, TH1F*> mMapHistAmp1D;
-  std::map<unsigned int, TH1F*> mMapHistTime1D;
-  std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::unique_ptr<TH2F> mHistBCvsTrg;
   std::unique_ptr<TH2F> mHistBCvsFEEmodules;

@@ -10,11 +10,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   HelperFIT.cxx
+/// \file   DetectorFIT.cxx
 /// \author Artur Furs afurs@cern.ch
 
-#include "FITCommon/HelperFIT.h"
+#include "FITCommon/DetectorFIT.h"
 
-namespace o2::quality_control_modules::fit
-{
-} // namespace o2::quality_control_modules::fit
+using namespace o2::quality_control_modules::fit::detectorFIT;
+template class DetectorFIT<EDetectorFIT::kFDD>;
+template class DetectorFIT<EDetectorFIT::kFT0>;
+template class DetectorFIT<EDetectorFIT::kFV0>;

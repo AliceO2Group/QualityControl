@@ -40,7 +40,7 @@
 #include <Rtypes.h>
 
 #include "FITCommon/DigitSync.h"
-#include <FITCommon/HelperFIT.h>
+#include "FITCommon/DetectorFIT.h"
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::fit
@@ -70,9 +70,9 @@ class RecoFITQcTask final : public TaskInterface
   bool mIsFT0{ false };
   bool mIsFV0{ false };
 
-  const uint16_t mNTrgBitsFDD = HelperTrgFIT::sMapBasicTrgBitsFDD.size();
-  const uint16_t mNTrgBitsFT0 = HelperTrgFIT::sMapBasicTrgBitsFT0.size();
-  const uint16_t mNTrgBitsFV0 = HelperTrgFIT::sMapBasicTrgBitsFV0.size();
+  const uint16_t mNTrgBitsFDD = detectorFIT::DetectorFDD::sMapTrgBits.size();
+  const uint16_t mNTrgBitsFT0 = detectorFIT::DetectorFT0::sMapTrgBits.size();
+  const uint16_t mNTrgBitsFV0 = detectorFIT::DetectorFV0::sMapTrgBits.size();
   const uint16_t mNTrgBitsFT0_FV0 = mNTrgBitsFT0 * mNTrgBitsFV0;
 
   const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
