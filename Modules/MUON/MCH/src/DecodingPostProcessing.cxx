@@ -18,6 +18,7 @@
 
 #include "MCH/DecodingPostProcessing.h"
 #include "MCH/PostProcessingConfigMCH.h"
+#include "MUONCommon/Helpers.h"
 #include <MCHMappingInterface/Segmentation.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RootClassFactory.h"
@@ -34,36 +35,7 @@ using namespace o2::mch::raw;
 
 void DecodingPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(getID(), config);
-
-  mRefTimeStamp = mchConfig.getParameter<int64_t>("ReferenceTimeStamp", -1);
-  auto refDate = mchConfig.getParameter<std::string>("ReferenceDate");
-  if (!refDate.empty()) {
-    TDatime date(refDate.c_str());
-    mRefTimeStamp = date.Convert();
-  }
-  ILOG(Info, Devel) << "reference time stamp: " << mRefTimeStamp << "  (" << refDate << ")"
-                    << AliceO2::InfoLogger::InfoLogger::endm;
-
-  mFullHistos = mchConfig.getParameter<bool>("FullHistos", false);
-
-  mCcdbObjects.emplace(errorsSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(hbPacketsSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(syncStatusSourceName(), CcdbObjectHelper());
-
-  for (auto source : mchConfig.dataSources) {
-    std::string sourceType, sourceName;
-    splitDataSourceName(source.name, sourceType, sourceName);
-    if (sourceType.empty()) {
-      continue;
-    }
-
-    auto obj = mCcdbObjects.find(sourceType);
-    if (obj != mCcdbObjects.end()) {
-      obj->second.mPath = source.path;
-      obj->second.mName = sourceName;
-    }
-  }
+  mConfig = PostProcessingConfigMCH(getID(), config);
 }
 
 //_________________________________________________________________________________________
@@ -152,7 +124,31 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
 void DecodingPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
+  const auto& activity = t.activity;
 
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+
+  mCcdbObjects.clear();
+  mCcdbObjects.emplace(errorsSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(hbPacketsSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(syncStatusSourceName(), CcdbObjectHelper());
+
+  // set objects path from configuration
+  for (auto source : mConfig.dataSources) {
+    std::string sourceType, sourceName;
+    splitDataSourceName(source.name, sourceType, sourceName);
+    if (sourceType.empty()) {
+      continue;
+    }
+
+    auto obj = mCcdbObjects.find(sourceType);
+    if (obj != mCcdbObjects.end()) {
+      obj->second.mPath = source.path;
+      obj->second.mName = sourceName;
+    }
+  }
+
+  // instantiate and publish the histograms
   createDecodingErrorsHistos(t, &qcdb);
   createHeartBeatPacketsHistos(t, &qcdb);
   createSyncStatusHistos(t, &qcdb);

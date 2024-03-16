@@ -21,6 +21,7 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 
+#include "MCH/PostProcessingConfigMCH.h"
 #include "MCH/Helpers.h"
 #include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
@@ -75,6 +76,8 @@ class DecodingPostProcessing : public PostProcessingInterface
 
   int64_t mRefTimeStamp;
   bool mFullHistos{ false };
+
+  PostProcessingConfigMCH mConfig;
 
   // CCDB object accessors
   std::map<std::string, CcdbObjectHelper> mCcdbObjects;

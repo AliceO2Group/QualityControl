@@ -23,6 +23,7 @@
 #include <algorithm>
 
 #include "MCH/DigitsTask.h"
+#include "MUONCommon/Helpers.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/DataDecoder.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -36,6 +37,7 @@
 using namespace std;
 using namespace o2::mch;
 using namespace o2::mch::raw;
+using namespace o2::quality_control_modules::muon;
 
 static int nCycles = 0;
 
@@ -58,12 +60,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize DigitsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // flag to enable extra disagnostics plots; it also enables on-cycle plots
-  mDiagnostic = false;
-  if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mDiagnostic = true;
-    }
-  }
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos);
 
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
   mFeeLink2SolarMapper = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
@@ -85,7 +82,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramDigitsSignalOrbitElec = std::make_unique<TH2F>("DigitSignalOrbit_Elec", "Digit orbits vs DS Id (signal)", nElecXbins, 0, nElecXbins, 130, -1, 129);
   publishObject(mHistogramDigitsSignalOrbitElec.get(), "colz", true, false);
 
-  if (mDiagnostic) {
+  if (mFullHistos) {
     mHistogramDigitsBcInOrbit = std::make_unique<TH2F>("Expert/DigitsBcInOrbit_Elec", "Digit BC vs DS Id", nElecXbins, 0, nElecXbins, 3600, 0, 3600);
     publishObject(mHistogramDigitsBcInOrbit.get(), "colz", false, true);
 
@@ -181,7 +178,7 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
     mHistogramDigitsSignalOrbitElec->Fill(fecId, orbit);
   }
 
-  if (mDiagnostic) {
+  if (mFullHistos) {
     mHistogramDigitsBcInOrbit->Fill(fecId, bc);
 
     //--------------------------------------------------------------------------

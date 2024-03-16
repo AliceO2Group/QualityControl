@@ -80,7 +80,7 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
     }
   }
 
-  bool mDiagnostic{ false }; // publish extra diagnostics plots
+  bool mFullHistos{ false }; // publish extra diagnostics plots
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
