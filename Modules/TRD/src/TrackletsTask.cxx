@@ -138,12 +138,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
 
-  // LB: Chamber Status cannot be loaded only once, it should always take check object
   auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
-  mChamberStatus = ptr.get();
-  if (mChamberStatus) {
-    TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
-  }
 
   // Fill histograms
   auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
@@ -198,6 +193,13 @@ void TrackletsTask::endOfCycle()
 void TrackletsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+}
+
+void TrackletsTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0)) {
+    TRDHelpers::drawChamberStatusOnHistograms(static_cast<std::array<int, MAXCHAMBER>*>(obj), mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
+  }
 }
 
 void TrackletsTask::reset()

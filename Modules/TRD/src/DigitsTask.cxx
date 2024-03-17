@@ -146,13 +146,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
 
-  // LB: Chamber Status cannot be loaded only once, it should always check object
   auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
-  mChamberStatus = ptr.get();
-  if (mChamberStatus) {
-    // LB: no half chamber distribution map for Digits, pass it as null pointer
-    TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, nullptr, mLayers, NCOLUMN);
-  }
 
   // fill histograms
   auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
@@ -337,6 +331,14 @@ void DigitsTask::endOfCycle()
 void DigitsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+}
+
+void DigitsTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0)) {
+    // LB: no half chamber distribution map for Digits, pass it as null pointer
+    TRDHelpers::drawChamberStatusOnHistograms(static_cast<std::array<int, MAXCHAMBER>*>(obj), nullptr, mLayers, NCOLUMN);
+  }
 }
 
 void DigitsTask::reset()

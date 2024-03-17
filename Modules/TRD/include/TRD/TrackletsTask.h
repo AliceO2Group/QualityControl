@@ -43,6 +43,7 @@ class TrackletsTask final : public TaskInterface
   void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
+  void finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj) override;
   void reset() override;
   void buildHistograms();
 
@@ -64,7 +65,6 @@ class TrackletsTask final : public TaskInterface
 
   // data to pull from CCDB
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
-  const std::array<int, o2::trd::constants::MAXCHAMBER>* mChamberStatus = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
