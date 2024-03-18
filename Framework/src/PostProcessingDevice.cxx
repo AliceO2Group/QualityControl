@@ -56,7 +56,7 @@ void PostProcessingDevice::init(framework::InitContext& ctx)
   // registering state machine callbacks
   ctx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = ctx.services()]() mutable { start(services); });
   ctx.services().get<CallbackService>().set<CallbackService::Id::Reset>([this]() { reset(); });
-  ctx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this]() { stop(); });
+  ctx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this, services = ctx.services()]() mutable { stop(services); });
 }
 
 void PostProcessingDevice::run(framework::ProcessingContext& ctx)
@@ -110,9 +110,9 @@ void PostProcessingDevice::start(ServiceRegistryRef services)
   mRunner->start(services);
 }
 
-void PostProcessingDevice::stop()
+void PostProcessingDevice::stop(ServiceRegistryRef services)
 {
-  mRunner->stop();
+  mRunner->stop(services);
 }
 
 void PostProcessingDevice::reset()

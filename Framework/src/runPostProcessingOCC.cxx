@@ -118,7 +118,8 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
 
     bool success = true;
     try {
-      mRunner->stop();
+      o2::framework::ServiceRegistry registry;
+      mRunner->stop(registry);
     } catch (const std::exception& ex) {
       ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
