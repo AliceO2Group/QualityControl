@@ -37,7 +37,7 @@ struct MessagePad {
   float mPadLowX = 0.5;                 /// Position of the message PAD in low x
   float mPadLowY = 0.9;                 /// Position of the message PAD in low y
   float mPadHighX = 0.9;                /// Position of the message PAD in high x
-  float mPadHighY = 1.5;                /// Position of the message PAD in high y
+  float mPadHighY = 0.75;                /// Position of the message PAD in high y
   std::vector<std::string> mMessages{}; /// Message to print on the pad, this is reset at each call of MakeMessagePad
   TPaveText* mMessagePad = nullptr;     /// Text pad with the messages
   int mEnabledFlag = 1;                 /// Flag to enable or disable the pad
