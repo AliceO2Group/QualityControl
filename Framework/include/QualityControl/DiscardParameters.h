@@ -10,27 +10,27 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// @file    DiscardFileParameters.h
+/// @file    DiscardParameters.h
 /// @author  Barthelemy von Haller
 ///
 
-#ifndef QC_CORE_DISCARDFILEPARAMETERS_H
-#define QC_CORE_DISCARDFILEPARAMETERS_H
+#ifndef QC_CORE_DISCARDPARAMETERS_H
+#define QC_CORE_DISCARDPARAMETERS_H
 
 #include <string>
 
 namespace o2::quality_control::core
 {
 
-struct DiscardFileParameters {
-  bool debug = true;
-  int fromLevel = 21 /* Discard Trace */;
-  std::string discardFile;
-  unsigned long rotateMaxBytes = 0;
-  unsigned int rotateMaxFiles = 0;
-  bool debugInDiscardFile = false;
+struct DiscardParameters {
+  bool debug = true; // Discard debug messages
+  int fromLevel = 21; // Discard from this level up, default: Trace
+  std::string file; // Discard to this file (if set) the messages whose level are equal or above `fromLevel`
+  unsigned long rotateMaxBytes = 0; // Rotate the file to which we discard when it reaches this size
+  unsigned int rotateMaxFiles = 0; // Number of files we rotate over
+  bool debugInDiscardFile = false; // Discarded debug messages also go to the discard file
 };
 
 } // namespace o2::quality_control::core
 
-#endif // QC_CORE_DISCARDFILEPARAMETERS_H
+#endif // QC_CORE_DISCARDPARAMETERS_H

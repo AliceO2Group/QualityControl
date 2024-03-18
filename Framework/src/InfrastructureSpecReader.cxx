@@ -74,7 +74,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
   spec.infologgerDiscardParameters = {
     commonTree.get<bool>("infologger.filterDiscardDebug", spec.infologgerDiscardParameters.debug),
     commonTree.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardParameters.fromLevel),
-    commonTree.get<std::string>("infologger.filterDiscardFile", spec.infologgerDiscardParameters.discardFile),
+    commonTree.get<std::string>("infologger.filterDiscardFile", spec.infologgerDiscardParameters.file),
     commonTree.get<u_long>("infologger.filterRotateMaxBytes", spec.infologgerDiscardParameters.rotateMaxBytes),
     commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles),
     commonTree.get<bool>("infologger.debugInDiscardFile", spec.infologgerDiscardParameters.debugInDiscardFile)

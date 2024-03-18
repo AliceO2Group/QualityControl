@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "QualityControl/Activity.h"
-#include "QualityControl/DiscardFileParameters.h"
+#include "QualityControl/DiscardParameters.h"
 
 namespace o2::quality_control::checker
 {
@@ -30,7 +30,7 @@ struct CheckRunnerConfig {
   std::string consulUrl{};
   std::string monitoringUrl{};
   std::string bookkeepingUrl{};
-  core::DiscardFileParameters infologgerDiscardParameters;
+  core::DiscardParameters infologgerDiscardParameters;
   core::Activity fallbackActivity;
   framework::Options options{};
 };
