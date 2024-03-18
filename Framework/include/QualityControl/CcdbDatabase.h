@@ -92,7 +92,6 @@ class CcdbDatabase : public DatabaseInterface
   void prepareTaskDataContainer(std::string taskName) override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
   void truncate(std::string taskName, std::string objectName) override;
-  void storeStreamerInfosToFile(std::string filename);
   static long getCurrentTimestamp();
   static long getFutureTimestamp(int secondsInFuture);
   /**
@@ -129,13 +128,6 @@ class CcdbDatabase : public DatabaseInterface
   void setMaxObjectSize(size_t maxObjectSize) override;
 
  private:
-  /**
-   * \brief Load StreamerInfos from a ROOT file.
-   * When we were not saving TFiles in the CCDB, we streamed ROOT objects without their StreamerInfos.
-   * As a result we can't read them back. The only way is to load them from a file. This is what we do
-   * here.
-   */
-  static void loadDeprecatedStreamerInfos();
   void init();
 
   /**
