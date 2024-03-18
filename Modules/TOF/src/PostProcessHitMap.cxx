@@ -70,7 +70,7 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
   const auto mo = mDatabase->retrieveMO(mCCDBPath, mCCDBPathObject, t.timestamp, t.activity);
   TH2F* h = static_cast<TH2F*>(mo ? mo->getObject() : nullptr);
   if (!h) {
-    ILOG(Warning, Devel) << "MO 'HitMap' not found in path " << mCCDBPath << " with timestamp " << t.timestamp << ENDM;
+    ILOG(Warning, Devel) << "MO " << mCCDBPathObject << " not found in path " << mCCDBPath << " with timestamp " << t.timestamp << ENDM;
     return;
   }
   // Getting the reference map
