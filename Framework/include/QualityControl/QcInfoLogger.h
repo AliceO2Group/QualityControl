@@ -71,7 +71,7 @@ class QcInfoLogger
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
                    const std::string& partitionName = "");
-  static void disable(bool disabled = true);
+  static void disable();
 
   // build a default infologger
   static class _init

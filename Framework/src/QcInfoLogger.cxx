@@ -60,9 +60,9 @@ void QcInfoLogger::setPartition(const std::string& partitionName)
   ILOG(Debug, Devel) << "IL: Partition set to " << partitionName << ENDM;
 }
 
-void QcInfoLogger::disable(bool disabled)
+void QcInfoLogger::disable()
 {
-  QcInfoLogger::disabled = disabled;
+  QcInfoLogger::disabled = true;
   ILOG_INST.filterDiscardDebug(true);
   ILOG_INST.filterDiscardLevel(1);
 }
