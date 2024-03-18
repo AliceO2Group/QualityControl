@@ -24,7 +24,10 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/PostProcessHitMap.h"
+#include "CCDB/CcdbApi.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/UserCodeInterface.h"
 
 // ROOT includes
 #include <TH2F.h>
@@ -46,8 +49,8 @@ void PostProcessHitMap::configure(const boost::property_tree::ptree& config)
   const std::string baseJsonPath = "qc.postprocessing." + getID() + ".customization.";
   mCCDBPath = config.get<std::string>(baseJsonPath + "CCDBPath", "TOF/MO/TaskDigits/");
   ILOG(Info, Support) << "Setting CCDBPath to " << mCCDBPath << ENDM;
-  mCCDBPathObject = config.get<std::string>(baseJsonPath + "CCDBPathObject", "HitMapNoiseFiltered");
-  ILOG(Info, Support) << "Setting CCDBPathObject to " << mCCDBPathObject << ENDM;
+  mCCDBUrl = config.get<std::string>(baseJsonPath + "CCDBUrl", "http://alice-ccdb.cern.ch");
+  ILOG(Info, Support) << "Setting CCDBUrl to " << mCCDBUrl << ENDM;
   mRefMapCcdbPath = config.get<std::string>(baseJsonPath + "RefMapCcdbPath", "/TOF/Calib/FEELIGHT");
   ILOG(Info, Support) << "Setting RefMapCcdbPath to " << mRefMapCcdbPath << ENDM;
   mRefMapTimestamp = config.get<int>(baseJsonPath + "RefMapTimestamp", -1);
@@ -60,22 +63,24 @@ void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistryRef servic
 {
   // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
+  o2::ccdb::BasicCCDBManager::instance().setURL(mCCDBUrl);
 }
 
 void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services)
 {
   // Getting the hit map
-  const auto mo = mDatabase->retrieveMO(mCCDBPath, mCCDBPathObject, t.timestamp, t.activity);
+  const auto mo = mDatabase->retrieveMO(mCCDBPath, "HitMapNoiseFiltered", t.timestamp, t.activity);
   TH2F* h = static_cast<TH2F*>(mo ? mo->getObject() : nullptr);
   if (!h) {
-    ILOG(Warning, Devel) << "MO '" << mCCDBPathObject << "' not found in path " << mCCDBPath << " with timestamp " << t.timestamp << ENDM;
+    ILOG(Warning, Devel) << "MO 'HitMap' not found in path " << mCCDBPath << " with timestamp " << t.timestamp << ENDM;
     return;
   }
   // Getting the reference map
-  auto& ccdb = services.get<repository::DatabaseInterface>();
-  map<string, string> metadata; // can be empty
-  const auto* refmap = static_cast<o2::tof::TOFFEElightInfo*>(ccdb.retrieveAny(typeid(o2::tof::TOFFEElightInfo), mRefMapCcdbPath, metadata, mRefMapTimestamp));
+  const o2::tof::TOFFEElightInfo* refmap = nullptr;
+  refmap = o2::quality_control::core::UserCodeInterface::retrieveConditionAny<o2::tof::TOFFEElightInfo>(mRefMapCcdbPath);
 
+  // const auto* refmap = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::tof::TOFFEElightInfo>(mRefMapCcdbPath, mRefMapTimestamp);
+  // Printf("Got map from url %s", o2::ccdb::BasicCCDBManager::instance().getURL().c_str());
   if (!mHistoRefHitMap) {
     ILOG(Debug, Devel) << "making new refmap from " << mRefMapCcdbPath << " and timestamp " << mRefMapTimestamp << ENDM;
     mHistoRefHitMap.reset(static_cast<TH2F*>(h->Clone("ReferenceHitMap")));

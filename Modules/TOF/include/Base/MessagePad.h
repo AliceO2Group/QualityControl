@@ -35,13 +35,13 @@ namespace o2::quality_control_modules::tof
 
 struct MessagePad {
   float mPadLowX = 0.6;                 /// Position of the message PAD in low x
-  float mPadLowY = 0.5;                 /// Position of the message PAD in low y
+  float mPadLowY = 0.9;                 /// Position of the message PAD in low y
   float mPadHighX = 0.9;                /// Position of the message PAD in high x
-  float mPadHighY = 0.75;               /// Position of the message PAD in high y
+  float mPadHighY = 1.5;                /// Position of the message PAD in high y
   std::vector<std::string> mMessages{}; /// Message to print on the pad, this is reset at each call of MakeMessagePad
   TPaveText* mMessagePad = nullptr;     /// Text pad with the messages
   int mEnabledFlag = 1;                 /// Flag to enable or disable the pad
-  const std::string mName = "";         /// Name of the message pad, can be used to identify the pad if multiple are used
+  const std::string mName = "msg";      /// Name of the message pad, can be used to identify the pad if multiple are used
 
   // Messages to print based on quality
   std::string mMessageWhenNull = "No quality established"; /// Message to print when quality is Null
@@ -140,7 +140,7 @@ struct MessagePad {
     ILOG(Info, Devel) << "Message pad '" << mName << "' is enabled" << ENDM;
 
     mMessagePad = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, padOpt);
-    mMessagePad->SetName(Form("%s_msg", histogram->GetName()));
+    mMessagePad->SetName(Form("%s_%s", histogram->GetName(), mName.c_str()));
     histogram->GetListOfFunctions()->Add(mMessagePad);
     mMessagePad->SetBorderSize(1);
     mMessagePad->SetTextColor(kBlack);

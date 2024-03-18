@@ -20,6 +20,7 @@
 #define QUALITYCONTROL_TOF_POSTPROCESSHITMAP_H
 
 // QC includes
+#include <CCDB/BasicCCDBManager.h>
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 
@@ -67,7 +68,9 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
 
  private:
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  int mRefMapTimestamp;        /// Timestamp of the hitmap to fetch (initialized from the configure method)
+  int mRefMapTimestamp; /// Timestamp of the hitmap to fetch (initialized from the configure method)
+  std::string mCCDBUrl; /// CCDB url of the MO (initialized from the configure method)
+  ccdb::BasicCCDBManager* mCcdbManager = nullptr;
   std::string mCCDBPath;       /// CCDB path of the MO (initialized from the configure method)
   std::string mCCDBPathObject; /// CCDB name of the MO (initialized from the configure method)
   std::string mRefMapCcdbPath; /// CCDB path of the RefMap (initialized from the configure method)
