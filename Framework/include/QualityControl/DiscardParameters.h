@@ -23,12 +23,12 @@ namespace o2::quality_control::core
 {
 
 struct DiscardParameters {
-  bool debug = true; // Discard debug messages
-  int fromLevel = 21; // Discard from this level up, default: Trace
-  std::string file; // Discard to this file (if set) the messages whose level are equal or above `fromLevel`
+  bool debug = true;                // Discard debug messages
+  int fromLevel = 21;               // Discard from this level up, default: Trace
+  std::string file;                 // Discard to this file (if set) the messages whose level are equal or above `fromLevel`
   unsigned long rotateMaxBytes = 0; // Rotate the file to which we discard when it reaches this size
-  unsigned int rotateMaxFiles = 0; // Number of files we rotate over
-  bool debugInDiscardFile = false; // Discarded debug messages also go to the discard file
+  unsigned int rotateMaxFiles = 0;  // Number of files we rotate over
+  bool debugInDiscardFile = false;  // Discarded debug messages also go to the discard file
 };
 
 } // namespace o2::quality_control::core
