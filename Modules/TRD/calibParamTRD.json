@@ -46,14 +46,11 @@
             "graphErrors": "0:CalVdriftExB.vdrifterr"
           },
           {
-            "name": "vdrift_trend2",
+            "name": "vdrift_trend2D",
             "title": "vDrift trend",
-            "varexp": "CalVdriftExB.vdrift[]:runNumber",
+            "varexp": "CalVdriftExB.vdrift:time",
             "selection": "",
-            "option": "colz logz",
-            "graphYRange": "-2:3.5",
-            "graphXRange": "",
-            "graphAxisLabel": "vdrift:time"
+            "option": "colz logz"
           },
           {
             "name": "exb_trend",

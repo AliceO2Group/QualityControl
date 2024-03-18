@@ -38,11 +38,11 @@ class CalibReductorTRD : public quality_control::postprocessing::ReductorConditi
 
  private:
   struct {
-    Float_t vdrift[o2::trd::constants::MAXCHAMBER];
-    Float_t vdriftmean;
-    Float_t vdrifterr;
-    Float_t exbmean;
-    Float_t exberr;
+    float vdrift[o2::trd::constants::MAXCHAMBER];
+    float vdriftmean;
+    float vdrifterr;
+    float exbmean;
+    float exberr;
   } mStats;
 };
 

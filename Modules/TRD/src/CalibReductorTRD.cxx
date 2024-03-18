@@ -28,7 +28,7 @@ void* CalibReductorTRD::getBranchAddress()
 
 const char* CalibReductorTRD::getBranchLeafList()
 {
-  return "vdrift[540]/F:vdriftmean/F:vdrifterr/F:exbmean/F:exberr/F";
+  return Form("vdrift[%i]:vdriftmean/F:vdrifterr:exbmean/F:exberr", o2::trd::constants::MAXCHAMBER);
 }
 
 bool CalibReductorTRD::update(ConditionRetriever& retriever)
