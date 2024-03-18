@@ -88,7 +88,6 @@ void BigScreen::configure(const boost::property_tree::ptree& config)
     index += 1;
   }
   mCanvas = std::make_unique<TCanvas>("BigScreen", "QC Big Screen", 800, 600);
-  getObjectsManager()->startPublishing(mCanvas.get());
 }
 
 //_________________________________________________________________________________________
@@ -97,6 +96,7 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
 {
   mCanvas->Clear();
   mCanvas->cd();
+  getObjectsManager()->startPublishing(mCanvas.get());
 }
 
 //_________________________________________________________________________________________
