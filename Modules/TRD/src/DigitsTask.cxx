@@ -146,17 +146,7 @@ void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
 
-  if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
-    mChamberStatus = ptr.get();
-    // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
-    if (mChamberStatus) {
-      // LB: no half chamber distribution map for Digits, pass it as null pointer
-      TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, nullptr, mLayers, NCOLUMN);
-    } else {
-      ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
-    }
-  }
+  auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
 
   // fill histograms
   auto digits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("digits");
@@ -341,6 +331,14 @@ void DigitsTask::endOfCycle()
 void DigitsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+}
+
+void DigitsTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0)) {
+    // LB: no half chamber distribution map for Digits, pass it as null pointer
+    TRDHelpers::drawChamberStatusOnHistograms(static_cast<std::array<int, MAXCHAMBER>*>(obj), nullptr, mLayers, NCOLUMN);
+  }
 }
 
 void DigitsTask::reset()
