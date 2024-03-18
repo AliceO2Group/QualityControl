@@ -34,7 +34,6 @@
 #include <TList.h>
 #include <TROOT.h>
 #include <TKey.h>
-#include <TStreamerInfo.h>
 // std
 #include <chrono>
 #include <sstream>
@@ -64,42 +63,6 @@ CcdbDatabase::CcdbDatabase() : ccdbApi(new o2::ccdb::CcdbApi())
 
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
 
-void CcdbDatabase::loadDeprecatedStreamerInfos()
-{
-  if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    ILOG(Debug, Devel) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found. "
-                           << "Consequently, old data might not be readable." << ENDM;
-    return;
-  }
-  string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  vector<string> filenames = { "streamerinfos.root" };
-  for (const auto& filename : filenames) {
-    string localPath = path + filename;
-    ILOG(Debug, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
-    TFile file(localPath.data(), "READ");
-    if (file.IsZombie()) {
-      string s = string("Cannot find ") + localPath;
-      ILOG(Warning, Support) << s << ENDM;
-      continue;
-    }
-    TIter next(file.GetListOfKeys());
-    TKey* key;
-    std::unordered_set<std::string> alreadySeen;
-    while ((key = (TKey*)next())) {
-      TClass* cl = gROOT->GetClass(key->GetClassName());
-      if (!cl->InheritsFrom("TStreamerInfo"))
-        continue;
-      auto* si = (TStreamerInfo*)key->ReadObj();
-      string stringRepresentation = si->GetName() + si->GetClassVersion();
-      if (alreadySeen.count(stringRepresentation) == 0) {
-        alreadySeen.emplace(stringRepresentation);
-        ILOG(Debug, Trace) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << "'" << ENDM;
-        si->BuildCheck();
-      }
-    }
-  }
-}
-
 void CcdbDatabase::connect(const string& host, const string& /*database*/, const string& /*username*/, const string& /*password*/)
 {
   mUrl = host;
@@ -119,7 +82,6 @@ void CcdbDatabase::init()
 {
   ccdbApi->init(mUrl);
   ccdbApi->setCurlRetriesParameters(5);
-  loadDeprecatedStreamerInfos();
 }
 
 void CcdbDatabase::handleStorageError(const string& path, int result)
@@ -689,20 +651,6 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
   ILOG(Info, Support) << "Truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi->truncate(taskName + "/" + objectName);
-}
-
-void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
-{
-  TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class", "DET");
-  TMessage message(kMESS_OBJECT);
-  message.Reset();
-  message.EnableSchemaEvolution(true);
-  message.WriteObjectAny(mo1.get(), mo1->IsA());
-  TList* infos = message.GetStreamerInfos();
-  TFile f(filename.data(), "recreate");
-  infos->Write();
-  f.Close();
 }
 
 void CcdbDatabase::setMaxObjectSize(size_t maxObjectSize)
