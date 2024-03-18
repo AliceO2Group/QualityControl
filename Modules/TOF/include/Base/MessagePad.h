@@ -34,7 +34,7 @@ namespace o2::quality_control_modules::tof
 {
 
 struct MessagePad {
-  float mPadLowX = 0.6;                 /// Position of the message PAD in low x
+  float mPadLowX = 0.5;                 /// Position of the message PAD in low x
   float mPadLowY = 0.9;                 /// Position of the message PAD in low y
   float mPadHighX = 0.9;                /// Position of the message PAD in high x
   float mPadHighY = 1.5;                /// Position of the message PAD in high y
