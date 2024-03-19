@@ -91,6 +91,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     delete histo;
     histo = nullptr;
   }
+  mMapTrgHistBC.clear();
 
   // start initialization
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
