@@ -21,7 +21,7 @@
 #include <string>
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/Activity.h"
-#include "QualityControl/DiscardParameters.h"
+#include "QualityControl/LogDiscardParameters.h"
 
 namespace o2::quality_control::checker
 {
@@ -31,7 +31,7 @@ struct AggregatorRunnerConfig {
   std::string consulUrl{};
   std::string monitoringUrl{};
   std::string bookkeepingUrl{};
-  core::DiscardParameters infologgerDiscardParameters;
+  core::LogDiscardParameters infologgerDiscardParameters;
   core::Activity fallbackActivity;
   framework::Options options{};
 };

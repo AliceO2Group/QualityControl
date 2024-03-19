@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// @file    DiscardParameters.h
+/// @file    LogDiscardParameters.h
 /// @author  Barthelemy von Haller
 ///
 
@@ -22,7 +22,7 @@
 namespace o2::quality_control::core
 {
 
-struct DiscardParameters {
+struct LogDiscardParameters {
   bool debug = true;                // Discard debug messages
   int fromLevel = 21;               // Discard from this level up, default: Trace
   std::string file;                 // Discard to this file (if set) the messages whose level are equal or above `fromLevel`

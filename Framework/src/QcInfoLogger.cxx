@@ -70,7 +70,7 @@ void QcInfoLogger::disable()
 using namespace std;
 
 void QcInfoLogger::init(const std::string& facility,
-                        const DiscardParameters& discardParameters,
+                        const LogDiscardParameters& discardParameters,
                         AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext,
                         int run,
@@ -107,7 +107,7 @@ void QcInfoLogger::init(const std::string& facility,
                         int run,
                         const std::string& partitionName)
 {
-  DiscardParameters discardParameters;
+  LogDiscardParameters discardParameters;
   auto discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "true");
   discardParameters.debug = discardDebugStr == "true";
   discardParameters.fromLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);

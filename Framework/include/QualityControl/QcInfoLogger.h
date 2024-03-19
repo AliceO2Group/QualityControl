@@ -18,9 +18,8 @@
 #define QC_CORE_QCINFOLOGGER_H
 
 #include <InfoLogger/InfoLogger.hxx>
-#include <InfoLogger/InfoLoggerMacros.hxx>
 #include <boost/property_tree/ptree_fwd.hpp>
-#include "QualityControl/DiscardParameters.h"
+#include "QualityControl/LogDiscardParameters.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
@@ -60,7 +59,7 @@ class QcInfoLogger
   static void setRun(int run);
   static void setPartition(const std::string& partitionName);
   static void init(const std::string& facility,
-                   const DiscardParameters& discardParameters,
+                   const LogDiscardParameters& discardParameters,
                    AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
