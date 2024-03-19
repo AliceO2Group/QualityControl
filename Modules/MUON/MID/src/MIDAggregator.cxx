@@ -38,7 +38,6 @@ std::map<std::string, Quality> MIDAggregator::aggregate(QualityObjectsMapType& q
   if (qoMap.empty()) {
     Quality null = Quality::Null;
     std::string NullReason = "QO map given to the aggregator '" + mName + "' is empty.";
-    null.addReason(FlagReasonFactory::UnknownQuality(), NullReason);
     null.addMetadata(Quality::Null.getName(), NullReason);
     return { { mName, null } };
   }

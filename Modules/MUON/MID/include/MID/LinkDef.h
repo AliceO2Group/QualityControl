@@ -19,6 +19,6 @@
 #pragma link C++ class o2::quality_control_modules::mid::HistoHelper + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTaskConfigMID + ;
 #pragma link C++ class o2::quality_control::postprocessing::MIDTrending + ;
-#pragma link C++ class o2::quality_control::mid::MIDAggregator + ;
+#pragma link C++ class o2::quality_control_modules::mid::MIDAggregator + ;
 
 #endif
