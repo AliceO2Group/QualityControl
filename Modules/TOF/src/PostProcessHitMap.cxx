@@ -48,8 +48,6 @@ void PostProcessHitMap::configure(const boost::property_tree::ptree& config)
   ILOG(Info, Support) << "Setting CCDBPath to " << mCCDBPath << ENDM;
   mCCDBPathObject = config.get<std::string>(baseJsonPath + "CCDBPathObject", "HitMapNoiseFiltered");
   ILOG(Info, Support) << "Setting CCDBPathObject to " << mCCDBPathObject << ENDM;
-  mCCDBUrl = config.get<std::string>(baseJsonPath + "CCDBUrl", "http://alice-ccdb.cern.ch");
-  ILOG(Info, Support) << "Setting CCDBUrl to " << mCCDBUrl << ENDM;
   mRefMapCcdbPath = config.get<std::string>(baseJsonPath + "RefMapCcdbPath", "/TOF/Calib/FEELIGHT");
   ILOG(Info, Support) << "Setting RefMapCcdbPath to " << mRefMapCcdbPath << ENDM;
   mRefMapTimestamp = config.get<int>(baseJsonPath + "RefMapTimestamp", -1);
