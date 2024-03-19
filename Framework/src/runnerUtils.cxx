@@ -152,7 +152,7 @@ uint64_t getCurrentTimestamp()
   return value.count();
 }
 
-void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters infologgerDiscardParameters, std::string facility, std::string detectorName)
+void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
@@ -163,7 +163,7 @@ void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters in
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
 
-  infologgerDiscardParameters.discardFile = templateILDiscardFile(infologgerDiscardParameters.discardFile, iCtx);
+  infologgerDiscardParameters.file = templateILDiscardFile(infologgerDiscardParameters.file, iCtx);
   QcInfoLogger::init(facility,
                      infologgerDiscardParameters,
                      il,

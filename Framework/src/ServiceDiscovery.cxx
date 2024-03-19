@@ -26,6 +26,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
 #include <iostream>
+#include <InfoLogger/InfoLoggerMacros.hxx>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 

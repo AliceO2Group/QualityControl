@@ -18,9 +18,8 @@
 #define QC_CORE_QCINFOLOGGER_H
 
 #include <InfoLogger/InfoLogger.hxx>
-#include <InfoLogger/InfoLoggerMacros.hxx>
 #include <boost/property_tree/ptree_fwd.hpp>
-#include "QualityControl/DiscardFileParameters.h"
+#include "QualityControl/LogDiscardParameters.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
@@ -60,7 +59,7 @@ class QcInfoLogger
   static void setRun(int run);
   static void setPartition(const std::string& partitionName);
   static void init(const std::string& facility,
-                   const DiscardFileParameters& discardFileParameters,
+                   const LogDiscardParameters& discardParameters,
                    AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
@@ -71,6 +70,7 @@ class QcInfoLogger
                    AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
                    int run = -1,
                    const std::string& partitionName = "");
+  static void disable();
 
   // build a default infologger
   static class _init
@@ -91,6 +91,7 @@ class QcInfoLogger
   // if we keep the default infologger it will any ways be valid till the end of the process.
   static AliceO2::InfoLogger::InfoLogger* instance;
   static AliceO2::InfoLogger::InfoLoggerContext* mContext;
+  static bool disabled; // disabled basically means that we enforce discarding debug and level 1+
 };
 
 } // namespace o2::quality_control::core
