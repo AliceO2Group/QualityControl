@@ -88,18 +88,7 @@ void PhysicsTask::startOfCycle()
 void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   static bool isFirstTime = true;
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
 
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
-
-  // Some examples:
-
-  // 1. In a loop
   int nInputs = ctx.inputs().size();
   mHist1D[H1DNInputs]->Fill(nInputs);
 
@@ -151,7 +140,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  // 2. Using get("<binding>")
   // HW Raw Errors
   if (hasRawErrors) {
     auto rawErrors = ctx.inputs().get<gsl::span<o2::cpv::RawDecoderError>>("rawerrors");
@@ -170,6 +158,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     unsigned short nDigPerEvent[3];
     for (const auto& trigRecord : digitsTR) {
       mHist1D[H1DBCsFromDigits]->Fill(trigRecord.getBCData().bc);
+      // this file has a mixture of ILOG and LOG, perhaps it could be unified.
       LOG(debug) << " monitorData() : digit trigger record #" << mNEventsTotal
                  << " contains " << trigRecord.getNumberOfObjects() << " objects.";
       mNEventsTotal++;
@@ -241,8 +230,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
 
   // !!!todo
   // we need somehow to extract timestamp from data when there are no ccdb dpl fetcher inputs available
