@@ -41,7 +41,6 @@ std::map<std::string, Quality> MIDAggregator::aggregate(QualityObjectsMapType& q
     null.addMetadata(Quality::Null.getName(), NullReason);
     return { { mName, null } };
   }
-  
 
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
@@ -55,11 +54,11 @@ std::map<std::string, Quality> MIDAggregator::aggregate(QualityObjectsMapType& q
   result["newQuality"] = current;
 
   // add one more
-  //Quality plus = Quality::Medium;
-  //result["another"] = plus;
+  // Quality plus = Quality::Medium;
+  // result["another"] = plus;
 
   result["another"] = current;
-  
+
   return result;
 }
 } // namespace o2::quality_control_modules::mid

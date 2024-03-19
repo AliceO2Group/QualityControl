@@ -68,19 +68,19 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       // Scale histograms with noise info
       auto histo = dynamic_cast<TH1*>(mo->getObject());
       if (histo) {
-	mHistoHelper.normalizeHistoTokHz(histo);
-	if (mo->getName().find("Map") != std::string::npos) {
-	  histo->SetMaximum(10.);
-	}
+        mHistoHelper.normalizeHistoTokHz(histo);
+        if (mo->getName().find("Map") != std::string::npos) {
+          histo->SetMaximum(10.);
+        }
       }
     } else if (mo->getName().find("Dead") != std::string::npos) {
       if (mDeadRof > 0.) {
         // Scale histograms with dead channels info
         auto histo = dynamic_cast<TH1*>(mo->getObject());
-	if (histo) {	
-	  histo->Scale(100. / mDeadRof);
-	  mHistoHelper.updateTitle(histo, " (%)");
-	}
+        if (histo) {
+          histo->Scale(100. / mDeadRof);
+          mHistoHelper.updateTitle(histo, " (%)");
+        }
       }
     }
   }

@@ -125,32 +125,32 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         maxVal = 0;
         minVal = 1000;
         auto histo = dynamic_cast<TH2F*>(item.second->getObject());
-	if (histo) {
-	  mHistoHelper.normalizeHistoTokHz(histo);
-	  for (int bx = 1; bx < 15; bx++) {
-	    for (int by = 1; by < 37; by++) {
-	      if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
-		double val = histo->GetBinContent(bx, by);
-		if (val > maxVal) {
-		  maxVal = val;
-		}
-		if (val < minVal) {
-		  minVal = val;
-		}
-		if (val == 0) {
-		  nEmptyLB++;
-		} else if (val > mLocalBoardThreshold) {
-		  nBadLB++;
-		}
-		if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) {
-		  by += 3;
-		} // zones 1 board
-		else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
-		  by += 1;
-		} // zones 2 boards
-	      }
-	    }
-	  }
+        if (histo) {
+          mHistoHelper.normalizeHistoTokHz(histo);
+          for (int bx = 1; bx < 15; bx++) {
+            for (int by = 1; by < 37; by++) {
+              if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
+                double val = histo->GetBinContent(bx, by);
+                if (val > maxVal) {
+                  maxVal = val;
+                }
+                if (val < minVal) {
+                  minVal = val;
+                }
+                if (val == 0) {
+                  nEmptyLB++;
+                } else if (val > mLocalBoardThreshold) {
+                  nBadLB++;
+                }
+                if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) {
+                  by += 3;
+                } // zones 1 board
+                else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
+                  by += 1;
+                } // zones 2 boards
+              }
+            }
+          }
         }
         auto qual = Quality::Good;
         if (nBadLB > 0) {
@@ -214,22 +214,22 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     // This matches "MultHitMT*"
     if (mHistoHelper.getNTFs() > 0) {
       auto histo = dynamic_cast<TH1F*>(mo->getObject());
-      if (histo){
-	histo->SetFillColor(color);
-	mHistoHelper.addLatex(histo, 0.15, 0.82, color, Form("Limit : [%g;%g]", mMinMultThreshold, mMeanMultThreshold));
-	mHistoHelper.addLatex(histo, 0.3, 0.62, color, Form("Mean=%g ", histo->GetMean()));
-	mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
-	histo->SetTitleSize(0.04);
-	histo->SetLineColor(kBlack);
+      if (histo) {
+        histo->SetFillColor(color);
+        mHistoHelper.addLatex(histo, 0.15, 0.82, color, Form("Limit : [%g;%g]", mMinMultThreshold, mMeanMultThreshold));
+        mHistoHelper.addLatex(histo, 0.3, 0.62, color, Form("Mean=%g ", histo->GetMean()));
+        mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
+        histo->SetTitleSize(0.04);
+        histo->SetLineColor(kBlack);
       }
     }
   } else if (mo->getName() == "MeanMultiHits") {
     auto histo = dynamic_cast<TH1F*>(mo->getObject());
-      if (histo){
-	mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
-	mHistoHelper.updateTitleWithNTF(histo);
-	histo->SetStats(0);
-      }
+    if (histo) {
+      mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
+      mHistoHelper.updateTitleWithNTF(histo);
+      histo->SetStats(0);
+    }
   } else {
     // Change palette contours so that visibility of low-multiplicity strips or boards is improved
     std::vector<double> zcontoursLoc{ 0, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100 };

@@ -39,4 +39,4 @@ class MIDAggregator : public o2::quality_control::checker::AggregatorInterface
 
 } // namespace o2::quality_control_modules::mid
 
-#endif //QUALITYCONTROL_MIDAGGREGATOR_H
+#endif // QUALITYCONTROL_MIDAGGREGATOR_H
