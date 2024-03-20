@@ -529,6 +529,17 @@ then
 fi
 ```
 
+### How to debug the config templating
+
+It is sometimes useful to see what is being exactly executed by the JIT, in particular to see what the variables passed to the workflow command are. 
+To do so
+
+- restart the core with option --veryVerbose
+   - emacs /etc/systemd/system/o2-aliecs-core.service
+   - systemctl daemon-reload
+   - service o2-aliecs-core restart
+- in ILG search for "Resolved DPL command:"
+
 ## Common QCDB cleanup tasks
 
 In general:
