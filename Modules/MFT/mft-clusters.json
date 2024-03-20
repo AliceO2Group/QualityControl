@@ -36,7 +36,7 @@
         },
         "taskParameters" : {
           "myOwnKey" : "myOwnValue",
-          "OnlineQC" : "1",
+          "onlineQC" : "1",
           "maxClusterROFSize" : "5000",
           "maxDuration" : "60000",
           "timeBinSize" : "0.1",

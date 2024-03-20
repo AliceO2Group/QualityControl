@@ -74,8 +74,9 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize QcMFTClusterTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // loading custom parameters
-  if (auto param = mCustomParameters.find("OnlineQC"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - OnlineQC: " << param->second << ENDM;
+  mOnlineQC = 1;
+  if (auto param = mCustomParameters.find("onlineQC"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - onlineQC: " << param->second << ENDM;
     mOnlineQC = stoi(param->second);
   }
 
