@@ -23,7 +23,7 @@
 
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/Activity.h"
-#include "QualityControl/DiscardFileParameters.h"
+#include "QualityControl/LogDiscardParameters.h"
 #include "QualityControl/CustomParameters.h"
 
 namespace o2::base
@@ -60,7 +60,7 @@ struct TaskRunnerConfig {
   int parallelTaskID = 0;            // ID to differentiate parallel local Tasks from one another. 0 means this is the only one.
   std::string saveToFile{};
   int resetAfterCycles = 0;
-  core::DiscardFileParameters infologgerDiscardParameters;
+  core::LogDiscardParameters infologgerDiscardParameters;
   Activity fallbackActivity;
   std::shared_ptr<o2::base::GRPGeomRequest> grpGeomRequest;
   std::shared_ptr<o2::globaltracking::DataRequest> globalTrackingDataRequest;

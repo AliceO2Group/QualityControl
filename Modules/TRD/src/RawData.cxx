@@ -194,6 +194,7 @@ void RawData::startOfActivity(const Activity& activity)
 void RawData::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+  mStats->Reset();
 }
 
 void RawData::monitorData(o2::framework::ProcessingContext& ctx)

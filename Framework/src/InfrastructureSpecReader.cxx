@@ -74,7 +74,7 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
   spec.infologgerDiscardParameters = {
     commonTree.get<bool>("infologger.filterDiscardDebug", spec.infologgerDiscardParameters.debug),
     commonTree.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardParameters.fromLevel),
-    commonTree.get<std::string>("infologger.filterDiscardFile", spec.infologgerDiscardParameters.discardFile),
+    commonTree.get<std::string>("infologger.filterDiscardFile", spec.infologgerDiscardParameters.file),
     commonTree.get<u_long>("infologger.filterRotateMaxBytes", spec.infologgerDiscardParameters.rotateMaxBytes),
     commonTree.get<u_int>("infologger.filterRotateMaxFiles", spec.infologgerDiscardParameters.rotateMaxFiles),
     commonTree.get<bool>("infologger.debugInDiscardFile", spec.infologgerDiscardParameters.debugInDiscardFile)
@@ -262,8 +262,9 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
     }
     case DataSourceType::Check: {
       dss.id = dataSourceTree.get<std::string>("name");
-      dss.name = dss.id;
-      dss.inputs = { { dss.name, "QC", Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      dss.name = wholeTree.get<std::string>("qc.checks." + dss.id + ".checkName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.checks." + dss.id + ".detectorName");
+      dss.inputs = { { dss.name, Check::createCheckDataOrigin(detectorName), Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -272,8 +273,10 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       break;
     }
     case DataSourceType::Aggregator: {
-      dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, "QC", AggregatorRunner::createAggregatorRunnerDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      dss.id = dataSourceTree.get<std::string>("name");
+      dss.name = wholeTree.get<std::string>("qc.aggregators." + dss.id + ".checkName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.aggregators." + dss.id + ".detectorName");
+      dss.inputs = { { dss.name, Check::createCheckDataOrigin(detectorName), AggregatorRunner::createAggregatorRunnerDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());

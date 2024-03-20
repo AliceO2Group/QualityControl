@@ -56,7 +56,7 @@ auto createDataDescription(const std::string& name, size_t hashLength) -> o2::he
     return description;
   } else {
     const auto descriptionWithHash = createDescriptionWithHash(name, hashLength);
-    ILOG(Warning) << "Too long data description name [" << name << "] changed to [" << descriptionWithHash << "]";
+    ILOG(Warning) << "Too long data description name [" << name << "] changed to [" << descriptionWithHash << "]" << ENDM;
     description.runtimeInit(descriptionWithHash.c_str());
     return description;
   }

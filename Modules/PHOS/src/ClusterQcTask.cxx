@@ -56,10 +56,6 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInfoLogger().setContext(context);
   ILOG(Debug, Devel) << "initialize ClusterQcTask" << ENDM;
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << ENDM;
-  }
   if (auto param = mCustomParameters.find("mPtMin"); param != mCustomParameters.end()) {
     mPtMin = std::stof(param->second);
   }

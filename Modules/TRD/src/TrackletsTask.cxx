@@ -138,16 +138,7 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNoiseMap = ptr.get();
   }
 
-  if (!mChamberStatus) {
-    auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
-    mChamberStatus = ptr.get();
-    // LB: only draw in plots if it is first instance, e.g. null ptr to non null ptr
-    if (mChamberStatus) {
-      TRDHelpers::drawChamberStatusOnHistograms(mChamberStatus, mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
-    } else {
-      ILOG(Info, Support) << "Failed to retrieve ChamberStatus, so it will not show on plots" << ENDM;
-    }
-  }
+  auto ptr = ctx.inputs().get<std::array<int, MAXCHAMBER>*>("fedChamberStatus");
 
   // Fill histograms
   auto tracklets = ctx.inputs().get<gsl::span<o2::trd::Tracklet64>>("tracklets");
@@ -202,6 +193,13 @@ void TrackletsTask::endOfCycle()
 void TrackletsTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+}
+
+void TrackletsTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
+{
+  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0)) {
+    TRDHelpers::drawChamberStatusOnHistograms(static_cast<std::array<int, MAXCHAMBER>*>(obj), mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
+  }
 }
 
 void TrackletsTask::reset()

@@ -108,9 +108,9 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
+  // it starts with "check/" and is followed by the unique part of the device name truncated to the maximum allowed length
   string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
-  facilityName = facilityName.substr(0, 32);
+  facilityName = facilityName.substr(0, QcInfoLogger::maxFacilityLength);
   return facilityName;
 }
 

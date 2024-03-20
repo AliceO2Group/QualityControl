@@ -65,8 +65,8 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
 {
   auto runNumber = computeActivityField<int>(services, "runNumber", fallbackActivity.mId);
   auto runType = computeActivityField<int>(services, "runType", fallbackActivity.mType);
-  auto run_start_time_ms = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
-  auto run_stop_time_ms = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
+  auto runStartTimeMs = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
+  auto runEndTimeMs = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
   auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "");
   if (periodName.empty()) {
@@ -82,7 +82,7 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
     periodName,
     fallbackActivity.mPassName,
     fallbackActivity.mProvenance,
-    { run_start_time_ms, run_stop_time_ms },
+    { runStartTimeMs, runEndTimeMs },
     beam_type,
     partitionName,
     fillNumber);
@@ -152,7 +152,7 @@ uint64_t getCurrentTimestamp()
   return value.count();
 }
 
-void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters infologgerDiscardParameters, std::string facility, std::string detectorName)
+void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
@@ -163,7 +163,7 @@ void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters in
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
 
-  infologgerDiscardParameters.discardFile = templateILDiscardFile(infologgerDiscardParameters.discardFile, iCtx);
+  infologgerDiscardParameters.file = templateILDiscardFile(infologgerDiscardParameters.file, iCtx);
   QcInfoLogger::init(facility,
                      infologgerDiscardParameters,
                      il,

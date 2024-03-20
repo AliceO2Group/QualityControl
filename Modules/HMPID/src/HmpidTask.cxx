@@ -32,6 +32,7 @@
 #include "HMPIDReconstruction/HmpidEquipment.h"
 #include "HMPIDReconstruction/HmpidDecoder2.h"
 #include "DataFormatsHMP/Digit.h"
+#include <InfoLogger/InfoLoggerMacros.hxx>
 
 namespace o2::quality_control_modules::hmpid
 {

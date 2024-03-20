@@ -77,7 +77,7 @@ std::string templateILDiscardFile(std::string& originalFile, framework::InitCont
 
 uint64_t getCurrentTimestamp();
 
-void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
+void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
 
 } // namespace o2::quality_control::core
 
