@@ -44,6 +44,7 @@ namespace o2::quality_control::core
 class QcInfoLogger
 {
  public:
+  constexpr static size_t maxFacilityLength = 32;
   static AliceO2::InfoLogger::InfoLogger& GetInfoLogger()
   {
     return *instance;

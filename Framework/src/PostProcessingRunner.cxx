@@ -68,13 +68,13 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config, core:
 
 void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig)
 {
+  QcInfoLogger::init(("post/" + taskConfig.taskName).substr(0, QcInfoLogger::maxFacilityLength), runnerConfig.infologgerDiscardParameters);
+  ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
+
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
   mActivity = taskConfig.activity;
   mActivity.mValidity = gInvalidValidityInterval;
-
-  QcInfoLogger::init("post/" + mID, mRunnerConfig.infologgerDiscardParameters);
-  ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
   if (!ConfigParamGlo::keyValues.empty()) {
