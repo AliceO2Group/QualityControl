@@ -22,6 +22,7 @@
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/HashDataDescription.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <Common/Exceptions.h>
 #include <Framework/CallbackService.h>
@@ -46,6 +47,8 @@ PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& run
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
 {
+  core::initInfologger(ctx, mRunnerConfig.infologgerDiscardParameters, ("post/" + mRunnerConfig.taskName).substr(0, core::QcInfoLogger::maxFacilityLength), mRunnerConfig.detectorName);
+
   if (ctx.options().isSet("configKeyValues")) {
     mRunnerConfig.configKeyValues = ctx.options().get<std::string>("configKeyValues");
   }
