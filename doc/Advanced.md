@@ -1155,7 +1155,7 @@ o2-qc --config consul-json://{{ consul_endpoint }}/o2/components/qc/ANY/any/mch-
 ```
 becomes
 ```
-o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching --remote -b
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching --remote -b'
 ```
 Make sure that you are able to run with the new workflow before actually templating. 
 
