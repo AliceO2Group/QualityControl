@@ -15,6 +15,8 @@
 /// \author Guillermo Contreras
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
+/// \author David Grund
+///
 
 // C++
 #include <string>
@@ -77,15 +79,10 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         return Quality::Null;
       }
 
-      float den = hDigitChipOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
-
       for (int iBin = 0; iBin < hDigitChipOccupancy->GetNbinsX(); iBin++) {
         if (hDigitChipOccupancy->GetBinContent(iBin + 1) == 0) {
           hDigitChipOccupancy->Fill(937); // number of chips with zero digits stored in the overflow bin
         }
-        float num = hDigitChipOccupancy->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hDigitChipOccupancy->SetBinContent(iBin + 1, ratio);
       }
     }
 
@@ -96,14 +93,10 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         return Quality::Null;
       }
 
-      float den = hDigitOccupancySummary->GetBinContent(0, 0); // normalisation stored in the uderflow bin
-      float nEmptyBins = 0;                                    // number of empty zones stored here
+      float nEmptyBins = 0; // number of empty zones
 
       for (int iBinX = 0; iBinX < hDigitOccupancySummary->GetNbinsX(); iBinX++) {
         for (int iBinY = 0; iBinY < hDigitOccupancySummary->GetNbinsY(); iBinY++) {
-          float num = hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1);
-          float ratio = (den > 0) ? (num / den) : 0.0;
-          hDigitOccupancySummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
           if ((hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
             nEmptyBins = nEmptyBins + 1;
           }

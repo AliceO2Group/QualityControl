@@ -16,6 +16,8 @@
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
 /// \author David Grund
+///
+
 // C++
 #include <string>
 #include <gsl/span>
@@ -176,7 +178,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", MaxTrackROFSize, 0, MaxTrackROFSize, true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
-  getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist");
+  getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist logx logy");
 
   mTracksBC = std::make_unique<TH1FRatio>("mMFTTracksBC", "Tracks per BC; BCid; # entries per orbit", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, true);
   mTracksBC->SetMinimum(0.1);
