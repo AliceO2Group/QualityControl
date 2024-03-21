@@ -63,9 +63,10 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
     std::string stringE = "List channels Bad Quality: ";
     std::vector<sCheck> paramch;
   };
-  void init();
+  void startOfActivity(const Activity& activity) override;
+  void init(const Activity& activity);
   void setChName(std::string channel);
-  void setChCheck(std::string histoName, std::string typeHisto, std::string typeCheck, std::string paramPosMsgX, std::string paramPosMsgY);
+  void setChCheck(std::string histoName, std::string typeHisto, std::string typeCheck, std::string paramPosMsgX, std::string paramPosMsgY, const Activity& activity);
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
   void dumpVecParam(int id_histo, int numBinHisto, int num_ch);
   std::string getCurrentDataTime();

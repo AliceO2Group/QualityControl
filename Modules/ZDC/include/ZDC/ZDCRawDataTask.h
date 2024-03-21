@@ -169,8 +169,8 @@ class ZDCRawDataTask final : public TaskInterface
   double fMaxBinY = 0;
   int fNumCycle = 0;
   int fNumCycleErr = 0;
-  int fAlignCycle = 1;
-  int fErrorCycle = 1;
+  int fAlignCycle = 1; // param
+  int fErrorCycle = 1; // param
   int fAlignNumEntries = 2000;
 
   sAlignment fMatrixAlign[o2::zdc::NModules][o2::zdc::NChPerModule];
