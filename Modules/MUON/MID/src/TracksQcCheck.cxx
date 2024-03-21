@@ -152,45 +152,49 @@ void TracksQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "TrackMapXY") {
     auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(Hz)");
-    updateTitle(h2, Form("- TF=%3.0f -", mTracksTF));
-    updateTitle(h2, currentTime);
-    h2->SetMaximum(mTracksScale);
+    if (h2) {
+      updateTitle(h2, "(Hz)");
+      updateTitle(h2, Form("- TF=%3.0f -", mTracksTF));
+      updateTitle(h2, currentTime);
+      h2->SetMaximum(mTracksScale);
+    }
   }
   if (mTracksTF > 0) {
     if (mo->getName() == "TrackRatio44") {
       auto* h = dynamic_cast<TProfile*>(mo->getObject());
-      updateTitle(h, Form("- TF=%3.0f -", mTracksTF));
-      updateTitle(h, currentTime);
-      h->SetMinimum(0.);
-      h->SetMaximum(1.2);
+      if (h) {
+        updateTitle(h, Form("- TF=%3.0f -", mTracksTF));
+        updateTitle(h, currentTime);
+        h->SetMinimum(0.);
+        h->SetMaximum(1.2);
 
-      if (checkResult == Quality::Good) {
-        msg = drawLatex(.2, 0.82, kGreen, "All ratio within limits: OK!");
-        msg->Draw();
-        h->SetFillColor(kGreen);
-        h->GetListOfFunctions()->Add(msg);
-        // std::cout << "beautify GOOD::: "  << std::endl;
+        if (checkResult == Quality::Good) {
+          msg = drawLatex(.2, 0.82, kGreen, "All ratio within limits: OK!");
+          msg->Draw();
+          h->SetFillColor(kGreen);
+          h->GetListOfFunctions()->Add(msg);
+          // std::cout << "beautify GOOD::: "  << std::endl;
 
-      } else if (checkResult == Quality::Bad) {
-        ILOG(Info, Devel) << "Quality::Bad, setting to red" << ENDM;
-        // msg = drawLatex(.2, 0.82, kRed, ""Global Ratio too low, call MID on-call");
-        msg = drawLatex(.2, 0.82, kRed, Form("Global Ratio44/all < %4.2f  too low !! ", mRatio44Threshold));
-        msg->Draw();
-        h->SetFillColor(kRed);
-        h->GetListOfFunctions()->Add(msg);
-        // std::cout << "beautify BAD::: "  << std::endl;
+        } else if (checkResult == Quality::Bad) {
+          ILOG(Info, Devel) << "Quality::Bad, setting to red" << ENDM;
+          // msg = drawLatex(.2, 0.82, kRed, ""Global Ratio too low, call MID on-call");
+          msg = drawLatex(.2, 0.82, kRed, Form("Global Ratio44/all < %4.2f  too low !! ", mRatio44Threshold));
+          msg->Draw();
+          h->SetFillColor(kRed);
+          h->GetListOfFunctions()->Add(msg);
+          // std::cout << "beautify BAD::: "  << std::endl;
 
-      } else if (checkResult == Quality::Medium) {
-        ILOG(Info, Devel) << "Quality::medium, setting to orange" << ENDM;
-        msg = drawLatex(.2, 0.82, kOrange, Form("Ratio44/all < %4.2f too low !! ", mRatio44Threshold));
-        msg->Draw();
-        h->SetFillColor(kOrange);
-        h->GetListOfFunctions()->Add(msg);
-        // std::cout << "beautify MEDIUM::: "  << std::endl;
+        } else if (checkResult == Quality::Medium) {
+          ILOG(Info, Devel) << "Quality::medium, setting to orange" << ENDM;
+          msg = drawLatex(.2, 0.82, kOrange, Form("Ratio44/all < %4.2f too low !! ", mRatio44Threshold));
+          msg->Draw();
+          h->SetFillColor(kOrange);
+          h->GetListOfFunctions()->Add(msg);
+          // std::cout << "beautify MEDIUM::: "  << std::endl;
+        }
+        h->SetTitleSize(0.04);
+        h->SetLineColor(kBlack);
       }
-      h->SetTitleSize(0.04);
-      h->SetLineColor(kBlack);
     }
   }
 }
