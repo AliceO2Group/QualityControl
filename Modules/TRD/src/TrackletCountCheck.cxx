@@ -34,22 +34,28 @@ namespace o2::quality_control_modules::trd
 
 void TrackletCountCheck::configure()
 {
-  ILOG(Debug, Devel) << "initializing TrackletCountCheck" << ENDM;
+  // ILOG(Debug, Devel) << "initializing TrackletCountCheck" << ENDM;
 
-  mThresholdMeanHighPerTimeFrame = getFromConfig<float>(mCustomParameters, "UpperthresholdPerTimeFrame", 520.f);
-  ILOG(Debug, Support) << "using Upperthreshold Per Timeframe= " << mThresholdMeanHighPerTimeFrame << ENDM;
+  // mThresholdMeanHighPerTimeFrame = getFromConfig<float>(mCustomParameters, "UpperthresholdPerTimeFrame", 520.f);
+  // ILOG(Debug, Support) << "using Upperthreshold Per Timeframe= " << mThresholdMeanHighPerTimeFrame << ENDM;
 
-  mThresholdMeanLowPerTimeFrame = getFromConfig<float>(mCustomParameters, "LowerthresholdPerTimeFrame", 600.f);
-  ILOG(Debug, Support) << "using Lowerthreshold Per Timeframe= " << mThresholdMeanLowPerTimeFrame << ENDM;
+  // mThresholdMeanLowPerTimeFrame = getFromConfig<float>(mCustomParameters, "LowerthresholdPerTimeFrame", 600.f);
+  // ILOG(Debug, Support) << "using Lowerthreshold Per Timeframe= " << mThresholdMeanLowPerTimeFrame << ENDM;
 
-  mThresholdMeanHighPerTrigger = getFromConfig<float>(mCustomParameters, "UpperthresholdPerTrigger", 520.f);
-  ILOG(Debug, Support) << "using Upperthreshold Per Trigger= " << mThresholdMeanHighPerTrigger << ENDM;
+  // mThresholdMeanHighPerTrigger = getFromConfig<float>(mCustomParameters, "UpperthresholdPerTrigger", 520.f);
+  // ILOG(Debug, Support) << "using Upperthreshold Per Trigger= " << mThresholdMeanHighPerTrigger << ENDM;
 
-  mThresholdMeanLowPerTrigger = getFromConfig<float>(mCustomParameters, "LowerthresholdPerTrigger", 500.f);
-  ILOG(Debug, Support) << "using Lowerthreshold Per Trigger= " << mThresholdMeanLowPerTrigger << ENDM;
+  // mThresholdMeanLowPerTrigger = getFromConfig<float>(mCustomParameters, "LowerthresholdPerTrigger", 500.f);
+  // ILOG(Debug, Support) << "using Lowerthreshold Per Trigger= " << mThresholdMeanLowPerTrigger << ENDM;
 
-  mStatThresholdPerTrigger = getFromConfig<int>(mCustomParameters, "StatThresholdPerTrigger", 1000);
-  ILOG(Debug, Support) << "using StatThreshold Per Trigger= " << mStatThresholdPerTrigger << ENDM;
+  // mStatThresholdPerTrigger = getFromConfig<int>(mCustomParameters, "StatThresholdPerTrigger", 1000);
+  // ILOG(Debug, Support) << "using StatThreshold Per Trigger= " << mStatThresholdPerTrigger << ENDM;
+
+  // to check if TimeFrames with lower tracklets are higher in number wrt TimeFrames with higher tracklets
+  // (the boundary is "mTrackletPerTimeFrameThreshold")
+  // mTrackletPerTimeFrameThreshold = getFromConfig<float>(mCustomParameters, "trackletPerTimeFrameThreshold", 100.f);
+  // mRatioThreshold = getFromConfig<float>(mCustomParameters, "ratiothreshold", .9f);               // 90% of counts must be above the threshold
+  // mZeroBinRatioThreshold = getFromConfig<float>(mCustomParameters, "zerobinratiotheshold", .01f); // 1% of counts can be in this bin
 }
 
 Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -126,12 +132,22 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         mTrackletPerTimeFrameMessage->AddText(TString::Format("Number of TimeFrames without Tracklets: %d", underFlowTrackletPerTimeFrame));
       }
 
-      // applying check
+      // applying check on mean of TrackletPerTimeFrame
       float meanTrackletPerTimeframe = h2->GetMean();
       if (meanTrackletPerTimeframe > mThresholdMeanLowPerTimeFrame && meanTrackletPerTimeframe < mThresholdMeanHighPerTimeFrame) {
         TText* checkMessagePerTimeframePtr = mTrackletPerTimeFrameMessage->AddText(TString::Format("Mean Per Timeframe: %f is found in bound region [%f, %f]", meanTrackletPerTimeframe, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
         checkMessagePerTimeframePtr->SetTextColor(kGreen);
-        mResultPerTimeFrame = Quality::Good;
+
+        bool isDistributionAccepted = isTrackletDistributionAccepeted(mTrackletPerTimeFrameThreshold, mRatioThreshold, mZeroBinRatioThreshold, h2);
+        if (isDistributionAccepted) {
+          mResultPerTimeFrame = Quality::Good;
+        } else {
+          TText* checkMessagePerTimeframePtr2 = mTrackletPerTimeFrameMessage->AddText("TrackletPerTimeFrame distribution in not accepeted as per given config");
+          checkMessagePerTimeframePtr2->SetTextColor(kRed);
+          mResultPerTimeFrame = Quality::Bad;
+          mResultPerTimeFrame.addReason(FlagReasonFactory::Unknown(), "TrackletPerTimeFrame distribution in not accepet");
+        }
+
       } else {
         mResultPerTimeFrame = Quality::Bad;
         TText* checkMessagePerTimeframePtr = mTrackletPerTimeFrameMessage->AddText(TString::Format("Mean per Timeframe: %f is not found in bound region[%f, %f]", meanTrackletPerTimeframe, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
@@ -194,6 +210,93 @@ void TrackletCountCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
     h2->SetLineColor(kBlack);
   }
+}
+
+void TrackletCountCheck::reset()
+{
+  ILOG(Debug, Devel) << "TrackletCountCheck::reset" << ENDM;
+}
+
+void TrackletCountCheck::startOfActivity(const Activity& activity)
+{
+  ILOG(Debug, Devel) << "TrackletCountCheck::start : " << activity.mId << ENDM;
+  mActivity = make_shared<Activity>(activity);
+
+  ILOG(Debug, Devel) << "initializing TrackletCountCheck" << ENDM;
+
+  mThresholdMeanHighPerTimeFrame = std::stof(mCustomParameters.atOrDefaultValue("UpperthresholdPerTimeFrame", "600000.0" /*default value*/, *mActivity));
+  ILOG(Debug, Support) << "using Upperthreshold Per Timeframe= " << mThresholdMeanHighPerTimeFrame << ENDM;
+
+  mThresholdMeanLowPerTimeFrame = std::stof(mCustomParameters.atOrDefaultValue("LowerthresholdPerTimeFrame", "500000.0" /*default value*/, *mActivity));
+  ILOG(Debug, Support) << "using Lowerthreshold Per Timeframe= " << mThresholdMeanLowPerTimeFrame << ENDM;
+
+  mThresholdMeanHighPerTrigger = std::stof(mCustomParameters.atOrDefaultValue("UpperthresholdPerTrigger", "20000.0", *mActivity));
+  ILOG(Debug, Support) << "using Upperthreshold Per Trigger= " << mThresholdMeanHighPerTrigger << ENDM;
+
+  mThresholdMeanLowPerTrigger = std::stof(mCustomParameters.atOrDefaultValue("LowerthresholdPerTrigger", "10000.0", *mActivity));
+  ILOG(Debug, Support) << "using Lowerthreshold Per Trigger= " << mThresholdMeanLowPerTrigger << ENDM;
+
+  mStatThresholdPerTrigger = std::stof(mCustomParameters.atOrDefaultValue("StatThresholdPerTrigger", "1000.0", *mActivity));
+  ILOG(Debug, Support) << "using StatThreshold Per Trigger= " << mStatThresholdPerTrigger << ENDM;
+
+  // to check if TimeFrames with lower tracklets are higher in number wrt TimeFrames with higher tracklets
+  // (the boundary is "mTrackletPerTimeFrameThreshold")
+  mTrackletPerTimeFrameThreshold = std::stof(mCustomParameters.atOrDefaultValue("trackletPerTimeFrameThreshold", "550000.0", *mActivity));
+  mRatioThreshold = std::stof(mCustomParameters.atOrDefaultValue("ratiothreshold", "0.9", *mActivity));              // 90% of counts must be above the threshold
+  mZeroBinRatioThreshold = std::stof(mCustomParameters.atOrDefaultValue("zerobinratiotheshold", "0.1", *mActivity)); // 1% of counts can be in this bin
+}
+
+void TrackletCountCheck::endOfActivity(const Activity& activity)
+{
+  ILOG(Debug, Devel) << "TrackletCountCheck::end : " << activity.mId << ENDM;
+}
+
+bool TrackletCountCheck::isTrackletDistributionAccepeted(float trackletPerTimeFrameThreshold, float acceptedRatio, float zeroTrackletTfRatio, TH1F* hist)
+{
+  float ratio = -999.;
+
+  int nBins = hist->GetNbinsX();
+  float xMax = hist->GetXaxis()->GetXmax();
+  float xMin = hist->GetXaxis()->GetXmin();
+  float binWidth = (xMax - xMin) / nBins;
+
+  int trackletPerTimeFrameThresholdBin = int(trackletPerTimeFrameThreshold / binWidth);
+  float integralOnleftSide = hist->Integral(0, trackletPerTimeFrameThresholdBin);
+  float integralOnRightSide = hist->Integral(trackletPerTimeFrameThresholdBin, hist->GetXaxis()->GetXmax());
+  ILOG(Debug, Support) << "integralOnleftSide: " << integralOnleftSide << " integralOnRightSide: " << integralOnRightSide << ENDM;
+
+  if (integralOnleftSide * integralOnRightSide > 0.) {
+    ratio = integralOnleftSide / integralOnRightSide;
+    ILOG(Debug, Support) << "ratio (TFs with lower tracklets/ TFs with higher tracklets): " << ratio << " Threshold limit: " << acceptedRatio << ENDM;
+  }
+  bool zeroTrackletRatio = isTimeframeRatioWOTrackletAccepted(zeroTrackletTfRatio, hist);
+  if (!(ratio < 0.) && (ratio <= acceptedRatio)) {
+    if (zeroTrackletRatio) {
+      return true;
+    } else {
+      ILOG(Warning, Support) << "TFs with lower tracklets are still within threshold but TFs without tracklets are higher" << ENDM;
+      return false;
+    }
+  } else if (!(ratio < 0) && (ratio > acceptedRatio)) {
+    ILOG(Warning, Support) << "TFs with lower tracklets are not within threshold " << ENDM;
+    return false;
+  }
+  ILOG(Warning, Support) << "ratio is still not updated, Some region is still empty in TrackletPerTimeFrame object" << ENDM;
+  return false;
+}
+
+bool TrackletCountCheck::isTimeframeRatioWOTrackletAccepted(float zeroTrackletTfRatio, TH1F* hist)
+{
+  auto integral = hist->Integral(1, hist->GetXaxis()->GetXmax());
+  if (integral <= 0.0) {
+    integral = 1;
+  }
+  auto tFsWOTracklets = hist->GetBinContent(0);
+  if ((tFsWOTracklets / integral) <= zeroTrackletTfRatio) {
+    return true;
+  }
+  ILOG(Warning, Support) << "Ratio of No. of TFs without trackets to the total TFs: " << (tFsWOTracklets / integral) << " is higher than the threshold limit: " << zeroTrackletTfRatio << ENDM;
+  return false;
 }
 
 } // namespace o2::quality_control_modules::trd
