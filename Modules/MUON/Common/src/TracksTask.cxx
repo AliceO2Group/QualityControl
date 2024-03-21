@@ -86,7 +86,7 @@ void TracksTask::initialize(o2::framework::InitContext& /*ic*/)
 
 void TracksTask::createTrackHistos(const Activity& activity)
 {
-  bool fullHistos = getConfigurationParameter<int>(mCustomParameters, "fullHistos", 0, activity) == 1;
+  bool fullHistos = getConfigurationParameter<bool>(mCustomParameters, "fullHistos", false, activity);
 
   double maxTracksPerTF = getConfigurationParameter<double>(mCustomParameters, "maxTracksPerTF", 400, activity);
   double cutRAbsMin = getConfigurationParameter<double>(mCustomParameters, "cutRAbsMin", 17.6, activity);

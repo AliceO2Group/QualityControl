@@ -17,60 +17,17 @@
 ///
 
 #include "MCH/DigitsPostProcessing.h"
-#include "MCH/PostProcessingConfigMCH.h"
+#include "MUONCommon/Helpers.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include <TDatime.h>
 
 using namespace o2::quality_control_modules::muonchambers;
+using namespace o2::quality_control_modules::muon;
 
 void DigitsPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(getID(), config);
-
-  mRefTimeStamp = mchConfig.getParameter<int64_t>("ReferenceTimeStamp", -1);
-  auto refDate = mchConfig.getParameter<std::string>("ReferenceDate");
-  if (!refDate.empty()) {
-    TDatime date(refDate.c_str());
-    mRefTimeStamp = date.Convert();
-  }
-  ILOG(Info, Devel) << "reference time stamp: " << mRefTimeStamp << "  (" << refDate << ")"
-                    << AliceO2::InfoLogger::InfoLogger::endm;
-
-  mFullHistos = mchConfig.getParameter<bool>("FullHistos", false);
-
-  mChannelRateMin = mchConfig.getParameter<float>("ChannelRateMin", 0);
-  mChannelRateMax = mchConfig.getParameter<float>("ChannelRateMax", 100);
-
-  mCcdbObjects.emplace(rateSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(rateSignalSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(orbitsSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(orbitsSignalSourceName(), CcdbObjectHelper());
-
-  if (mRefTimeStamp > 0) {
-    mCcdbObjectsRef.emplace(rateSourceName(), CcdbObjectHelper());
-    mCcdbObjectsRef.emplace(rateSignalSourceName(), CcdbObjectHelper());
-  }
-
-  for (auto source : mchConfig.dataSources) {
-    std::string sourceType, sourceName;
-    splitDataSourceName(source.name, sourceType, sourceName);
-    if (sourceType.empty()) {
-      continue;
-    }
-
-    auto obj = mCcdbObjects.find(sourceType);
-    if (obj != mCcdbObjects.end()) {
-      obj->second.mPath = source.path;
-      obj->second.mName = sourceName;
-    }
-
-    auto objRef = mCcdbObjectsRef.find(sourceType);
-    if (objRef != mCcdbObjectsRef.end()) {
-      objRef->second.mPath = source.path;
-      objRef->second.mName = sourceName;
-    }
-  }
+  mConfig = PostProcessingConfigMCH(getID(), config);
 }
 
 //_________________________________________________________________________________________
@@ -192,7 +149,50 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
 void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
+  const auto& activity = t.activity;
 
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+
+  mRefTimeStamp = getConfigurationParameter<int64_t>(mCustomParameters, "ReferenceTimeStamp", mRefTimeStamp, activity);
+  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp << ENDM;
+
+  mChannelRateMin = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMin", mChannelRateMin, activity);
+  mChannelRateMax = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMax", mChannelRateMax, activity);
+
+  mCcdbObjects.clear();
+  mCcdbObjects.emplace(rateSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(rateSignalSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(orbitsSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(orbitsSignalSourceName(), CcdbObjectHelper());
+
+  mCcdbObjectsRef.clear();
+  if (mRefTimeStamp > 0) {
+    mCcdbObjectsRef.emplace(rateSourceName(), CcdbObjectHelper());
+    mCcdbObjectsRef.emplace(rateSignalSourceName(), CcdbObjectHelper());
+  }
+
+  // set objects path from configuration
+  for (auto source : mConfig.dataSources) {
+    std::string sourceType, sourceName;
+    splitDataSourceName(source.name, sourceType, sourceName);
+    if (sourceType.empty()) {
+      continue;
+    }
+
+    auto obj = mCcdbObjects.find(sourceType);
+    if (obj != mCcdbObjects.end()) {
+      obj->second.mPath = source.path;
+      obj->second.mName = sourceName;
+    }
+
+    auto objRef = mCcdbObjectsRef.find(sourceType);
+    if (objRef != mCcdbObjectsRef.end()) {
+      objRef->second.mPath = source.path;
+      objRef->second.mName = sourceName;
+    }
+  }
+
+  // instantiate and publish the histograms
   createRatesHistos(t, &qcdb);
   createOrbitHistos(t, &qcdb);
 

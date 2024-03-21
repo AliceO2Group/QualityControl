@@ -23,7 +23,6 @@
 #include "MCHGlobalMapping/DsIndex.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
-// #include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include <Framework/InputRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 
@@ -39,14 +38,23 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
+template <typename T>
+void PreclustersTask::publishObject(T* histo, std::string drawOption, bool statBox)
+{
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  getObjectsManager()->startPublishing(histo);
+  getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+}
+
 void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Devel) << "initialize PreclustersTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
-
-  mDet2ElecMapper = createDet2ElecMapper<ElectronicMapperGenerated>();
-  mSolar2FeeLinkMapper = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
 
   mHistogramPreclustersPerDE = std::make_unique<TH1DRatio>("PreclustersPerDE", "Number of pre-clusters for each DE", getNumDE(), 0, getNumDE());
   publishObject(mHistogramPreclustersPerDE.get(), "hist", false);

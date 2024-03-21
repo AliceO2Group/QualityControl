@@ -85,7 +85,6 @@ class PedestalsTask final : public TaskInterface
   static constexpr int sMaxDsId = 40;
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 

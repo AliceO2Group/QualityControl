@@ -18,7 +18,6 @@
 #define QC_MODULE_MUONCHAMBERS_DIGITSTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MCHRawElecMap/Mapper.h"
 #ifdef HAVE_DIGIT_IN_DATAFORMATS
 #include "DataFormatsMCH/Digit.h"
 #else
@@ -26,7 +25,6 @@
 #endif
 #include "MCHDigitFiltering/DigitFilter.h"
 #include "Common/TH2Ratio.h"
-#include "MCH/Helpers.h"
 
 class TH1F;
 class TH2F;
@@ -48,9 +46,9 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
 {
  public:
   /// \brief Constructor
-  DigitsTask();
+  DigitsTask() = default;
   /// Destructor
-  ~DigitsTask() override;
+  ~DigitsTask() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -67,23 +65,9 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
   void resetOrbits();
 
   template <typename T>
-  void publishObject(T* histo, std::string drawOption, bool statBox, bool isExpert)
-  {
-    histo->SetOption(drawOption.c_str());
-    if (!statBox) {
-      histo->SetStats(0);
-    }
-    mAllHistograms.push_back(histo);
-    if (mDiagnostic || (isExpert == false)) {
-      getObjectsManager()->startPublishing(histo);
-      getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
-    }
-  }
+  void publishObject(T* histo, std::string drawOption, bool statBox, bool isExpert);
 
-  bool mDiagnostic{ false }; // publish extra diagnostics plots
-
-  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  bool mFullHistos{ false }; // publish extra diagnostics plots
 
   o2::mch::DigitFilter mIsSignalDigit;
 

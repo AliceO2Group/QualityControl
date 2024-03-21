@@ -37,9 +37,9 @@ class RofsTask /*final*/ : public o2::quality_control::core::TaskInterface
 {
  public:
   /// \brief Constructor
-  RofsTask();
+  RofsTask() = default;
   /// Destructor
-  ~RofsTask() override;
+  ~RofsTask() override = default;
 
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(const o2::quality_control::core::Activity& activity) override;
@@ -51,16 +51,7 @@ class RofsTask /*final*/ : public o2::quality_control::core::TaskInterface
 
  private:
   template <typename T>
-  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox)
-  {
-    histo->SetOption(drawOption.c_str());
-    if (!statBox) {
-      histo->SetStats(0);
-    }
-    mAllHistograms.push_back(histo.get());
-    getObjectsManager()->startPublishing(histo.get());
-    getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
-  }
+  void publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox);
 
   void plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits);
 

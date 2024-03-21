@@ -15,53 +15,32 @@
 ///
 
 #include "MCH/PedestalsCheck.h"
-#include "MCHMappingInterface/Segmentation.h"
-#include "MCHMappingSegContour/CathodeSegmentationContours.h"
+#include "MUONCommon/Helpers.h"
 
-#include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TCanvas.h>
 #include <TLine.h>
-#include <TList.h>
-#include <TMath.h>
 #include <TPaveText.h>
-#include <TColor.h>
 
 using namespace std;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
 
 void PedestalsCheck::configure()
 {
-  if (auto param = mCustomParameters.find("MaxBadDE_ST12"); param != mCustomParameters.end()) {
-    mMaxBadST12 = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST345"); param != mCustomParameters.end()) {
-    mMaxBadST345 = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxBadFractionPerDE"); param != mCustomParameters.end()) {
-    mMaxBadFractionPerDE = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxEmptyFractionPerDE"); param != mCustomParameters.end()) {
-    mMaxEmptyFractionPerDE = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MinStatisticsPerDE"); param != mCustomParameters.end()) {
-    mMinStatisticsPerDE = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("PedestalsPlotScaleMin"); param != mCustomParameters.end()) {
-    mPedestalsPlotScaleMin = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("PedestalsPlotScaleMax"); param != mCustomParameters.end()) {
-    mPedestalsPlotScaleMax = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("NoisePlotScaleMin"); param != mCustomParameters.end()) {
-    mNoisePlotScaleMin = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("NoisePlotScaleMax"); param != mCustomParameters.end()) {
-    mNoisePlotScaleMax = std::stof(param->second);
-  }
+  mMaxBadFractionPerDE = getConfigurationParameter<double>(mCustomParameters, "MaxBadFractionPerDE", mMaxBadFractionPerDE);
+  mMaxEmptyFractionPerDE = getConfigurationParameter<double>(mCustomParameters, "MaxEmptyFractionPerDE", mMaxEmptyFractionPerDE);
+  mMinStatisticsPerDE = getConfigurationParameter<double>(mCustomParameters, "MinStatisticsPerDE", mMinStatisticsPerDE);
+  mPedestalsPlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "PedestalsPlotScaleMin", mPedestalsPlotScaleMin);
+  mPedestalsPlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "PedestalsPlotScaleMax", mPedestalsPlotScaleMax);
+  mNoisePlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "NoisePlotScaleMin", mNoisePlotScaleMin);
+  mNoisePlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "NoisePlotScaleMax", mNoisePlotScaleMax);
+
+  mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12);
+  mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345);
 
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;

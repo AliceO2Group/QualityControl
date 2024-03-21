@@ -21,7 +21,6 @@
 #include "QualityControl/TaskInterface.h"
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
-#include "MCHRawElecMap/Mapper.h"
 #ifdef HAVE_DIGIT_IN_DATAFORMATS
 #include "DataFormatsMCH/Digit.h"
 #else
@@ -48,7 +47,7 @@ class PreclustersTask /*final*/ : public o2::quality_control::core::TaskInterfac
   /// \brief Constructor
   PreclustersTask() = default;
   /// Destructor
-  ~PreclustersTask() = default;
+  ~PreclustersTask() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -61,21 +60,9 @@ class PreclustersTask /*final*/ : public o2::quality_control::core::TaskInterfac
 
  private:
   template <typename T>
-  void publishObject(T* histo, std::string drawOption, bool statBox)
-  {
-    histo->SetOption(drawOption.c_str());
-    if (!statBox) {
-      histo->SetStats(0);
-    }
-    mAllHistograms.push_back(histo);
-    getObjectsManager()->startPublishing(histo);
-    getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
-  }
+  void publishObject(T* histo, std::string drawOption, bool statBox);
 
   void plotPrecluster(const o2::mch::PreCluster& preCluster, gsl::span<const o2::mch::Digit> digits);
-
-  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
-  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 
   o2::mch::DigitFilter mIsSignalDigit;
 
