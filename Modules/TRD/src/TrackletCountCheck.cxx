@@ -34,28 +34,6 @@ namespace o2::quality_control_modules::trd
 
 void TrackletCountCheck::configure()
 {
-  // ILOG(Debug, Devel) << "initializing TrackletCountCheck" << ENDM;
-
-  // mThresholdMeanHighPerTimeFrame = getFromConfig<float>(mCustomParameters, "UpperthresholdPerTimeFrame", 520.f);
-  // ILOG(Debug, Support) << "using Upperthreshold Per Timeframe= " << mThresholdMeanHighPerTimeFrame << ENDM;
-
-  // mThresholdMeanLowPerTimeFrame = getFromConfig<float>(mCustomParameters, "LowerthresholdPerTimeFrame", 600.f);
-  // ILOG(Debug, Support) << "using Lowerthreshold Per Timeframe= " << mThresholdMeanLowPerTimeFrame << ENDM;
-
-  // mThresholdMeanHighPerTrigger = getFromConfig<float>(mCustomParameters, "UpperthresholdPerTrigger", 520.f);
-  // ILOG(Debug, Support) << "using Upperthreshold Per Trigger= " << mThresholdMeanHighPerTrigger << ENDM;
-
-  // mThresholdMeanLowPerTrigger = getFromConfig<float>(mCustomParameters, "LowerthresholdPerTrigger", 500.f);
-  // ILOG(Debug, Support) << "using Lowerthreshold Per Trigger= " << mThresholdMeanLowPerTrigger << ENDM;
-
-  // mStatThresholdPerTrigger = getFromConfig<int>(mCustomParameters, "StatThresholdPerTrigger", 1000);
-  // ILOG(Debug, Support) << "using StatThreshold Per Trigger= " << mStatThresholdPerTrigger << ENDM;
-
-  // to check if TimeFrames with lower tracklets are higher in number wrt TimeFrames with higher tracklets
-  // (the boundary is "mTrackletPerTimeFrameThreshold")
-  // mTrackletPerTimeFrameThreshold = getFromConfig<float>(mCustomParameters, "trackletPerTimeFrameThreshold", 100.f);
-  // mRatioThreshold = getFromConfig<float>(mCustomParameters, "ratiothreshold", .9f);               // 90% of counts must be above the threshold
-  // mZeroBinRatioThreshold = getFromConfig<float>(mCustomParameters, "zerobinratiotheshold", .01f); // 1% of counts can be in this bin
 }
 
 Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -224,26 +202,30 @@ void TrackletCountCheck::startOfActivity(const Activity& activity)
 
   ILOG(Debug, Devel) << "initializing TrackletCountCheck" << ENDM;
 
-  mThresholdMeanHighPerTimeFrame = std::stof(mCustomParameters.atOrDefaultValue("UpperthresholdPerTimeFrame", "600000.0" /*default value*/, *mActivity));
+  mThresholdMeanHighPerTimeFrame = std::stof(mCustomParameters.atOptional("UpperthresholdPerTimeFrame", *mActivity).value_or("6.0e5"));
   ILOG(Debug, Support) << "using Upperthreshold Per Timeframe= " << mThresholdMeanHighPerTimeFrame << ENDM;
 
-  mThresholdMeanLowPerTimeFrame = std::stof(mCustomParameters.atOrDefaultValue("LowerthresholdPerTimeFrame", "500000.0" /*default value*/, *mActivity));
+  mThresholdMeanLowPerTimeFrame = std::stof(mCustomParameters.atOptional("LowerthresholdPerTimeFrame", *mActivity).value_or("5.0e5"));
   ILOG(Debug, Support) << "using Lowerthreshold Per Timeframe= " << mThresholdMeanLowPerTimeFrame << ENDM;
 
-  mThresholdMeanHighPerTrigger = std::stof(mCustomParameters.atOrDefaultValue("UpperthresholdPerTrigger", "20000.0", *mActivity));
+  mThresholdMeanHighPerTrigger = std::stof(mCustomParameters.atOptional("UpperthresholdPerTrigger", *mActivity).value_or("2.0e4"));
   ILOG(Debug, Support) << "using Upperthreshold Per Trigger= " << mThresholdMeanHighPerTrigger << ENDM;
 
-  mThresholdMeanLowPerTrigger = std::stof(mCustomParameters.atOrDefaultValue("LowerthresholdPerTrigger", "10000.0", *mActivity));
+  mThresholdMeanLowPerTrigger = std::stof(mCustomParameters.atOptional("LowerthresholdPerTrigger", *mActivity).value_or("1.0e4"));
   ILOG(Debug, Support) << "using Lowerthreshold Per Trigger= " << mThresholdMeanLowPerTrigger << ENDM;
 
-  mStatThresholdPerTrigger = std::stof(mCustomParameters.atOrDefaultValue("StatThresholdPerTrigger", "1000.0", *mActivity));
+  mStatThresholdPerTrigger = std::stof(mCustomParameters.atOptional("StatThresholdPerTrigger", *mActivity).value_or("1.0e3"));
   ILOG(Debug, Support) << "using StatThreshold Per Trigger= " << mStatThresholdPerTrigger << ENDM;
 
   // to check if TimeFrames with lower tracklets are higher in number wrt TimeFrames with higher tracklets
   // (the boundary is "mTrackletPerTimeFrameThreshold")
-  mTrackletPerTimeFrameThreshold = std::stof(mCustomParameters.atOrDefaultValue("trackletPerTimeFrameThreshold", "550000.0", *mActivity));
-  mRatioThreshold = std::stof(mCustomParameters.atOrDefaultValue("ratiothreshold", "0.9", *mActivity));              // 90% of counts must be above the threshold
-  mZeroBinRatioThreshold = std::stof(mCustomParameters.atOrDefaultValue("zerobinratiotheshold", "0.1", *mActivity)); // 1% of counts can be in this bin
+  mTrackletPerTimeFrameThreshold = std::stof(mCustomParameters.atOptional("trackletPerTimeFrameThreshold", *mActivity).value_or("5.5e5"));
+
+  // 90% of counts must be above the threshold
+  mRatioThreshold = std::stof(mCustomParameters.atOptional("ratiothreshold", *mActivity).value_or("0.9"));
+
+  // 1% of counts can be in this bin
+  mZeroBinRatioThreshold = std::stof(mCustomParameters.atOptional("zerobinratiotheshold", *mActivity).value_or("0.1"));
 }
 
 void TrackletCountCheck::endOfActivity(const Activity& activity)
