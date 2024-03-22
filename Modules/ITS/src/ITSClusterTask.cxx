@@ -174,12 +174,16 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
         if (!mDict->isGroup(ClusterID)) {
           npix = mDict->getNpixels(ClusterID);
-          locC = mDict->getClusterCoordinates(cluster);
+          if (mDoPublishDetailedSummary == 1) {
+            locC = mDict->getClusterCoordinates(cluster);
+          }
           isGrouped = 0;
         } else {
           o2::itsmft::ClusterPattern patt(pattIt);
           npix = patt.getNPixels();
-          locC = mDict->getClusterCoordinates(cluster, patt, true);
+          if (mDoPublishDetailedSummary == 1) {
+            locC = mDict->getClusterCoordinates(cluster, patt, true);
+          }
           isGrouped = 1;
         }
 
@@ -187,7 +191,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         o2::itsmft::ClusterPattern patt(pattIt);
         npix = patt.getNPixels();
         isGrouped = 0;
-        locC = mDict->getClusterCoordinates(cluster, patt, false);
+        if (mDoPublishDetailedSummary == 1) {
+          locC = mDict->getClusterCoordinates(cluster, patt, false);
+        }
       }
 
       if (npix > 2) {
