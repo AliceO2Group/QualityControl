@@ -50,6 +50,8 @@ class CTPRawDataReaderTask final : public TaskInterface
   o2::ctp::RawDataDecoder mDecoder;
   TH1F* mHistoInputs = nullptr;
   TH1F* mHistoClasses = nullptr;
+  TH1F* mHistoInputRatios = nullptr;
+  TH1F* mHistoClassRatios = nullptr;
   TH1F* mHistoMTVXBC = nullptr;
 };
 

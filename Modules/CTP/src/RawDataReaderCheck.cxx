@@ -20,6 +20,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "DataFormatsCTP/Configuration.h"
 #include "DataFormatsCTP/RunManager.h"
+#include <DataFormatsCTP/Configuration.h>
 // ROOT
 #include <TH1.h>
 #include <TLatex.h>
@@ -37,7 +38,33 @@ using namespace o2::ctp;
 namespace o2::quality_control_modules::ctp
 {
 
-void RawDataReaderCheck::configure() {}
+void RawDataReaderCheck::configure()
+{
+
+  std::string param = mCustomParameters["thresholdRateBad"];
+  float casted = std::stof(param);
+  mThresholdRateBad = casted;
+
+  param = mCustomParameters["thresholdRateMedium"];
+  casted = std::stof(param);
+  mThresholdRateMedium = casted;
+
+  param = mCustomParameters["thresholdRateRatioBad"];
+  casted = std::stof(param);
+  mThresholdRateRatioBad = casted;
+
+  param = mCustomParameters["thresholdRateRatioMedium"];
+  casted = std::stof(param);
+  mThresholdRateRatioMedium = casted;
+
+  param = mCustomParameters["cycleDurationSeconds"];
+  casted = std::stof(param);
+  mCycleDuration = casted;
+
+  param = mCustomParameters["fraction"];
+  casted = std::stof(param);
+  mFraction = casted;
+}
 
 Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -57,6 +84,8 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   vGoodBC.clear();
   vIndexBad.clear();
   vIndexMedium.clear();
+  vIndexRateRatioBad.clear();
+  vIndexRateRatioMedium.clear();
 
   for (auto const& bc : bcs) {
     lhcBC_bitset.set(bc, 1);
@@ -103,15 +132,16 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           fHistPrev = (TH1F*)fHistInputPrevious->Clone();
         if (mo->getName() == "classes")
           fHistPrev = (TH1F*)fHistClassesPrevious->Clone();
-        fHistDifference->Scale(1. / 60);
-        fHistPrev->Scale(1. / 60);
+
+        fHistDifference->Scale(1. / (mCycleDuration * mFraction));
+        fHistPrev->Scale(1. / (mCycleDuration * mFraction));
         fHistDifference->Add(fHistPrev, -1);
         fHistDifference->Divide(fHistPrev);
 
         for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) {
-          if (TMath::Abs(fHistDifference->GetBinContent(i)) > 0.15)
+          if (TMath::Abs(fHistDifference->GetBinContent(i)) > mThresholdRateBad)
             vIndexBad.push_back(i);
-          else if (TMath::Abs(fHistDifference->GetBinContent(i)) > 0.1)
+          else if (TMath::Abs(fHistDifference->GetBinContent(i)) > mThresholdRateMedium)
             vIndexMedium.push_back(i);
         }
 
@@ -127,6 +157,52 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       if (vIndexBad.size() > 0)
         result = Quality::Bad;
       else if (vIndexMedium.size() > 0)
+        result = Quality::Medium;
+      else
+        result = Quality::Good;
+    }
+    if (mo->getName() == "inputRatio" || mo->getName() == "classRatio") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (mo->getName() == "inputRatio") {
+        h->Scale(1. / h->GetBinContent(3));
+      }
+      if (mo->getName() == "classRatio") {
+        h->Scale(1. / h->GetBinContent(mIndexMBclass));
+      }
+      if (mo->getName() == "inputRatio" && (!fHistInputRatioPrevious || inputRatioCycleCounter < 2)) {
+        fHistInputRatioPrevious = (TH1F*)h->Clone();
+        inputRatioCycleCounter++;
+      } else if (mo->getName() == "classRatio" && (!fHistClassRatioPrevious || classRatioCycleCounter < 2)) {
+        fHistClassRatioPrevious = (TH1F*)h->Clone();
+        classRatioCycleCounter++;
+      } else {
+        TH1F* fHistDifference = (TH1F*)h->Clone();
+        TH1F* fHistPrev;
+        if (mo->getName() == "inputRatio")
+          fHistPrev = (TH1F*)fHistInputRatioPrevious->Clone();
+        if (mo->getName() == "classRatio")
+          fHistPrev = (TH1F*)fHistClassRatioPrevious->Clone();
+        fHistDifference->Add(fHistPrev, -1);
+        fHistDifference->Divide(fHistPrev);
+
+        for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) {
+          if (TMath::Abs(fHistDifference->GetBinContent(i)) > mThresholdRateRatioBad)
+            vIndexRateRatioBad.push_back(i);
+          else if (TMath::Abs(fHistDifference->GetBinContent(i)) > mThresholdRateRatioMedium)
+            vIndexRateRatioMedium.push_back(i);
+        }
+        if (mo->getName() == "inputRatio") {
+          fHistInputRatioPrevious = (TH1F*)h->Clone();
+          inputRatioCycleCounter++;
+        }
+        if (mo->getName() == "classRatio") {
+          fHistClassRatioPrevious = (TH1F*)h->Clone();
+          classRatioCycleCounter++;
+        }
+      }
+      if (vIndexRateRatioBad.size() > 0)
+        result = Quality::Bad;
+      else if (vIndexRateRatioMedium.size() > 0)
         result = Quality::Medium;
       else
         result = Quality::Good;
@@ -208,7 +284,8 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetTextColor(kOrange);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
-      msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium rate change: %lu", (mo->getName()).c_str(), vIndexMedium.size()));
+      if (vIndexMedium.size() > 0)
+        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium rate change: %lu", (mo->getName()).c_str(), vIndexMedium.size()));
       msg->SetTextSize(0.03);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
@@ -216,6 +293,57 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
         if (mo->getName() == "inputs")
           msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Input with Index: %d", vIndexMedium[i]));
         if (mo->getName() == "classes")
+          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Class with Index: %d", vIndexMedium[i]));
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+      }
+    } else {
+      msg->SetTextColor(kGreen + 1);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+    }
+  }
+  if (mo->getName() == "inputRatio" || mo->getName() == "classRatio") {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    h->SetStats(kFALSE);
+    msg = std::make_shared<TLatex>(0.45, 0.8, Form("Overall Quality: %s", (checkResult.getName()).c_str()));
+    if (checkResult == Quality::Bad) {
+      msg->SetTextColor(kRed);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+      msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with big relative rate change: %lu", (mo->getName()).c_str(), vIndexRateRatioBad.size()));
+      msg->SetTextSize(0.03);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+      for (size_t i = 0; i < vIndexRateRatioBad.size(); i++) {
+        if (mo->getName() == "inputRatio")
+          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check Input with Index: %d", vIndexBad[i]));
+        if (mo->getName() == "classRatio")
+          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check Class with Index: %d", vIndexBad[i]));
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+      }
+      if (vIndexRateRatioMedium.size() > 0) {
+        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium realative rate change: %lu", (mo->getName()).c_str(), vIndexRateRatioMedium.size()));
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+      }
+    } else if (checkResult == Quality::Medium) {
+      msg->SetTextColor(kOrange);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+      if (vIndexRateRatioMedium.size() > 0)
+        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium relative rate change: %lu", (mo->getName()).c_str(), vIndexRateRatioMedium.size()));
+      msg->SetTextSize(0.03);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+      for (size_t i = 0; i < vIndexRateRatioMedium.size(); i++) {
+        if (mo->getName() == "inputRatio")
+          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Input with Index: %d", vIndexMedium[i]));
+        if (mo->getName() == "classRatio")
           msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Class with Index: %d", vIndexMedium[i]));
         msg->SetTextSize(0.03);
         msg->SetNDC();
@@ -248,6 +376,23 @@ void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
   mTimestamp = activity.mValidity.getMin();
   inputCycleCounter = 0;
   classCycleCounter = 0;
+  inputRatioCycleCounter = 0;
+  classRatioCycleCounter = 0;
+
+  std::string MBclassName = mCustomParameters["MBclassName"];
+  std::string run = std::to_string(mRunNumber);
+  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  o2::ctp::CTPConfiguration CTPconfig = CTPRunManager::getConfigFromCCDB(mTimestamp, run);
+
+  // get the index of the MB reference class
+  std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
+  std::vector<int> clslist = CTPconfig.getTriggerClassList();
+  for (size_t i = 0; i < clslist.size(); i++) {
+    if (ctpcls[i].name.find(MBclassName) != std::string::npos) {
+      mIndexMBclass = ctpcls[i].descriptorIndex + 1;
+      break;
+    }
+  }
 }
 
 } // namespace o2::quality_control_modules::ctp
