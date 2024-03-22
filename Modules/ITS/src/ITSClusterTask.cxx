@@ -171,8 +171,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       o2::math_utils::Point3D<float> locC; // local coordinates
 
-      ////////////////////////// OK
-
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
         npix = mDict->getNpixels(ClusterID);
         isGrouped = 0;
@@ -181,11 +179,11 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         npix = patt.getNPixels();
         isGrouped = 1;
       }
-      // if(ClusterID == 2047) continue;
+
       if (mDoPublishDetailedSummary == 1) {
         locC = mDict->getClusterCoordinates(cluster);
       }
-      // ILOG(Info,Support) << "HELLO 1.1" << ENDM;
+
       if (npix > 2) {
         nClustersForBunchCrossing++;
       }
