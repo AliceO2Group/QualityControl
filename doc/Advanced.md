@@ -1137,6 +1137,34 @@ The following tasks will be merged correctly:
 ```
 The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
+## Templating config files
+
+> [!IMPORTANT]  
+> Templating only works when using aliECS, i.e. in production and staging.
+
+To template a config file, modify the corresponding workflow in `ControlWorkflows`. This is needed because we won't use directly `Consul`  but instead go through `apricot` to template it. 
+
+1. Replace `consul-json` by `apricot`
+2. Replace `consul_endpoint` by `apricot_endpoint`
+3. Make sure to have single quotes around the URI
+
+Example:
+
+```
+o2-qc --config consul-json://{{ consul_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching --remote -b
+```
+becomes
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching' --remote -b
+```
+Make sure that you are able to run with the new workflow before actually templating. 
+
+### Include a config file
+
+To include a config file (e.g. named `mch_digits`) add this line: `{% include "mch_digits" %}`
+
+What it does is very literally copy and paste the content of the file into the other one. Thus make sure that you include all the commas and stuff. 
+
 ## Definition and access of simple user-defined task configuration ("taskParameters")
 
 The new, extended, way of defining such parameters, not only in Tasks but also in Checks, Aggregators and PP tasks, 
