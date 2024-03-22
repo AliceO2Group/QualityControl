@@ -171,17 +171,23 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       o2::math_utils::Point3D<float> locC; // local coordinates
 
-      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict->isGroup(ClusterID)) { // Normal (frequent) cluster shapes
-        npix = mDict->getNpixels(ClusterID);
-        isGrouped = 0;
-      } else {
+      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
+        if (!mDict->isGroup(ClusterID)) {
+          npix = mDict->getNpixels(ClusterID);
+          locC = mDict->getClusterCoordinates(cluster);
+          isGrouped = 0;
+        } else {
+          o2::itsmft::ClusterPattern patt(pattIt);
+          npix = patt.getNPixels();
+          locC = mDict->getClusterCoordinates(cluster, patt, true);
+          isGrouped = 1;
+        }
+
+      } else { // invalid pattern
         o2::itsmft::ClusterPattern patt(pattIt);
         npix = patt.getNPixels();
-        isGrouped = 1;
-      }
-
-      if (mDoPublishDetailedSummary == 1) {
-        locC = mDict->getClusterCoordinates(cluster);
+        isGrouped = 0;
+        locC = mDict->getClusterCoordinates(cluster, patt, false);
       }
 
       if (npix > 2) {
