@@ -71,10 +71,8 @@ void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& conf
   }
   ILOG(Info, Support) << "MeanVertexCalib post-processing: CCDB url will be set to: " << mCcdbUrl << ENDM;
   mCcdbApi.init(mCcdbUrl);
-}
 
-void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
-{
+  // create the graphs
   mGraphX = std::make_shared<TrendGraph>("MeanVtxXTrending", "Mean Vertex X", "cm");
   mGraphY = std::make_shared<TrendGraph>("MeanVtxYTrending", "Mean Vertex Y", "cm");
   mGraphZ = std::make_shared<TrendGraph>("MeanVtxZTrending", "Mean Vertex Z", "cm");
@@ -82,7 +80,11 @@ void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef
   mGraphSigmaX = std::make_shared<TrendGraph>("MeanVtxSigmaXTrending", "Mean Vertex #sigma_{X}", "cm");
   mGraphSigmaY = std::make_shared<TrendGraph>("MeanVtxSigmaYTrending", "Mean Vertex #sigma_{Y}", "cm");
   mGraphSigmaZ = std::make_shared<TrendGraph>("MeanVtxSigmaZTrending", "Mean Vertex #sigma_{Z}", "cm");
+}
 
+void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
+{
+  // publish the graphs
   getObjectsManager()->startPublishing(mGraphX.get());
   getObjectsManager()->startPublishing(mGraphY.get());
   getObjectsManager()->startPublishing(mGraphZ.get());
@@ -131,14 +133,6 @@ void MeanVertexPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 
 void MeanVertexPostProcessing::finalize(Trigger, framework::ServiceRegistryRef)
 {
-  // Only if you don't want it to be published after finalisation.
-  getObjectsManager()->stopPublishing(mGraphX.get());
-  getObjectsManager()->stopPublishing(mGraphY.get());
-  getObjectsManager()->stopPublishing(mGraphZ.get());
-
-  getObjectsManager()->stopPublishing(mGraphSigmaX.get());
-  getObjectsManager()->stopPublishing(mGraphSigmaY.get());
-  getObjectsManager()->stopPublishing(mGraphSigmaZ.get());
 }
 
 } // namespace o2::quality_control_modules::glo
