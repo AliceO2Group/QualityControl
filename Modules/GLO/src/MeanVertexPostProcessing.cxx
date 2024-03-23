@@ -14,13 +14,16 @@
 /// \author Chiara Zampolli, Andrea Ferrero
 ///
 
+#include "GLO/MeanVertexPostProcessing.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "DataFormatsCalibration/MeanVertexObject.h"
 #include "CCDB/CCDBTimeStampUtils.h"
 
-#include "GLO/MeanVertexPostProcessing.h"
-#include "QualityControl/QcInfoLogger.h"
-
+// ROOT
+#include <TGraph.h>
+#include <TAxis.h>
 #include <TMath.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
@@ -98,8 +101,7 @@ void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef
 
 void MeanVertexPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 {
-  ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
-  std::map<std::string, std::string> md, headers;
+  std::map<std::string, std::string> md;
   auto* meanVtx = mCcdbApi.retrieveFromTFileAny<o2::dataformats::MeanVertexObject>("GLO/Calib/MeanVertex", md, t.timestamp);
   if (!meanVtx) {
     ILOG(Info, Support) << "MeanVertexCalib post-processing: null object received for " << t.timestamp << ENDM;
@@ -115,10 +117,11 @@ void MeanVertexPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
   auto sz = meanVtx->getSigmaZ();
 
   // get time stamp
+  std::map<std::string, std::string> headers;
   headers = mCcdbApi.retrieveHeaders("GLO/Calib/MeanVertex", md, t.timestamp);
   const auto validFrom = headers.find("Valid-From");
   long startVal = std::stol(validFrom->second);
-  ILOG(Info, Support) << "MeanVertexCalib post-processing: startValidity = " << startVal << " X = " << x << " Y = " << y << " Z = " << z << ENDM;
+  ILOG(Debug, Support) << "MeanVertexCalib post-processing: startValidity = " << startVal << " X = " << x << " Y = " << y << " Z = " << z << ENDM;
 
   // ROOT expects time in seconds
   startVal /= 1000;

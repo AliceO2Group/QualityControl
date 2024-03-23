@@ -33,6 +33,11 @@
         "className": "o2::quality_control_modules::glo::MeanVertexPostProcessing",
         "moduleName": "QcGLO",
         "detectorName": "GLO",
+        "customization": [
+          {
+            "CcdbURL": "http://ccdb-test.cern.ch:8080"
+          }
+        ],
         "initTrigger": [
           "userorcontrol"
         ],
@@ -41,11 +46,6 @@
         ],
         "stopTrigger": [
           "userorcontrol"
-        ],
-	"customization": [
-	    {
-		"CcdbURL": "http://ccdb-test.cern.ch:8080"
-	    }
 	]
       }
     }
