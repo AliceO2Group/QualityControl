@@ -11,7 +11,7 @@
 
 ///
 /// \file   MeanVertexPostProcessing.cxx
-/// \author Chiara Zampolli
+/// \author Chiara Zampolli, Andrea Ferrero
 ///
 
 #include "DataFormatsCalibration/MeanVertexObject.h"
@@ -28,66 +28,34 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::glo
 {
 
-TrendGraph::TrendGraph(std::string name, std::string title, std::string label, float rangeMin, float rangeMax)
-  : TCanvas(name.c_str(), title.c_str()),
-    mAxisLabel(label),
-    mRangeMin(rangeMin),
-    mRangeMax(rangeMax)
+class TrendGraph : public TGraph
 {
-  mGraphHist = std::make_unique<TGraph>(0);
+ public:
+  TrendGraph(std::string name, std::string title, std::string label)
+    : TGraph(0),
+      mAxisLabel(label)
+  {
+    SetMarkerStyle(kCircle);
+    SetNameTitle(name.c_str(), title.c_str());
+  }
 
-  mGraph = std::make_unique<TGraph>(0);
-  mGraph->SetMarkerStyle(kCircle);
-  mGraph->SetTitle(fmt::format("{};time;{}", title, label).c_str());
-  mLines[0] = std::make_unique<TLine>(0, mRangeMin, 1, mRangeMin);
-  mLines[1] = std::make_unique<TLine>(0, mRangeMax, 1, mRangeMax);
-  mLines[0]->SetLineStyle(kDashed);
-  mLines[1]->SetLineStyle(kDashed);
-}
+  ~TrendGraph() override = default;
 
-void TrendGraph::update(uint64_t time, float val)
-{
-  mGraph->AddPoint(time, val);
-  mGraphHist->AddPoint(time, 0);
+  void update(uint64_t time, float val)
+  {
+    AddPoint(time, val);
+    Draw("APL");
+    GetYaxis()->SetTitle(mAxisLabel.c_str());
+    GetXaxis()->SetTimeDisplay(1);
+    GetXaxis()->SetNdivisions(505);
+    GetXaxis()->SetTimeOffset(0.0);
+    GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+  }
 
-  Clear();
-  cd();
-
-  // Draw underlying histogram and format axes
-  mGraphHist->Draw("A");
-  auto hAxis = mGraphHist->GetHistogram();
-  hAxis->SetTitle(GetTitle());
-  hAxis->GetYaxis()->SetTitle(mAxisLabel.c_str());
-  hAxis->GetXaxis()->SetTimeDisplay(1);
-  hAxis->GetXaxis()->SetNdivisions(505);
-  hAxis->GetXaxis()->SetTimeOffset(0.0);
-  hAxis->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
-
-  // Adjust vertical axis range
-  Double_t min = mRangeMin;
-  Double_t max = mRangeMax;
-  min = TMath::Min(min, TMath::MinElement(mGraph->GetN(), mGraph->GetY()));
-  max = TMath::Max(max, TMath::MaxElement(mGraph->GetN(), mGraph->GetY()));
-  auto delta = max - min;
-  min -= 0.1 * delta;
-  max += 0.1 * delta;
-
-  // Update plot
-  hAxis->SetMinimum(min);
-  hAxis->SetMaximum(max);
-  hAxis->Draw("AXIS");
-
-  // Draw graph
-  mGraph->Draw("PL,SAME");
-
-  // Draw reference lines for acceptable ranges
-  mLines[0]->SetX1(hAxis->GetXaxis()->GetXmin());
-  mLines[1]->SetX1(hAxis->GetXaxis()->GetXmin());
-  mLines[0]->SetX2(hAxis->GetXaxis()->GetXmax());
-  mLines[1]->SetX2(hAxis->GetXaxis()->GetXmax());
-  mLines[0]->Draw();
-  mLines[1]->Draw();
-}
+ private:
+  std::string mAxisLabel;
+  std::unique_ptr<TGraph> mGraph;
+};
 
 //_________________________________________________________________________________________
 
@@ -99,24 +67,6 @@ void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& conf
         ILOG(Info, Support) << "MeanVertexCalib post-processing: getting customized CCDB url" << ENDM;
         mCcdbUrl = customConfig.second.get<std::string>("CcdbURL");
       }
-      if (const auto& customNames = customConfig.second.get_child_optional("RangeX"); customNames.has_value()) {
-        mRangeX = customConfig.second.get<float>("RangeX");
-      }
-      if (const auto& customNames = customConfig.second.get_child_optional("RangeY"); customNames.has_value()) {
-        mRangeY = customConfig.second.get<float>("RangeY");
-      }
-      if (const auto& customNames = customConfig.second.get_child_optional("RangeZ"); customNames.has_value()) {
-        mRangeZ = customConfig.second.get<float>("RangeZ");
-      }
-      if (const auto& customNames = customConfig.second.get_child_optional("RangeSigmaX"); customNames.has_value()) {
-        mRangeSigmaX = customConfig.second.get<float>("RangeSigmaX");
-      }
-      if (const auto& customNames = customConfig.second.get_child_optional("RangeSigmaY"); customNames.has_value()) {
-        mRangeSigmaY = customConfig.second.get<float>("RangeSigmaY");
-      }
-      if (const auto& customNames = customConfig.second.get_child_optional("RangeSigmaZ"); customNames.has_value()) {
-        mRangeSigmaZ = customConfig.second.get<float>("RangeSigmaZ");
-      }
     }
   }
   ILOG(Info, Support) << "MeanVertexCalib post-processing: CCDB url will be set to: " << mCcdbUrl << ENDM;
@@ -125,13 +75,13 @@ void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& conf
 
 void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 {
-  mGraphX = std::make_unique<TrendGraph>("MeanVtxXTrending", "Mean Vertex X", "cm", -mRangeX, mRangeX);
-  mGraphY = std::make_unique<TrendGraph>("MeanVtxYTrending", "Mean Vertex Y", "cm", -mRangeY, mRangeY);
-  mGraphZ = std::make_unique<TrendGraph>("MeanVtxZTrending", "Mean Vertex Z", "cm", -mRangeZ, mRangeZ);
+  mGraphX = std::make_shared<TrendGraph>("MeanVtxXTrending", "Mean Vertex X", "cm");
+  mGraphY = std::make_shared<TrendGraph>("MeanVtxYTrending", "Mean Vertex Y", "cm");
+  mGraphZ = std::make_shared<TrendGraph>("MeanVtxZTrending", "Mean Vertex Z", "cm");
 
-  mGraphSigmaX = std::make_unique<TrendGraph>("MeanVtxSigmaXTrending", "Mean Vertex #sigma_{X}", "cm", 0, mRangeSigmaX);
-  mGraphSigmaY = std::make_unique<TrendGraph>("MeanVtxSigmaYTrending", "Mean Vertex #sigma_{Y}", "cm", 0, mRangeSigmaY);
-  mGraphSigmaZ = std::make_unique<TrendGraph>("MeanVtxSigmaZTrending", "Mean Vertex #sigma_{Z}", "cm", 0, mRangeSigmaZ);
+  mGraphSigmaX = std::make_shared<TrendGraph>("MeanVtxSigmaXTrending", "Mean Vertex #sigma_{X}", "cm");
+  mGraphSigmaY = std::make_shared<TrendGraph>("MeanVtxSigmaYTrending", "Mean Vertex #sigma_{Y}", "cm");
+  mGraphSigmaZ = std::make_shared<TrendGraph>("MeanVtxSigmaZTrending", "Mean Vertex #sigma_{Z}", "cm");
 
   getObjectsManager()->startPublishing(mGraphX.get());
   getObjectsManager()->startPublishing(mGraphY.get());
