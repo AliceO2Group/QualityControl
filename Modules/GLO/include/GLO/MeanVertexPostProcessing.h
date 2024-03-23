@@ -54,7 +54,7 @@ class MeanVertexPostProcessing final : public quality_control::postprocessing::P
   /// \brief Constructor
   MeanVertexPostProcessing() = default;
   /// \brief Destructor
-  ~MeanVertexPostProcessing() override;
+  ~MeanVertexPostProcessing() override = default;
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
@@ -96,10 +96,6 @@ class MeanVertexPostProcessing final : public quality_control::postprocessing::P
   std::unique_ptr<TrendGraph> mGraphSigmaX;
   std::unique_ptr<TrendGraph> mGraphSigmaY;
   std::unique_ptr<TrendGraph> mGraphSigmaZ;
-  TH1F* mX = nullptr;
-  TH1F* mY = nullptr;
-  TH1F* mZ = nullptr;
-  TH1F* mStartValidity = nullptr;
   o2::ccdb::CcdbApi mCcdbApi;
   std::string mCcdbUrl = "https://alice-ccdb.cern.ch";
 };
