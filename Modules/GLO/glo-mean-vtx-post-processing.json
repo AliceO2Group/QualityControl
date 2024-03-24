@@ -46,7 +46,43 @@
         ],
         "stopTrigger": [
           "userorcontrol"
-	]
+        ]
+      }
+    },
+    "checks": {
+      "MeanVertexCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::glo::MeanVertexCheck",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "nPointsToCheck": "10",
+              "range:MeanVtxXTrending": "-0.1,0.1",
+              "range:MeanVtxYTrending": "-0.1,0.1",
+              "range:MeanVtxZTrending": "-1.0,1.0",
+              "range:MeanVtxSigmaXTrending": "-0.1,0.1",
+              "range:MeanVtxSigmaYTrending": "-0.1,0.1",
+              "range:MeanVtxSigmaZTrending": "-10.0,10.0"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "MeanVertexCalib",
+             "MOs" : [
+               "MeanVtxXTrending",
+               "MeanVtxYTrending",
+               "MeanVtxZTrending",
+               "MeanVtxSigmaXTrending",
+               "MeanVtxSigmaYTrending",
+               "MeanVtxSigmaZTrending"
+            ]
+          }
+        ]
       }
     }
   }
