@@ -19,9 +19,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/ActivityHelpers.h"
-#include <TDatime.h>
-#include <TPaveText.h>
-#include <chrono>
+#include <CommonUtils/StringUtils.h>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
@@ -33,23 +31,79 @@ namespace o2::quality_control_modules::common
 void BigScreen::configure(const boost::property_tree::ptree& config)
 {
   mConfig = BigScreenConfig(getID(), config);
-
-  mCanvas = std::make_unique<BigScreenCanvas>("BigScreen", "QC Big Screen", mConfig.mNRows, mConfig.mNCols, mConfig.mBorderWidth);
-
-  int index = 0;
-  // add the paves associated to each quality source
-  for (auto source : mConfig.dataSources) {
-    auto detName = source.detector;
-    mCanvas->add(detName, index);
-    index += 1;
-  }
 }
 
 //_________________________________________________________________________________________
 
+std::string getParameter(o2::quality_control::core::CustomParameters customParameters,
+                         std::string parName,
+                         const o2::quality_control::core::Activity& activity)
+{
+  std::string parValue;
+  auto parOpt = customParameters.atOptional(parName, activity);
+  if (parOpt.has_value()) {
+    parValue = parOpt.value();
+  } else {
+    parOpt = customParameters.atOptional(parName);
+    if (parOpt.has_value()) {
+      parValue = parOpt.value();
+    }
+  }
+  return parValue;
+}
+
 void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
 {
-  mCanvas->Clear();
+  int nRows = 1;
+  int nCols = 1;
+  int borderWidth = 5;
+
+  std::string parValue;
+  parValue = getParameter(mCustomParameters, "nRows", t.activity);
+  if (!parValue.empty()) {
+    nRows = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "nCols", t.activity);
+  if (!parValue.empty()) {
+    nCols = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "borderWidth", t.activity);
+  if (!parValue.empty()) {
+    borderWidth = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "maxObjectTimeShift", t.activity);
+  if (!parValue.empty()) {
+    mMaxObjectTimeShift = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "ignoreActivity", t.activity);
+  if (!parValue.empty()) {
+    mIgnoreActivity = std::stoi(parValue);
+  }
+
+  // get the list of labels
+  parValue = getParameter(mCustomParameters, "labels", t.activity);
+  auto labels = o2::utils::Str::tokenize(parValue, ',', false, false);
+
+  if (labels.size() > (nRows * nCols)) {
+    ILOG(Warning, Support) << "Number of labels larger than nRos*nCols, some labels will not be displayed correctly" << ENDM;
+  }
+
+  mCanvas.reset();
+  mCanvas = std::make_unique<BigScreenCanvas>("BigScreen", "QC Big Screen", nRows, nCols, borderWidth);
+
+  int index = 0;
+  // add the paves associated to each quality source
+  for (auto label : labels) {
+    if (!label.empty()) {
+      mCanvas->add(label, index);
+    }
+    index += 1;
+  }
+
   getObjectsManager()->startPublishing(mCanvas.get());
 }
 
@@ -99,8 +153,8 @@ void BigScreen::update(quality_control::postprocessing::Trigger t, framework::Se
     // retrieve QO from CCDB, in the form of a std::pair<std::shared_ptr<QualityObject>, bool>
     // a valid object is returned in the first element of the pair if the QO is found in the QCDB
     // the second element of the pair is set to true if the QO has a time stamp not older than the provided threshold
-    long notOlderThanMs = (mConfig.mNotOlderThan >= 0) ? static_cast<long>(mConfig.mNotOlderThan) * 1000 : std::numeric_limits<long>::max();
-    auto qo = getQO(qcdb, t, source, notOlderThanMs, (mConfig.mIgnoreActivity != 0));
+    // long notOlderThanMs = (mConfig.mNotOlderThan >= 0) ? static_cast<long>(mConfig.mNotOlderThan) * 1000 : std::numeric_limits<long>::max();
+    auto qo = getQO(qcdb, t, source, mMaxObjectTimeShift * 1000, (mIgnoreActivity != 0));
     if (qo.first) {
       if (qo.second) {
         mCanvas->set(source.detector, qo.first->getQuality());

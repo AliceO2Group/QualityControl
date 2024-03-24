@@ -44,6 +44,10 @@ class BigScreen : public quality_control::postprocessing::PostProcessingInterfac
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
+  /// \brief maximum allowed age of quality objects, in seconds (default: 10 minutes)
+  int mMaxObjectTimeShift{ 600 };
+  /// \brief read quality objects from all runs
+  int mIgnoreActivity{ 0 };
   /// \brief configuration parameters
   BigScreenConfig mConfig;
   /// \brief canvas with human-readable quality states

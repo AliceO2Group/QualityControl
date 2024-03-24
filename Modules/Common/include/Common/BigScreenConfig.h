@@ -17,10 +17,9 @@
 #ifndef QUALITYCONTROL_BIGSCREENCONFIG_H
 #define QUALITYCONTROL_BIGSCREENCONFIG_H
 
-#include <vector>
-#include <map>
-#include <string>
 #include "QualityControl/PostProcessingConfig.h"
+#include <vector>
+#include <string>
 
 namespace o2::quality_control_modules::common
 {
@@ -32,19 +31,10 @@ struct BigScreenConfig : quality_control::postprocessing::PostProcessingConfig {
   BigScreenConfig(std::string name, const boost::property_tree::ptree& config);
   ~BigScreenConfig() = default;
 
-  const std::string getConfigParameter(std::string name) const;
-
   struct DataSource {
     std::string detector;
     std::string path;
   };
-
-  std::map<std::string, std::string> mConfigParameters;
-  int mNRows{ 4 };
-  int mNCols{ 5 };
-  int mBorderWidth{ 7 };
-  int mNotOlderThan{ -1 };
-  int mIgnoreActivity{ 0 };
 
   std::vector<DataSource> dataSources;
 };
