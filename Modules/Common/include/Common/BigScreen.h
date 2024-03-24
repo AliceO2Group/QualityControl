@@ -20,12 +20,8 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "Common/BigScreenConfig.h"
+#include "Common/BigScreenCanvas.h"
 #include "QualityControl/Quality.h"
-#include <TCanvas.h>
-#include <TPaveText.h>
-#include <TText.h>
-#include <string>
-#include <map>
 
 namespace o2::quality_control_modules::common
 {
@@ -50,14 +46,8 @@ class BigScreen : public quality_control::postprocessing::PostProcessingInterfac
  private:
   /// \brief configuration parameters
   BigScreenConfig mConfig;
-  /// \brief colors associated to each quality state (Good/Medium/Bad/Null)
-  std::unordered_map<std::string, int> mColors;
-  /// \brief
-  std::map<std::string, std::unique_ptr<TText>> mLabels;
-  /// \brief
-  std::map<std::string, std::unique_ptr<TPaveText>> mPaves;
-  /// \brief canvas with human-readable quality states and messages
-  std::unique_ptr<TCanvas> mCanvas;
+  /// \brief canvas with human-readable quality states
+  std::unique_ptr<BigScreenCanvas> mCanvas;
 };
 
 } // namespace o2::quality_control_modules::common
