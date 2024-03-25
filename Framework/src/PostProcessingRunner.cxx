@@ -189,7 +189,10 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   }
 
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
-    mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
+    auto taskConfigWithCorrectActivity = mTaskConfig;
+    taskConfigWithCorrectActivity.activity = activityFromDriver;
+    taskConfigWithCorrectActivity.activity.mValidity = gFullValidityInterval;
+    mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, taskConfigWithCorrectActivity);
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.initTriggers)) {
       doInitialize({ TriggerType::UserOrControl, false, activityFromDriver, activityFromDriver.mValidity.getMin() });
     }
@@ -274,8 +277,11 @@ void PostProcessingRunner::doInitialize(const Trigger& trigger)
   mTaskState = TaskState::Running;
 
   // We create the triggers just after task init (and not any sooner), so the timer triggers work as expected.
-  mUpdateTriggers = trigger_helpers::createTriggers(mTaskConfig.updateTriggers, mTaskConfig);
-  mStopTriggers = trigger_helpers::createTriggers(mTaskConfig.stopTriggers, mTaskConfig);
+  auto taskConfigWithCorrectActivity = mTaskConfig;
+  taskConfigWithCorrectActivity.activity = mActivity;
+  taskConfigWithCorrectActivity.activity.mValidity = gFullValidityInterval;
+  mUpdateTriggers = trigger_helpers::createTriggers(mTaskConfig.updateTriggers, taskConfigWithCorrectActivity);
+  mStopTriggers = trigger_helpers::createTriggers(mTaskConfig.stopTriggers, taskConfigWithCorrectActivity);
 }
 
 void PostProcessingRunner::doUpdate(const Trigger& trigger)
