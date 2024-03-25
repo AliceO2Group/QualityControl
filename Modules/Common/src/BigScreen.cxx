@@ -81,7 +81,7 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
 
   parValue = getParameter(mCustomParameters, "ignoreActivity", t.activity);
   if (!parValue.empty()) {
-    mIgnoreActivity = std::stoi(parValue);
+    mIgnoreActivity = (std::stoi(parValue) != 0);
   }
 
   // get the list of labels
@@ -99,7 +99,7 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
   // add the paves associated to each quality source
   for (auto label : labels) {
     if (!label.empty()) {
-      mCanvas->add(label, index);
+      mCanvas->addBox(label, index);
     }
     index += 1;
   }
@@ -154,15 +154,15 @@ void BigScreen::update(quality_control::postprocessing::Trigger t, framework::Se
     // a valid object is returned in the first element of the pair if the QO is found in the QCDB
     // the second element of the pair is set to true if the QO has a time stamp not older than the provided threshold
     // long notOlderThanMs = (mConfig.mNotOlderThan >= 0) ? static_cast<long>(mConfig.mNotOlderThan) * 1000 : std::numeric_limits<long>::max();
-    auto qo = getQO(qcdb, t, source, mMaxObjectTimeShift * 1000, (mIgnoreActivity != 0));
+    auto qo = getQO(qcdb, t, source, mMaxObjectTimeShift * 1000, mIgnoreActivity);
     if (qo.first) {
       if (qo.second) {
-        mCanvas->set(source.detector, qo.first->getQuality());
+        mCanvas->setQuality(source.detector, qo.first->getQuality());
       } else {
-        mCanvas->set(source.detector, kYellow, "Old");
+        mCanvas->setText(source.detector, kYellow, "Old");
       }
     } else {
-      mCanvas->set(source.detector, kGray, "NF");
+      mCanvas->setText(source.detector, kGray, "NF");
     }
   }
   mCanvas->update();

@@ -31,7 +31,9 @@ BigScreenConfig::BigScreenConfig(std::string name, const boost::property_tree::p
         if (tokens.size() != 2 || tokens[0].empty()) {
           continue;
         }
-        dataSources.push_back({ tokens[0], tokens[1] });
+        const auto& sourceDet = tokens[0];
+        const auto& sourcePath = tokens[1];
+        dataSources.push_back({ sourceDet, sourcePath });
       }
     } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
       // "name" : [ "something" ] would return an empty string here
@@ -40,7 +42,9 @@ BigScreenConfig::BigScreenConfig(std::string name, const boost::property_tree::p
       if (tokens.size() != 2 || tokens[0].empty()) {
         continue;
       }
-      dataSources.push_back({ tokens[0], tokens[1] });
+      const auto& sourceDet = tokens[0];
+      const auto& sourcePath = tokens[1];
+      dataSources.push_back({ sourceDet, sourcePath });
     } else {
       throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSources'");
     }

@@ -44,6 +44,15 @@ struct BigScreenElement {
     mBox.SetLineWidth(borderWidth);
     mBox.SetFillStyle(0);
   }
+
+  void DrawInCanvas(TCanvas& c)
+  {
+    c.cd(mPadIndex);
+    mPave.Draw();
+    mBox.Draw();
+    mLabel.Draw();
+  }
+
   TText mLabel;
   TPaveText mPave;
   TBox mBox;
@@ -59,15 +68,15 @@ BigScreenCanvas::BigScreenCanvas(std::string name, std::string title, int nRows,
   mColors[Quality::Good.getName()] = kGreen + 2;
 }
 
-void BigScreenCanvas::add(std::string name, int index)
+void BigScreenCanvas::addBox(std::string boxName, int index)
 {
-  mElements[name] = std::make_shared<BigScreenElement>(name, index, mPadding, mLabelOffset, mBorderWidth);
+  mBoxes[boxName] = std::make_shared<BigScreenElement>(boxName, index, mPadding, mLabelOffset, mBorderWidth);
 }
 
-void BigScreenCanvas::set(std::string name, int color, std::string text)
+void BigScreenCanvas::setText(std::string boxName, int color, std::string text)
 {
-  auto index = mElements.find(name);
-  if (index == mElements.end()) {
+  auto index = mBoxes.find(boxName);
+  if (index == mBoxes.end()) {
     return;
   }
   auto& pave = index->second->mPave;
@@ -76,11 +85,11 @@ void BigScreenCanvas::set(std::string name, int color, std::string text)
   pave.AddText((std::string(" ") + text + std::string(" ")).c_str());
 }
 
-void BigScreenCanvas::set(std::string name, Quality quality)
+void BigScreenCanvas::setQuality(std::string boxName, Quality quality)
 {
   auto color = mColors.find(quality.getName());
   if (color != mColors.end()) {
-    set(name, color->second, quality.getName());
+    setText(boxName, color->second, quality.getName());
   }
 }
 
@@ -89,11 +98,8 @@ void BigScreenCanvas::update()
   Clear();
   Divide(mNCols, mNRows);
 
-  for (auto& [key, element] : mElements) {
-    cd(element->mPadIndex);
-    element->mPave.Draw();
-    element->mBox.Draw();
-    element->mLabel.Draw();
+  for (auto& [key, box] : mBoxes) {
+    box->DrawInCanvas(*this);
   }
 }
 

@@ -35,11 +35,16 @@ class BigScreenCanvas : public TCanvas
   ~BigScreenCanvas() = default;
 
   /// \brief add a box in the canvas at a given index, with "name" displayed above the box
-  void add(std::string name, int index);
-  /// \brief set the text message and color of the box identified by "name"
-  void set(std::string name, int color, std::string text);
+  ///
+  /// The boxes are arranged in a regular grid of mNRows x mNCols in the canvas.
+  /// The index proceeds from left to right and from top to bottom in the grid, starting from zero and up to (mNRows * mNCols - 1)
+  void addBox(std::string boxName, int index);
+  /// \brief set the text message and color of the box identified by "name".
+  ///
+  /// The color value follows the ROOT TColor indexing conventions (https://root.cern.ch/doc/master/classTColor.html)
+  void setText(std::string boxName, int color, std::string text);
   /// \brief set the text message and color of the box identified by "name", based on the specified quality flag
-  void set(std::string name, o2::quality_control::core::Quality quality);
+  void setQuality(std::string boxName, o2::quality_control::core::Quality quality);
   /// \brief refresh the canvas and draw all the boxes and labels
   void update();
 
@@ -56,7 +61,7 @@ class BigScreenCanvas : public TCanvas
   /// \brief colors associated to each quality state (Good/Medium/Bad/Null)
   std::unordered_map<std::string, int> mColors;
   /// \brief elements (colored boxes + labels) displayed in the canvas
-  std::unordered_map<std::string, std::shared_ptr<BigScreenElement>> mElements;
+  std::unordered_map<std::string, std::shared_ptr<BigScreenElement>> mBoxes;
 };
 
 } // namespace o2::quality_control_modules::common
