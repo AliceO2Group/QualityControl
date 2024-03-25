@@ -176,6 +176,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   }
   mActivity = activityFromDriver;
   mActivity.mValidity = gInvalidValidityInterval; // object validity shall be based on input objects, not run duration
+  mObjectManager->setActivity(mActivity);
   QcInfoLogger::setRun(mActivity.mId);
 
   // register ourselves to the BK
