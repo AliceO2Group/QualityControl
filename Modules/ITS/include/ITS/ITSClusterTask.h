@@ -84,8 +84,6 @@ class ITSClusterTask : public TaskInterface
   std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryIB[NLayer];
   std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryIB[NLayer];
 
-  int mClusterOccupancyIB[NLayer][48][9] = { { { 0 } } };
-
   // Outer barrel
   TH1F* hGroupedClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
   TH1F* hClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
@@ -93,9 +91,6 @@ class ITSClusterTask : public TaskInterface
 
   std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryOB[NLayer];
   std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryOB[NLayer];
-
-  int mClusterOccupancyOB[NLayer][48][28] = { { { 0 } } };
-  int mNLaneEmpty[4] = { 0 }; // IB, ML, OL, TOTAL empty lane
 
   // Layer synnary
   TH1F* hClusterSizeLayerSummary[NLayer] = { nullptr };
@@ -114,10 +109,7 @@ class ITSClusterTask : public TaskInterface
   std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryZPhi[NLayer];
   std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryZPhi[NLayer];
 
-  TH1D* hEmptyLaneFractionGlobal;
-
-  int mClusterSize[NLayer][48][28] = { { { 0 } } }; //[#layers][max staves][max lanes / chips]
-  int nClusters[NLayer][48][28] = { { { 0 } } };
+  TH1F* hEmptyLaneFractionGlobal;
 
   // Edges of space binning within chips (local frame coordinates)
   std::vector<float> vRphiBinsIB;
@@ -135,7 +127,6 @@ class ITSClusterTask : public TaskInterface
   const int mNLanes[4] = { 432, 864, 2520, 3816 }; // IB, ML, OL, TOTAL lane
   int mDoPublish1DSummary = 0;
   int mNThreads = 1;
-  int mNRofs = 0;
   int nBCbins = 103;
   long int mTimestamp = -1;
   TString xLabel;
