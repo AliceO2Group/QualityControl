@@ -68,9 +68,10 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():
         # logger.debug(f"- bucket {bucket}")
+        sorted_run_versions = sorted(run_versions, key=lambda x: (x.validFrom, -x.createdAt))
 
         freshest: ObjectVersion = None
-        for v in run_versions:
+        for v in sorted_run_versions:
             if freshest is None or freshest.validFromAsDt < v.validFromAsDt:
                 if freshest is not None:
                     if policies_utils.in_grace_period(freshest, delay):
