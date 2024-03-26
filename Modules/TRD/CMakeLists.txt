@@ -2,7 +2,6 @@
 
 add_library(O2QcTRD)
 
-<<<<<<< HEAD
 target_sources(O2QcTRD PRIVATE
               src/CalibReductorTRD.cxx 
               src/TrackletCountCheck.cxx
