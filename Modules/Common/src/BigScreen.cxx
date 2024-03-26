@@ -19,9 +19,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/ActivityHelpers.h"
-#include <TDatime.h>
-#include <TPaveText.h>
-#include <chrono>
+#include <CommonUtils/StringUtils.h>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
@@ -33,69 +31,79 @@ namespace o2::quality_control_modules::common
 void BigScreen::configure(const boost::property_tree::ptree& config)
 {
   mConfig = BigScreenConfig(getID(), config);
-
-  mColors[Quality::Null.getName()] = kViolet - 6;
-  mColors[Quality::Bad.getName()] = kRed;
-  mColors[Quality::Medium.getName()] = kOrange - 3;
-  mColors[Quality::Good.getName()] = kGreen + 2;
-
-  float dx = 1.0 / mConfig.mNCols;
-  float dy = 1.0 / mConfig.mNRows;
-  float paveHalfWidth = 0.3 * dx;
-  float paveHalfHeight = 0.3 * dy;
-
-  int index = 0;
-  // add the paves associated to each quality source
-  for (auto source : mConfig.dataSources) {
-    auto detName = source.detector;
-    auto row = index / mConfig.mNCols;
-    auto col = index % mConfig.mNCols;
-
-    if (row >= mConfig.mNRows) {
-      break;
-    }
-    // put first pave on top-left
-    row = mConfig.mNRows - row - 1;
-
-    // coordinates of the center of the pave area
-    float xc = dx * (0.5 + col);
-    float yc = dy * (0.5 + row) - 0.01;
-
-    // coordinates of the pave corners
-    float x1 = xc - paveHalfWidth;
-    float x2 = xc + paveHalfWidth;
-    float y1 = yc - paveHalfHeight;
-    float y2 = yc + paveHalfHeight;
-
-    // label coordinates
-    float xl = x1;
-    float yl = y2 + 0.01;
-
-    // add pave associated to the detector
-    mLabels[detName] = std::make_unique<TText>(xl, yl, detName.c_str());
-    for (auto& l : mLabels) {
-      l.second->SetNDC();
-      l.second->SetTextAlign(11);
-      l.second->SetTextSize(0.05);
-      l.second->SetTextFont(42);
-    }
-
-    // add pave associated to the detector
-    mPaves[detName] = std::make_unique<TPaveText>(x1, y1, x2, y2);
-    mPaves[detName]->SetOption("");
-    mPaves[detName]->SetLineWidth(mConfig.mBorderWidth);
-
-    index += 1;
-  }
-  mCanvas = std::make_unique<TCanvas>("BigScreen", "QC Big Screen", 800, 600);
 }
 
 //_________________________________________________________________________________________
 
+std::string getParameter(o2::quality_control::core::CustomParameters customParameters,
+                         std::string parName,
+                         const o2::quality_control::core::Activity& activity)
+{
+  std::string parValue;
+  auto parOpt = customParameters.atOptional(parName, activity);
+  if (parOpt.has_value()) {
+    parValue = parOpt.value();
+  } else {
+    parOpt = customParameters.atOptional(parName);
+    if (parOpt.has_value()) {
+      parValue = parOpt.value();
+    }
+  }
+  return parValue;
+}
+
 void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
 {
-  mCanvas->Clear();
-  mCanvas->cd();
+  int nRows = 1;
+  int nCols = 1;
+  int borderWidth = 5;
+
+  std::string parValue;
+  parValue = getParameter(mCustomParameters, "nRows", t.activity);
+  if (!parValue.empty()) {
+    nRows = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "nCols", t.activity);
+  if (!parValue.empty()) {
+    nCols = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "borderWidth", t.activity);
+  if (!parValue.empty()) {
+    borderWidth = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "maxObjectTimeShift", t.activity);
+  if (!parValue.empty()) {
+    mMaxObjectTimeShift = std::stoi(parValue);
+  }
+
+  parValue = getParameter(mCustomParameters, "ignoreActivity", t.activity);
+  if (!parValue.empty()) {
+    mIgnoreActivity = (std::stoi(parValue) != 0);
+  }
+
+  // get the list of labels
+  parValue = getParameter(mCustomParameters, "labels", t.activity);
+  auto labels = o2::utils::Str::tokenize(parValue, ',', false, false);
+
+  if (labels.size() > (nRows * nCols)) {
+    ILOG(Warning, Support) << "Number of labels larger than nRos*nCols, some labels will not be displayed correctly" << ENDM;
+  }
+
+  mCanvas.reset();
+  mCanvas = std::make_unique<BigScreenCanvas>("BigScreen", "QC Big Screen", nRows, nCols, borderWidth);
+
+  int index = 0;
+  // add the paves associated to each quality source
+  for (auto label : labels) {
+    if (!label.empty()) {
+      mCanvas->addBox(label, index);
+    }
+    index += 1;
+  }
+
   getObjectsManager()->startPublishing(mCanvas.get());
 }
 
@@ -141,38 +149,23 @@ void BigScreen::update(quality_control::postprocessing::Trigger t, framework::Se
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  // draw messages in canvas
-  mCanvas->Clear();
-  mCanvas->cd();
-
   for (auto source : mConfig.dataSources) {
-    auto det = source.detector;
-    auto pave = mPaves[det].get();
-    if (!pave) {
-      continue;
-    }
-    auto label = mLabels[det].get();
-    if (!label) {
-      continue;
-    }
-
-    int color = kGray;
-
     // retrieve QO from CCDB, in the form of a std::pair<std::shared_ptr<QualityObject>, bool>
     // a valid object is returned in the first element of the pair if the QO is found in the QCDB
     // the second element of the pair is set to true if the QO has a time stamp not older than the provided threshold
-    long notOlderThanMs = (mConfig.mNotOlderThan >= 0) ? static_cast<long>(mConfig.mNotOlderThan) * 1000 : std::numeric_limits<long>::max();
-    auto qo = getQO(qcdb, t, source, notOlderThanMs, (mConfig.mIgnoreActivity != 0));
-    if (qo.first && qo.second) {
-      auto qoValue = qo.first->getQuality().getName();
-      color = mColors[qoValue];
-      pave->SetFillColor(color);
-      pave->Clear();
-      pave->AddText((std::string(" ") + qoValue + std::string(" ")).c_str());
+    // long notOlderThanMs = (mConfig.mNotOlderThan >= 0) ? static_cast<long>(mConfig.mNotOlderThan) * 1000 : std::numeric_limits<long>::max();
+    auto qo = getQO(qcdb, t, source, mMaxObjectTimeShift * 1000, mIgnoreActivity);
+    if (qo.first) {
+      if (qo.second) {
+        mCanvas->setQuality(source.detector, qo.first->getQuality());
+      } else {
+        mCanvas->setText(source.detector, kYellow, "Old");
+      }
+    } else {
+      mCanvas->setText(source.detector, kGray, "NF");
     }
-    pave->Draw();
-    label->Draw();
   }
+  mCanvas->update();
 }
 
 //_________________________________________________________________________________________
