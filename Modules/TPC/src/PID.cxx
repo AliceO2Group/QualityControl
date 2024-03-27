@@ -52,9 +52,10 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   const float cutMinpTPCMIPs = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMinpTPCMIPs");
   const float cutMaxpTPCMIPs = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxpTPCMIPs");
   const int createCanvas = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "createCanvas");
+  const bool runAsyncAndTurnOffSomeHistos = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "turnOffHistosForAsync");
 
   // set track cuts defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
-  mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs);
+  mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs, runAsyncAndTurnOffSomeHistos);
   mQCPID.setCreateCanvas(createCanvas);
   mQCPID.initializeHistograms();
   // pass map of vectors of histograms to be beautified!

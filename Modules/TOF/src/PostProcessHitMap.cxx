@@ -72,10 +72,8 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
     return;
   }
   // Getting the reference map
-  auto& ccdb = services.get<repository::DatabaseInterface>();
-  map<string, string> metadata; // can be empty
-  const auto* refmap = static_cast<o2::tof::TOFFEElightInfo*>(ccdb.retrieveAny(typeid(o2::tof::TOFFEElightInfo), mRefMapCcdbPath, metadata, mRefMapTimestamp));
-
+  const o2::tof::TOFFEElightInfo* refmap = nullptr;
+  refmap = o2::quality_control::core::UserCodeInterface::retrieveConditionAny<o2::tof::TOFFEElightInfo>(mRefMapCcdbPath);
   if (!mHistoRefHitMap) {
     ILOG(Debug, Devel) << "making new refmap from " << mRefMapCcdbPath << " and timestamp " << mRefMapTimestamp << ENDM;
     mHistoRefHitMap.reset(static_cast<TH2F*>(h->Clone("ReferenceHitMap")));

@@ -17,6 +17,7 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCH/DecodingCheck.h"
 #include "MCH/Helpers.h"
+#include "MUONCommon/Helpers.h"
 
 // ROOT
 #include <TH1.h>
@@ -27,30 +28,25 @@
 #include <string>
 
 using namespace std;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
 
 void DecodingCheck::configure()
 {
-  if (auto param = mCustomParameters.find("MinGoodErrorFrac"); param != mCustomParameters.end()) {
-    mMinGoodErrorFrac = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MinGoodSyncFrac"); param != mCustomParameters.end()) {
-    mMinGoodSyncFrac = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("GoodFracHistName"); param != mCustomParameters.end()) {
-    mGoodFracHistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("SyncFracHistName"); param != mCustomParameters.end()) {
-    mSyncFracHistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST12"); param != mCustomParameters.end()) {
-    mMaxBadST12 = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST345"); param != mCustomParameters.end()) {
-    mMaxBadST345 = std::stoi(param->second);
-  }
+}
+
+void DecodingCheck::startOfActivity(const Activity& activity)
+{
+  mGoodFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracHistName", mGoodFracHistName, activity);
+  mSyncFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracHistName", mSyncFracHistName, activity);
+
+  mMinGoodErrorFrac = getConfigurationParameter<double>(mCustomParameters, "MinGoodErrorFrac", mMinGoodErrorFrac, activity);
+  mMinGoodSyncFrac = getConfigurationParameter<double>(mCustomParameters, "MinGoodSyncFrac", mMinGoodSyncFrac, activity);
+
+  mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
+  mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
 
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;

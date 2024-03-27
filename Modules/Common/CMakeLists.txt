@@ -16,6 +16,7 @@ target_sources(O2QcCommon
                        src/TRFCollectionTaskConfig.cxx
                        src/QualityTask.cxx
                        src/QualityTaskConfig.cxx
+                       src/BigScreenCanvas.cxx
                        src/BigScreen.cxx
                        src/BigScreenConfig.cxx
                        src/NonEmpty.cxx

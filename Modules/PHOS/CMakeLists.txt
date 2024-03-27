@@ -46,13 +46,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/PHOS
 
 # ---- Executables ----
 
-add_executable(o2-qc-run-phos-raw src/runQCPHOSRaw.cxx)
-target_link_libraries(o2-qc-run-phos-raw PUBLIC O2QualityControl O2QcPHOS O2::DataFormatsPHOS O2::PHOSBase O2::PHOSWorkflow)
-install(
-  TARGETS o2-qc-run-phos-raw
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
 # ---- Tests ----
 #
 #set(

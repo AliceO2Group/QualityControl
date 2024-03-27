@@ -15,8 +15,7 @@
 
 #include "MCH/PreclustersCheck.h"
 #include "MCH/Helpers.h"
-#include <MCHConstants/DetectionElements.h>
-#include <MCHRawElecMap/Mapper.h>
+#include "MUONCommon/Helpers.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
 
@@ -30,54 +29,29 @@
 #include <string>
 
 using namespace std;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
 
-PreclustersCheck::PreclustersCheck()
-{
-  mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
-}
-
-PreclustersCheck::~PreclustersCheck() {}
-
 void PreclustersCheck::configure()
 {
-  if (auto param = mCustomParameters.find("MinEfficiency"); param != mCustomParameters.end()) {
-    mMinEfficiency = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxEfficiencyDelta"); param != mCustomParameters.end()) {
-    mMaxEffDelta = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("PseudoeffPlotScaleMin"); param != mCustomParameters.end()) {
-    mPseudoeffPlotScaleMin = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("PseudoeffPlotScaleMax"); param != mCustomParameters.end()) {
-    mPseudoeffPlotScaleMax = std::stof(param->second);
-  }
+}
 
-  if (auto param = mCustomParameters.find("MeanEffHistNameB"); param != mCustomParameters.end()) {
-    mMeanEffHistNameB = param->second;
-  }
-  if (auto param = mCustomParameters.find("MeanEffHistNameNB"); param != mCustomParameters.end()) {
-    mMeanEffHistNameNB = param->second;
-  }
+void PreclustersCheck::startOfActivity(const Activity& activity)
+{
+  mMinEfficiency = getConfigurationParameter<double>(mCustomParameters, "MinEfficiency", mMinEfficiency, activity);
+  mMaxEffDelta = getConfigurationParameter<double>(mCustomParameters, "MaxEfficiencyDelta", mMaxEffDelta, activity);
+  mPseudoeffPlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "PseudoeffPlotScaleMin", mPseudoeffPlotScaleMin, activity);
+  mPseudoeffPlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "PseudoeffPlotScaleMax", mPseudoeffPlotScaleMax, activity);
 
-  if (auto param = mCustomParameters.find("MeanEffRatioHistNameB"); param != mCustomParameters.end()) {
-    mMeanEffRatioHistNameB = param->second;
-  }
-  if (auto param = mCustomParameters.find("MeanEffRatioHistNameNB"); param != mCustomParameters.end()) {
-    mMeanEffRatioHistNameNB = param->second;
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST12"); param != mCustomParameters.end()) {
-    mMaxBadST12 = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST345"); param != mCustomParameters.end()) {
-    mMaxBadST345 = std::stoi(param->second);
-  }
+  mMeanEffHistNameB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffHistNameB", mMeanEffHistNameB, activity);
+  mMeanEffHistNameNB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffHistNameNB", mMeanEffHistNameNB, activity);
+  mMeanEffRatioHistNameB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffRatioHistNameB", mMeanEffRatioHistNameB, activity);
+  mMeanEffRatioHistNameNB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffRatioHistNameNB", mMeanEffRatioHistNameNB, activity);
+
+  mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
+  mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
 
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;

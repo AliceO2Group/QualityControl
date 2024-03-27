@@ -67,6 +67,9 @@ void ZDCRawDataTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   // reset for all object
+  fNumCycle = 0;
+  fNumCycleErr = 0;
+  resetAlign();
   reset();
 }
 

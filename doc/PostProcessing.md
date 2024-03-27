@@ -594,28 +594,18 @@ The task is configured as follows:
         "className": "o2::quality_control_modules::common::BigScreen",
         "moduleName": "QualityControl",
         "detectorName": "GLO",
-        "customization": [
-          {
-            "name": "NRows",
-            "value": "4"
-          },
-          {
-            "name": "NCols",
-            "value": "5"
-          },
-          {
-            "name": "BorderWidth",
-            "value": "5"
-          },
-          {
-            "name": "NotOlderThan",
-            "value": "3600"
-          },
-          {
-            "name": "IgnoreActivity",
-            "value": "0"
+        "extendedTaskParameters": {
+          "default": {      
+            "default": {      
+              "nRows": "4",
+              "nCols": "5",
+              "borderWidth": "1",
+              "maxObjectTimeShift": "10000",
+              "ignoreActivity": "0",
+              "labels": "CPV,EMC,FDD,FT0,FV0,HMP,ITS,MCH,MFT,MID,PHS,TPC,TOF,TRD,,TRK,MTK,VTX,PID"
+            }
           }
-        ],
+        },
         "dataSources": [
           {
             "names": [
@@ -658,16 +648,17 @@ The task is configured as follows:
 
 The following options allow to configure the appearence and behavior of the task:
 
-* `NRows`/`NCols`: size of the X-Y grid
-* `BorderWidth`: size of the border around the boxes
-* `NotOlderThan`: ignore quality objects that are older than a given number of seconds. A value of -1 means "no limit".
-* `IgnoreActivity`: if diferent from 0, the task will fetch objects regardless of their activity number and type.
+* `nRows`/`nCols`: size of the X-Y grid
+* `borderWidth`: size of the border around the boxes
+* `maxObjectTimeShift`: ignore quality objects that are older than a given number of seconds. A value of -1 means "no limit".
+* `ignoreActivity`: if different from 0, the task will fetch objects regardless of their activity number and type.
+* `labels`: comma-separated list of labels with boxes to be displayed in the canvas. Some places in the grid of boxes can be left empty by inserting two consecutive commas in the list, like between `TRD` and `TRK` in the example above
 
 The names in the data sources are composed of two parts, separated by a colon:
 ```
-SYSTEM_NAME:OBJECT_PATH
+LABEL:OBJECT_PATH
 ```
-The grid of colored boxes is built from the list of data sources, and the corresponding `SYSTEM_NAME` is displayed above each box.
+The `LABEL` should match one of the elements of the `labels` parameter. The quality object will be associated to the corresponding box.
 
 ## More examples
 

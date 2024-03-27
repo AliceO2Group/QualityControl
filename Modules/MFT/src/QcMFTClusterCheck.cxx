@@ -15,6 +15,8 @@
 /// \author Guillermo Contreras
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
+/// \author David Grund
+///
 
 // C++
 #include <string>
@@ -79,15 +81,10 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         return Quality::Null;
       }
 
-      float den = hClusterOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
-
       for (int iBin = 0; iBin < hClusterOccupancy->GetNbinsX(); iBin++) {
         if (hClusterOccupancy->GetBinContent(iBin + 1) == 0) {
           hClusterOccupancy->Fill(937); // number of chips with zero clusters stored in the overflow bin
         }
-        float num = hClusterOccupancy->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hClusterOccupancy->SetBinContent(iBin + 1, ratio);
       }
     }
 
@@ -97,14 +94,6 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         ILOG(Error, Support) << "Could not cast mClusterPatternIndex to TH1F." << ENDM;
         return Quality::Null;
       }
-
-      float den = hClusterPatternIndex->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hClusterPatternIndex->GetNbinsX(); iBin++) {
-        float num = hClusterPatternIndex->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hClusterPatternIndex->SetBinContent(iBin + 1, ratio);
-      }
     }
 
     if (mo->getName() == "mClusterSizeSummary") {
@@ -113,14 +102,6 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         ILOG(Error, Support) << "Could not cast hClusterSizeSummary to TH1F." << ENDM;
         return Quality::Null;
       }
-
-      float den = hClusterSizeSummary->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hClusterSizeSummary->GetNbinsX(); iBin++) {
-        float num = hClusterSizeSummary->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hClusterSizeSummary->SetBinContent(iBin + 1, ratio);
-      }
     }
 
     if (mo->getName() == "mGroupedClusterSizeSummary") {
@@ -128,14 +109,6 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       if (hGroupedClusterSizeSummary == nullptr) {
         ILOG(Error, Support) << "Could not cast hGroupedClusterSizeSummary to TH1F." << ENDM;
         return Quality::Null;
-      }
-
-      float den = hGroupedClusterSizeSummary->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hGroupedClusterSizeSummary->GetNbinsX(); iBin++) {
-        float num = hGroupedClusterSizeSummary->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hGroupedClusterSizeSummary->SetBinContent(iBin + 1, ratio);
       }
     }
 
@@ -146,14 +119,10 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         return Quality::Null;
       }
 
-      float den = hClusterOccupancySummary->GetBinContent(0, 0); // normalisation stored in the uderflow bin
-      float nEmptyBins = 0;                                      // number of empty zones stored here
+      float nEmptyBins = 0; // number of empty zones
 
       for (int iBinX = 0; iBinX < hClusterOccupancySummary->GetNbinsX(); iBinX++) {
         for (int iBinY = 0; iBinY < hClusterOccupancySummary->GetNbinsY(); iBinY++) {
-          float num = hClusterOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1);
-          float ratio = (den > 0) ? (num / den) : 0.0;
-          hClusterOccupancySummary->SetBinContent(iBinX + 1, iBinY + 1, ratio);
           if ((hClusterOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
             nEmptyBins = nEmptyBins + 1;
           }

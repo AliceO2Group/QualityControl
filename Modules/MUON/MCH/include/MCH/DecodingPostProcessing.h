@@ -19,14 +19,14 @@
 #ifndef QC_MODULE_MCH_PP_DIAGNOSTICS_H
 #define QC_MODULE_MCH_PP_DIAGNOSTICS_H
 
-#include "QualityControl/PostProcessingInterface.h"
-
+#include "MCH/PostProcessingConfigMCH.h"
 #include "MCH/Helpers.h"
 #include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/DecodingErrorsPlotter.h"
 #include "MCH/HeartBeatPacketsPlotter.h"
 #include "MCH/FECSyncStatusPlotter.h"
+#include "QualityControl/PostProcessingInterface.h"
 
 #include <memory>
 
@@ -73,8 +73,9 @@ class DecodingPostProcessing : public PostProcessingInterface
   static std::string hbPacketsSourceName() { return "hbpackets"; }
   static std::string syncStatusSourceName() { return "syncstatus"; }
 
-  int64_t mRefTimeStamp;
   bool mFullHistos{ false };
+
+  PostProcessingConfigMCH mConfig;
 
   // CCDB object accessors
   std::map<std::string, CcdbObjectHelper> mCcdbObjects;

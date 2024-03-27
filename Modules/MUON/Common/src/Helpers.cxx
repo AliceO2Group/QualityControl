@@ -20,7 +20,7 @@
 namespace o2::quality_control_modules::muon
 {
 template <>
-std::string getConfigurationParameter(o2::quality_control::core::CustomParameters customParameters, std::string parName, const std::string defaultValue)
+std::string getConfigurationParameter<std::string>(o2::quality_control::core::CustomParameters customParameters, std::string parName, const std::string defaultValue)
 {
   std::string result = defaultValue;
   auto parOpt = customParameters.atOptional(parName);
@@ -31,7 +31,7 @@ std::string getConfigurationParameter(o2::quality_control::core::CustomParameter
 }
 
 template <>
-std::string getConfigurationParameter(o2::quality_control::core::CustomParameters customParameters, std::string parName, const std::string defaultValue, const o2::quality_control::core::Activity& activity)
+std::string getConfigurationParameter<std::string>(o2::quality_control::core::CustomParameters customParameters, std::string parName, const std::string defaultValue, const o2::quality_control::core::Activity& activity)
 {
   auto parOpt = customParameters.atOptional(parName, activity);
   if (parOpt.has_value()) {
@@ -39,6 +39,43 @@ std::string getConfigurationParameter(o2::quality_control::core::CustomParameter
     return result;
   }
   return getConfigurationParameter<std::string>(customParameters, parName, defaultValue);
+}
+
+template <>
+bool getConfigurationParameter<bool>(o2::quality_control::core::CustomParameters customParameters, std::string parName, const bool defaultValue)
+{
+  bool result = defaultValue;
+  auto parOpt = customParameters.atOptional(parName);
+  if (parOpt.has_value()) {
+    std::string value = parOpt.value();
+    std::transform(value.begin(), value.end(), value.begin(), ::toupper);
+    if (value == "TRUE" || value == "YES" || value == "1") {
+      return true;
+    }
+    if (value == "FALSE" || value == "NO" || value == "0") {
+      return false;
+    }
+    throw std::invalid_argument(std::string("error parsing boolean configurable parameter: key=") + parName + " value=" + value);
+  }
+  return result;
+}
+
+template <>
+bool getConfigurationParameter<bool>(o2::quality_control::core::CustomParameters customParameters, std::string parName, const bool defaultValue, const o2::quality_control::core::Activity& activity)
+{
+  auto parOpt = customParameters.atOptional(parName, activity);
+  if (parOpt.has_value()) {
+    std::string value = parOpt.value();
+    std::transform(value.begin(), value.end(), value.begin(), ::toupper);
+    if (value == "TRUE" || value == "YES" || value == "1") {
+      return true;
+    }
+    if (value == "FALSE" || value == "NO" || value == "0") {
+      return false;
+    }
+    throw std::invalid_argument(std::string("error parsing boolean configurable parameter: key=") + parName + " value=" + value);
+  }
+  return getConfigurationParameter<bool>(customParameters, parName, defaultValue);
 }
 
 //_________________________________________________________________________________________

@@ -15,10 +15,12 @@
 /// \author Guillermo Contreras
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
+/// \author David Grund
 ///
 
 #ifndef QC_MFT_CLUSTER_TASK_H
 #define QC_MFT_CLUSTER_TASK_H
+
 #include <TH1F.h>
 #include <TH2F.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
@@ -28,8 +30,11 @@
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::mft
 {
@@ -59,27 +64,28 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   }
 
  private:
-  std::unique_ptr<TH1F> mClusterLayerIndexH0 = nullptr;
-  std::unique_ptr<TH1F> mClusterLayerIndexH1 = nullptr;
-  std::unique_ptr<TH1F> mClusterDiskIndex = nullptr;
+  std::unique_ptr<TH1FRatio> mClusterLayerIndexH0 = nullptr;
+  std::unique_ptr<TH1FRatio> mClusterLayerIndexH1 = nullptr;
 
-  std::unique_ptr<TH1F> mClusterOccupancy = nullptr;
-  std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
-  std::unique_ptr<TH1F> mClusterSizeSummary = nullptr;
-  std::unique_ptr<TH1F> mGroupedClusterSizeSummary = nullptr;
-  std::unique_ptr<TH2F> mClusterOccupancySummary = nullptr;
+  std::unique_ptr<TH1FRatio> mClusterOccupancy = nullptr;
+  std::unique_ptr<TH1FRatio> mClusterPatternIndex = nullptr;
+  std::unique_ptr<TH1FRatio> mClusterSizeSummary = nullptr;
+  std::unique_ptr<TH1FRatio> mGroupedClusterSizeSummary = nullptr;
+  std::unique_ptr<TH2FRatio> mClusterOccupancySummary = nullptr;
 
-  std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
-  std::vector<std::unique_ptr<TH2F>> mClusterChipOccupancyMap;
+  std::unique_ptr<TH2FRatio> mClusterPatternSensorIndices = nullptr;
+  std::vector<std::unique_ptr<TH2FRatio>> mClusterChipOccupancyMap;
 
-  std::unique_ptr<TH1F> mClusterZ = nullptr;
-  std::vector<std::unique_ptr<TH2F>> mClusterXYinLayer;
-  std::vector<std::unique_ptr<TH1F>> mClusterRinLayer;
+  std::unique_ptr<TH1FRatio> mClusterZ = nullptr;
+  std::vector<std::unique_ptr<TH2FRatio>> mClusterXYinLayer;
+  std::vector<std::unique_ptr<TH1FRatio>> mClusterRinLayer;
 
-  std::unique_ptr<TH1F> mClustersROFSize = nullptr;
-  std::unique_ptr<TH1F> mClustersBC = nullptr;
+  std::unique_ptr<TH1FRatio> mClustersROFSize = nullptr;
+  std::unique_ptr<TH1FRatio> mClustersBC = nullptr;
 
   std::vector<o2::BaseCluster<float>> mClustersGlobal;
+
+  int mOnlineQC;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };

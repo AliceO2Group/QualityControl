@@ -43,6 +43,10 @@ PostProcTask::~PostProcTask()
 {
   delete mAmpl;
   delete mTime;
+  for (auto& [_, histo] : mMapTrgHistBC) {
+    delete histo;
+    histo = nullptr;
+  }
 }
 
 void PostProcTask::configure(const boost::property_tree::ptree& config)
@@ -112,6 +116,42 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
+  // delete any objects from previous runs
+  mRateOrA.reset();
+  mRateOrAout.reset();
+  mRateOrAin.reset();
+  mRateTrgCharge.reset();
+  mRateTrgNchan.reset();
+  mHistChDataNegBits.reset();
+  mHistTriggers.reset();
+
+  mHistTimeInWindow.reset();
+  mHistCFDEff.reset();
+  mHistTrgValidation.reset();
+
+  mRatesCanv.reset();
+  delete mAmpl;
+  mAmpl = nullptr;
+  delete mTime;
+  mTime = nullptr;
+
+  mHistBcPattern.reset();
+  mHistBcPatternFee.reset();
+  mHistBcTrgOutOfBunchColl.reset();
+  mHistBcFeeOutOfBunchColl.reset();
+  mHistBcFeeOutOfBunchCollForOrATrg.reset();
+  mHistBcFeeOutOfBunchCollForOrAOutTrg.reset();
+  mHistBcFeeOutOfBunchCollForNChanTrg.reset();
+  mHistBcFeeOutOfBunchCollForChargeTrg.reset();
+  mHistBcFeeOutOfBunchCollForOrAInTrg.reset();
+
+  for (auto& [_, histo] : mMapTrgHistBC) {
+    delete histo;
+    histo = nullptr;
+  }
+  mMapTrgHistBC.clear();
+
+  // start initialization
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
 

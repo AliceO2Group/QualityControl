@@ -15,14 +15,9 @@
 /// \author Sebastien Perrin
 ///
 
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TGraph.h>
-#include <TFile.h>
-#include <algorithm>
-
 #include "MCH/DigitsTask.h"
+#include "MCH/Helpers.h"
+#include "MUONCommon/Helpers.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/DataDecoder.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -30,14 +25,15 @@
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DetectorsRaw/HBFUtils.h>
-#include "MCHConstants/DetectionElements.h"
 #include "MCHGlobalMapping/DsIndex.h"
+
+#include <TH1.h>
+#include <TH2.h>
 
 using namespace std;
 using namespace o2::mch;
 using namespace o2::mch::raw;
-
-static int nCycles = 0;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2
 {
@@ -46,27 +42,28 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-DigitsTask::DigitsTask() : TaskInterface()
+template <typename T>
+void DigitsTask::publishObject(T* histo, std::string drawOption, bool statBox, bool isExpert)
 {
-  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  if (mFullHistos || (isExpert == false)) {
+    getObjectsManager()->startPublishing(histo);
+    getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+  }
 }
-
-DigitsTask::~DigitsTask() {}
 
 void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  // flag to enable extra disagnostics plots; it also enables on-cycle plots
-  mDiagnostic = false;
-  if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mDiagnostic = true;
-    }
-  }
+  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
 
-  mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
+  // flag to enable extra disagnostics plots; it also enables on-cycle plots
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos);
 
   const uint32_t nElecXbins = NumberOfDualSampas;
 
@@ -85,7 +82,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramDigitsSignalOrbitElec = std::make_unique<TH2F>("DigitSignalOrbit_Elec", "Digit orbits vs DS Id (signal)", nElecXbins, 0, nElecXbins, 130, -1, 129);
   publishObject(mHistogramDigitsSignalOrbitElec.get(), "colz", true, false);
 
-  if (mDiagnostic) {
+  if (mFullHistos) {
     mHistogramDigitsBcInOrbit = std::make_unique<TH2F>("Expert/DigitsBcInOrbit_Elec", "Digit BC vs DS Id", nElecXbins, 0, nElecXbins, 3600, 0, 3600);
     publishObject(mHistogramDigitsBcInOrbit.get(), "colz", false, true);
 
@@ -181,7 +178,7 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
     mHistogramDigitsSignalOrbitElec->Fill(fecId, orbit);
   }
 
-  if (mDiagnostic) {
+  if (mFullHistos) {
     mHistogramDigitsBcInOrbit->Fill(fecId, bc);
 
     //--------------------------------------------------------------------------
@@ -220,8 +217,6 @@ void DigitsTask::endOfCycle()
   // update mergeable ratios
   mHistogramOccupancyElec->update();
   mHistogramSignalOccupancyElec->update();
-
-  nCycles += 1;
 }
 
 void DigitsTask::endOfActivity(const Activity& /*activity*/)

@@ -16,6 +16,7 @@
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
 /// \author David Grund
+///
 
 #ifndef QC_MFT_TRACK_TASK_H
 #define QC_MFT_TRACK_TASK_H
@@ -71,10 +72,10 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1FRatio> mPositiveTrackPhi = nullptr;
   std::unique_ptr<TH1FRatio> mNegativeTrackPhi = nullptr;
   std::unique_ptr<TH1FRatio> mTrackEta = nullptr;
-  std::array<unique_ptr<TH1FRatio>, 7> mTrackEtaNCls = { nullptr };
-  std::array<unique_ptr<TH1FRatio>, 7> mTrackPhiNCls = { nullptr };
-  std::array<unique_ptr<TH2FRatio>, 7> mTrackXYNCls = { nullptr };
-  std::array<unique_ptr<TH2FRatio>, 7> mTrackEtaPhiNCls = { nullptr };
+  std::array<unique_ptr<TH1FRatio>, 6> mTrackEtaNCls = { nullptr };
+  std::array<unique_ptr<TH1FRatio>, 6> mTrackPhiNCls = { nullptr };
+  std::array<unique_ptr<TH2FRatio>, 6> mTrackXYNCls = { nullptr };
+  std::array<unique_ptr<TH2FRatio>, 6> mTrackEtaPhiNCls = { nullptr };
   std::unique_ptr<TH1FRatio> mCATrackEta = nullptr;
   std::unique_ptr<TH1FRatio> mLTFTrackEta = nullptr;
   std::unique_ptr<TH1FRatio> mCATrackPt = nullptr;
@@ -85,7 +86,7 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1FRatio> mAssociatedClusterFraction = nullptr;
   std::unique_ptr<TH2FRatio> mClusterRatioVsBunchCrossing = nullptr;
 
-  static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
+  static constexpr array<short, 6> sMinNClustersList = { 5, 6, 7, 8, 9, 10 };
 };
 
 } // namespace o2::quality_control_modules::mft

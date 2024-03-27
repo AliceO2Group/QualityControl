@@ -78,12 +78,12 @@ int main(int argc, const char* argv[])
 
     PostProcessingRunner runner(taskID);
     runner.init(configTree, WorkflowType::Standalone);
+    ServiceRegistry registry;
 
     if (vm.count("timestamps")) {
       // running the PP task on a set of timestamps
       runner.runOverTimestamps(vm["timestamps"].as<std::vector<uint64_t>>());
     } else {
-      ServiceRegistry registry;
       // running the PP task with an event loop
       runner.start({ registry });
 
@@ -96,7 +96,7 @@ int main(int argc, const char* argv[])
         usleep(1000000.0 * timer.getRemainingTime());
       }
     }
-    runner.stop();
+    runner.stop({ registry });
     return 0;
   } catch (const bpo::error& ex) {
     ILOG(Error, Ops) << "Exception caught: " << ex.what() << ENDM;

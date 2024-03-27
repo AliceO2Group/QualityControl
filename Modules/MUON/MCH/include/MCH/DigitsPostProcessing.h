@@ -19,12 +19,13 @@
 #ifndef QC_MODULE_MCH_PP_DIGITS_H
 #define QC_MODULE_MCH_PP_DIGITS_H
 
-#include "QualityControl/PostProcessingInterface.h"
-#include "Common/TH2Ratio.h"
+#include "MCH/PostProcessingConfigMCH.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/RatesPlotter.h"
 #include "MCH/RatesTrendsPlotter.h"
 #include "MCH/OrbitsPlotter.h"
+#include "Common/TH2Ratio.h"
+#include "QualityControl/PostProcessingInterface.h"
 
 namespace o2::quality_control::repository
 {
@@ -61,10 +62,12 @@ class DigitsPostProcessing : public PostProcessingInterface
   static std::string orbitsSourceName() { return "orbits"; }
   static std::string orbitsSignalSourceName() { return "orbits_signal"; }
 
-  int64_t mRefTimeStamp;
+  int64_t mRefTimeStamp{ 0 };
   bool mFullHistos{ false };
-  float mChannelRateMin;
-  float mChannelRateMax;
+  float mChannelRateMin{ 0 };
+  float mChannelRateMax{ 100 };
+
+  PostProcessingConfigMCH mConfig;
 
   // CCDB object accessors
   std::map<std::string, CcdbObjectHelper> mCcdbObjects;

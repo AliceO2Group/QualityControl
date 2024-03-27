@@ -138,6 +138,10 @@ void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
+  if (mCalDetCanvasVec.size() > 0) {
+    mCalDetCanvasVec.clear();
+  }
+
   auto calDetIter = 0;
   for (const auto& type : mObservables) {
     mCalDetCanvasVec.emplace_back(std::vector<std::unique_ptr<TCanvas>>());
@@ -165,6 +169,7 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 
   auto& calDet = clusters.getNClusters();
   auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
+
   o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
   calDetIter++;
 
@@ -202,6 +207,10 @@ void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistryRef)
     for (const auto& canvas : calDetCanvasVec) {
       getObjectsManager()->stopPublishing(canvas.get());
     }
+  }
+
+  if (mCalDetCanvasVec.size() > 0) {
+    mCalDetCanvasVec.clear();
   }
 }
 
