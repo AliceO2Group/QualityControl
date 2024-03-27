@@ -199,9 +199,13 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // Pixel hit maps
+  int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
+  for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
+    // create only hit maps corresponding to the FLP
+    int iChipIndex = getChipIndexPixelOccupancyMap(iVectorIndex);
+  }
 
   if (mNoiseScan == 1) { // to be executed only for special runs
-    int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
     for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
       // create only hit maps corresponding to the FLP
       int iChipIndex = getChipIndexPixelOccupancyMap(iVectorIndex);
