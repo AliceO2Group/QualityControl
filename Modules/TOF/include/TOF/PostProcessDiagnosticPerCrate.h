@@ -43,6 +43,11 @@ class PostProcessDiagnosticPerCrate final : public quality_control::postprocessi
   /// \brief Destructor
   ~PostProcessDiagnosticPerCrate() override;
 
+  /// \brief Configuration of a post-processing task.
+  /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
+  /// \param config   ConfigurationInterface with prefix set to ""
+  virtual void configure(const boost::property_tree::ptree& config) override;
+
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
   /// registry with singleton interfaces.
