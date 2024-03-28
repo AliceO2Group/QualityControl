@@ -47,8 +47,8 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
             NLEDMONCHANNELS = 480,
             NCOLSFEC = 96,
             NROWSFEC = 208,
-            NCOLSLEDMON = 10,
-            NROWSLEDMON = 48;
+            NCOLSLEDMON = 48,
+            NROWSLEDMON = 10;
   mPedestalChannelFECHG = new TH1D("mPedestalChannelFECHG", "Pedestals (FEC, HG); tower ID; Pedestal (ADC)", NFECCHANNELS, -0.5, NFECCHANNELS - 0.5);
   mPedestalChannelFECLG = new TH1D("mPedestalChannelFECLG", "Pedestals (FEC, LG); tower ID; Pedestal (ADC)", NFECCHANNELS, -0.5, NFECCHANNELS - 0.5);
   mPedestalChannelLEDMONHG = new TH1D("mPedestalChannelLEDMONHG", "Pedestals (LEDMON, HG); tower ID; Pedestal (ADC)", NLEDMONCHANNELS, -0.5, NLEDMONCHANNELS - 0.5);
@@ -116,12 +116,12 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (auto ichan = 0; ichan < mPedestalChannelLEDMONHG->GetXaxis()->GetNbins(); ichan++) {
         auto pedestalLow = pedestals->getPedestalValue(ichan, false, false),
              pedestalHigh = pedestals->getPedestalValue(ichan, false, false);
-        mPedestalChannelFECHG->SetBinContent(ichan + 1, pedestalHigh);
-        mPedestalChannelFECLG->SetBinContent(ichan + 1, pedestalLow);
+        mPedestalChannelLEDMONHG->SetBinContent(ichan + 1, pedestalHigh);
+        mPedestalChannelLEDMONLG->SetBinContent(ichan + 1, pedestalLow);
         int col = ichan % 48,
             row = ichan / 48;
-        mPedestalPositionFECHG->SetBinContent(col + 1, row + 1, pedestalHigh);
-        mPedestalPositionFECLG->SetBinContent(col + 1, row + 1, pedestalHigh);
+        mPedestalPositionLEDMONHG->SetBinContent(col + 1, row + 1, pedestalHigh);
+        mPedestalPositionLEDMONLG->SetBinContent(col + 1, row + 1, pedestalHigh);
       }
     }
   }
