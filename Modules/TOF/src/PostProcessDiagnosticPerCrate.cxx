@@ -30,12 +30,24 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tof
 {
 
-const std::string PostProcessDiagnosticPerCrate::mCCDBPath = "TOF/MO/TaskRaw/";
 const int PostProcessDiagnosticPerCrate::mNWords = 32;
 const int PostProcessDiagnosticPerCrate::mNSlots = 14;
 
 PostProcessDiagnosticPerCrate::~PostProcessDiagnosticPerCrate()
 {
+}
+
+void PostProcessDiagnosticPerCrate::configure(const boost::property_tree::ptree& config)
+{
+  const std::string baseJsonPath = "qc.postprocessing." + getID() + ".customization.";
+  mCCDBPath = config.get<std::string>(baseJsonPath + "CCDBPath", "TOF/MO/TaskRaw/");
+  ILOG(Info, Support) << "Setting CCDBPath to " << mCCDBPath << ENDM;
+  mCCDBPathObjectDRM = config.get<std::string>(baseJsonPath + "mCCDBPathObjectDRM", "DRMCounter");
+  ILOG(Info, Support) << "Setting mCCDBPathObjectDRM to " << mCCDBPathObjectDRM << ENDM;
+  mCCDBPathObjectLTM = config.get<std::string>(baseJsonPath + "mCCDBPathObjectLTM", "LTMCounter");
+  ILOG(Info, Support) << "Setting mCCDBPathObjectLTM to " << mCCDBPathObjectLTM << ENDM;
+  mCCDBPathObjectTRM = config.get<std::string>(baseJsonPath + "mCCDBPathObjectTRM", "TRMCounter");
+  ILOG(Info, Support) << "Setting mCCDBPathObjectTRM to " << mCCDBPathObjectTRM << ENDM;
 }
 
 void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -48,7 +60,7 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
     counter++;
   }
 
-  //    Setting up services
+  // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
@@ -56,11 +68,11 @@ void PostProcessDiagnosticPerCrate::update(Trigger t, framework::ServiceRegistry
 {
   ILOG(Debug) << "UPDATING !" << ENDM;
   for (int slot = 0; slot < mNSlots; slot++) { // Loop over slots
-    std::string moName = "DRMCounter";
+    std::string moName = mCCDBPathObjectDRM;
     if (slot == 1) {
-      moName = "LTMCounter";
+      moName = mCCDBPathObjectLTM;
     } else if (slot > 1) {
-      moName = Form("TRMCounterSlot%i", slot);
+      moName = Form("%s%i", mCCDBPathObjectTRM.c_str(), slot);
     }
     ILOG(Debug) << "Processing slot " << slot << " from " << moName << ENDM;
     auto mo = mDatabase->retrieveMO(mCCDBPath, moName, t.timestamp, t.activity);
