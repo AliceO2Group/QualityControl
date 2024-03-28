@@ -28,6 +28,7 @@ setup(
         'qcrepocleaner/o2-qc-repo-cleaner',
         'qcrepocleaner/o2-qc-repo-delete-objects-in-runs',
         'qcrepocleaner/o2-qc-repo-delete-not-in-runs',
+        'qcrepocleaner/o2-qc-repo-delete-objects',
         'qcrepocleaner/o2-qc-repo-delete-time-interval',
         'qcrepocleaner/o2-qc-repo-find-objects-not-updated',
         'qcrepocleaner/o2-qc-repo-move-objects'],

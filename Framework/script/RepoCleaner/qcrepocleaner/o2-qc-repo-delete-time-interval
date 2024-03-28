@@ -16,7 +16,7 @@ def parseArgs():
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Clean this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
+                        help='Delete this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
     parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', required=True)
     parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', required=True)
     parser.add_argument('--only-path-no-subdir', action='store_true', help='Do not process the subfolders, i.e. do not '
