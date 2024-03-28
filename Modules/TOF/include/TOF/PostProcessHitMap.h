@@ -63,7 +63,7 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override{};
 
  private:
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
