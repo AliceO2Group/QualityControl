@@ -10,5 +10,11 @@
 #pragma link C++ class o2::quality_control_modules::glo::MeanVertexPostProcessing + ;
 
 #pragma link C++ class o2::quality_control_modules::glo::MeanVertexCheck + ;
+<<<<<<< HEAD
 #pragma link C++ class o2::quality_control_modules::glo::CTFSize + ;
+||||||| parent of 6bfa8fdc (GLO: Add ITS-TPC/ITS Check)
+=======
+#pragma link C++ class o2::quality_control_modules::glo::ITSTPCmatchingCheck + ;
+
+>>>>>>> 6bfa8fdc (GLO: Add ITS-TPC/ITS Check)
 #endif
