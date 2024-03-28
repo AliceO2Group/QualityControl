@@ -49,6 +49,7 @@ class RawDataCheckStats : public o2::quality_control::checker::CheckInterface
   float mReadoutRate;
   float mMaxReadoutRate;
   float mMinCalTriggerRate;
+  int mNHBFperTF;
 
   ClassDefOverride(RawDataCheckStats, 1);
 };

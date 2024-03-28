@@ -37,6 +37,7 @@
 
 // Quality Control
 #include "TRD/RawDataCheck.h"
+#include "Common/Utils.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -48,17 +49,29 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::trd
 {
 
-void RawDataCheckStats::configure() {}
+void RawDataCheckStats::configure()
+{
+  // parameters which don't depend on activity can be initialized here
+  mNHBFperTF = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nHBFperTF", 32);
+}
 
 Quality RawDataCheckStats::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
+  // For QC checks the correct timestamp is not available from the framework
+  // Thus, for synch. reconstruction of real data the code below would work,
+  // but for SYNTHETIC data different timestamps are used from MC which cannot
+  // be accessed in here. This we keep the number of HBFs per TF as a configurable
+  // parameter
+  /*
   int runNumber = mActivity->mId;
   auto& ccdbmgr = o2::ccdb::BasicCCDBManager::instance();
   auto runDuration = ccdbmgr.getRunDuration(runNumber, false);
   map<string, string> metaData;
   metaData.emplace(std::pair<std::string, std::string>("runNumber", to_string(runNumber)));
   auto calib = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPECSObject>("GLO/Config/GRPECS", metaData, runDuration.first);
+  calib->getNHBFPerTF()
+  */
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
     if (mo->getName() == "stats") {
@@ -68,7 +81,7 @@ Quality RawDataCheckStats::check(std::map<std::string, std::shared_ptr<MonitorOb
         result.set(Quality::Bad); // no readout triggers or histogram is completely empty
       } else {
         mReadoutRate = h->GetBinContent(2) / h->GetBinContent(1); // number of triggers per TF
-        mReadoutRate *= 1. / (calib->getNHBFPerTF() * o2::constants::lhc::LHCOrbitMUS * 1e-6);
+        mReadoutRate *= 1. / (mNHBFperTF * o2::constants::lhc::LHCOrbitMUS * 1e-6);
         mCalTriggerRate = h->GetBinContent(3) / h->GetBinContent(2);
       }
       if (mReadoutRate > mMaxReadoutRate) {
