@@ -56,8 +56,17 @@
         "dataSource": [{
           "type": "Task",
           "name": "CTPRawData",
-          "MOs": ["bcMTVX","inputs","classes"]
-        }]
+          "MOs": ["bcMTVX","inputs","classes","inputRatio","classRatio"]
+        }],
+        "checkParameters": {
+          "thresholdRateBad": "0.15",
+          "thresholdRateMedium": "0.1",
+          "thresholdRateRatioBad": "0.1",
+          "thresholdRateRatioMedium": "0.05",
+          "MBclassName": "CMTVX-B-NOPF",
+          "cycleDurationSeconds": "60",                       "":"Use the same value as in the task setting",
+          "fraction": "0.1",                                  "":"Use the same value as in the dataSamplingPolicies setting"
+        }
       }
     }
   },
@@ -70,7 +79,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "1.0",
+          "fraction": "0.1",
           "seed": "0"
         }
       ],

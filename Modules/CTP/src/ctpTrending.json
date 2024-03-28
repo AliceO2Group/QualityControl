@@ -37,7 +37,7 @@
             "type": "repository",
             "path": "CTP/MO/RawData",
             "names": ["inputs","classes"],
-            "reductorName": "o2::quality_control::postprocessing::TH1ctpReductor",
+            "reductorName": "o2::quality_control_modules::ctp::TH1ctpReductor",
             "moduleName": "QcCommon"
           }
         ],
@@ -45,74 +45,129 @@
           {
             "name": "L0_3_rate",
             "title": "L0_3_rate",
-            "varexp": "inputs.inputs[2]/60:time", "":"index of the intputs starts at 1, but in the array, we start at 0",
+            "varexp": "inputs.inputs[2]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_6_rate",
             "title": "L0_6_rate",
-            "varexp": "inputs.inputs[5]/60:time",
+            "varexp": "inputs.inputs[5]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_14_rate",
             "title": "L0_14_rate",
-            "varexp": "inputs.inputs[13]/60:time",
+            "varexp": "inputs.inputs[13]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_21_rate",
             "title": "L0_21_rate",
-            "varexp": "inputs.inputs[20]/60:time",
+            "varexp": "inputs.inputs[20]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "L0_22_rate",
             "title": "L0_22_rate",
-            "varexp": "inputs.inputs[21]/60:time",
+            "varexp": "inputs.inputs[21]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "Class_MTVX_rate",
             "title": "Class_MTVX_rate",
-            "varexp": "classes.classContentMTVX/60:time",
+            "varexp": "classes.classContentMTVX/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "Class_MVBA_rate",
             "title": "Class_MVBA_rate",
-            "varexp": "classes.classContentMVBA/60:time",
+            "varexp": "classes.classContentMVBA/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "Class_TVXDCM_rate",
             "title": "Class_TVXDCM_rate",
-            "varexp": "classes.classContentTVXDMC/60:time",
+            "varexp": "classes.classContentTVXDMC/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "Class_TVXEMC_rate",
             "title": "Class_TVXEMC_rate",
-            "varexp": "classes.classContentTVXEMC/60:time",
+            "varexp": "classes.classContentTVXEMC/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
             "selection": "",
             "option": "*L"
           },
           {
             "name": "Class_TVXPH0_rate",
             "title": "Class_TVXPH0_rate",
-            "varexp": "classes.classContentTVXPHO/60:time",
+            "varexp": "classes.classContentTVXPHO/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_6_rate_ratio",
+            "title": "L0_6_rate_ratio",
+            "varexp": "inputs.inputs[5]/inputs.inputs[2]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_14_rate_ratio",
+            "title": "L0_14_rate_ratio",
+            "varexp": "inputs.inputs[13]/inputs.inputs[2]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_21_rate_ratio",
+            "title": "L0_21_rate_ratio",
+            "varexp": "inputs.inputs[20]/inputs.inputs[2]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "L0_22_rate_ratio",
+            "title": "L0_22_rate_ratio",
+            "varexp": "inputs.inputs[21]/inputs.inputs[2]:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_MVBA_MTVX_rate_ratio",
+            "title": "Class_MVBA_MTVX_rate_ratio",
+            "varexp": "classes.classContentMVBA/classes.classContentMTVX:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_TVXDCM_MTVX_rate_ratio",
+            "title": "Class_TVXDCM_MTVX_rate_ratio",
+            "varexp": "classes.classContentTVXDMC/classes.classContentMTVX:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_TVXEMC_MTVX_rate_ratio",
+            "title": "Class_TVXEMC_MTVX_rate_ratio",
+            "varexp": "classes.classContentTVXEMC/classes.classContentMTVX:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "Class_TVXPH0_MTVX_rate_ratio",
+            "title": "Class_TVXPH0_MTVX_rate_ratio",
+            "varexp": "classes.classContentTVXPHO/classes.classContentMTVX:time",
             "selection": "",
             "option": "*L"
           }
-
         ],
         "initTrigger": [
           "userorcontrol"
