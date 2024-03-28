@@ -153,6 +153,18 @@ class TaskFT0TOF final : public TaskInterface
   const float cinv = 33.35641;
   bool mUseFT0 = false;
   float mEvTimeTracksMaxMomentum = 1.5;
+  // Bin limits
+  int mPtBins = 100;
+  float mPtBinsMin = 0.f;
+  float mPtBinsMax = 10.f;
+
+  int mDeltaBins = 500;
+  float mDeltaBinsMin = -5000.f;
+  float mDeltaBinsMax = 5000.f;
+
+  int mEvTimeBins = 200;
+  float mEvTimeBinsMin = -2000.f;
+  float mEvTimeBinsMax = 2000.f;
 
   TH1F* mHistDeltatPi[trackType::SIZE][evTimeType::SIZEt0] = {};
   TH1F* mHistDeltatKa[trackType::SIZE][evTimeType::SIZEt0] = {};
