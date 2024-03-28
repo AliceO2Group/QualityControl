@@ -68,7 +68,10 @@ class PostProcessDiagnosticPerCrate final : public quality_control::postprocessi
 
   std::array<std::shared_ptr<TH2F>, 72> mCrates;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  static const std::string mCCDBPath;
+  std::string mCCDBPath;          /// CCDB path of the MO (initialized from the configure method)
+  std::string mCCDBPathObjectDRM; /// CCDB name of the MO for the DRM (initialized from the configure method)
+  std::string mCCDBPathObjectLTM; /// CCDB name of the MO for the LTM (initialized from the configure method)
+  std::string mCCDBPathObjectTRM; /// CCDB name of the MO for the TRM (initialized from the configure method)
 };
 
 } // namespace o2::quality_control_modules::tof
