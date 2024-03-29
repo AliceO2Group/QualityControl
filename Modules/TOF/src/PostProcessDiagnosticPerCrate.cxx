@@ -42,11 +42,11 @@ void PostProcessDiagnosticPerCrate::configure(const boost::property_tree::ptree&
   const std::string baseJsonPath = "qc.postprocessing." + getID() + ".customization.";
   mCCDBPath = config.get<std::string>(baseJsonPath + "CCDBPath", "TOF/MO/TaskRaw/");
   ILOG(Info, Support) << "Setting CCDBPath to " << mCCDBPath << ENDM;
-  mCCDBPathObjectDRM = config.get<std::string>(baseJsonPath + "mCCDBPathObjectDRM", "DRMCounter");
+  mCCDBPathObjectDRM = config.get<std::string>(baseJsonPath + "CCDBPathObjectDRM", "DRMCounter");
   ILOG(Info, Support) << "Setting mCCDBPathObjectDRM to " << mCCDBPathObjectDRM << ENDM;
-  mCCDBPathObjectLTM = config.get<std::string>(baseJsonPath + "mCCDBPathObjectLTM", "LTMCounter");
+  mCCDBPathObjectLTM = config.get<std::string>(baseJsonPath + "CCDBPathObjectLTM", "LTMCounter");
   ILOG(Info, Support) << "Setting mCCDBPathObjectLTM to " << mCCDBPathObjectLTM << ENDM;
-  mCCDBPathObjectTRM = config.get<std::string>(baseJsonPath + "mCCDBPathObjectTRM", "TRMCounter");
+  mCCDBPathObjectTRM = config.get<std::string>(baseJsonPath + "CCDBPathObjectTRM", "TRMCounter");
   ILOG(Info, Support) << "Setting mCCDBPathObjectTRM to " << mCCDBPathObjectTRM << ENDM;
 }
 
