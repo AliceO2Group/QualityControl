@@ -23,6 +23,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 
+#include <boost/property_tree/ptree.hpp>
 #include <array>
 #include <memory>
 #include <string>
