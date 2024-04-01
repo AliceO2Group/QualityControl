@@ -49,7 +49,7 @@ class CTPTrendingTask : public PostProcessingInterface
   void initialize(Trigger, framework::ServiceRegistryRef) override;
   void update(Trigger, framework::ServiceRegistryRef) override;
   void finalize(Trigger, framework::ServiceRegistryRef) override;
-  void initCTP(Trigger &t);
+  void initCTP(Trigger& t);
 
  private:
   struct MetaData {

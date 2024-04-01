@@ -87,7 +87,7 @@ void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   static bool init = 1;
-  if(init) {
+  if (init) {
     initCTP(t);
     init = 0;
   }
