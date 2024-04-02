@@ -59,7 +59,7 @@ class CTPTrendingTask : public PostProcessingInterface
   void trendValues(const Trigger& t, quality_control::repository::DatabaseInterface& qcdb);
   void generatePlots();
 
-  o2::ctp::CTPConfiguration mCTPconfig;
+  o2::ctp::CTPConfiguration* mCTPconfig;
   TrendingConfigCTP mConfig;
   MetaData mMetaData;
   UInt_t mTime;
