@@ -116,10 +116,8 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
       }
     }
   }
-}
 
-void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
-{
+  // Finalizing the plot and updating the MO on the CCDB
   if (!mHistoRefHitMap) {
     ILOG(Warning, Support) << "mHistoRefHitMap undefined, can't finalize" << ENDM;
     return;
@@ -128,7 +126,7 @@ void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
     ILOG(Warning, Support) << "mHistoHitMap undefined, can't finalize" << ENDM;
     return;
   }
-  TCanvas* c = new TCanvas(mHistoHitMap->GetName(), mHistoHitMap->GetName());
+  TCanvas* canvas = new TCanvas(mHistoHitMap->GetName(), mHistoHitMap->GetName());
   mHistoRefHitMap->GetZaxis()->SetRangeUser(0, 1);
   mHistoHitMap->GetZaxis()->SetRangeUser(0, 1);
 
@@ -156,15 +154,15 @@ void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
   phosPad.Draw();
 
   // Draw the shifter message
-  if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName())))
+  if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))) {
     mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))->Draw("same");
+  }
 
-  auto mo = std::make_shared<o2::quality_control::core::MonitorObject>(c, getID(), "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
-  mo->setIsOwner(false);
-  mDatabase->storeMO(mo);
-
+  auto moToStore = std::make_shared<o2::quality_control::core::MonitorObject>(canvas, getID(), "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
+  moToStore->setIsOwner(false);
+  mDatabase->storeMO(moToStore);
   // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
-  delete c;
+  delete canvas;
 }
 
 } // namespace o2::quality_control_modules::tof
