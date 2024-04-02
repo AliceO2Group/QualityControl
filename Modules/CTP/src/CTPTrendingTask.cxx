@@ -44,16 +44,16 @@ void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
 void CTPTrendingTask::initCTP(Trigger& t)
 {
   std::string run = std::to_string(t.activity.mId);
-  //CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  //mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
+  // CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  // mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
   std::string CCDBHost = "https://alice-ccdb.cern.ch";
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setURL(CCDBHost);
   map<string, string> metadata; // can be empty
   metadata["runNumber"] = run;
   mCTPconfig = mgr.getSpecific<CTPConfiguration>(CCDBPathCTPConfig, t.timestamp, metadata);
-  if(mCTPconfig == nullptr) {
-    return ;
+  if (mCTPconfig == nullptr) {
+    return;
   }
   // get the indeces of the classes we want to trend
   std::vector<ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
@@ -96,7 +96,7 @@ void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
   auto& qcdb = services.get<repository::DatabaseInterface>();
   if (mCTPconfig == nullptr) {
     initCTP(t);
-    if(mCTPconfig == nullptr) {
+    if (mCTPconfig == nullptr) {
       return;
     }
   }
