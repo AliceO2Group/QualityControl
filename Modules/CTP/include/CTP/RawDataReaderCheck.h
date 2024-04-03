@@ -57,7 +57,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   int classCycleCounter;
   int inputRatioCycleCounter;
   int classRatioCycleCounter;
-  int mIndexMBclass;
+  int mIndexMBclass = -1;
   float mFraction;
   int mCycleDuration;
   TH1F* fHistInputPrevious;

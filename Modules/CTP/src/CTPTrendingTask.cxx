@@ -172,18 +172,21 @@ void CTPTrendingTask::generatePlots()
     c->SetName(plot.name.c_str());
 
     if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
-      if (index < 5)
+      if (index < 5) {
         histo->SetTitle(mInputNames[index].c_str());
-      else if (index < 10)
+      } else if (index < 10) {
         histo->SetTitle(mClassNames[index - 5].c_str());
-      else if (index < 14)
+      } else if (index < 14) {
         histo->SetTitle(Form("%s/%s", mInputNames[index - 9].c_str(), mInputNames[0].c_str()));
-      else
+      } else {
         histo->SetTitle(Form("%s/%s", mClassNames[index - 13].c_str(), mClassNames[0].c_str()));
-      if (index < 10)
+      }
+
+      if (index < 10) {
         histo->GetYaxis()->SetTitle("rate [Hz]");
-      else
+      } else {
         histo->GetYaxis()->SetTitle("rate ratio");
+      }
       c->Update();
 
       if (plot.varexp.find(":time") != std::string::npos) {
