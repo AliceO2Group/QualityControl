@@ -201,7 +201,7 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
         // 4) The CheckRunner finishes publishing the collection of MOs
         // To avoid this scenario, a small delay is added before returning the trigger. Considerations about other
         // possible solutions are included in the commit message.
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds{1});
       }
       objectActivity.mValidity = validity;
       auto timestamp = activity_helpers::isLegacyValidity(validity) ? validity.getMin() : (validity.getMax() - 1);
