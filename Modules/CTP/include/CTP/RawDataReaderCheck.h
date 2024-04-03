@@ -53,13 +53,12 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   float mThresholdRateMedium;
   float mThresholdRateRatioBad;
   float mThresholdRateRatioMedium;
-  int inputCycleCounter;
-  int classCycleCounter;
-  int inputRatioCycleCounter;
-  int classRatioCycleCounter;
+  int cycleCounter;
   int mIndexMBclass = -1;
   float mFraction;
   int mCycleDuration;
+  bool relativeRates = false;
+  bool inputRates = false;
   TH1F* fHistInputPrevious;
   TH1F* fHistClassesPrevious;
   TH1F* fHistInputRatioPrevious;
@@ -69,9 +68,6 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> vBadBC;
   std::vector<int> vIndexBad;
   std::vector<int> vIndexMedium;
-  std::vector<int> vIndexRateRatioBad;
-  std::vector<int> vIndexRateRatioMedium;
-  Quality resultRateRatio;
 };
 
 } // namespace o2::quality_control_modules::ctp
