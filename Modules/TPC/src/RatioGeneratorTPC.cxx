@@ -69,6 +69,14 @@ void RatioGeneratorTPC::finalize(Trigger t, framework::ServiceRegistryRef servic
   if (mRatios.size() > 0) {
     generatePlots();
   }
+
+  for (const auto& source : mConfig) {
+    if (mRatios.count(source.nameOutputObject) > 0 && mRatios[source.nameOutputObject]) {
+      getObjectsManager()->stopPublishing(source.nameOutputObject);
+      delete mRatios[source.nameOutputObject];
+      mRatios[source.nameOutputObject] = nullptr;
+    }
+  }
 }
 
 void RatioGeneratorTPC::generateRatios(const Trigger& t,
@@ -76,7 +84,7 @@ void RatioGeneratorTPC::generateRatios(const Trigger& t,
 {
   for (const auto& source : mConfig) {
     // Delete the existing ratios before regenerating them.
-    if (mRatios.count(source.nameOutputObject)) {
+    if (mRatios.count(source.nameOutputObject) > 0 && mRatios[source.nameOutputObject]) {
       getObjectsManager()->stopPublishing(source.nameOutputObject);
       delete mRatios[source.nameOutputObject];
       mRatios[source.nameOutputObject] = nullptr;
@@ -101,11 +109,12 @@ void RatioGeneratorTPC::generatePlots()
     const std::string yLabel(source.axisTitle.substr(0, posDivider));
     const std::string xLabel(source.axisTitle.substr(posDivider + 1));
 
-    mRatios[source.nameOutputObject]->SetName(source.nameOutputObject.c_str());
-    mRatios[source.nameOutputObject]->GetXaxis()->SetTitle(xLabel.data());
-    mRatios[source.nameOutputObject]->GetYaxis()->SetTitle(yLabel.data());
-    mRatios[source.nameOutputObject]->SetTitle(source.plotTitle.data());
-
-    getObjectsManager()->startPublishing(mRatios[source.nameOutputObject]);
+    if (mRatios.count(source.nameOutputObject) > 0 && mRatios[source.nameOutputObject]) {
+      mRatios[source.nameOutputObject]->SetName(source.nameOutputObject.c_str());
+      mRatios[source.nameOutputObject]->GetXaxis()->SetTitle(xLabel.data());
+      mRatios[source.nameOutputObject]->GetYaxis()->SetTitle(yLabel.data());
+      mRatios[source.nameOutputObject]->SetTitle(source.plotTitle.data());
+      getObjectsManager()->startPublishing(mRatios[source.nameOutputObject]);
+    }
   }
 } // void RatioGeneratorTPC::generatePlots()
