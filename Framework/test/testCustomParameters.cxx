@@ -47,7 +47,7 @@ TEST_CASE("test_cp_basic")
   CHECK(cp.at("key") == "value");
   CHECK(cp.at("key", "run1", "beam1") == "value_run1_beam1");
 
-  cout << cp << endl;
+  CHECK_NOTHROW(cout << cp << endl);
 }
 
 TEST_CASE("test_cp_iterators")
@@ -196,7 +196,7 @@ TEST_CASE("test_load_from_ptree")
   CustomParameters cp;
   cp.populateCustomParameters(params);
 
-  cout << cp << endl;
+  CHECK_NOTHROW(cout << cp << endl);
 
   CHECK(cp.at("myOwnKey") == "myOwnValue");
   CHECK(cp.at("myOwnKey1", "PHYSICS") == "myOwnValue1b");
