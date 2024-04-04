@@ -152,9 +152,13 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         inputRates = true;
       }
       if (relativeRates && inputRates) {
-        h->Scale(1. / h->GetBinContent(3));
+        if (h->GetBinContent(3) != 0) {
+          h->Scale(1. / h->GetBinContent(3));
+        }
       } else if (relativeRates) {
-        h->Scale(1. / h->GetBinContent(mIndexMBclass));
+        if (h->GetBinContent(mIndexMBclass) != 0) {
+          h->Scale(1. / h->GetBinContent(mIndexMBclass));
+        }
       }
 
       if (cycleCounter > 1) { // skipping the check for first two cycles, as the first one is arbitrary long
