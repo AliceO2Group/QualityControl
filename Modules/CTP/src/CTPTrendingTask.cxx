@@ -41,17 +41,23 @@ void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
 {
   mConfig = TrendingConfigCTP(getID(), config);
 }
-
-void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
+void CTPTrendingTask::initCTP(Trigger& t)
 {
-  // // read out the CTPConfiguration
   std::string run = std::to_string(t.activity.mId);
-  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
-
+  // CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  // mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
+  std::string CCDBHost = "https://alice-ccdb.cern.ch";
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL(CCDBHost);
+  map<string, string> metadata; // can be empty
+  metadata["runNumber"] = run;
+  mCTPconfig = mgr.getSpecific<CTPConfiguration>(CCDBPathCTPConfig, t.timestamp, metadata);
+  if (mCTPconfig == nullptr) {
+    return;
+  }
   // get the indeces of the classes we want to trend
-  std::vector<ctp::CTPClass> ctpcls = mCTPconfig.getCTPClasses();
-  std::vector<int> clslist = mCTPconfig.getTriggerClassList();
+  std::vector<ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
+  std::vector<int> clslist = mCTPconfig->getTriggerClassList();
   for (size_t i = 0; i < clslist.size(); i++) {
     for (size_t j = 0; j < mNumOfClasses; j++) {
       if (ctpcls[i].name.find(mClassNames[j]) != std::string::npos) {
@@ -77,14 +83,23 @@ void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef servic
     reductor->SetTVXPHOIndex(mClassIndex[4]);
     mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
   }
-
   getObjectsManager()->startPublishing(mTrend.get());
+}
+void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
+{
+  // // read out the CTPConfiguration
+  // initCCTP(); - too eraly here ?
 }
 
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-
+  if (mCTPconfig == nullptr) {
+    initCTP(t);
+    if (mCTPconfig == nullptr) {
+      return;
+    }
+  }
   trendValues(t, qcdb);
   generatePlots();
 }
