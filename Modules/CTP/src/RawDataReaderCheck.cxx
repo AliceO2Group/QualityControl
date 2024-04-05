@@ -40,54 +40,53 @@ namespace o2::quality_control_modules::ctp
 
 void RawDataReaderCheck::configure()
 {
-  float casted;
-  std::string param = mCustomParameters["thresholdRateBad"];
-  if (isdigit(param[0])) {
-    casted = std::stof(param);
-  } else {
-    casted = 0.15;
+  try {
+    mThresholdRateBad = std::stof(mCustomParameters["thresholdRateBad"]);
+  } catch (const std::exception& e) {
+    mThresholdRateBad = 0.15;
   }
-  mThresholdRateBad = casted;
+  if (mThresholdRateBad > 1 || mThresholdRateBad < 0) {
+    mThresholdRateBad = 0.15;
+  }
 
-  param = mCustomParameters["thresholdRateMedium"];
-  if (isdigit(param[0])) {
-    casted = std::stof(param);
-  } else {
-    casted = 0.1;
+  try {
+    mThresholdRateMedium = std::stof(mCustomParameters["thresholdRateMedium"]);
+  } catch (const std::exception& e) {
+    mThresholdRateMedium = 0.1;
   }
-  mThresholdRateMedium = casted;
+  if (mThresholdRateMedium > 1 || mThresholdRateMedium < 0) {
+    mThresholdRateMedium = 0.1;
+  }
 
-  param = mCustomParameters["thresholdRateRatioBad"];
-  if (isdigit(param[0])) {
-    casted = std::stof(param);
-  } else {
-    casted = 0.1;
+  try {
+    mThresholdRateRatioBad = std::stof(mCustomParameters["thresholdRateRatioBad"]);
+  } catch (const std::exception& e) {
+    mThresholdRateRatioBad = 0.1;
   }
-  mThresholdRateRatioBad = casted;
+  if (mThresholdRateRatioBad > 1 || mThresholdRateRatioBad < 0) {
+    mThresholdRateRatioBad = 0.1;
+  }
 
-  param = mCustomParameters["thresholdRateRatioMedium"];
-  if (isdigit(param[0])) {
-    casted = std::stof(param);
-  } else {
-    casted = 0.05;
+  try {
+    mThresholdRateRatioMedium = std::stof(mCustomParameters["thresholdRateRatioMedium"]);
+  } catch (const std::exception& e) {
+    mThresholdRateRatioMedium = 0.05;
   }
-  mThresholdRateRatioMedium = casted;
+  if (mThresholdRateRatioMedium > 1 || mThresholdRateRatioMedium < 0) {
+    mThresholdRateRatioMedium = 0.1;
+  }
 
-  param = mCustomParameters["cycleDurationSeconds"];
-  if (isdigit(param[0])) {
-    casted = std::stof(param);
-  } else {
-    casted = 60;
+  try {
+    mCycleDuration = std::stof(mCustomParameters["cycleDurationSeconds"]);
+  } catch (const std::exception& e) {
+    mCycleDuration = 60;
   }
-  mCycleDuration = casted;
 
-  param = mCustomParameters["fraction"];
-  if (isdigit(param[0])) {
-    casted = std::stof(param);
-  } else {
-    casted = 0.1;
+  try {
+    mFraction = std::stof(mCustomParameters["fraction"]);
+  } catch (const std::exception& e) {
+    mFraction = 0.1;
   }
-  mFraction = casted;
 }
 
 Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -120,6 +119,10 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
     (void)moName;
     if (mo->getName() == "bcMTVX") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        ILOG(Info, Support) << "histogram bcMTVX is not found for check" << ENDM;
+        continue;
+      }
       mThreshold = h->GetEntries() / getNumberFilledBins(h);
       mThreshold = mThreshold - sqrt(mThreshold);
 
@@ -144,6 +147,10 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       }
     } else {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        ILOG(Info, Support) << "histogram for input/class rate is not found for check" << ENDM;
+        continue;
+      }
       std::string moName = mo->getName();
       if (moName.find("Ratio") != std::string::npos) {
         relativeRates = true;
@@ -165,16 +172,36 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         TH1F* fHistDifference = (TH1F*)h->Clone();
         TH1F* fHistPrev;
         if (inputRates && !relativeRates) {
-          fHistPrev = (TH1F*)fHistInputPrevious->Clone();
+          if (fHistInputPrevious) {
+            fHistPrev = (TH1F*)fHistInputPrevious->Clone();
+          } else {
+            fHistInputPrevious = (TH1F*)h->Clone();
+            continue;
+          }
         }
         if (inputRates && relativeRates) {
-          fHistPrev = (TH1F*)fHistInputRatioPrevious->Clone();
+          if (fHistInputRatioPrevious) {
+            fHistPrev = (TH1F*)fHistInputRatioPrevious->Clone();
+          } else {
+            fHistInputRatioPrevious = (TH1F*)h->Clone();
+            continue;
+          }
         }
         if (!inputRates && !relativeRates) {
-          fHistPrev = (TH1F*)fHistClassesPrevious->Clone();
+          if (fHistClassesPrevious) {
+            fHistPrev = (TH1F*)fHistClassesPrevious->Clone();
+          } else {
+            fHistClassesPrevious = (TH1F*)h->Clone();
+            continue;
+          }
         }
         if (!inputRates && relativeRates) {
-          fHistPrev = (TH1F*)fHistClassRatioPrevious->Clone();
+          if (fHistClassRatioPrevious) {
+            fHistPrev = (TH1F*)fHistClassRatioPrevious->Clone();
+          } else {
+            fHistClassRatioPrevious = (TH1F*)h->Clone();
+            continue;
+          }
         }
         if (!relativeRates) {
           fHistDifference->Scale(1. / (mCycleDuration * mFraction));
@@ -190,7 +217,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           thrMedium = mThresholdRateRatioMedium;
         }
 
-        for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) { // Check how many imputs/classes changed more than a theshold value
+        for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
           if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrBad) {
             vIndexBad.push_back(i);
           } else if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrMedium) {
@@ -204,18 +231,24 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         } else {
           result = Quality::Good;
         }
+        delete fHistDifference;
+        delete fHistPrev;
       }
 
       if (inputRates && !relativeRates) {
+        delete fHistInputPrevious;
         fHistInputPrevious = (TH1F*)h->Clone();
       }
       if (inputRates && relativeRates) {
+        delete fHistInputRatioPrevious;
         fHistInputRatioPrevious = (TH1F*)h->Clone();
       }
       if (!inputRates && !relativeRates) {
+        delete fHistClassesPrevious;
         fHistClassesPrevious = (TH1F*)h->Clone();
       }
       if (!inputRates && relativeRates) {
+        delete fHistClassRatioPrevious;
         fHistClassRatioPrevious = (TH1F*)h->Clone();
       }
 
@@ -274,18 +307,18 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     h->SetStats(kFALSE);
     msg = std::make_shared<TLatex>(0.45, 0.8, Form("Overall Quality: %s", (checkResult.getName()).c_str()));
     std::string groupName = "Input";
-    std::string relativness = "relative";
+    std::string relativeness = "relative";
     if (!inputRates) {
       groupName = "Class";
     }
     if (!relativeRates) {
-      relativness = "absolute";
+      relativeness = "absolute";
     }
     if (checkResult == Quality::Bad) {
       msg->SetTextColor(kRed);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
-      msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with big %s rate change: %lu", groupName.c_str(), relativness.c_str(), vIndexBad.size()));
+      msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with big %s rate change: %lu", groupName.c_str(), relativeness.c_str(), vIndexBad.size()));
       msg->SetTextSize(0.03);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
@@ -296,7 +329,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
         h->GetListOfFunctions()->Add(msg->Clone());
       }
       if (vIndexMedium.size() > 0) {
-        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium %s rate change: %lu", groupName.c_str(), relativness.c_str(), vIndexMedium.size()));
+        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium %s rate change: %lu", groupName.c_str(), relativeness.c_str(), vIndexMedium.size()));
         msg->SetTextSize(0.03);
         msg->SetNDC();
         h->GetListOfFunctions()->Add(msg->Clone());
@@ -306,7 +339,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
       if (vIndexMedium.size() > 0) {
-        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium %s rate change: %lu", groupName.c_str(), relativness.c_str(), vIndexMedium.size()));
+        msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with medium %s rate change: %lu", groupName.c_str(), relativeness.c_str(), vIndexMedium.size()));
       }
       msg->SetTextSize(0.03);
       msg->SetNDC();
