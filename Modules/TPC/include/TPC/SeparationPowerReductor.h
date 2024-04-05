@@ -37,12 +37,12 @@ class SeparationPowerReductor : public quality_control::postprocessing::Reductor
 
  private:
   struct {
-    double meanPi;
-    double meanEl;
-    double separationPower;
+    float meanPi;
+    float meanEl;
+    float separationPower;
   } mSeparationPower;
 
-  double getValue(TText* line);
+  float getValue(TText* line);
 };
 
 } // namespace o2::quality_control_modules::tpc

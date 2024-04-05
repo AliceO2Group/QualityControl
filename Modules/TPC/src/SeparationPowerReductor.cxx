@@ -30,7 +30,7 @@ void* SeparationPowerReductor::getBranchAddress()
 
 const char* SeparationPowerReductor::getBranchLeafList()
 {
-  return "meanPi/D:meanEl:separationPower";
+  return "meanPi/F:meanEl:separationPower";
 }
 
 void SeparationPowerReductor::update(TObject* obj)
@@ -49,7 +49,7 @@ void SeparationPowerReductor::update(TObject* obj)
   }
 }
 
-double SeparationPowerReductor::getValue(TText* line)
+float SeparationPowerReductor::getValue(TText* line)
 {
   if (!line) {
     return 0.;
@@ -58,9 +58,8 @@ double SeparationPowerReductor::getValue(TText* line)
   std::string text = static_cast<std::string>(line->GetTitle());
   const std::size_t posEndType = text.find(":");
   std::string quantity = text.substr(posEndType + 2, -1); // take string (excluding : and empty space) till end of line
-  ILOG(Error, Support) << quantity << ENDM;
 
-  return stod(quantity);
+  return stof(quantity);
 }
 
 } // namespace o2::quality_control_modules::tpc
