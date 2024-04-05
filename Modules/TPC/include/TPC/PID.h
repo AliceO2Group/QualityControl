@@ -52,6 +52,8 @@ class PID final : public TaskInterface
 
  private:
   o2::tpc::qc::PID mQCPID{};
+  TCanvas* mSeparationPower;
+  std::vector<double> mTrendingParameters;
 };
 
 } // namespace o2::quality_control_modules::tpc
