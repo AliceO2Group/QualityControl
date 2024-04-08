@@ -15,7 +15,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects which have been created recently are spared (delay is expressed in minutes).
-    This specific policy, 1_per_run, keeps only the most recent version for a given run based on the validity_from.
+    This specific policy, 1_per_run, keeps only the most recent version for a given run based on the createdAt.
 
     Config Parameters:
     - period_pass: Keep 1 version for a combination of run+pass+period if true.
@@ -68,16 +68,17 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():
         # logger.debug(f"- bucket {bucket}")
-        sorted_run_versions = sorted(run_versions, key=lambda x: (x.validFrom, -x.createdAt))
+        sorted_run_versions = sorted(run_versions, key=lambda x: (x.createdAt))
 
         freshest: ObjectVersion = None
         for v in sorted_run_versions:
-            if freshest is None or freshest.validFromAsDt < v.validFromAsDt:
-                if freshest is not None:
-                    if policies_utils.in_grace_period(freshest, delay):
-                        preservation_list.append(freshest)
-                    else:
-                        deletion_list.append(freshest)
+            if freshest is None:
+                freshest = v
+            elif freshest.createdAtDt < v.createdAtDt:
+                if policies_utils.in_grace_period(freshest, delay):
+                    preservation_list.append(freshest)
+                else:
+                    deletion_list.append(freshest)
                 freshest = v
             else:
                 if policies_utils.in_grace_period(freshest, delay):
