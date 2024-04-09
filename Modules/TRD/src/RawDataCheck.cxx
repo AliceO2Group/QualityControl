@@ -164,25 +164,16 @@ Quality RawDataCheckSizes::check(std::map<std::string, std::shared_ptr<MonitorOb
     if (mo->getName() == "datavolumepersector") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       result.set(Quality::Good);
-      TObjArray fits;
-      h->FitSlicesY(nullptr, 1, 18, 0, "QNR", &fits);
-      auto hMean = (TH1F*)fits[1];
-      double sum = 0, sum2 = 0, n = 0;
+      mMeanDataSize = h->GetMean(2);
+      mStdDevDataSize = h->GetRMS(2);
       for (int iBin = 1; iBin <= 18; ++iBin) {
-        sum += hMean->GetBinContent(iBin);
-        sum2 += hMean->GetBinContent(iBin) * hMean->GetBinContent(iBin);
-        ++n;
-        mMeanDataSize = sum / n;
-        mStdDevDataSize = sum2 / n - TMath::Power(sum / n, 2);
-      }
-      mStdDevDataSize = TMath::Sqrt(mStdDevDataSize);
-      for (int iBin = 1; iBin <= 18; ++iBin) {
-        if (TMath::Abs(hMean->GetBinContent(iBin) - mMeanDataSize) > mWarningThreshold * mStdDevDataSize) {
-          ILOG(Debug, Support) << fmt::format("Found outlier in sector {} with mean value of {}", iBin - 1, hMean->GetBinContent(iBin)) << ENDM;
+        auto sectorMean = h->ProjectionY("py", iBin, iBin + 1)->GetMean();
+        if (TMath::Abs(sectorMean - mMeanDataSize) > mWarningThreshold * mStdDevDataSize) {
+          ILOG(Debug, Support) << fmt::format("Found outlier in sector {} with mean value of {}", iBin - 1, sectorMean) << ENDM;
           result.set(Quality::Medium);
         }
-        if (TMath::Abs(hMean->GetBinContent(iBin) - mMeanDataSize) > mErrorThreshold * mStdDevDataSize) {
-          ILOG(Debug, Support) << fmt::format("Found strong outlier in sector {} with mean value of {}", iBin - 1, hMean->GetBinContent(iBin)) << ENDM;
+        if (TMath::Abs(sectorMean - mMeanDataSize) > mErrorThreshold * mStdDevDataSize) {
+          ILOG(Debug, Support) << fmt::format("Found strong outlier in sector {} with mean value of {}", iBin - 1, sectorMean) << ENDM;
           result.set(Quality::Bad);
         }
       }
