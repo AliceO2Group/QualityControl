@@ -84,14 +84,15 @@ Quality TracksQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         for (int i = 1; i < h->GetNbinsX(); i++) {
           if ((i == 1) && (h->GetBinContent(i) < mRatio44Threshold)) {
             result = Quality::Bad;
+
             result.addReason(FlagReasonFactory::Unknown(),
-                             "All Ratio44 too high in bin " + std::to_string(i));
+                             "Global Ratio44 too low : bin " + std::to_string(i));
             lineThreshold->SetLineColor(kRed);
             break;
           } else if ((i > 1) && (i < 10) && (h->GetBinContent(i) < mRatio44Threshold)) {
             result = Quality::Medium;
             result.addReason(FlagReasonFactory::Unknown(),
-                             "Ratio44 too high in bin " + std::to_string(i));
+                             "Ratio44 too low in bin " + std::to_string(i));
             lineThreshold->SetLineColor(kOrange);
             break;
           }
