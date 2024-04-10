@@ -57,18 +57,22 @@ Quality ClustQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
     if (mo->getName() == "ClusterMap11") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
     if (mo->getName() == "ClusterMap12") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
     if (mo->getName() == "ClusterMap21") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
     if (mo->getName() == "ClusterMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
   }
   return result;
