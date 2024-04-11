@@ -61,9 +61,11 @@ void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistryRef servic
   // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 
+  mCanvasMo.reset();
   mCanvasMo = std::make_shared<TCanvas>("defaultMap", "defaultMap");
   getObjectsManager()->startPublishing(mCanvasMo.get());
 
+  mPhosPad.reset();
   mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
   mPhosPad->SetTextSize(0.05);
   mPhosPad->SetBorderSize(1);
