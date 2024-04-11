@@ -60,6 +60,19 @@ void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistryRef servic
 {
   // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
+
+  mCanvasMo = std::make_shared<TCanvas>("defaultMap", "defaultMap");
+  getObjectsManager()->startPublishing(mCanvasMo.get());
+
+  mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
+  mPhosPad->SetTextSize(0.05);
+  mPhosPad->SetBorderSize(1);
+  mPhosPad->SetTextColor(kBlack);
+  mPhosPad->SetFillColor(kGreen);
+  mPhosPad->SetFillStyle(3004);
+  mPhosPad->AddText("Red: No Match");
+  mPhosPad->AddText("Blu: RefMap");
+  mPhosPad->AddText("Green: HitMap");
 }
 
 void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services)
@@ -126,21 +139,10 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
     ILOG(Warning, Support) << "mHistoHitMap undefined, can't finalize" << ENDM;
     return;
   }
-  if (!mCanvasMo) {
-    mCanvasMo = std::make_shared<TCanvas>(mHistoHitMap->GetName(), mHistoHitMap->GetName());
-    getObjectsManager()->startPublishing(mCanvasMo.get());
 
-    mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
-    mPhosPad->SetTextSize(0.05);
-    mPhosPad->SetBorderSize(1);
-    mPhosPad->SetTextColor(kBlack);
-    mPhosPad->SetFillColor(kGreen);
-    mPhosPad->SetFillStyle(3004);
-    mPhosPad->AddText("Red: No Match");
-    mPhosPad->AddText("Blu: RefMap");
-    mPhosPad->AddText("Green: HitMap");
-  }
-
+  mCanvasMo->SetName(mHistoHitMap->GetName());
+  mCanvasMo->SetTitle(mHistoHitMap->GetName());
+  mCanvasMo->cd();
   mCanvasMo->Clear();
 
   mHistoRefHitMap->GetZaxis()->SetRangeUser(0, 1);
@@ -170,8 +172,6 @@ void PostProcessHitMap::finalize(Trigger, framework::ServiceRegistryRef)
 {
   // Only if you don't want it to be published after finalisation.
   getObjectsManager()->stopPublishing(mCanvasMo.get());
-  delete mCanvasMo;
-  mCanvasMo = nullptr;
 }
 
 } // namespace o2::quality_control_modules::tof
