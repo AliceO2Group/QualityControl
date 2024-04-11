@@ -170,6 +170,8 @@ void PostProcessHitMap::finalize(Trigger, framework::ServiceRegistryRef)
 {
   // Only if you don't want it to be published after finalisation.
   getObjectsManager()->stopPublishing(mCanvasMo.get());
+  delete mCanvasMo;
+  mCanvasMo = nullptr;
 }
 
 } // namespace o2::quality_control_modules::tof
