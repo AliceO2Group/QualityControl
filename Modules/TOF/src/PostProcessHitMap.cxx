@@ -20,18 +20,18 @@
 #include "DataFormatsTOF/TOFFEElightInfo.h"
 #include "TOFBase/Geo.h"
 
-// QualityControl includes
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/QcInfoLogger.h"
-#include "TOF/PostProcessHitMap.h"
-#include "QualityControl/DatabaseInterface.h"
-
 // ROOT includes
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TColor.h>
 #include <boost/property_tree/ptree.hpp>
+
+// QualityControl includes
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "TOF/PostProcessHitMap.h"
+#include "QualityControl/DatabaseInterface.h"
 
 using namespace std;
 using namespace o2::quality_control::postprocessing;
