@@ -2,7 +2,7 @@
 
 add_library(O2QcGLO)
 
-target_sources(O2QcGLO PRIVATE src/MeanVertexPostProcessing.cxx src/MeanVertexCheck.cxx src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx)
+target_sources(O2QcGLO PRIVATE src/MeanVertexPostProcessing.cxx src/MeanVertexCheck.cxx src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx src/CTFSizeTask.cxx)
 
 target_include_directories(
   O2QcGLO
@@ -45,6 +45,7 @@ add_root_dictionary(O2QcGLO
   include/GLO/VertexingQcTask.h
   include/GLO/ITSTPCMatchingTask.h
   include/GLO/DataCompressionQcTask.h
+  include/GLO/CTFSizeTask.h
                     LINKDEF include/GLO/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GLO
@@ -66,4 +67,3 @@ foreach(test ${TEST_SRCS})
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
-

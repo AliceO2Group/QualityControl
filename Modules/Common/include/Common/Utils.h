@@ -33,10 +33,8 @@ namespace o2::quality_control_modules::common
 template <typename T>
 T getFromConfig(const quality_control::core::CustomParameters& params, const std::string_view name, T retVal = T{})
 {
-  const auto last = params.end();
   const auto itParam = params.find(name.data());
-
-  if (itParam == last) {
+  if (itParam == params.end()) {
     LOGP(warning, "Missing parameter. Please add '{}': '<value>' to the 'taskParameters'. Using default value {}.", name.data(), retVal);
   } else {
     const auto& param = itParam->second;
@@ -56,8 +54,6 @@ T getFromConfig(const quality_control::core::CustomParameters& params, const std
       } else {
         LOG(error) << fmt::format("Please provide a valid boolean value for {}.", name.data()).data();
       }
-    } else if constexpr (std::is_same<std::string, T>::value) {
-      retVal = param;
     } else {
       LOG(error) << "Template type not supported";
     }
