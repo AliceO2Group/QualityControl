@@ -126,7 +126,23 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
     ILOG(Warning, Support) << "mHistoHitMap undefined, can't finalize" << ENDM;
     return;
   }
-  TCanvas* canvas = new TCanvas(mHistoHitMap->GetName(), mHistoHitMap->GetName());
+  if (!mCanvasMo) {
+    mCanvasMo = std::make_shared<TCanvas>(mHistoHitMap->GetName(), mHistoHitMap->GetName());
+    getObjectsManager()->startPublishing(mCanvasMo.get());
+
+    mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
+    mPhosPad.SetTextSize(0.05);
+    mPhosPad.SetBorderSize(1);
+    mPhosPad.SetTextColor(kBlack);
+    mPhosPad.SetFillColor(kGreen);
+    mPhosPad.SetFillStyle(3004);
+    mPhosPad.AddText("Red: No Match");
+    mPhosPad.AddText("Blu: RefMap");
+    mPhosPad.AddText("Green: HitMap");
+  }
+
+  mCanvasMo->Clear();
+
   mHistoRefHitMap->GetZaxis()->SetRangeUser(0, 1);
   mHistoHitMap->GetZaxis()->SetRangeUser(0, 1);
 
@@ -142,27 +158,18 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
     mHistoRefHitMap->GetListOfFunctions()->Clear();
     mHistoRefHitMap->Draw("BOXsame");
   }
-  TPaveText phosPad{ 13.f, 38.f, 16.f, 53.f, "bl" };
-  phosPad.SetTextSize(0.05);
-  phosPad.SetBorderSize(1);
-  phosPad.SetTextColor(kBlack);
-  phosPad.SetFillColor(kGreen);
-  phosPad.SetFillStyle(3004);
-  phosPad.AddText("Red: No Match");
-  phosPad.AddText("Blu: RefMap");
-  phosPad.AddText("Green: HitMap");
-  phosPad.Draw();
+  mPhosPad.Draw();
 
   // Draw the shifter message
   if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))) {
     mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))->Draw("same");
   }
+}
 
-  auto moToStore = std::make_shared<o2::quality_control::core::MonitorObject>(canvas, getID(), "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
-  moToStore->setIsOwner(false);
-  mDatabase->storeMO(moToStore);
-  // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
-  delete canvas;
+void PostProcessHitMap::finalize(Trigger, framework::ServiceRegistryRef)
+{
+  // Only if you don't want it to be published after finalisation.
+  getObjectsManager()->stopPublishing(mCanvasMo.get());
 }
 
 } // namespace o2::quality_control_modules::tof

@@ -29,6 +29,8 @@
 
 class TH1F;
 class TH2F;
+class TCanvas;
+class TPaveText;
 
 namespace o2::quality_control_modules::tof
 {
@@ -63,7 +65,7 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
   /// registry with singleton interfaces.
   /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override{};
+  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
@@ -74,6 +76,8 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
   /// Reference hit map taken from the CCDB and translated into QC binning
   std::shared_ptr<TH2F> mHistoRefHitMap = nullptr; /// TOF reference hit map
   std::shared_ptr<TH2F> mHistoHitMap = nullptr;    /// TOF hit map
+  std::shared_ptr<TCanvas> mCanvasMo = nullptr;    /// Canvas with hit map and ref. map
+  std::shared_ptr<TPaveText> mPhosPad = nullptr;   /// PHOS pad to draw
   bool mDrawRefOnTop;                              /// flag to enable the drawing of the refmap on top of the hit map. if false drawing on top the hitmap (initialized from the configure method)
 };
 
