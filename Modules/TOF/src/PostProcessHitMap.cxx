@@ -131,14 +131,14 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
     getObjectsManager()->startPublishing(mCanvasMo.get());
 
     mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
-    mPhosPad.SetTextSize(0.05);
-    mPhosPad.SetBorderSize(1);
-    mPhosPad.SetTextColor(kBlack);
-    mPhosPad.SetFillColor(kGreen);
-    mPhosPad.SetFillStyle(3004);
-    mPhosPad.AddText("Red: No Match");
-    mPhosPad.AddText("Blu: RefMap");
-    mPhosPad.AddText("Green: HitMap");
+    mPhosPad->SetTextSize(0.05);
+    mPhosPad->SetBorderSize(1);
+    mPhosPad->SetTextColor(kBlack);
+    mPhosPad->SetFillColor(kGreen);
+    mPhosPad->SetFillStyle(3004);
+    mPhosPad->AddText("Red: No Match");
+    mPhosPad->AddText("Blu: RefMap");
+    mPhosPad->AddText("Green: HitMap");
   }
 
   mCanvasMo->Clear();
@@ -158,7 +158,7 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
     mHistoRefHitMap->GetListOfFunctions()->Clear();
     mHistoRefHitMap->Draw("BOXsame");
   }
-  mPhosPad.Draw();
+  mPhosPad->Draw();
 
   // Draw the shifter message
   if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))) {
