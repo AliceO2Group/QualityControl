@@ -240,6 +240,7 @@ void CalDetPublisher::finalize(Trigger t, framework::ServiceRegistryRef)
       getObjectsManager()->stopPublishing(canvas.get());
     }
   }
+  mCalDetCanvasVec.clear();
 }
 
 } // namespace o2::quality_control_modules::tpc

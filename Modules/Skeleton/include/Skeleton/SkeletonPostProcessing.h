@@ -18,8 +18,8 @@
 #define QUALITYCONTROL_SKELETONPOSTPROCESSING_H
 
 #include "QualityControl/PostProcessingInterface.h"
-
-class TH1F;
+#include <memory>
+#include <TH1F.h>
 
 namespace o2::quality_control_modules::skeleton
 {
@@ -34,6 +34,10 @@ class SkeletonPostProcessing final : public quality_control::postprocessing::Pos
   /// \brief Destructor
   ~SkeletonPostProcessing() override;
 
+  /// \brief Configuration a post-processing task.
+  /// Configuration of a post-processing task. The task may create variables that shall live throughout its lifetime.
+  /// \param config boost property with the full QC configuration file
+  void configure(const boost::property_tree::ptree& config) override;
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
   /// registry with singleton interfaces.
@@ -54,7 +58,9 @@ class SkeletonPostProcessing final : public quality_control::postprocessing::Pos
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
-  TH1F* mHistogram = nullptr;
+  std::unique_ptr<TH1F> mHistogramA = nullptr; // lives through the whole task lifetime
+  std::unique_ptr<TH1F> mHistogramB = nullptr; // lives until the end of each run
+  std::unique_ptr<TH1F> mHistogramC = nullptr; // lives for one-time publications
 };
 
 } // namespace o2::quality_control_modules::skeleton

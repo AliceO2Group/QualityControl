@@ -60,6 +60,7 @@ void TrendingCalibLHCphase::initialize(Trigger, framework::ServiceRegistryRef)
   mCdbApi.init(mHost);
 
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
@@ -73,7 +74,7 @@ void TrendingCalibLHCphase::initialize(Trigger, framework::ServiceRegistryRef)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
 }
 
 void TrendingCalibLHCphase::update(Trigger t, framework::ServiceRegistryRef services)
@@ -139,7 +140,7 @@ void TrendingCalibLHCphase::generatePlots()
     if (!mPlots.count(plot.name)) {
       c = new TCanvas(plot.name.c_str(), plot.title.c_str());
       mPlots[plot.name] = c;
-      getObjectsManager()->startPublishing(c);
+      getObjectsManager()->startPublishing(c, PublicationPolicy::Forever);
     } else {
       c = (TCanvas*)mPlots[plot.name];
       c->cd();

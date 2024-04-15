@@ -48,6 +48,7 @@ void TRDTrending::configure(const boost::property_tree::ptree& config)
 void TRDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);

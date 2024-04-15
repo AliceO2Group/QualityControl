@@ -55,7 +55,7 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
     stringstream name;
     name << "histogram_" << getName() << "_" << i;
     mHistos.push_back(new TH1F(name.str().c_str(), name.str().c_str(), 1000, -5, 5));
-    getObjectsManager()->startPublishing(mHistos[i]);
+    getObjectsManager()->startPublishing(mHistos[i], PublicationPolicy::Forever);
   }
 }
 

@@ -83,11 +83,11 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapTrgBits.insert({ mTrgPos_minBias, "MinBias" });
   mTrgPos_allEvents = mMapTrgBits.size();
   mMapTrgBits.insert({ mTrgPos_allEvents, "AllEvents" });
-  mHistSumTimeAC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "SumTimeAC_perTrg", "(T0A+T0C)/2 per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
-  mHistDiffTimeAC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "DiffTimeAC_perTrg", "(T0C-T0C)/2 per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
-  mHistTimeA_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TimeA_perTrg", "T0A per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
-  mHistTimeC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TimeC_perTrg", "T0C per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
-  mHistBC_perTriggers = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "BC_perTriggers", "BC per Triggers;BC; Trigger", binsBC, mMapTrgBits);
+  mHistSumTimeAC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "SumTimeAC_perTrg", "(T0A+T0C)/2 per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistDiffTimeAC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "DiffTimeAC_perTrg", "(T0C-T0C)/2 per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistTimeA_perTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TimeA_perTrg", "T0A per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistTimeC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TimeC_perTrg", "T0C per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
+  mHistBC_perTriggers = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BC_perTriggers", "BC per Triggers;BC; Trigger", binsBC, mMapTrgBits);
 
   for (const auto& chID : mSetAllowedChIDs) {
     auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 1000, 0, 4000, 100, -1000, 1000) });

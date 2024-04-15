@@ -233,6 +233,15 @@ void SACs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->stopPublishing(mSACZeroScale.get());
   getObjectsManager()->stopPublishing(mSACZeroOutliers.get());
+
+  mSACZeroSides.reset();
+  mSACOneSides.reset();
+  mSACDeltaSides.reset();
+  mFourierCoeffsA.reset();
+  mFourierCoeffsC.reset();
+  mSACZeroSidesScaled.reset();
+  mSACZeroScale.reset();
+  mSACZeroOutliers.reset();
 }
 
 } // namespace o2::quality_control_modules::tpc

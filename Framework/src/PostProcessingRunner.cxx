@@ -293,6 +293,7 @@ void PostProcessingRunner::doUpdate(const Trigger& trigger)
 
   if (mActivity.mValidity.isValid()) {
     mPublicationCallback(mObjectManager->getNonOwningArray());
+    mObjectManager->stopPublishing(PublicationPolicy::Once);
   } else {
     ILOG(Warning, Support) << "Objects will not be published because their validity is invalid. This should not happen." << ENDM;
   }
@@ -315,7 +316,8 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
     ILOG(Warning, Devel) << "Objects will not be published because their validity is invalid. Most likely the task's update() method was never triggered." << ENDM;
   }
   mTaskState = TaskState::Finished;
-  mObjectManager->stopPublishingAll();
+  mObjectManager->stopPublishing(PublicationPolicy::Once);
+  mObjectManager->stopPublishing(PublicationPolicy::ThroughStop);
 }
 
 const std::string& PostProcessingRunner::getID() const

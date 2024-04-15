@@ -59,6 +59,7 @@ void PostProcessingLostOrbits::configure(const boost::property_tree::ptree& conf
 void PostProcessingLostOrbits::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   float bin_width = mMaxRange / mBins;
+  mHistoOrbitsInTFEfficiency.reset();
   mHistoOrbitsInTFEfficiency = std::make_shared<TH1F>("OrbitsInTFEfficiency", "Fraction of orbits in TF;Fraction of orbits in TF; Counts x n_{crates} ", mBins, bin_width / 2, mMaxRange + bin_width / 2);
   getObjectsManager()->startPublishing(mHistoOrbitsInTFEfficiency.get());
 
@@ -69,8 +70,9 @@ void PostProcessingLostOrbits::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
-  if (mHistoOrbitsInTFEfficiency)
+  if (mHistoOrbitsInTFEfficiency) {
     mHistoOrbitsInTFEfficiency->Reset();
+  }
 
   TH1F* tempPerCrateHisto[72];   // 72 crates
   for (int i = 0; i < 72; i++) { // loop over crates

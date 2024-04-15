@@ -469,6 +469,7 @@ void TaskRunner::endOfActivity()
 
   mTask->endOfActivity(mObjectsManager->getActivity());
   mObjectsManager->removeAllFromServiceDiscovery();
+  mObjectsManager->stopPublishing(PublicationPolicy::ThroughStop);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send(Metric{ "qc_objects_published" }.addValue(rate, "per_second_whole_run"));
@@ -597,6 +598,7 @@ int TaskRunner::publish(DataAllocator& outputs)
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
+  mObjectsManager->stopPublishing(PublicationPolicy::Once);
   return objectsPublished;
 }
 

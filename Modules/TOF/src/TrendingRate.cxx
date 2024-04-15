@@ -200,6 +200,7 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistryRef)
   // Setting parameters
 
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
@@ -215,7 +216,7 @@ void TrendingRate::initialize(Trigger, framework::ServiceRegistryRef)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
@@ -314,7 +315,7 @@ void TrendingRate::generatePlots()
     if (!mPlots.count(plot.name)) {
       c = new TCanvas(plot.name.c_str(), plot.title.c_str());
       mPlots[plot.name] = c;
-      getObjectsManager()->startPublishing(c);
+      getObjectsManager()->startPublishing(c, PublicationPolicy::Forever);
     } else {
       c = (TCanvas*)mPlots[plot.name];
       c->cd();

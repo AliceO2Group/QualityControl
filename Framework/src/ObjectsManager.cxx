@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <algorithm>
+#include <ranges>
 
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
@@ -59,7 +60,7 @@ ObjectsManager::~ObjectsManager()
   ILOG(Debug, Devel) << "ObjectsManager destructor" << ENDM;
 }
 
-void ObjectsManager::startPublishing(TObject* object)
+void ObjectsManager::startPublishing(TObject* object, PublicationPolicy publicationPolicy)
 {
   if (!object) {
     ILOG(Warning, Support) << "A nullptr provided to ObjectManager::startPublishing" << ENDM;
@@ -75,6 +76,7 @@ void ObjectsManager::startPublishing(TObject* object)
   newObject->setCreateMovingWindow(std::find(mMovingWindowsList.begin(), mMovingWindowsList.end(), object->GetName()) != mMovingWindowsList.end());
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;
+  mPublicationPoliciesForMOs[newObject] = publicationPolicy;
 }
 
 void ObjectsManager::updateServiceDiscovery()
@@ -114,16 +116,17 @@ void ObjectsManager::stopPublishing(TObject* object)
   }
   // We look for the MonitorObject which observes the provided object by comparing its address
   // This way, we avoid invoking any methods of the provided object, thus we can stop publishing it even after it is deleted
-  TObject* objectToRemove = nullptr;
+  MonitorObject* moToRemove = nullptr;
   for (auto moAsTObject : *mMonitorObjects) {
     auto mo = dynamic_cast<MonitorObject*>(moAsTObject);
     if (mo && mo->getObject() == object) {
-      objectToRemove = moAsTObject;
+      moToRemove = mo;
       continue;
     }
   }
-  if (objectToRemove) {
-    mMonitorObjects->Remove(objectToRemove);
+  if (moToRemove) {
+    mPublicationPoliciesForMOs.erase(moToRemove);
+    mMonitorObjects->Remove(moToRemove);
     mMonitorObjects->Compress();
   }
 }
@@ -131,14 +134,30 @@ void ObjectsManager::stopPublishing(TObject* object)
 void ObjectsManager::stopPublishing(const string& objectName)
 {
   auto* mo = dynamic_cast<MonitorObject*>(getMonitorObject(objectName));
+  mPublicationPoliciesForMOs.erase(mo);
   mMonitorObjects->Remove(mo);
   mMonitorObjects->Compress();
+}
+
+void ObjectsManager::stopPublishing(PublicationPolicy policy)
+{
+  // we do not use directly the view, because deletions in the policy map would invalidate the iterators in the view
+  // c++23 will allow us to do std::ranges::to instead.
+  std::vector<MonitorObject*> allObjectsMatchingPolicy;
+  for (auto* mo : mPublicationPoliciesForMOs | std::views::filter([policy](const auto& kv) { return kv.second == policy; }) | std::views::keys) {
+    allObjectsMatchingPolicy.push_back(mo);
+  }
+
+  for (const auto mo : allObjectsMatchingPolicy) {
+    stopPublishing(mo->getObject());
+  }
 }
 
 void ObjectsManager::stopPublishingAll()
 {
   removeAllFromServiceDiscovery();
   mMonitorObjects->Clear();
+  mPublicationPoliciesForMOs.clear();
 }
 
 bool ObjectsManager::isBeingPublished(const string& name)

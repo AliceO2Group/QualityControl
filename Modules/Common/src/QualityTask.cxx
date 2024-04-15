@@ -176,19 +176,19 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
       auto distributionTitle = qualityConfig.title.empty() ? qualityConfig.name : qualityConfig.title;
       auto distrIter = mHistograms.emplace(std::make_pair(distributionName, std::make_unique<TH1F>(distributionName.c_str(), distributionTitle.c_str(), 4, 0, 4)));
       setQualityLabels(distrIter.first->second.get());
-      getObjectsManager()->startPublishing(distrIter.first->second.get());
+      getObjectsManager()->startPublishing(distrIter.first->second.get(), PublicationPolicy::ThroughStop);
 
       auto trendName = QualityTrendGraph::trendName(qualityGroupConfig.name, qualityConfig.name);
       auto trendTitle = qualityConfig.title.empty() ? qualityConfig.name : qualityConfig.title;
       auto iter2 = mTrends.emplace(std::make_pair(trendName, std::make_unique<QualityTrendGraph>(trendName.c_str(), trendTitle)));
-      getObjectsManager()->startPublishing(iter2.first->second.get());
+      getObjectsManager()->startPublishing(iter2.first->second.get(), PublicationPolicy::ThroughStop);
       getObjectsManager()->setDisplayHint(iter2.first->second.get(), "gridy");
     }
   }
 
   // canvas for the human-readable messages
   mQualityCanvas = std::make_unique<TCanvas>("QualitySummary", "Quality Summary", 800, 600);
-  getObjectsManager()->startPublishing(mQualityCanvas.get());
+  getObjectsManager()->startPublishing(mQualityCanvas.get(), PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________

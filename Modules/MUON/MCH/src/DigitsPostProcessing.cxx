@@ -76,19 +76,19 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
 
   mRatesPlotter.reset();
   mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotter->publish(getObjectsManager());
+  mRatesPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesPlotterOnCycle.reset();
   mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotterOnCycle->publish(getObjectsManager());
+  mRatesPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesPlotterSignal.reset();
   mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotterSignal->publish(getObjectsManager());
+  mRatesPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesPlotterSignalOnCycle.reset();
   mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotterSignalOnCycle->publish(getObjectsManager());
+  mRatesPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Rate trends
@@ -96,11 +96,11 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
 
   mRatesTrendsPlotter.reset();
   mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", hElecHistoRef, mFullHistos);
-  mRatesTrendsPlotter->publish(getObjectsManager());
+  mRatesTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesTrendsPlotterSignal.reset();
   mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", hElecSignalHistoRef, mFullHistos);
-  mRatesTrendsPlotterSignal->publish(getObjectsManager());
+  mRatesTrendsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -129,19 +129,19 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
 
   mOrbitsPlotter.reset();
   mOrbitsPlotter = std::make_unique<OrbitsPlotter>("Orbits/");
-  mOrbitsPlotter->publish(getObjectsManager());
+  mOrbitsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mOrbitsPlotterOnCycle.reset();
   mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
-  mOrbitsPlotterOnCycle->publish(getObjectsManager());
+  mOrbitsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mOrbitsPlotterSignal.reset();
   mOrbitsPlotterSignal = std::make_unique<OrbitsPlotter>("OrbitsSignal/");
-  mOrbitsPlotterSignal->publish(getObjectsManager());
+  mOrbitsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mOrbitsPlotterSignalOnCycle.reset();
   mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
-  mOrbitsPlotterSignalOnCycle->publish(getObjectsManager());
+  mOrbitsPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -207,7 +207,7 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
   mHistogramQualityPerDE->SetOption("colz");
   mHistogramQualityPerDE->SetStats(0);
-  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get());
+  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
 }

@@ -46,6 +46,7 @@ void TrendingHits::configure(const boost::property_tree::ptree& config)
 void TrendingHits::initialize(Trigger, framework::ServiceRegistryRef)
 {
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
@@ -57,7 +58,7 @@ void TrendingHits::initialize(Trigger, framework::ServiceRegistryRef)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
@@ -109,7 +110,7 @@ void TrendingHits::generatePlots()
     if (!mPlots.count(plot.name)) {
       c = new TCanvas(plot.name.c_str(), plot.title.c_str());
       mPlots[plot.name] = c;
-      getObjectsManager()->startPublishing(c);
+      getObjectsManager()->startPublishing(c, PublicationPolicy::Forever);
     } else {
       c = (TCanvas*)mPlots[plot.name];
       c->cd();
