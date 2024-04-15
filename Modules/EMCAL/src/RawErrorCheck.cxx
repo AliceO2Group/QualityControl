@@ -126,7 +126,6 @@ void RawErrorCheck::configure()
         }
       }
 
-      std::cout << "IAMHERE6" << std::endl;
       if (param.find(keyThresRawFitError) == 0) {
         auto errortype = param.substr(keyThresRawFitError.length());
         auto errorcode = findErrorCodeRFE(errortype);
@@ -177,6 +176,7 @@ void RawErrorCheck::configure()
     }
   } catch (std::out_of_range& e) {
     // Nothing to be done, no parameter found.
+    ILOG(Debug) << "Error in parameter extraction" << ENDM;
   }
 }
 
