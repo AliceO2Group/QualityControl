@@ -77,6 +77,12 @@ void BCVisualization::update(Trigger t, framework::ServiceRegistryRef services)
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
   auto moBCEMC = qcdb.retrieveMO(mDataPath, "BCEMCALReadout", t.timestamp, t.activity),
        moBCCTP = qcdb.retrieveMO(mDataPath, "BCCTPEMCALAny", t.timestamp, t.activity);
+
+  if (moBCCTP == nullptr || moBCEMC == nullptr) {
+    ILOG(Error, Support) << "at least one of the expected objects (BCEMCALReadout and BCCTPEMCALAny) could not be "
+                         << "retrieved, skipping this update" << ENDM;
+    return;
+  }
   mOutputCanvas->Clear();
   mOutputCanvas->cd();
   auto histBCEMC = static_cast<TH1*>(moBCEMC->getObject()->Clone()),

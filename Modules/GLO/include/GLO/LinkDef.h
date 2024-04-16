@@ -8,4 +8,7 @@
 #pragma link C++ class o2::quality_control_modules::glo::DataCompressionQcTask + ;
 
 #pragma link C++ class o2::quality_control_modules::glo::MeanVertexPostProcessing + ;
+
+#pragma link C++ class o2::quality_control_modules::glo::MeanVertexCheck + ;
+#pragma link C++ class o2::quality_control_modules::glo::CTFSize + ;
 #endif

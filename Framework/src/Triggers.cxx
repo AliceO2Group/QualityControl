@@ -192,6 +192,17 @@ TriggerFcn NewObject(const std::string& databaseUrl, const std::string& database
 
   return [objectActivity, config, newObjectValidity]() mutable -> Trigger {
     if (auto validity = newObjectValidity(); validity.isValid()) {
+      if (getenv("QC_DISABLE_NEWOBJECT_DELAY") == nullptr) {
+        // On rare occasions we might run into the following race condition:
+        // 1) A CheckRunner starts to publish a collection of MOs for a QC Task
+        // 2) A PostProcessing task receives a newobject trigger for a just-published object
+        // 3) The PP task tries to retrieve also other objects normally published by the same QC task, it fails
+        //    because not all were published yet.
+        // 4) The CheckRunner finishes publishing the collection of MOs
+        // To avoid this scenario, a small delay is added before returning the trigger. Considerations about other
+        // possible solutions are included in the commit message.
+        std::this_thread::sleep_for(std::chrono::seconds{ 1 });
+      }
       objectActivity.mValidity = validity;
       auto timestamp = activity_helpers::isLegacyValidity(validity) ? validity.getMin() : (validity.getMax() - 1);
       return { TriggerType::NewObject, false, objectActivity, timestamp, config };

@@ -10,32 +10,36 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   RawDataQcTask.h
-/// \author Marek Bombara
-/// \author Lucia Anna Tarasovicova
+/// \file   CTFSizeTask.h
+/// \author Ole Schmidt
 ///
 
-#ifndef QC_MODULE_CTP_CTPRAWDATAQCTASK_H
-#define QC_MODULE_CTP_CTPRAWDATAQCTASK_H
+#ifndef QC_MODULE_GLO_CTFSIZETASK_H
+#define QC_MODULE_GLO_CTFSIZETASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "CTPReconstruction/RawDataDecoder.h"
+#include <DetectorsCommonDataFormats/DetID.h>
+
+#include <tuple>
+#include <array>
+#include <string>
 
 class TH1F;
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::ctp
+namespace o2::quality_control_modules::glo
 {
 
-/// \brief Task for reading the CTP inputs
-class CTPRawDataReaderTask final : public TaskInterface
+class CTFSize final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  CTPRawDataReaderTask() = default;
+  CTFSize() = default;
   /// Destructor
-  ~CTPRawDataReaderTask() override;
+  ~CTFSize() override;
+
+  std::tuple<int, float, float> getBinningFromConfig(o2::detectors::DetID::ID iDet, const Activity& activity) const;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -47,14 +51,12 @@ class CTPRawDataReaderTask final : public TaskInterface
   void reset() override;
 
  private:
-  o2::ctp::RawDataDecoder mDecoder;
-  TH1F* mHistoInputs = nullptr;
-  TH1F* mHistoClasses = nullptr;
-  TH1F* mHistoInputRatios = nullptr;
-  TH1F* mHistoClassRatios = nullptr;
-  TH1F* mHistoMTVXBC = nullptr;
+  std::array<TH1F*, o2::detectors::DetID::CTP + 1> mHistSizes{ nullptr };       // CTF size per TF for each detector with different binning per detector
+  std::array<TH1F*, o2::detectors::DetID::CTP + 1> mHistSizesLog{ nullptr };    // CTF size per TF with same axis scale for all detectors
+  std::array<std::string, o2::detectors::DetID::CTP + 1> mDefaultBinning{ "" }; // default number of bins and limits for mHistSizes (customizable)
+  bool mPublishingDone{ false };
 };
 
-} // namespace o2::quality_control_modules::ctp
+} // namespace o2::quality_control_modules::glo
 
-#endif // QC_MODULE_CTP_CTPRAWDATAQCTASK_H
+#endif // QC_MODULE_GLO_CTFSIZETASK_H

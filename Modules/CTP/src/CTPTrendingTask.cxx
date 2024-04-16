@@ -41,17 +41,23 @@ void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
 {
   mConfig = TrendingConfigCTP(getID(), config);
 }
-
-void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
+void CTPTrendingTask::initCTP(Trigger& t)
 {
-  // // read out the CTPConfiguration
   std::string run = std::to_string(t.activity.mId);
-  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
-
+  // CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  // mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
+  std::string CCDBHost = "https://alice-ccdb.cern.ch";
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL(CCDBHost);
+  map<string, string> metadata; // can be empty
+  metadata["runNumber"] = run;
+  mCTPconfig = mgr.getSpecific<CTPConfiguration>(CCDBPathCTPConfig, t.timestamp, metadata);
+  if (mCTPconfig == nullptr) {
+    return;
+  }
   // get the indeces of the classes we want to trend
-  std::vector<ctp::CTPClass> ctpcls = mCTPconfig.getCTPClasses();
-  std::vector<int> clslist = mCTPconfig.getTriggerClassList();
+  std::vector<ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
+  std::vector<int> clslist = mCTPconfig->getTriggerClassList();
   for (size_t i = 0; i < clslist.size(); i++) {
     for (size_t j = 0; j < mNumOfClasses; j++) {
       if (ctpcls[i].name.find(mClassNames[j]) != std::string::npos) {
@@ -77,14 +83,23 @@ void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef servic
     reductor->SetTVXPHOIndex(mClassIndex[4]);
     mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
   }
-
   getObjectsManager()->startPublishing(mTrend.get());
+}
+void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
+{
+  // // read out the CTPConfiguration
+  // initCCTP(); - too eraly here ?
 }
 
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-
+  if (mCTPconfig == nullptr) {
+    initCTP(t);
+    if (mCTPconfig == nullptr) {
+      return;
+    }
+  }
   trendValues(t, qcdb);
   generatePlots();
 }
@@ -112,7 +127,6 @@ void CTPTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterfac
       ILOG(Info, Support) << "no MO object" << ENDM;
       continue;
     }
-    ILOG(Info, Support) << "Got MO " << mo << ENDM;
     TObject* obj = mo ? mo->getObject() : nullptr;
     if (!obj) {
       ILOG(Info, Support) << "inputs not found" << ENDM;
@@ -139,7 +153,11 @@ void CTPTrendingTask::generatePlots()
     return;
   }
 
-  int index = 0;
+  int index = 0; // for keeping track what is trended:
+                 // 0 <= index < 5 - absolute input rates are trended
+                 // 5 <= index < 10 - absolute class rates are trended
+                 // 10 <= index < 15 - input rate ratios are trended
+                 // 15 <= index < 19 - class rate ratios are trended
 
   for (const auto& plot : mConfig.plots) {
 
@@ -150,8 +168,14 @@ void CTPTrendingTask::generatePlots()
       delete mPlots[plot.name];
     }
 
-    if (index > 4 && mClassIndex[index - 5] == 65) {
+    if (index > 4 && index < 10 && mClassIndex[index - 5] == 65) { // if the class index == 65, this class is not defined in the config, so it won't be trended
       ILOG(Info, Support) << "Class " << mClassNames[index - 5] << " is not trended." << ENDM;
+      index++;
+      continue;
+    }
+
+    if (index > 13 && (mClassIndex[index - 13] == 65 || mClassIndex[0] == 65)) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+      ILOG(Info, Support) << "Class ratio " << mClassNames[index - 13] << " / " << mClassNames[0] << " is not trended." << ENDM;
       index++;
       continue;
     }
@@ -163,11 +187,21 @@ void CTPTrendingTask::generatePlots()
     c->SetName(plot.name.c_str());
 
     if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
-      if (index < 5)
+      if (index < 5) {
         histo->SetTitle(mInputNames[index].c_str());
-      else
+      } else if (index < 10) {
         histo->SetTitle(mClassNames[index - 5].c_str());
-      histo->GetYaxis()->SetTitle("rate [Hz]");
+      } else if (index < 14) {
+        histo->SetTitle(Form("%s/%s", mInputNames[index - 9].c_str(), mInputNames[0].c_str()));
+      } else {
+        histo->SetTitle(Form("%s/%s", mClassNames[index - 13].c_str(), mClassNames[0].c_str()));
+      }
+
+      if (index < 10) {
+        histo->GetYaxis()->SetTitle("rate [Hz]");
+      } else {
+        histo->GetYaxis()->SetTitle("rate ratio");
+      }
       c->Update();
 
       if (plot.varexp.find(":time") != std::string::npos) {

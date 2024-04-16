@@ -91,9 +91,7 @@ void TrendingCalibLHCphase::finalize(Trigger t, framework::ServiceRegistryRef)
 
 void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseInterface& ccdb)
 {
-  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
-            ? t.timestamp / 1000
-            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
+  mTime = t.timestamp / 1000;
   mMetaData.runNumber = t.activity.mId;
 
   mPhase = 0.;
@@ -106,7 +104,7 @@ void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseIn
 
     if (dataSource.type == "ccdb") {
 
-      auto calib_object = UserCodeInterface::retrieveConditionAny<LHCphase>(dataSource.path, metadata, -1);
+      auto calib_object = UserCodeInterface::retrieveConditionAny<LHCphase>(dataSource.path, metadata, t.timestamp);
 
       if (!calib_object) {
         ILOG(Error, Support) << "Could not retrieve calibration file '" << dataSource.path << "'." << ENDM;

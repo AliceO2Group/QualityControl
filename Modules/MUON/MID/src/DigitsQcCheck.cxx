@@ -62,7 +62,7 @@ void DigitsQcCheck::configure()
 
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Null;
+  Quality result = Quality::Good;
   // This info must be available from the beginning
   TH1* meanMultiHits = nullptr;
   for (auto& item : *moMap) {
@@ -169,6 +169,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           qual.addReason(flag, fmt::format("{} boards empty", nEmptyLB));
         }
         mQualityMap[item.second->getName()] = qual;
+        result = qual;
       } // if mNTFInSeconds > 0.
     }
     if (item.second->getName() == "NbLBEmpty") {
@@ -193,6 +194,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       }
     }
   }
+
   return result;
 }
 

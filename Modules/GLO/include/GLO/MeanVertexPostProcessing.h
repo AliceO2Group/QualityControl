@@ -11,7 +11,7 @@
 
 ///
 /// \file   MeanVertexPostProcessing.h
-/// \author Chiara Zampolli
+/// \author Chiara Zampolli, Andrea Ferrero
 ///
 
 #ifndef QUALITYCONTROL_MEANVERTEXPOSTPROCESSING_H
@@ -20,31 +20,10 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "CCDB/CcdbApi.h"
 
-#include <TLine.h>
-#include <TH1F.h>
-#include <TGraph.h>
-#include <TCanvas.h>
-
 namespace o2::quality_control_modules::glo
 {
 
-class TrendGraph : public TCanvas
-{
- public:
-  TrendGraph(std::string name, std::string title, std::string label, float rangeMin, float rangeMax);
-
-  ~TrendGraph() override {}
-
-  void update(uint64_t time, float val);
-
- private:
-  float mRangeMin;
-  float mRangeMax;
-  std::string mAxisLabel;
-  std::unique_ptr<TGraph> mGraph;
-  std::unique_ptr<TGraph> mGraphHist;
-  std::array<std::unique_ptr<TLine>, 2> mLines;
-};
+class TrendGraph;
 
 /// \brief Postprocessing Task for Mean Vertex calibration
 
@@ -54,7 +33,7 @@ class MeanVertexPostProcessing final : public quality_control::postprocessing::P
   /// \brief Constructor
   MeanVertexPostProcessing() = default;
   /// \brief Destructor
-  ~MeanVertexPostProcessing() override;
+  ~MeanVertexPostProcessing() override = default;
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
@@ -83,23 +62,12 @@ class MeanVertexPostProcessing final : public quality_control::postprocessing::P
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
-  float mRangeX{ 0.1 };
-  float mRangeY{ 0.1 };
-  float mRangeZ{ 1.0 };
-  float mRangeSigmaX{ 1.0 };
-  float mRangeSigmaY{ 1.0 };
-  float mRangeSigmaZ{ 10.0 };
-  bool mResetHistos{ false };
-  std::unique_ptr<TrendGraph> mGraphX;
-  std::unique_ptr<TrendGraph> mGraphY;
-  std::unique_ptr<TrendGraph> mGraphZ;
-  std::unique_ptr<TrendGraph> mGraphSigmaX;
-  std::unique_ptr<TrendGraph> mGraphSigmaY;
-  std::unique_ptr<TrendGraph> mGraphSigmaZ;
-  TH1F* mX = nullptr;
-  TH1F* mY = nullptr;
-  TH1F* mZ = nullptr;
-  TH1F* mStartValidity = nullptr;
+  std::shared_ptr<TrendGraph> mGraphX;
+  std::shared_ptr<TrendGraph> mGraphY;
+  std::shared_ptr<TrendGraph> mGraphZ;
+  std::shared_ptr<TrendGraph> mGraphSigmaX;
+  std::shared_ptr<TrendGraph> mGraphSigmaY;
+  std::shared_ptr<TrendGraph> mGraphSigmaZ;
   o2::ccdb::CcdbApi mCcdbApi;
   std::string mCcdbUrl = "https://alice-ccdb.cern.ch";
 };

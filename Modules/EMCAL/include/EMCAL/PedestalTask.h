@@ -10,32 +10,38 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   RawDataQcTask.h
-/// \author Marek Bombara
-/// \author Lucia Anna Tarasovicova
+/// \file   PedestalTask.h
+/// \author Markus Fasel
 ///
 
-#ifndef QC_MODULE_CTP_CTPRAWDATAQCTASK_H
-#define QC_MODULE_CTP_CTPRAWDATAQCTASK_H
+#ifndef QC_MODULE_EMCAL_EMCALPEDESTALTASK_H
+#define QC_MODULE_EMCAL_EMCALPEDESTALTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "CTPReconstruction/RawDataDecoder.h"
 
-class TH1F;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::ctp
+namespace o2::emcal
+{
+class Geometry;
+}
+
+namespace o2::quality_control_modules::emcal
 {
 
-/// \brief Task for reading the CTP inputs
-class CTPRawDataReaderTask final : public TaskInterface
+/// \class PedestalTask
+/// \brief Monitoring of the Pedestals extracted by the pedestal calibration
+/// \author Markus Fasel
+class PedestalTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  CTPRawDataReaderTask() = default;
+  PedestalTask() = default;
   /// Destructor
-  ~CTPRawDataReaderTask() override;
+  ~PedestalTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -47,14 +53,21 @@ class CTPRawDataReaderTask final : public TaskInterface
   void reset() override;
 
  private:
-  o2::ctp::RawDataDecoder mDecoder;
-  TH1F* mHistoInputs = nullptr;
-  TH1F* mHistoClasses = nullptr;
-  TH1F* mHistoInputRatios = nullptr;
-  TH1F* mHistoClassRatios = nullptr;
-  TH1F* mHistoMTVXBC = nullptr;
+  TH1* mPedestalChannelFECHG = nullptr;
+  TH1* mPedestalChannelFECLG = nullptr;
+  TH1* mPedestalChannelLEDMONHG = nullptr;
+  TH1* mPedestalChannelLEDMONLG = nullptr;
+
+  TH2* mPedestalPositionFECHG = nullptr;
+  TH2* mPedestalPositionFECLG = nullptr;
+  TH2* mPedestalPositionLEDMONHG = nullptr;
+  TH2* mPedestalPositionLEDMONLG = nullptr;
+
+  int mNumberObjectsFetched = 0;
+
+  o2::emcal::Geometry* mGeometry = nullptr;
 };
 
-} // namespace o2::quality_control_modules::ctp
+} // namespace o2::quality_control_modules::emcal
 
-#endif // QC_MODULE_CTP_CTPRAWDATAQCTASK_H
+#endif // QC_MODULE_EMCAL_EMCALPEDESTALTASK_H
