@@ -25,8 +25,8 @@
 namespace o2::quality_control_modules::glo
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  Check for ITS-TPC sync. matching efficiency
+/// \author felix.schlepper@cern.ch
 class ITSTPCmatchingCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

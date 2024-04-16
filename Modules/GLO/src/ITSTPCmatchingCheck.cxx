@@ -46,7 +46,7 @@ void ITSTPCmatchingCheck::configure()
     try {
       mMinPt = stof(param->second);
     } catch (const std::exception& e) {
-      ILOG(Error) << "Cannot convert param minPt '" << e.what() << "'; using default...";
+      ILOG(Error) << "Cannot convert param minPt '" << e.what() << "'; using default..." << ENDM;
     }
   }
 
@@ -54,7 +54,7 @@ void ITSTPCmatchingCheck::configure()
     try {
       mMaxPt = stof(param->second);
     } catch (const std::exception& e) {
-      ILOG(Error) << "Cannot convert param maxPt '" << e.what() << "'; using default...";
+      ILOG(Error) << "Cannot convert param maxPt '" << e.what() << "'; using default..." << ENDM;
     }
   }
 
@@ -62,7 +62,7 @@ void ITSTPCmatchingCheck::configure()
     try {
       mThreshold = stof(param->second);
     } catch (const std::exception& e) {
-      ILOG(Error) << "Cannot convert param threshold '" << e.what() << "'; using default...";
+      ILOG(Error) << "Cannot convert param threshold '" << e.what() << "'; using default..." << ENDM;
     }
   }
 }
@@ -76,6 +76,10 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
 
     if (mo->getName() == "mFractionITSTPCmatch_ITS") {
       auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
+      if (eff == nullptr) {
+        ILOG(Error) << "Failed cast for ITSTPCmatch_ITS check!" << ENDM;
+        continue;
+      }
       auto binLow = eff->FindFixBin(mMinPt), binUp = eff->FindFixBin(mMaxPt);
 
       result = Quality::Good;
@@ -117,8 +121,17 @@ std::string ITSTPCmatchingCheck::getAcceptedType() { return "TH1"; }
 
 void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  if (mo == nullptr) {
+    ILOG(Error) << "Received nullptr from upstream, returning..." << ENDM;
+    return;
+  }
+
   if (mo->getName() == "mFractionITSTPCmatch_ITS") {
     auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
+    if (eff == nullptr) {
+      ILOG(Error) << "Failed cast for ITSTPCmatch_ITS beautify!" << ENDM;
+      return;
+    }
     // Draw threshold lines
     float xmin = eff->GetPassedHistogram()->GetXaxis()->GetXmin();
     float xmax = eff->GetPassedHistogram()->GetXaxis()->GetXmax();
