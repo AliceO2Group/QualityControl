@@ -119,10 +119,14 @@ void CTFSize::endOfActivity(const Activity& /*activity*/)
 void CTFSize::reset()
 {
   for (auto h : mHistSizes) {
-    h->Reset();
+    if (h) {
+      h->Reset();
+    }
   }
   for (auto h : mHistSizesLog) {
-    h->Reset();
+    if (h) {
+      h->Reset();
+    }
   }
 }
 
