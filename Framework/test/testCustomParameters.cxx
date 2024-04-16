@@ -258,3 +258,10 @@ TEST_CASE("test_default_if_not_found_at")
   CHECK(cp.at("key", "TECHNICAL", "STRANGE") == "valueDefaultDefault");       // key is not defined for run nor beam
   CHECK(cp.at("key", "TECHNICAL", "PROTON-PROTON") == "valueCosmicsDefault"); // key is not defined for technical
 }
+
+TEST_CASE("test_getAllDefaults")
+{
+  CustomParameters cp;
+  auto result = cp.getAllDefaults();
+  CHECK(result.size() == 0);
+}
