@@ -163,32 +163,27 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
-  std::cout << "mo->getName() is " << mo->getName() << std::endl; //CHANGE REMOVE ALL COUTS BEFORE PUSHING
 
   if (mo->getName() == "MaskStatsAllHisto") {
-    std::cout << "WOW IT WORKS!" << std::endl;
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0) {
-      result = Quality::Medium; //CHECK IF 0 ENTRIES SHOULD ALWAYS BE MEDIUM
+      result = Quality::Medium;
     }
     else {
       int bad_bins_total = 0;
       if (h->GetNbinsX() >= 3) bad_bins_total = h->GetBinContent(2)+h->GetBinContent(3); 
 
       Float_t bad_bins_fraction = (float)bad_bins_total/(float)(h->GetEntries());
-      std::cout << "bad_bins_fraction is " << bad_bins_fraction << std::endl;
 
-      std::cout << "mBadThresholdMaskStatsAll is " << mBadThresholdMaskStatsAll << std::endl;
       if (bad_bins_fraction > mBadThresholdMaskStatsAll) result = Quality::Bad;
       else if (bad_bins_fraction > mMedThresholdMaskStatsAll) result = Quality::Medium;
     }
   }
 
   if (mo->getName() == "timeCalibCoeff") {
-    std::cout << "WOW IT WORKS 4!" << std::endl;
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0) {
-      result = Quality::Medium; //CHECK IF 0 ENTRIES SHOULD ALWAYS BE MEDIUM
+      result = Quality::Medium;
     }
     else {
       std::vector<double> smcounts;
@@ -198,7 +193,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
           smcounts.emplace_back(countSM);
       }
       if (!smcounts.size()) {
-        result = Quality::Medium; //CHECK IF 0 ENTRIES SHOULD ALWAYS BE MEDIUM
+        result = Quality::Medium;
       } else {
         TRobustEstimator meanfinder;
         double mean, sigma;
@@ -211,10 +206,6 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         }
         Float_t out_counts_frac = (float)(outside_counts)/(float)(h->GetEntries());
 
-        std::cout << "out_counts_frac is " << out_counts_frac << std::endl;
-        std::cout << "mBadThresholdTimeCalibCoeff is " << mBadThresholdTimeCalibCoeff << std::endl;
-        std::cout << "mSigmaTimeCalibCoeff is " << mSigmaTimeCalibCoeff << std::endl;
-
         if (out_counts_frac > mBadThresholdTimeCalibCoeff) result = Quality::Bad;
         else if (out_counts_frac > mMedThresholdTimeCalibCoeff) result = Quality::Medium;
       }
@@ -222,16 +213,15 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   }
 
   if (mo->getName() == "fractionGoodCellsEvent") {
-    std::cout << "WOW IT WORKS 2!" << std::endl;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
-      result = Quality::Medium; //CHECK IF 0 ENTRIES SHOULD ALWAYS BE MEDIUM
+      result = Quality::Medium;
     }
     else {
       for (int j=1; j<=h->GetNbinsX(); j++){
         auto* h_det = h->ProjectionY(Form("h_det_%d",j),j,j);
         if (h_det->GetEntries() == 0)
-          continue; //CHECK IF 0 ENTRIES MEANS JUST SKIP
+          continue;
         
         Float_t avg_frac = 0.0;
         for (int i=1; i<=h_det->GetNbinsX(); i++){
@@ -239,11 +229,9 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
           avg_frac += h_det->GetBinContent(i)*h_det->GetBinCenter(i);
         }
         avg_frac = avg_frac/(h_det->GetEntries());
-        cout << "avg_frac is " << avg_frac << endl;
-        cout << "mBadThresholdFractionGoodCellsEvent is " << mBadThresholdFractionGoodCellsEvent << endl;
 
         if (avg_frac < mBadThresholdFractionGoodCellsEvent) {
-          result = Quality::Bad; //CHECK IF ANY ARE BAD THEN THE HISTO IS BAD
+          result = Quality::Bad;
           break;
         }
         else if (avg_frac < mMedThresholdFractionGoodCellsEvent) result = Quality::Medium;
@@ -252,16 +240,15 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   }
 
   if (mo->getName() == "fractionGoodCellsSupermodule") {
-    std::cout << "WOW IT WORKS 3!" << std::endl;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
-      result = Quality::Medium; //CHECK IF 0 ENTRIES SHOULD ALWAYS BE MEDIUM
+      result = Quality::Medium;
     }
     else {
       for (int j=1; j<=h->GetNbinsX(); j++){
         auto* h_supermod = h->ProjectionY(Form("h_supermod_%d",j),j,j);
         if (h_supermod->GetEntries() == 0)
-          continue; //CHECK IF 0 ENTRIES MEANS JUST SKIP
+          continue;
         
         Float_t avg_frac = 0.0;
         for (int i=1; i<=h_supermod->GetNbinsX(); i++){
@@ -269,8 +256,6 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
           avg_frac += h_supermod->GetBinContent(i)*h_supermod->GetBinCenter(i);
         }
         avg_frac = avg_frac/(h_supermod->GetEntries());
-        cout << "avg_frac is " << avg_frac << endl;
-        cout << "mBadThresholdFractionGoodCellsSupermodule is " << mBadThresholdFractionGoodCellsSupermodule << endl;
 
         if (avg_frac < mBadThresholdFractionGoodCellsSupermodule) {
           result = Quality::Bad;
@@ -284,7 +269,6 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   }
 
   if (mo->getName() == "cellAmplitudeSupermoduleCalib_PHYS"){
-    std::cout << "WOW IT WORKS 5!" << std::endl;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
@@ -295,16 +279,13 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       for (int i=1; i<=h->GetNbinsY(); i++){
         auto* h_supermod = h->ProjectionX(Form("h_supermod_%d",i),i,i);
         if (h_supermod->GetEntries() == 0) {
-          result = Quality::Medium; //CHECK IF 0 ENTRIES MEANS MEDIUM QUALITY
+          result = Quality::Medium;
         }
         else {
           h_supermod->Scale(1.0/h_supermod->Integral());
-          std::cout << "ACTUAL Entires is " << h_supermod->GetEntries() << std::endl;
 
           Double_t chi2_SM = -1000;
-          chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj,"UU NORM P CHI2/NDF"); //CHECK IF COUT WHEN EMPTY IS FINE
-          std::cout << "chi2_SM is " << chi2_SM << std::endl;
-          std::cout << "mBadThresholdCellAmplitudeSupermoduleCalibPHYS is " << mBadThresholdCellAmplitudeSupermoduleCalibPHYS << std::endl;
+          chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj,"UU NORM CHI2/NDF");
           if (chi2_SM > mBadThresholdCellAmplitudeSupermoduleCalibPHYS) {
             result = Quality::Bad;
             break;
@@ -318,7 +299,6 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   }
 
   if (mo->getName() == "cellTimeSupermoduleCalib_PHYS") {
-    std::cout << "WOW IT WORKS 6!" << std::endl;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
@@ -326,12 +306,10 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     else {
       auto* h_allsupermod_proj = h->ProjectionX("h_supermod_proj");
       if (h_allsupermod_proj->GetEntries() == 0) {
-        result = Quality::Medium; //CHECK IF 0 ENTRIES MEANS MEDIUM QUALITY
+        result = Quality::Medium;
       }
       else {
         Double_t mean_allsupermod = h_allsupermod_proj->GetMean();
-        std::cout << "mean_allsupermod is " << mean_allsupermod << std::endl;
-        std::cout << "mBadThresholdCellTimeSupermoduleCalibPHYS is " << mBadThresholdCellTimeSupermoduleCalibPHYS << endl;
         if (mean_allsupermod > mBadThresholdCellTimeSupermoduleCalibPHYS) {
           result = Quality::Bad;
         }
@@ -342,11 +320,10 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         for (int j=1; j<=h->GetNbinsY(); j++){
           auto* h_supermod = h->ProjectionY(Form("h_supermod_%d",j),j,j);
           if (h_supermod->GetEntries() == 0) {
-            result = Quality::Medium; //CHECK IF 0 ENTRIES MEANS MEDIUM QUALITY
+            result = Quality::Medium;
           }
           else {
             Double_t mean_isupermod = h_supermod->GetMean();
-            std::cout << "mean_isupermod is " << mean_isupermod << std::endl;
             if (mean_isupermod > mBadThresholdCellTimeSupermoduleCalibPHYS) {
               result = Quality::Bad;
               break;
@@ -362,7 +339,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   return result;
 }
 
-std::string CalibCheck::getAcceptedType() { return "TH1"; } //CHECK IF THERE SHOULD BE DIFFERENT CHECKER FILES FOR TH1 v TH2
+std::string CalibCheck::getAcceptedType() { return "TH1"; }
 
 void CalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

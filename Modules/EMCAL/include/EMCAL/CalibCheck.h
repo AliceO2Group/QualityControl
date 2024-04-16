@@ -44,7 +44,6 @@ class CalibCheck : public o2::quality_control::checker::CheckInterface
    * threshold cuts                               *
    ************************************************/
 
-  //CHECK WHAT THESE SHOULD BE BY DEFAULT
   float mBadThresholdMaskStatsAll = 10.; ///< Bad Threshold used in the Max Stats All bad and dead channels check
   float mBadThresholdTimeCalibCoeff = 10.; ///< Bad Threshold used in the time Calib Coeff points outside of mean check
   float mBadThresholdFractionGoodCellsEvent = 0.; ///< Bad Threshold used in the fraction Good Cells per Event check
