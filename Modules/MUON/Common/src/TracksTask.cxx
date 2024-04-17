@@ -225,10 +225,6 @@ bool TracksTask::assertInputs(o2::framework::ProcessingContext& ctx)
     ILOG(Info, Support) << "no mch track clusters available on input" << ENDM;
     return false;
   }
-  if (!ctx.inputs().isValid("mchtrackdigits")) {
-    ILOG(Info, Support) << "no mch track digits available on input" << ENDM;
-    return false;
-  }
   if (mSrc[GID::Source::MCHMID] == 1) {
     if (!ctx.inputs().isValid("matchMCHMID")) {
       ILOG(Info, Support) << "no muon (mch+mid) track available on input" << ENDM;

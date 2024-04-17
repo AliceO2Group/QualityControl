@@ -3,11 +3,11 @@
 add_library(O2QcTRD)
 
 target_sources(O2QcTRD PRIVATE
+              src/CalibReductorTRD.cxx 
               src/TrackletCountCheck.cxx
               src/PulsePositionCheck.cxx
               src/TrackingTask.cxx
               src/PulseHeightTrackMatch.cxx
-              src/TrackletsCheck.cxx
               src/TrackletsTask.cxx
               src/PulseHeightCheck.cxx
               src/RawData.cxx
@@ -32,11 +32,11 @@ install(TARGETS O2QcTRD
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcTRD HEADERS
+                    include/TRD/CalibReductorTRD.h
                     include/TRD/TrackletCountCheck.h
                     include/TRD/PulsePositionCheck.h
                     include/TRD/TrackingTask.h
                     include/TRD/PulseHeightTrackMatch.h
-                    include/TRD/TrackletsCheck.h
                     include/TRD/TrackletsTask.h
                     include/TRD/TRDHelpers.h
                     include/TRD/PulseHeightCheck.h

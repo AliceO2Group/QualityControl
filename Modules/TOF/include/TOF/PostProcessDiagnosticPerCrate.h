@@ -23,6 +23,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 
+#include <boost/property_tree/ptree.hpp>
 #include <array>
 #include <memory>
 #include <string>
@@ -42,6 +43,11 @@ class PostProcessDiagnosticPerCrate final : public quality_control::postprocessi
   PostProcessDiagnosticPerCrate() = default;
   /// \brief Destructor
   ~PostProcessDiagnosticPerCrate() override;
+
+  /// \brief Configuration of a post-processing task.
+  /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
+  /// \param config   ConfigurationInterface with prefix set to ""
+  virtual void configure(const boost::property_tree::ptree& config) override;
 
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
@@ -68,7 +74,10 @@ class PostProcessDiagnosticPerCrate final : public quality_control::postprocessi
 
   std::array<std::shared_ptr<TH2F>, 72> mCrates;
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  static const std::string mCCDBPath;
+  std::string mCCDBPath;          /// CCDB path of the MO (initialized from the configure method)
+  std::string mCCDBPathObjectDRM; /// CCDB name of the MO for the DRM (initialized from the configure method)
+  std::string mCCDBPathObjectLTM; /// CCDB name of the MO for the LTM (initialized from the configure method)
+  std::string mCCDBPathObjectTRM; /// CCDB name of the MO for the TRM (initialized from the configure method)
 };
 
 } // namespace o2::quality_control_modules::tof

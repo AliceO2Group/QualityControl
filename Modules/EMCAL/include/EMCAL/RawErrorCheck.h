@@ -19,6 +19,8 @@
 
 #include "QualityControl/CheckInterface.h"
 
+#include <map>
+
 namespace o2::emcal
 {
 class Geometry;
@@ -36,15 +38,26 @@ namespace o2::quality_control_modules::emcal
 class RawErrorCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
-  /// Default constructor
+  /// \brief Default constructor
   RawErrorCheck() = default;
-  /// Destructor
+  /// \brief Destructor
   ~RawErrorCheck() override = default;
 
-  // Override interface
+  /// \brief Configure checker setting thresholds from taskParameters where specified
   void configure() override;
+
+  /// \brief Check for each object whether the number of errors of type is above the expected threshold
+  /// \param moMap List of histos to check
+  /// \return Quality of the selection
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
+
+  /// \brief Beautify the monitoring objects showing the quality determination and a supermodule grid for channel based histograms
+  /// \param mo Monitoring object to beautify
+  /// \param checkResult Quality status of this checker
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+
+  /// \brief Accept only TH2 histograms as input
+  /// \return Name of the accepted object: TH2
   std::string getAcceptedType() override;
 
   ClassDefOverride(RawErrorCheck, 2);
@@ -56,8 +69,50 @@ class RawErrorCheck : public o2::quality_control::checker::CheckInterface
   /// \throw std::runtime_error in case value is not a boolean value
   bool decodeBool(std::string value) const;
 
-  o2::emcal::Geometry* mGeometry; ///< Geometry for mapping position between SM and full EMCAL
-  bool mNotifyInfologger = true;  ///< Switch for notification to infologger
+  /// \brief Find error code of the raw decoder error
+  /// \param errorname Name of the raw decoder error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodeRDE(const std::string_view errorname) const;
+
+  /// \brief Find error code of the page error
+  /// \param errorname Name of the page error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodePE(const std::string_view errorname) const;
+
+  /// \brief Find error code of the major ALTRO decoding error
+  /// \param errorname Name of the major ALTRO decoding error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodeMAAE(const std::string_view errorname) const;
+
+  /// \brief Find error code of the minor ALTRO decoding error
+  /// \param errorname Name of minor ALTRO decoding error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodeMIAE(const std::string_view errorname) const;
+
+  /// \brief Find error code of the raw fit error
+  /// \param errorname Name of the raw fit error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodeRFE(const std::string_view errorname) const;
+
+  /// \brief Find error code of the geometry error
+  /// \param errorname Name of the geometry error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodeGEE(const std::string_view errorname) const;
+
+  /// \brief Find error code of the gain type error
+  /// \param errorname Name of the gain type error
+  /// \return Error code of the error name (-1 in case not found)
+  int findErrorCodeGTE(const std::string_view errorname) const;
+
+  o2::emcal::Geometry* mGeometry;              ///< Geometry for mapping position between SM and full EMCAL
+  bool mNotifyInfologger = true;               ///< Switch for notification to infologger
+  std::map<int, int> mErrorCountThresholdRDE;  ///< Thresholds for Raw Decoder Error histogram
+  std::map<int, int> mErrorCountThresholdPE;   ///< Thresholds for Page Error histogram
+  std::map<int, int> mErrorCountThresholdMAAE; ///< Thresholds for Major ALTRO Error histogram
+  std::map<int, int> mErrorCountThresholdMIAE; ///< Thresholds for Minor ALTRO Error histogram
+  std::map<int, int> mErrorCountThresholdRFE;  ///< Thresholds for Raw Fit Error histogram
+  std::map<int, int> mErrorCountThresholdGEE;  ///< Thresholds for Geometry Error histogram
+  std::map<int, int> mErrorCountThresholdGTE;  ///< Thresholds for Gain Type Error histogram
 };
 
 } // namespace o2::quality_control_modules::emcal

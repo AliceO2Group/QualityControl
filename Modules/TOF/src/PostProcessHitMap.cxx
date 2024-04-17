@@ -20,18 +20,18 @@
 #include "DataFormatsTOF/TOFFEElightInfo.h"
 #include "TOFBase/Geo.h"
 
-// QualityControl includes
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/QcInfoLogger.h"
-#include "TOF/PostProcessHitMap.h"
-#include "QualityControl/DatabaseInterface.h"
-
 // ROOT includes
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TColor.h>
 #include <boost/property_tree/ptree.hpp>
+
+// QualityControl includes
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "TOF/PostProcessHitMap.h"
+#include "QualityControl/DatabaseInterface.h"
 
 using namespace std;
 using namespace o2::quality_control::postprocessing;
@@ -60,6 +60,21 @@ void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistryRef servic
 {
   // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
+
+  mCanvasMo.reset();
+  mCanvasMo = std::make_shared<TCanvas>("defaultMap", "defaultMap");
+  getObjectsManager()->startPublishing(mCanvasMo.get());
+
+  mPhosPad.reset();
+  mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
+  mPhosPad->SetTextSize(0.05);
+  mPhosPad->SetBorderSize(1);
+  mPhosPad->SetTextColor(kBlack);
+  mPhosPad->SetFillColor(kGreen);
+  mPhosPad->SetFillStyle(3004);
+  mPhosPad->AddText("Red: No Match");
+  mPhosPad->AddText("Blu: RefMap");
+  mPhosPad->AddText("Green: HitMap");
 }
 
 void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services)
@@ -116,10 +131,8 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services
       }
     }
   }
-}
 
-void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
-{
+  // Finalizing the plot and updating the MO on the CCDB
   if (!mHistoRefHitMap) {
     ILOG(Warning, Support) << "mHistoRefHitMap undefined, can't finalize" << ENDM;
     return;
@@ -128,7 +141,12 @@ void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
     ILOG(Warning, Support) << "mHistoHitMap undefined, can't finalize" << ENDM;
     return;
   }
-  TCanvas* c = new TCanvas(mHistoHitMap->GetName(), mHistoHitMap->GetName());
+
+  mCanvasMo->SetName(mHistoHitMap->GetName());
+  mCanvasMo->SetTitle(mHistoHitMap->GetName());
+  mCanvasMo->cd();
+  mCanvasMo->Clear();
+
   mHistoRefHitMap->GetZaxis()->SetRangeUser(0, 1);
   mHistoHitMap->GetZaxis()->SetRangeUser(0, 1);
 
@@ -144,27 +162,18 @@ void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
     mHistoRefHitMap->GetListOfFunctions()->Clear();
     mHistoRefHitMap->Draw("BOXsame");
   }
-  TPaveText phosPad{ 13.f, 38.f, 16.f, 53.f, "bl" };
-  phosPad.SetTextSize(0.05);
-  phosPad.SetBorderSize(1);
-  phosPad.SetTextColor(kBlack);
-  phosPad.SetFillColor(kGreen);
-  phosPad.SetFillStyle(3004);
-  phosPad.AddText("Red: No Match");
-  phosPad.AddText("Blu: RefMap");
-  phosPad.AddText("Green: HitMap");
-  phosPad.Draw();
+  mPhosPad->Draw();
 
   // Draw the shifter message
-  if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName())))
+  if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))) {
     mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))->Draw("same");
+  }
+}
 
-  auto mo = std::make_shared<o2::quality_control::core::MonitorObject>(c, getID(), "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
-  mo->setIsOwner(false);
-  mDatabase->storeMO(mo);
-
-  // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
-  delete c;
+void PostProcessHitMap::finalize(Trigger, framework::ServiceRegistryRef)
+{
+  // Only if you don't want it to be published after finalisation.
+  getObjectsManager()->stopPublishing(mCanvasMo.get());
 }
 
 } // namespace o2::quality_control_modules::tof
