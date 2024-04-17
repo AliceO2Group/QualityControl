@@ -26,6 +26,7 @@
 #include <TLatex.h>
 #include <TList.h>
 #include <TRobustEstimator.h>
+#include <TMath.h>
 #include <ROOT/TSeq.hxx>
 #include <iostream>
 #include <vector>
@@ -225,7 +226,6 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         
         Float_t avg_frac = 0.0;
         for (int i=1; i<=h_det->GetNbinsX(); i++){
-          Float_t weight = h_det->GetBinContent(i)*h_det->GetBinCenter(i);
           avg_frac += h_det->GetBinContent(i)*h_det->GetBinCenter(i);
         }
         avg_frac = avg_frac/(h_det->GetEntries());
@@ -252,7 +252,6 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         
         Float_t avg_frac = 0.0;
         for (int i=1; i<=h_supermod->GetNbinsX(); i++){
-          Float_t weight = h_supermod->GetBinContent(i)*h_supermod->GetBinCenter(i);
           avg_frac += h_supermod->GetBinContent(i)*h_supermod->GetBinCenter(i);
         }
         avg_frac = avg_frac/(h_supermod->GetEntries());
@@ -284,8 +283,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         else {
           h_supermod->Scale(1.0/h_supermod->Integral());
 
-          Double_t chi2_SM = -1000;
-          chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj,"UU NORM CHI2/NDF");
+          Double_t chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj,"UU NORM CHI2/NDF");
           if (chi2_SM > mBadThresholdCellAmplitudeSupermoduleCalibPHYS) {
             result = Quality::Bad;
             break;
@@ -310,10 +308,10 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       }
       else {
         Double_t mean_allsupermod = h_allsupermod_proj->GetMean();
-        if (mean_allsupermod > mBadThresholdCellTimeSupermoduleCalibPHYS) {
+        if (TMath::Abs(mean_allsupermod) > mBadThresholdCellTimeSupermoduleCalibPHYS) {
           result = Quality::Bad;
         }
-        else if (mean_allsupermod > mMedThresholdCellTimeSupermoduleCalibPHYS) {
+        else if (TMath::Abs(mean_allsupermod) > mMedThresholdCellTimeSupermoduleCalibPHYS) {
           result = Quality::Medium;
         }
 
@@ -324,11 +322,11 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
           }
           else {
             Double_t mean_isupermod = h_supermod->GetMean();
-            if (mean_isupermod > mBadThresholdCellTimeSupermoduleCalibPHYS) {
+            if (TMath::Abs(mean_isupermod) > mBadThresholdCellTimeSupermoduleCalibPHYS) {
               result = Quality::Bad;
               break;
             }
-            else if (mean_isupermod > mMedThresholdCellTimeSupermoduleCalibPHYS) {
+            else if (TMath::Abs(mean_isupermod) > mMedThresholdCellTimeSupermoduleCalibPHYS) {
               result = Quality::Medium;
             }
           }
