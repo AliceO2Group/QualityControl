@@ -197,7 +197,7 @@ void TrackletsTask::endOfActivity(const Activity& /*activity*/)
 
 void TrackletsTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
 {
-  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0)) {
+  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0) || matcher == o2::framework::ConcreteDataMatcher("DS", "trdall4", 0)) {
     TRDHelpers::drawChamberStatusOnHistograms(static_cast<std::array<int, MAXCHAMBER>*>(obj), mTrackletsPerHC2D, mLayers, NCOLUMN / NSECTOR);
   }
 }

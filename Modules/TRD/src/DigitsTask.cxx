@@ -335,7 +335,7 @@ void DigitsTask::endOfActivity(const Activity& /*activity*/)
 
 void DigitsTask::finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj)
 {
-  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0)) {
+  if (matcher == o2::framework::ConcreteDataMatcher("TRD", "FCHSTATUS", 0) || matcher == o2::framework::ConcreteDataMatcher("DS", "trdall4", 0)) {
     // LB: no half chamber distribution map for Digits, pass it as null pointer
     TRDHelpers::drawChamberStatusOnHistograms(static_cast<std::array<int, MAXCHAMBER>*>(obj), nullptr, mLayers, NCOLUMN);
   }
