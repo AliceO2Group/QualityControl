@@ -52,7 +52,12 @@ const std::unordered_map<std::string, std::string>& CustomParameters::getAllForR
 
 const std::unordered_map<std::string, std::string>& CustomParameters::getAllDefaults()
 {
-  return getAllForRunBeam("default", "default");
+  try {
+    return getAllForRunBeam("default", "default");
+  } catch (std::out_of_range outOfRange) {
+    // we ignore the fact that we could not find anything and return an empty map
+    return mCustomParameters["null"]["null"];
+  }
 }
 
 std::string CustomParameters::at(const std::string& key, const std::string& runType, const std::string& beamType) const
