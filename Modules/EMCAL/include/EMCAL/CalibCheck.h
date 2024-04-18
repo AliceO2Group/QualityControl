@@ -39,27 +39,27 @@ class CalibCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  private:
+ private:
   /************************************************
    * threshold cuts                               *
    ************************************************/
 
-  float mBadThresholdMaskStatsAll = 10.; ///< Bad Threshold used in the Max Stats All bad and dead channels check
-  float mBadThresholdTimeCalibCoeff = 10.; ///< Bad Threshold used in the time Calib Coeff points outside of mean check
-  float mBadThresholdFractionGoodCellsEvent = 0.; ///< Bad Threshold used in the fraction Good Cells per Event check
-  float mBadThresholdFractionGoodCellsSupermodule = 0.; ///< Bad Threshold used in the fraction Good Cells per Supermodule check
+  float mBadThresholdMaskStatsAll = 10.;                      ///< Bad Threshold used in the Max Stats All bad and dead channels check
+  float mBadThresholdTimeCalibCoeff = 10.;                    ///< Bad Threshold used in the time Calib Coeff points outside of mean check
+  float mBadThresholdFractionGoodCellsEvent = 0.;             ///< Bad Threshold used in the fraction Good Cells per Event check
+  float mBadThresholdFractionGoodCellsSupermodule = 0.;       ///< Bad Threshold used in the fraction Good Cells per Supermodule check
   float mBadThresholdCellAmplitudeSupermoduleCalibPHYS = 10.; ///< Bad Threshold used in the PHYS Cell amplitude (Calib) vs. supermodule ID check
-  float mBadThresholdCellTimeSupermoduleCalibPHYS = 10.; ///< Bad Threshold used in the PHYS Cell Time (Calib) vs. supermodule ID (High gain) check
+  float mBadThresholdCellTimeSupermoduleCalibPHYS = 10.;      ///< Bad Threshold used in the PHYS Cell Time (Calib) vs. supermodule ID (High gain) check
 
-  float mMedThresholdMaskStatsAll = 10.; ///< Medium Threshold used in the Max Stats All bad and dead channels check
-  float mMedThresholdTimeCalibCoeff = 10.; ///< Medium Threshold used in the time Calib Coeff points outside of mean check
-  float mMedThresholdFractionGoodCellsEvent = 10.; ///< Medium Threshold used in the fraction Good Cells per Event check
-  float mMedThresholdFractionGoodCellsSupermodule = 10.; ///< Medium Threshold used in the fraction Good Cells per Supermodule check
+  float mMedThresholdMaskStatsAll = 10.;                      ///< Medium Threshold used in the Max Stats All bad and dead channels check
+  float mMedThresholdTimeCalibCoeff = 10.;                    ///< Medium Threshold used in the time Calib Coeff points outside of mean check
+  float mMedThresholdFractionGoodCellsEvent = 10.;            ///< Medium Threshold used in the fraction Good Cells per Event check
+  float mMedThresholdFractionGoodCellsSupermodule = 10.;      ///< Medium Threshold used in the fraction Good Cells per Supermodule check
   float mMedThresholdCellAmplitudeSupermoduleCalibPHYS = 10.; ///< Medium Threshold used in the PHYS Cell amplitude (Calib) vs. supermodule ID check
-  float mMedThresholdCellTimeSupermoduleCalibPHYS = 10.; ///< Medium Threshold used in the PHYS Cell Time (Calib) vs. supermodule ID (High gain) check
+  float mMedThresholdCellTimeSupermoduleCalibPHYS = 10.;      ///< Medium Threshold used in the PHYS Cell Time (Calib) vs. supermodule ID (High gain) check
 
   float mSigmaTimeCalibCoeff = 2.; ///< Number of sigmas used in the timeCalibCoeff points outside of mean check
-  
+
   ClassDefOverride(CalibCheck, 1);
 };
 

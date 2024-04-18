@@ -148,7 +148,7 @@ void CalibCheck::configure()
     }
   }
 
-  //configure nsigma-based checkers
+  // configure nsigma-based checkers
   auto nSigmaTimeCalibCoeff = mCustomParameters.find("SigmaTimeCalibCoeff");
   if (nSigmaTimeCalibCoeff != mCustomParameters.end()) {
     try {
@@ -157,7 +157,6 @@ void CalibCheck::configure()
       ILOG(Error, Support) << fmt::format("Value {} not a float", nSigmaTimeCalibCoeff->second.data()) << ENDM;
     }
   }
-
 }
 
 Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -169,15 +168,19 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-    }
-    else {
+    } else {
       int bad_bins_total = 0;
-      if (h->GetNbinsX() >= 3) bad_bins_total = h->GetBinContent(2)+h->GetBinContent(3); 
+      if (h->GetNbinsX() >= 3) {
+        bad_bins_total = h->GetBinContent(2) + h->GetBinContent(3);
+      }
 
-      Float_t bad_bins_fraction = (float)bad_bins_total/(float)(h->GetEntries());
+      Float_t bad_bins_fraction = (float)bad_bins_total / (float)(h->GetEntries());
 
-      if (bad_bins_fraction > mBadThresholdMaskStatsAll) result = Quality::Bad;
-      else if (bad_bins_fraction > mMedThresholdMaskStatsAll) result = Quality::Medium;
+      if (bad_bins_fraction > mBadThresholdMaskStatsAll) {
+        result = Quality::Bad;
+      } else if (bad_bins_fraction > mMedThresholdMaskStatsAll) {
+        result = Quality::Medium;
+      }
     }
   }
 
@@ -185,13 +188,13 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-    }
-    else {
+    } else {
       std::vector<double> smcounts;
       for (auto ib : ROOT::TSeqI(0, h->GetXaxis()->GetNbins())) {
         auto countSM = h->GetBinContent(ib + 1);
-        if (countSM > 0)
+        if (countSM > 0) {
           smcounts.emplace_back(countSM);
+        }
       }
       if (!smcounts.size()) {
         result = Quality::Medium;
@@ -205,10 +208,13 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
             outside_counts += 1;
           }
         }
-        Float_t out_counts_frac = (float)(outside_counts)/(float)(h->GetEntries());
+        Float_t out_counts_frac = (float)(outside_counts) / (float)(h->GetEntries());
 
-        if (out_counts_frac > mBadThresholdTimeCalibCoeff) result = Quality::Bad;
-        else if (out_counts_frac > mMedThresholdTimeCalibCoeff) result = Quality::Medium;
+        if (out_counts_frac > mBadThresholdTimeCalibCoeff) {
+          result = Quality::Bad;
+        } else if (out_counts_frac > mMedThresholdTimeCalibCoeff) {
+          result = Quality::Medium;
+        }
       }
     }
   }
@@ -217,24 +223,25 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-    }
-    else {
-      for (int j=1; j<=h->GetNbinsX(); j++){
-        auto* h_det = h->ProjectionY(Form("h_det_%d",j),j,j);
-        if (h_det->GetEntries() == 0)
+    } else {
+      for (int j = 1; j <= h->GetNbinsX(); j++) {
+        auto* h_det = h->ProjectionY(Form("h_det_%d", j), j, j);
+        if (h_det->GetEntries() == 0) {
           continue;
-        
-        Float_t avg_frac = 0.0;
-        for (int i=1; i<=h_det->GetNbinsX(); i++){
-          avg_frac += h_det->GetBinContent(i)*h_det->GetBinCenter(i);
         }
-        avg_frac = avg_frac/(h_det->GetEntries());
+
+        Float_t avg_frac = 0.0;
+        for (int i = 1; i <= h_det->GetNbinsX(); i++) {
+          avg_frac += h_det->GetBinContent(i) * h_det->GetBinCenter(i);
+        }
+        avg_frac = avg_frac / (h_det->GetEntries());
 
         if (avg_frac < mBadThresholdFractionGoodCellsEvent) {
           result = Quality::Bad;
           break;
+        } else if (avg_frac < mMedThresholdFractionGoodCellsEvent) {
+          result = Quality::Medium;
         }
-        else if (avg_frac < mMedThresholdFractionGoodCellsEvent) result = Quality::Medium;
       }
     }
   }
@@ -243,52 +250,48 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-    }
-    else {
-      for (int j=1; j<=h->GetNbinsX(); j++){
-        auto* h_supermod = h->ProjectionY(Form("h_supermod_%d",j),j,j);
-        if (h_supermod->GetEntries() == 0)
+    } else {
+      for (int j = 1; j <= h->GetNbinsX(); j++) {
+        auto* h_supermod = h->ProjectionY(Form("h_supermod_%d", j), j, j);
+        if (h_supermod->GetEntries() == 0) {
           continue;
-        
-        Float_t avg_frac = 0.0;
-        for (int i=1; i<=h_supermod->GetNbinsX(); i++){
-          avg_frac += h_supermod->GetBinContent(i)*h_supermod->GetBinCenter(i);
         }
-        avg_frac = avg_frac/(h_supermod->GetEntries());
+
+        Float_t avg_frac = 0.0;
+        for (int i = 1; i <= h_supermod->GetNbinsX(); i++) {
+          avg_frac += h_supermod->GetBinContent(i) * h_supermod->GetBinCenter(i);
+        }
+        avg_frac = avg_frac / (h_supermod->GetEntries());
 
         if (avg_frac < mBadThresholdFractionGoodCellsSupermodule) {
           result = Quality::Bad;
           break;
-        }
-        else if (avg_frac < mMedThresholdFractionGoodCellsSupermodule) {
+        } else if (avg_frac < mMedThresholdFractionGoodCellsSupermodule) {
           result = Quality::Medium;
         }
       }
     }
   }
 
-  if (mo->getName() == "cellAmplitudeSupermoduleCalib_PHYS"){
+  if (mo->getName() == "cellAmplitudeSupermoduleCalib_PHYS") {
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-    }
-    else {
+    } else {
       auto* h_allsupermod_proj = h->ProjectionX("h_allsupermod_proj");
-      h_allsupermod_proj->Scale(1.0/h_allsupermod_proj->Integral());
-      for (int i=1; i<=h->GetNbinsY(); i++){
-        auto* h_supermod = h->ProjectionX(Form("h_supermod_%d",i),i,i);
+      h_allsupermod_proj->Scale(1.0 / h_allsupermod_proj->Integral());
+      for (int i = 1; i <= h->GetNbinsY(); i++) {
+        auto* h_supermod = h->ProjectionX(Form("h_supermod_%d", i), i, i);
         if (h_supermod->GetEntries() == 0) {
           result = Quality::Medium;
-        }
-        else {
-          h_supermod->Scale(1.0/h_supermod->Integral());
+        } else {
+          h_supermod->Scale(1.0 / h_supermod->Integral());
 
-          Double_t chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj,"UU NORM CHI2/NDF");
+          Double_t chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj, "UU NORM CHI2/NDF");
           if (chi2_SM > mBadThresholdCellAmplitudeSupermoduleCalibPHYS) {
             result = Quality::Bad;
             break;
-          }
-          else if (chi2_SM > mMedThresholdCellAmplitudeSupermoduleCalibPHYS) {
+          } else if (chi2_SM > mMedThresholdCellAmplitudeSupermoduleCalibPHYS) {
             result = Quality::Medium;
           }
         }
@@ -300,33 +303,28 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-    }
-    else {
+    } else {
       auto* h_allsupermod_proj = h->ProjectionX("h_supermod_proj");
       if (h_allsupermod_proj->GetEntries() == 0) {
         result = Quality::Medium;
-      }
-      else {
+      } else {
         Double_t mean_allsupermod = h_allsupermod_proj->GetMean();
         if (TMath::Abs(mean_allsupermod) > mBadThresholdCellTimeSupermoduleCalibPHYS) {
           result = Quality::Bad;
-        }
-        else if (TMath::Abs(mean_allsupermod) > mMedThresholdCellTimeSupermoduleCalibPHYS) {
+        } else if (TMath::Abs(mean_allsupermod) > mMedThresholdCellTimeSupermoduleCalibPHYS) {
           result = Quality::Medium;
         }
 
-        for (int j=1; j<=h->GetNbinsY(); j++){
-          auto* h_supermod = h->ProjectionY(Form("h_supermod_%d",j),j,j);
+        for (int j = 1; j <= h->GetNbinsY(); j++) {
+          auto* h_supermod = h->ProjectionY(Form("h_supermod_%d", j), j, j);
           if (h_supermod->GetEntries() == 0) {
             result = Quality::Medium;
-          }
-          else {
+          } else {
             Double_t mean_isupermod = h_supermod->GetMean();
             if (TMath::Abs(mean_isupermod) > mBadThresholdCellTimeSupermoduleCalibPHYS) {
               result = Quality::Bad;
               break;
-            }
-            else if (TMath::Abs(mean_isupermod) > mMedThresholdCellTimeSupermoduleCalibPHYS) {
+            } else if (TMath::Abs(mean_isupermod) > mMedThresholdCellTimeSupermoduleCalibPHYS) {
               result = Quality::Medium;
             }
           }
@@ -341,6 +339,6 @@ std::string CalibCheck::getAcceptedType() { return "TH1"; }
 
 void CalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  //To do
+  // To do
 }
 } // namespace o2::quality_control_modules::emcal
