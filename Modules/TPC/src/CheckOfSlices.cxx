@@ -338,7 +338,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->AddText("Quality::Null. Failed checks:");
     checkMessage = mNullString;
   }
-  
+
   // Split lines by hand as \n does not work with TPaveText
   const std::string delimiter = "\n";
   size_t pos = 0;
