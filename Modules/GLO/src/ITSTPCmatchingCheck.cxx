@@ -23,6 +23,7 @@
 #include <TH1.h>
 #include <TEfficiency.h>
 #include <TPaveText.h>
+#include <TMath.h>
 #include <TArrow.h>
 #include <TText.h>
 #include <TBox.h>
@@ -32,6 +33,9 @@
 #include <TPolyMarker.h>
 
 #include <DataFormatsQualityControl/FlagReasons.h>
+
+#include <utility>
+#include <type_traits>
 #include "fmt/format.h"
 
 using namespace std;
@@ -40,41 +44,17 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::glo
 {
 
-void ITSTPCmatchingCheck::configure()
-{
-  if (auto param = mCustomParameters.find("minPt"); param != mCustomParameters.end()) {
-    try {
-      mMinPt = stof(param->second);
-    } catch (const std::exception& e) {
-      ILOG(Error) << "Cannot convert param minPt '" << e.what() << "'; using default..." << ENDM;
-    }
-  }
-
-  if (auto param = mCustomParameters.find("maxPt"); param != mCustomParameters.end()) {
-    try {
-      mMaxPt = stof(param->second);
-    } catch (const std::exception& e) {
-      ILOG(Error) << "Cannot convert param maxPt '" << e.what() << "'; using default..." << ENDM;
-    }
-  }
-
-  if (auto param = mCustomParameters.find("threshold"); param != mCustomParameters.end()) {
-    try {
-      mThreshold = stof(param->second);
-    } catch (const std::exception& e) {
-      ILOG(Error) << "Cannot convert param threshold '" << e.what() << "'; using default..." << ENDM;
-    }
-  }
-}
-
 Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
+  Quality ptQual = Quality::Good;
+  Quality phiQual = Quality::Good;
+  Quality etaQual = Quality::Good;
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
 
-    if (mo->getName() == "mFractionITSTPCmatch_ITS") {
+    if (mShowPt && mo->getName() == "mFractionITSTPCmatch_ITS") {
       auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatch_ITS check!" << ENDM;
@@ -82,25 +62,29 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
       }
       auto binLow = eff->FindFixBin(mMinPt), binUp = eff->FindFixBin(mMaxPt);
 
-      result = Quality::Good;
-
+      ptQual = Quality::Good;
+      result.addMetadata("checkPtQuality", "good");
+      result.addMetadata("checkPtBins", "");
+      result.addMetadata("checkPtDen", "good");
+      result.addMetadata("checkPtNum", "good");
       if (eff->GetTotalHistogram()->GetEntries() == 0) {
-        result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "No ITS tracks in denumerator!");
+        ptQual = Quality::Null;
+        result.updateMetadata("checkPtDen", "null");
       } else if (eff->GetPassedHistogram()->GetEntries() == 0) {
-        result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "No ITS-TPC tracks in numerator!");
+        ptQual = Quality::Bad;
+        result.updateMetadata("checkPtNum", "bad");
       } else {
         std::vector<int> badBins;
         for (int iBin = binLow; iBin <= binUp; ++iBin) {
-          if (eff->GetEfficiency(iBin) < mThreshold) {
-            result = Quality::Bad;
+          if (eff->GetEfficiency(iBin) < mThresholdPt) {
+            ptQual = Quality::Bad;
             badBins.push_back(iBin);
           }
         }
         auto ranges = findRanges(badBins);
-        if (result == Quality::Bad) {
+        if (ptQual == Quality::Bad) {
           result.addReason(FlagReasonFactory::BadTracking(), "Check vdrift online calibration and ITS/TPC QC");
+          result.updateMetadata("checkPtQuality", "bad");
 
           std::string cBins{ "Bad matching efficiency in: " };
           for (const auto& [binLow, binUp] : ranges) {
@@ -109,15 +93,100 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           }
           cBins.pop_back(); // remove last `,`
           cBins += " (GeV/c)";
-          result.addReason(FlagReasonFactory::BadTracking(), cBins);
+          result.updateMetadata("checkPtBins", cBins);
+        }
+      }
+    }
+
+    if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS") {
+      auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
+      if (eff == nullptr) {
+        ILOG(Error) << "Failed cast for ITSTPCmatchPhi_ITS check!" << ENDM;
+        continue;
+      }
+
+      phiQual = Quality::Good;
+      result.addMetadata("checkPhiQuality", "good");
+      result.addMetadata("checkPhiBins", "");
+      result.addMetadata("checkPhiDen", "good");
+      result.addMetadata("checkPhiNum", "good");
+      if (eff->GetTotalHistogram()->GetEntries() == 0) {
+        phiQual = Quality::Null;
+        result.updateMetadata("checkPhiDen", "null");
+      } else if (eff->GetPassedHistogram()->GetEntries() == 0) {
+        phiQual = Quality::Bad;
+        result.updateMetadata("checkPhiNum", "bad");
+      } else {
+        std::vector<int> badBins;
+        for (int iBin{ 1 }; iBin <= eff->GetPassedHistogram()->GetNbinsX(); ++iBin) {
+          if (eff->GetEfficiency(iBin) < mThresholdPhi) {
+            phiQual = Quality::Bad;
+            badBins.push_back(iBin);
+          }
+        }
+        auto ranges = findRanges(badBins);
+        if (phiQual == Quality::Bad) {
+          result.addReason(FlagReasonFactory::BadTracking(), "Check TPC sectors or ITS staves QC!");
+          result.updateMetadata("checkPhiQuality", "bad");
+
+          std::string cBins{ "Bad matching efficiency in: " };
+          for (const auto& [binLow, binUp] : ranges) {
+            float low = eff->GetPassedHistogram()->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetPassedHistogram()->GetXaxis()->GetBinUpEdge(binUp);
+            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          }
+          cBins.pop_back(); // remove last `,`
+          cBins += " (rad)";
+          result.updateMetadata("checkPhiBins", cBins);
+        }
+      }
+    }
+
+    if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS") {
+      auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
+      if (eff == nullptr) {
+        ILOG(Error) << "Failed cast for ITSTPCmatchEta_ITS check!" << ENDM;
+        continue;
+      }
+      auto binLow = eff->FindFixBin(mMinEta), binUp = eff->FindFixBin(mMaxEta);
+
+      etaQual = Quality::Good;
+      result.addMetadata("checkEtaQuality", "good");
+      result.addMetadata("checkEtaBins", "");
+      result.addMetadata("checkEtaDen", "good");
+      result.addMetadata("checkEtaNum", "good");
+      if (eff->GetTotalHistogram()->GetEntries() == 0) {
+        ptQual = Quality::Null;
+        result.updateMetadata("checkEtaDen", "null");
+      } else if (eff->GetPassedHistogram()->GetEntries() == 0) {
+        ptQual = Quality::Bad;
+        result.updateMetadata("checkEtaNum", "bad");
+      } else {
+        std::vector<int> badBins;
+        for (int iBin = binLow; iBin <= binUp; ++iBin) {
+          if (eff->GetEfficiency(iBin) < mThresholdEta) {
+            ptQual = Quality::Bad;
+            badBins.push_back(iBin);
+          }
+        }
+        auto ranges = findRanges(badBins);
+        if (ptQual == Quality::Bad) {
+          result.updateMetadata("checkEtaQuality", "bad");
+
+          std::string cBins{ "Bad matching efficiency in: " };
+          for (const auto& [binLow, binUp] : ranges) {
+            float low = eff->GetPassedHistogram()->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetPassedHistogram()->GetXaxis()->GetBinUpEdge(binUp);
+            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          }
+          cBins.pop_back(); // remove last `,`
+          result.updateMetadata("checkEtaBins", cBins);
         }
       }
     }
   }
+
+  // Overall Quality
   return result;
 }
-
-std::string ITSTPCmatchingCheck::getAcceptedType() { return "TH1"; }
 
 void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
@@ -126,7 +195,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     return;
   }
 
-  if (mo->getName() == "mFractionITSTPCmatch_ITS") {
+  if (mShowPt && mo->getName() == "mFractionITSTPCmatch_ITS") {
     auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatch_ITS beautify!" << ENDM;
@@ -137,7 +206,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     float xmax = eff->GetPassedHistogram()->GetXaxis()->GetXmax();
     float xminT = mMinPt;
     float xmaxT = mMaxPt;
-    auto* l1 = new TLine(xmin, mThreshold, xmax, mThreshold);
+    auto* l1 = new TLine(xmin, mThresholdPt, xmax, mThresholdPt);
     l1->SetLineStyle(kDashed);
     l1->SetLineWidth(4);
     l1->SetLineColor(kCyan - 7);
@@ -151,9 +220,9 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     l3->SetLineColor(kCyan - 7);
     auto* tt = new TText(xminT + 0.1, 1.05, "Checked Range");
     tt->SetTextSize(0.04);
-    auto* ttt = new TText(xmaxT + 0.9, mThreshold + 0.01, "Threshold");
+    auto* ttt = new TText(xmaxT + 0.9, mThresholdPt + 0.012, "Threshold");
     auto* aa = new TArrow(xminT + 0.01, 1.02, xmaxT - 0.01, 1.02, 0.02, "<|>");
-    if (checkResult == Quality::Good) {
+    if (checkResult.getMetadata("checkPtQuality") == "good") {
       l1->SetLineColor(kCyan - 7);
       l2->SetLineColor(kCyan - 7);
       l3->SetLineColor(kCyan - 7);
@@ -192,10 +261,10 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     for (int iBin = binLow; iBin <= binUp; ++iBin) {
       auto x = eff->GetPassedHistogram()->GetBinCenter(iBin);
       auto y = eff->GetEfficiency(iBin);
-      if (eff->GetEfficiency(iBin) < mThreshold) {
-        bad->SetPoint(++cB, x, y);
+      if (eff->GetEfficiency(iBin) < mThresholdPt) {
+        bad->SetPoint(cB++, x, y);
       } else {
-        good->SetPoint(++cG, x, y);
+        good->SetPoint(cG++, x, y);
       }
     }
     eff->GetListOfFunctions()->Add(good);
@@ -204,39 +273,271 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
 
     // Quality
     auto* msg = new TPaveText(0.12, 0.12, 0.5, 0.3, "NDC;NB");
-    msg->AddText(Form("Quality: %s", checkResult.getName().c_str()));
-    if (checkResult == Quality::Good) {
+    if (checkResult.getMetadata("checkPtQuality") == "good") {
+      msg->AddText("Quality: Good");
       msg->SetFillColor(kGreen);
-    } else {
+    } else if (checkResult.getMetadata("checkPtQuality") == "bad") {
+      msg->AddText("Quality: Bad");
       msg->SetFillColor(kRed);
-      for (const auto& [_, desc] : checkResult.getReasons()) {
-        msg->AddText(Form("%s", desc.c_str()));
-      }
+      msg->AddText("Check vdrift online calibration and ITS/TPC QC");
+      msg->AddText(checkResult.getMetadata("checkPtBins").c_str());
       msg->SetTextColor(kWhite);
+    } else if (checkResult.getMetadata("checkPtQuality") == "null") {
+      msg->SetFillColor(kWhite);
+      msg->AddText("Quality: Null");
+      msg->AddText("No ITS tracks in denominator!");
+      msg->AddText(checkResult.getMetadata("checkPtBins").c_str());
+      msg->SetTextColor(kBlack);
+    } else {
+      msg->AddText("Quality: Undefined");
+      msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
 
-    if constexpr (false) {
-      TFile f("test.root", "RECREATE");
-      f.WriteObject(eff, "qcplot");
-    }
+    TFile f("testPt.root", "RECREATE");
+    f.WriteObject(eff, "qcplotPt");
   }
-}
 
-void ITSTPCmatchingCheck::reset()
-{
-  ILOG(Debug, Devel) << "ITSTPCmatchingCheck::reset" << ENDM;
+  if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS") {
+    auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
+    if (eff == nullptr) {
+      ILOG(Error) << "Failed cast for ITSTPCmatchPhi_ITS beautify!" << ENDM;
+      return;
+    }
+    // Draw threshold lines
+    auto* l1 = new TLine(0, mThresholdPhi, 2 * TMath::Pi(), mThresholdPhi);
+    l1->SetLineStyle(kDashed);
+    l1->SetLineWidth(4);
+    l1->SetLineColor(kCyan - 7);
+    auto* tt = new TText(TMath::Pi() - 1., 1.05, "Checked Range");
+    tt->SetTextSize(0.04);
+    auto* ttt = new TText(2 * TMath::Pi() - 0.9, mThresholdPhi + 0.012, "Threshold");
+    auto* aa = new TArrow(0.01, 1.02, 2 * TMath::Pi() - 0.01, 1.02, 0.02, "<|>");
+    if (checkResult.getMetadata("checkPhiQuality") == "good") {
+      l1->SetLineColor(kCyan - 7);
+      aa->SetFillColor(kCyan - 7);
+      aa->SetLineColor(kCyan - 7);
+    } else {
+      l1->SetLineColor(kRed - 4);
+      aa->SetFillColor(kRed - 4);
+      aa->SetLineColor(kRed - 4);
+    }
+    eff->GetListOfFunctions()->Add(l1);
+    eff->GetListOfFunctions()->Add(tt);
+    eff->GetListOfFunctions()->Add(ttt);
+    eff->GetListOfFunctions()->Add(aa);
+
+    // Color Bins in Window
+    int cG{ 0 }, cB{ 0 };
+    auto* good = new TPolyMarker();
+    good->SetMarkerColor(kGreen);
+    good->SetMarkerStyle(25);
+    good->SetMarkerSize(1);
+    auto* bad = new TPolyMarker();
+    bad->SetMarkerColor(kRed);
+    bad->SetMarkerStyle(25);
+    bad->SetMarkerSize(1);
+    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
+    leg->SetNColumns(2);
+    leg->SetHeader("Threshold Checks");
+    leg->AddEntry(good, "Good", "P");
+    leg->AddEntry(bad, "Bad", "P");
+    for (int iBin{ 1 }; iBin <= eff->GetPassedHistogram()->GetNbinsX(); ++iBin) {
+      auto x = eff->GetPassedHistogram()->GetBinCenter(iBin);
+      auto y = eff->GetEfficiency(iBin);
+      if (eff->GetEfficiency(iBin) < mThresholdPhi) {
+        bad->SetPoint(cB++, x, y);
+      } else {
+        good->SetPoint(cG++, x, y);
+      }
+    }
+    eff->GetListOfFunctions()->Add(good);
+    eff->GetListOfFunctions()->Add(bad);
+    eff->GetListOfFunctions()->Add(leg);
+
+    // Quality
+    auto* msg = new TPaveText(0.12, 0.12, 0.5, 0.3, "NDC;NB");
+    if (checkResult.getMetadata("checkPhiQuality") == "good") {
+      msg->AddText("Quality: Good");
+      msg->SetFillColor(kGreen);
+    } else if (checkResult.getMetadata("checkPhiQuality") == "bad") {
+      msg->AddText("Quality: Bad");
+      msg->SetFillColor(kRed);
+      msg->AddText("Check TPC sector or ITS staves!");
+      msg->AddText(checkResult.getMetadata("checkPhiBins").c_str());
+      msg->SetTextColor(kWhite);
+    } else if (checkResult.getMetadata("checkPhiQuality") == "null") {
+      msg->SetFillColor(kWhite);
+      msg->AddText("Quality: Null");
+      msg->AddText("No ITS tracks in denominator!");
+      msg->SetTextColor(kBlack);
+    } else {
+      msg->AddText("Quality: Undefined");
+      msg->AddText("Not-handled Quality flag, don't panic...");
+    }
+    eff->GetListOfFunctions()->Add(msg);
+
+    TFile f("testPhi.root", "RECREATE");
+    f.WriteObject(eff, "qcplotPhi");
+  }
+
+  if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS") {
+    auto* eff = dynamic_cast<TEfficiency*>(mo->getObject());
+    if (eff == nullptr) {
+      ILOG(Error) << "Failed cast for ITSTPCmatchEta_ITS beautify!" << ENDM;
+      return;
+    }
+    // Draw threshold lines
+    float xmin = eff->GetPassedHistogram()->GetXaxis()->GetXmin();
+    float xmax = eff->GetPassedHistogram()->GetXaxis()->GetXmax();
+    float xminT = mMinEta;
+    float xmaxT = mMaxEta;
+    auto* l1 = new TLine(xmin, mThresholdEta, xmax, mThresholdEta);
+    l1->SetLineStyle(kDashed);
+    l1->SetLineWidth(4);
+    l1->SetLineColor(kCyan - 7);
+    auto* l2 = new TLine(xminT - 0.02, 0, xminT - 0.02, 1.1);
+    l2->SetLineStyle(kDashed);
+    l2->SetLineWidth(4);
+    l2->SetLineColor(kCyan - 7);
+    auto* l3 = new TLine(xmaxT + 0.02, 0, xmaxT + 0.02, 1.1);
+    l3->SetLineStyle(kDashed);
+    l3->SetLineWidth(4);
+    l3->SetLineColor(kCyan - 7);
+    auto* tt = new TText(xminT + 0.1, 1.05, "Checked Range");
+    tt->SetTextSize(0.04);
+    auto* ttt = new TText(xmaxT + 0.4, mThresholdEta + 0.012, "Threshold");
+    auto* aa = new TArrow(xminT + 0.01, 1.02, xmaxT - 0.01, 1.02, 0.02, "<|>");
+    if (checkResult.getMetadata("checkEtaQuality") == "good") {
+      l1->SetLineColor(kCyan - 7);
+      l2->SetLineColor(kCyan - 7);
+      l3->SetLineColor(kCyan - 7);
+      aa->SetFillColor(kCyan - 7);
+      aa->SetLineColor(kCyan - 7);
+    } else {
+      l1->SetLineColor(kRed - 4);
+      l2->SetLineColor(kRed - 4);
+      l3->SetLineColor(kRed - 4);
+      aa->SetFillColor(kRed - 4);
+      aa->SetLineColor(kRed - 4);
+    }
+    eff->GetListOfFunctions()->Add(l1);
+    eff->GetListOfFunctions()->Add(l2);
+    eff->GetListOfFunctions()->Add(l3);
+    eff->GetListOfFunctions()->Add(tt);
+    eff->GetListOfFunctions()->Add(ttt);
+    eff->GetListOfFunctions()->Add(aa);
+
+    // Color Bins in Window
+    int cG{ 0 }, cB{ 0 };
+    auto* good = new TPolyMarker();
+    good->SetMarkerColor(kGreen);
+    good->SetMarkerStyle(25);
+    good->SetMarkerSize(1);
+    auto* bad = new TPolyMarker();
+    bad->SetMarkerColor(kRed);
+    bad->SetMarkerStyle(25);
+    bad->SetMarkerSize(1);
+    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
+    leg->SetNColumns(2);
+    leg->SetHeader("Threshold Checks");
+    leg->AddEntry(good, "Good", "P");
+    leg->AddEntry(bad, "Bad", "P");
+    auto binLow = eff->FindFixBin(mMinEta), binUp = eff->FindFixBin(mMaxEta);
+    for (int iBin = binLow; iBin <= binUp; ++iBin) {
+      auto x = eff->GetPassedHistogram()->GetBinCenter(iBin);
+      auto y = eff->GetEfficiency(iBin);
+      if (eff->GetEfficiency(iBin) < mThresholdEta) {
+        bad->SetPoint(cB++, x, y);
+      } else {
+        good->SetPoint(cG++, x, y);
+      }
+    }
+    eff->GetListOfFunctions()->Add(good);
+    eff->GetListOfFunctions()->Add(bad);
+    eff->GetListOfFunctions()->Add(leg);
+
+    // Quality
+    auto* msg = new TPaveText(0.12, 0.12, 0.5, 0.3, "NDC;NB");
+    if (checkResult.getMetadata("checkEtaQuality") == "good") {
+      msg->AddText("Quality: Good");
+      msg->SetFillColor(kGreen);
+    } else if (checkResult.getMetadata("checkEtaQuality") == "bad") {
+      msg->AddText("Quality: Bad");
+      msg->SetFillColor(kRed);
+      msg->AddText(checkResult.getMetadata("checkEtaBins").c_str());
+      msg->SetTextColor(kWhite);
+    } else if (checkResult.getMetadata("checkEtaQuality") == "null") {
+      msg->SetFillColor(kWhite);
+      msg->AddText("Quality: Null");
+      msg->AddText("No ITS tracks in denominator!");
+      msg->SetTextColor(kBlack);
+    } else {
+      msg->AddText("Quality: Undefined");
+      msg->AddText("Not-handled Quality flag, don't panic...");
+    }
+    eff->GetListOfFunctions()->Add(msg);
+
+    TFile f("testEta.root", "RECREATE");
+    f.WriteObject(eff, "qcplotEta");
+  }
 }
 
 void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
 {
-  ILOG(Debug, Devel) << "ITSTPCmatchingCheck::start : " << activity.mId << ENDM;
   mActivity = make_shared<Activity>(activity);
-}
 
-void ITSTPCmatchingCheck::endOfActivity(const Activity& activity)
-{
-  ILOG(Debug, Devel) << "ITSTPCmatchingCheck::end : " << activity.mId << ENDM;
+  // Casting function with error handling
+  auto ccast = []<typename T>(T& p, const std::string& par) -> void {
+    try {
+      if constexpr (std::is_floating_point_v<T>) {
+        p = static_cast<T>(std::stof(par));
+      } else if constexpr (std::is_integral_v<T>) {
+        if (par != "true" && par != "false") {
+          p = static_cast<T>(std::stoi(par));
+        } else {
+          p = par == "true";
+        }
+      } else {
+        p = static_cast<T>(par);
+      }
+    } catch (std::exception& err) {
+      ILOG(Error) << "Cannot cast parameter in config file " << par << " " << err.what() << "'; using default..." << ENDM;
+    }
+  };
+
+  // Parse a generic parameter
+  auto parseParam = [&]<typename T>(T& p, const std::string& name, const std::string& def) -> void {
+    std::string parameter;
+    if (auto param = mCustomParameters.atOptional(name, activity)) {
+      parameter = param.value();
+    } else {
+      parameter = mCustomParameters.atOrDefaultValue(name, def);
+    }
+    ccast(p, parameter);
+  };
+
+  // Pt
+  parseParam(mShowPt, "showPt", "true");
+  if (mShowPt) {
+    parseParam(mThresholdPt, "thresholdPt", "0.5");
+    parseParam(mMinPt, "minPt", "1.0");
+    parseParam(mMaxPt, "maxPt", "1.999");
+  }
+
+  // Phi
+  parseParam(mShowPhi, "showPhi", "true");
+  if (mShowPhi) {
+    parseParam(mThresholdPhi, "thresholdPhi", "0.3");
+  }
+
+  // Eta
+  parseParam(mShowEta, "showEta", "false");
+  if (mShowEta) {
+    parseParam(mThresholdEta, "thresholdEta", "0.4");
+    parseParam(mMinEta, "minEta", "-0.8");
+    parseParam(mMaxEta, "maxEta", "0.8");
+  }
 }
 
 std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums)

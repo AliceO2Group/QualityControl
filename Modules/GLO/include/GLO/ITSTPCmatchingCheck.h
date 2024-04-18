@@ -18,6 +18,7 @@
 #define QC_MODULE_GLO_GLOITSTPCMATCHINGCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/Quality.h"
 
 #include <vector>
 #include <tuple>
@@ -30,27 +31,29 @@ namespace o2::quality_control_modules::glo
 class ITSTPCmatchingCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
-  /// Default constructor
-  ITSTPCmatchingCheck() = default;
-  /// Destructor
-  ~ITSTPCmatchingCheck() override = default;
-
-  // Override interface
-  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-  void reset() override;
   void startOfActivity(const Activity& activity) override;
-  void endOfActivity(const Activity& activity) override;
 
  private:
   std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums);
   std::shared_ptr<Activity> mActivity;
 
+  // Pt
+  bool mShowPt{ true };
   float mMinPt{ 1. };
   float mMaxPt{ 1.999 };
-  float mThreshold{ 0.5 };
+  float mThresholdPt{ 0.5 };
+
+  // Phi
+  bool mShowPhi{ true };
+  float mThresholdPhi{ 0.3 };
+
+  // Eta
+  bool mShowEta{ false };
+  float mThresholdEta{ 0.4 };
+  float mMinEta{ -0.8 };
+  float mMaxEta{ 0.8 };
 
   ClassDefOverride(ITSTPCmatchingCheck, 1);
 };

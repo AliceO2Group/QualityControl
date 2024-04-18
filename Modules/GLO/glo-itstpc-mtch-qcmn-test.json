@@ -74,13 +74,24 @@
           {
             "type": "Task",
             "name": "ITSTPCMatchingTask",
-            "MOs": ["mFractionITSTPCmatch_ITS"]
+            "MOs": [
+              "mFractionITSTPCmatch_ITS",
+              "mFractionITSTPCmatchPhi_ITS",
+              "mFractionITSTPCmatchEta_ITS"
+            ]
           }
         ],
-        "checkParameters": {
-          "threshold": "0.5",
-          "minPt": "1.0",
-          "maxPt": "1.999"
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "showPt": "true",
+              "thresholdPt": "0.9",
+              "showPhi": "true",
+              "thresholdPhi": "0.3",
+              "showEta": "1",
+              "thresholdEta": "0.4"
+            }
+          }
         }
       }
     }
