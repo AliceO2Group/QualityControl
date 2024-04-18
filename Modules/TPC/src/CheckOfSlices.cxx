@@ -32,6 +32,7 @@
 
 #include <vector>
 #include <numeric>
+#include <sstream>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -97,6 +98,15 @@ void CheckOfSlices::configure()
       std::swap(mRangeBad, mRangeMedium);
     }
     mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
+  }
+
+  std::string maskingValues = common::getFromConfig<string>(mCustomParameters, "maskedPoints", "");
+  if(maskingValues != ""){
+    std::stringstream ss(maskingValues);
+    std::string point;
+    while(std::getline(ss, point, ',')){
+        mMaskedPoints.push_back(std::stoi(point));
+    }
   }
 }
 
@@ -168,8 +178,8 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
   }
 
+  //calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev, mMaskedPoints);
   calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev);
-
   for (size_t i = 0; i < v.size(); ++i) {
 
     Quality totalQualityPoint = Quality::Null;
@@ -330,7 +340,7 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->AddText("Quality::Null. Failed checks:");
     checkMessage = mNullString;
   }
-
+  
   // Split lines by hand as \n does not work with TPaveText
   const std::string delimiter = "\n";
   size_t pos = 0;

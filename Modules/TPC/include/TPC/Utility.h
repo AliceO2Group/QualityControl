@@ -73,7 +73,7 @@ void getTimestamp(const std::string& metaInfo, std::vector<long>& timeStamps);
 /// \param limit Most recent timestamp to be processed
 std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::string_view path, const unsigned int nFiles, const long limit);
 
-/// \brief Calculates mean and stddev from yValues of a TGraph
+/// \brief Calculates mean and stddev from yValues of a TGraph. Overloaded function, actual calculation in retrieveStatistics 
 /// \param yValues const double* pointer to yValues of TGraph (via TGraph->GetY())
 /// \param yErrors const double* pointer to y uncertainties of TGraph (via TGraph->GetEY())
 /// \param useErrors bool whether uncertainties should be used in calculation of mean and stddev of mean
@@ -82,5 +82,25 @@ std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::
 /// \param mean double&, reference to double that should store mean
 /// \param stddevOfMean double&, reference to double that should store stddev of mean
 void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean);
+
+/// \brief Calculates mean and stddev from yValues of a TGraph. Overloaded function 
+/// \param yValues const double* pointer to yValues of TGraph (via TGraph->GetY())
+/// \param yErrors const double* pointer to y uncertainties of TGraph (via TGraph->GetEY())
+/// \param useErrors bool whether uncertainties should be used in calculation of mean and stddev of mean
+/// \param firstPoint const int, first point of yValues to include in calculation
+/// \param lastPoint const int, last point of yValues to include in calculation
+/// \param mean double&, reference to double that should store mean
+/// \param stddevOfMean double&, reference to double that should store stddev of mean
+/// \param maskPoints std::vector<int>&, points of the selected TGraph-points that should be masked 
+void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean, std::vector<int>& maskPoints);
+
+
+/// \brief Calculates mean and stddev from yValues of a TGraph. Overloaded function, actual calculation in retrieveStatistics 
+/// \param values std::vector<double>& vector that contains the data points 
+/// \param errors std::vector<double>& vector that contains the data errors 
+/// \param useErrors bool whether uncertainties should be used in calculation of mean and stddev of mean
+/// \param mean double&, reference to double that should store mean
+/// \param stddevOfMean double&, reference to double that should store stddev of mean
+void retrieveStatistics(std::vector<double>& values, std::vector<double>& errors, bool useErrors, double& mean, double& stddevOfMean);
 } // namespace o2::quality_control_modules::tpc
 #endif // QUALITYCONTROL_TPCUTILITY_H
