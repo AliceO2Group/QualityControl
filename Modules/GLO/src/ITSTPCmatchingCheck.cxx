@@ -293,9 +293,6 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-
-    TFile f("testPt.root", "RECREATE");
-    f.WriteObject(eff, "qcplotPt");
   }
 
   if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS") {
@@ -376,9 +373,6 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-
-    TFile f("testPhi.root", "RECREATE");
-    f.WriteObject(eff, "qcplotPhi");
   }
 
   if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS") {
@@ -477,9 +471,6 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-
-    TFile f("testEta.root", "RECREATE");
-    f.WriteObject(eff, "qcplotEta");
   }
 }
 
