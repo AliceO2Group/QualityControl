@@ -211,22 +211,22 @@ void calculateStatistics(const double* yValues, const double* yErrors, bool useE
     return;
   }
 
-  if(useErrors && !yErrors){
+  if (useErrors && !yErrors) {
     ILOG(Error, Support) << "In calculateStatistics(): requested to use errors of data but TGraph does not contain errors." << ENDM;
-    useErrors = false; 
+    useErrors = false;
   }
 
   std::vector<double> v(yValues + firstPoint, yValues + lastPoint);
-  std::vector<double> vErr; 
-  
-  if(useErrors){
+  std::vector<double> vErr;
+
+  if (useErrors) {
     const std::vector<double> vErr_temp(yErrors + firstPoint, yErrors + lastPoint);
-    for(int i=0; i<vErr_temp.size(); i++){
-      vErr.push_back(vErr_temp[i]); 
+    for (int i = 0; i < vErr_temp.size(); i++) {
+      vErr.push_back(vErr_temp[i]);
     }
   }
 
-  retrieveStatistics(v, vErr, useErrors, mean, stddevOfMean); 
+  retrieveStatistics(v, vErr, useErrors, mean, stddevOfMean);
 }
 
 void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean, std::vector<int>& maskPoints)
@@ -237,37 +237,37 @@ void calculateStatistics(const double* yValues, const double* yErrors, bool useE
     return;
   }
 
-  if(useErrors && !yErrors){
+  if (useErrors && !yErrors) {
     ILOG(Error, Support) << "In calculateStatistics(): requested to use errors of data but TGraph does not contain errors." << ENDM;
-    useErrors = false; 
+    useErrors = false;
   }
 
-  std::vector<double> v; 
+  std::vector<double> v;
   const std::vector<double> v_temp(yValues + firstPoint, yValues + lastPoint);
-  for(int i=0; i<v_temp.size(); i++){
-      if(std::find(maskPoints.begin(), maskPoints.end(), i) == maskPoints.end()){ //i is not in the masked points
-        v.push_back(v_temp[i]); 
-      }
+  for (int i = 0; i < v_temp.size(); i++) {
+    if (std::find(maskPoints.begin(), maskPoints.end(), i) == maskPoints.end()) { // i is not in the masked points
+      v.push_back(v_temp[i]);
+    }
   }
 
-  std::vector<double> vErr; 
-  if(useErrors){
+  std::vector<double> vErr;
+  if (useErrors) {
     const std::vector<double> vErr_temp(yErrors + firstPoint, yErrors + lastPoint);
-    for(int i=0; i<vErr_temp.size(); i++){
-      if(std::find(maskPoints.begin(), maskPoints.end(), i) == maskPoints.end()){ //i is not in the masked points
-        vErr.push_back(vErr_temp[i]); 
+    for (int i = 0; i < vErr_temp.size(); i++) {
+      if (std::find(maskPoints.begin(), maskPoints.end(), i) == maskPoints.end()) { // i is not in the masked points
+        vErr.push_back(vErr_temp[i]);
       }
     }
   }
 
-  retrieveStatistics(v, vErr, useErrors, mean, stddevOfMean); 
+  retrieveStatistics(v, vErr, useErrors, mean, stddevOfMean);
 }
 
 void retrieveStatistics(std::vector<double>& values, std::vector<double>& errors, bool useErrors, double& mean, double& stddevOfMean)
 {
-  if((errors.size() != values.size()) && useErrors){
+  if ((errors.size() != values.size()) && useErrors) {
     ILOG(Error, Support) << "In retrieveStatistics(): errors do not match data points, omitting errors" << ENDM;
-    useErrors = false; 
+    useErrors = false;
   }
 
   double sum = 0.;
