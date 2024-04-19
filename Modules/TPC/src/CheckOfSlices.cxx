@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 #include "Common/Utils.h"
 #include "TPC/Utility.h"
+#include "Algorithm/RangeTokenizer.h"
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
@@ -101,12 +102,9 @@ void CheckOfSlices::configure()
   }
 
   std::string maskingValues = common::getFromConfig<string>(mCustomParameters, "maskedPoints", "");
+  mMaskedPoints.clear();
   if (maskingValues != "") {
-    std::stringstream ss(maskingValues);
-    std::string point;
-    while (std::getline(ss, point, ',')) {
-      mMaskedPoints.push_back(std::stoi(point));
-    }
+    mMaskedPoints = RangeTokenizer::tokenize<int>(maskingValues);
   }
 }
 
