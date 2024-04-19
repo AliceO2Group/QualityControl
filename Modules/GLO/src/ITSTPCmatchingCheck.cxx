@@ -188,7 +188,8 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
   auto isWorse = [](Quality const& a, Quality const& b) {
     return a.isWorseThan(b) ? a : b;
   };
-  auto findWorst = [&]<typename T, typename... Args>(const T& first, Args... args) {
+  auto findWorst = [&]<typename T, typename... Args>(const T& first, Args... args)
+  {
     return isWorse(first, isWorse(args...));
   };
   result.set(findWorst(ptQual, etaQual, phiQual));
