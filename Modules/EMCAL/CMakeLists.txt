@@ -2,7 +2,7 @@
 
 add_library(O2QcEMCAL)
 
-target_sources(O2QcEMCAL PRIVATE src/PedestalTask.cxx  src/BCTask.cxx src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/OccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx src/SupermoduleProjectorTask.cxx src/BadChannelMapReductor.cxx src/TimeCalibParamReductor.cxx src/SupermoduleProjectionReductor.cxx src/SubdetectorProjectionReductor.cxx src/BCVisualization.cxx)
+target_sources(O2QcEMCAL PRIVATE src/PedestalTask.cxx src/BCTask.cxx src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/OccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx src/SupermoduleProjectorTask.cxx src/BadChannelMapReductor.cxx src/TimeCalibParamReductor.cxx src/SupermoduleProjectionReductor.cxx src/SubdetectorProjectionReductor.cxx src/BCVisualization.cxx src/CalibCheck.cxx)
 
 target_include_directories(
   O2QcEMCAL
@@ -31,8 +31,9 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/SupermoduleProjectionReductor.h
   include/EMCAL/SubdetectorProjectionReductor.h
   include/EMCAL/BCVisualization.h
-      include/EMCAL/PedestalTask.h
-        LINKDEF include/EMCAL/LinkDef.h)
+  include/EMCAL/PedestalTask.h
+  include/EMCAL/CalibCheck.h
+  LINKDEF include/EMCAL/LinkDef.h)
 
 install(TARGETS O2QcEMCAL
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

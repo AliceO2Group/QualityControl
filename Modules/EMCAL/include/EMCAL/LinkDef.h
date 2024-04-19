@@ -39,6 +39,8 @@
 #pragma link C++ class o2::quality_control_modules::emcal::BCTask + ;
 #pragma link C++ class o2::quality_control_modules::emcal::BCVisualization + ;
 
-      #pragma link C++ class o2::quality_control_modules::emcal::PedestalTask+;
-      
-      #endif
+#pragma link C++ class o2::quality_control_modules::emcal::PedestalTask+;
+
+#pragma link C++ class o2::quality_control_modules::emcal::CalibCheck + ;
+
+#endif
