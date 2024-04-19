@@ -1,8 +1,9 @@
 # ---- Library ----
 
+# add_compile_options(-O0 -g -fPIC)
 add_library(O2QcGLO)
 
-target_sources(O2QcGLO PRIVATE src/MeanVertexPostProcessing.cxx src/MeanVertexCheck.cxx src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx src/CTFSizeTask.cxx)
+target_sources(O2QcGLO PRIVATE src/ITSTPCmatchingCheck.cxx  src/MeanVertexPostProcessing.cxx src/MeanVertexCheck.cxx src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx src/CTFSizeTask.cxx)
 
 target_include_directories(
   O2QcGLO
@@ -46,7 +47,8 @@ add_root_dictionary(O2QcGLO
   include/GLO/ITSTPCMatchingTask.h
   include/GLO/DataCompressionQcTask.h
   include/GLO/CTFSizeTask.h
-                    LINKDEF include/GLO/LinkDef.h)
+  include/GLO/ITSTPCmatchingCheck.h
+                  LINKDEF include/GLO/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GLO
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
