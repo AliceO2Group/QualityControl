@@ -87,7 +87,10 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.activityPeriodName,
     commonSpec.activityPassName,
     commonSpec.activityProvenance,
-    { commonSpec.activityStart, commonSpec.activityEnd }
+    { commonSpec.activityStart, commonSpec.activityEnd },
+    commonSpec.activityBeamType,
+    commonSpec.activityPartitionName,
+    commonSpec.activityFillNumber
   };
   return {
     commonSpec.database,

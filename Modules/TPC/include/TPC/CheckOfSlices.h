@@ -55,6 +55,7 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   double mRangeMedium;
   double mRangeBad;
   bool mSliceTrend;
+  std::vector<int> mMaskedPoints;
 
   double mMean = 0;
   double mStdev;

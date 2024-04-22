@@ -49,6 +49,11 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
   # for each file
   for file in "${array_files[@]}"; do
     echo "file: $file"
+    # avoid touching the repo cleaner file 
+    if [[ $file == *repoCleanerConfig.yaml* ]]; then
+      echo "   it is the repo cleaner config file, we skip it"
+      continue
+    fi
 
     # download
     local_file=$(basename $file)

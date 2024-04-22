@@ -20,6 +20,8 @@
 #include "DataFormatsTPC/ClusterNative.h"
 #include "TPCBase/Painter.h"
 #include "Framework/InputRecordWalker.h"
+#include "DataFormatsParameters/GRPECSObject.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -148,10 +150,18 @@ void Clusters::monitorData(ProcessingContext& ctx)
 {
   mQCClusters.getClusters().denormalize();
 
+  //get grpECS object here grpecs:GRP/GRPECS
+  //auto const& grpECS = ctx.inputs().get<o2::parameters::GRPECSObject*>("grpecs");
+  const auto nHBF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+  std::cout<<" NHBFs = ""<< nHBF" << std::endl;
+  std::cout<<" NHBFs = "<< nHBF << std::endl;
+   std::cout<<" NHBFs = ""<< nHBF" << std::endl;
+  mQCClusters.getClusters().setnHBFperTF(nHBF);
   processClusterNative(ctx.inputs());
   processKrClusters(ctx.inputs());
 
   if (!mIsMergeable) {
+    mQCClusters.getClusters().normalize();
     mQCClusters.getClusters().normalize();
 
     fillCanvases(mQCClusters.getClusters().getNClusters(), mNClustersCanvasVec, mCustomParameters, "NClusters");

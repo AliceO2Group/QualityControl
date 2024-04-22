@@ -18,6 +18,7 @@
 #include "TPCBase/Painter.h"
 #include "TPCBase/CDBInterface.h"
 #include "TPCQC/Helpers.h"
+#include "TPCBase/CalDet.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -182,46 +183,30 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 
   auto& clusters = clusterData->getClusters();
 
-  auto& calDet = clusters.getNClusters();
-  auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
 
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
 
-  calDet = clusters.getQMax();
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
+
+  ////////////-------------------------check lambda expression---
+  auto fillCanvases = [&calDetIter, this](const auto& calDet) {
+  auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter++));
+  const auto& ranges = mRanges[calDet.getName()];
+  o2::tpc::painter::makeSummaryCanvases(calDet, int(ranges.at(0)), ranges.at(1), ranges.at(2), false, &vecPtr);
+};
+
+  fillCanvases(clusters.getNClusters());
+  fillCanvases(clusters.getQMax());
 
   if (mIsClusters) {
-    calDet = clusters.getQTot();
-    vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-    calDetIter++;
-
-    calDet = clusters.getSigmaPad();
-    vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-    calDetIter++;
-
-    calDet = clusters.getSigmaTime();
-    vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-    calDetIter++;
+    fillCanvases(clusters.getQTot());
+    fillCanvases(clusters.getSigmaPad());
+    fillCanvases(clusters.getSigmaTime());
   }
 
-  calDet = clusters.getTimeBin();
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
+  fillCanvases(clusters.getTimeBin());
+  fillCanvases(clusters.getOccupancy());
 
-  calDet = clusters.getOccupancy();
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  makeRadialProfile(calDet, vecPtr.at(0), int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2));
-  calDetIter++;
+
+  makeRadialProfile(clusters.getOccupancy(), mCalDetCanvasVec.at(calDetIter++).at(0).get());
 }
 
 void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistryRef)
@@ -237,10 +222,14 @@ void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistryRef)
   }
 }
 
-template <class T>
-void ClusterVisualizer::makeRadialProfile(o2::tpc::CalDet<T>& calDet, TCanvas* canv, int nbinsY, float yMin, float yMax)
+template <class T> void ClusterVisualizer::makeRadialProfile(const o2::tpc::CalDet<T>& calDet, TCanvas* canv)
 {
   const std::string_view calName = calDet.getName();
+  const auto& ranges = mRanges[calName.data()];
+
+  const int nbinsY = int(ranges.at(0));
+  const float yMin = ranges.at(1);
+  const float yMax = ranges.at(2);
   const auto radialBinning = o2::tpc::painter::getRowBinningCM();
 
   auto hAside2D = new TH2D(fmt::format("h_{}_radialProfile_Aside", calName).data(), fmt::format("{}: Radial profile (A-Side)", calName).data(), radialBinning.size() - 1, radialBinning.data(), nbinsY, yMin, yMax);

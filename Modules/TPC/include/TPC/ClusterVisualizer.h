@@ -66,7 +66,7 @@ class ClusterVisualizer final : public quality_control::postprocessing::PostProc
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
   template <class T>
-  void makeRadialProfile(o2::tpc::CalDet<T>& calDet, TCanvas* canv, int nbinsY, float yMin, float yMax);
+  void makeRadialProfile(const o2::tpc::CalDet<T>& calDet, TCanvas* canv);
 
   template <class T>
   void fillRadialHisto(TH2D& h2D, const o2::tpc::CalDet<T>& calDet, const o2::tpc::Side side);

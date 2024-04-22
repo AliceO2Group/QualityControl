@@ -1,0 +1,99 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable",
+        "maxObjectSize": "20000000"
+      },
+      "Activity": {
+        "number": "43",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch"
+      },
+      "infologger": {
+        "filterDiscardDebug": "false",
+        "filterDiscardLevel": "0"
+      }
+    },
+    "tasks": {
+      "ITSTPCMatchingTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::glo::ITSTPCMatchingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query_comment": "checking every matched track",
+          "query": "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackITS:ITS/TRACKS/0;trackITSROF:ITS/ITSTrackROF/0;trackITSClIdx:ITS/TRACKCLSID/0;alpparITS:ITS/ALPIDEPARAM/0?lifetime=condition&ccdb-path=ITS/Config/AlpideParam"
+        },
+        "taskParameters": {
+          "GID": "ITS-TPC,ITS",
+          "verbose": "false",
+          "minPtCut": "0.1f",
+          "etaCut": "1.4f",
+          "minNTPCClustersCut": "60",
+          "minDCACut": "100.f",
+          "minDCACutY": "10.f"
+        },
+        "grpGeomRequest": {
+          "geomRequest": "None",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "true",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD": "false"
+        },
+        "saveObjectsToFile": "ITSTPCmatched.root",
+        "": "For debugging, path to the file where to save. If empty or missing it won't save."
+      }
+    },
+    "checks": {
+      "ITSTPCMatchingCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::glo::ITSTPCmatchingCheck",
+        "moduleName": "QcGLO",
+        "policy": "OnAny",
+        "detectorName": "GLO",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "ITSTPCMatchingTask",
+            "MOs": [
+              "mFractionITSTPCmatch_ITS",
+              "mFractionITSTPCmatchPhi_ITS",
+              "mFractionITSTPCmatchEta_ITS"
+            ]
+          }
+        ],
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "showPt": "true",
+              "thresholdPt": "0.9",
+              "showPhi": "true",
+              "thresholdPhi": "0.3",
+              "showEta": "1",
+              "thresholdEta": "0.4"
+            }
+          }
+        }
+      }
+    }
+  }
+}
