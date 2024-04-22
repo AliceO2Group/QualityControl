@@ -58,26 +58,6 @@ void Bookkeeping::init(const std::string& url)
   mInitialized = true;
 }
 
-void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
-{
-  if (!mInitialized) {
-    return;
-  }
-  try {
-    auto bkRun = mClient->run()->Get(runNumber, { bookkeeping::RUN_RELATIONS_LHC_FILL });
-    ILOG(Debug, Devel) << "Retrieved run info from Bookkeeping : " << bkRun->run().environmentid() << ", " << bkRun->run().runtype() << ENDM;
-    activity.mId = bkRun->run().runnumber();
-    activity.mType = bkRun->run().runtype();
-    activity.mPeriodName = bkRun->run().lhcperiod();
-    activity.mValidity.setMin(bkRun->run().timeo2start());
-    activity.mValidity.setMax(bkRun->run().timeo2end());
-    activity.mBeamType = bkRun->lhcfill().beamtype();
-    ILOG(Debug, Devel) << "activity created from run : " << activity << ENDM;
-  } catch (std::runtime_error& error) {
-    ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;
-  }
-}
-
 std::string getHostName()
 {
   char hostname[256];
