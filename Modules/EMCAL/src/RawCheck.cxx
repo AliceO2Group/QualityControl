@@ -100,7 +100,7 @@ void RawCheck::configure()
     try {
       mNsigmaFECMaxPayload = std::stod(nsigmaFECMaxPayload->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << fmt::format("Value {} not a boolean", nsigmaFECMaxPayload->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " << nsigmaFECMaxPayload->second << " not of expected type (bool)" << ENDM;
     }
   }
   auto nsigmaPayloadSize = mCustomParameters.find("SigmaPayloadSize");
@@ -108,7 +108,25 @@ void RawCheck::configure()
     try {
       mNsigmaPayloadSize = std::stod(nsigmaPayloadSize->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << fmt::format("Value {} not a boolean", nsigmaFECMaxPayload->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " << nsigmaFECMaxPayload->second << " not of expected type (bool)" << ENDM;
+    }
+  }
+
+  // configure bunch min. amp checker
+  auto bunchMinAmpMinEntries = mCustomParameters.find("BunchMinAmpMinEntries");
+  if (bunchMinAmpMinEntries != mCustomParameters.end()) {
+    try {
+      mBunchMinCheckMinEntries = std::stoi(bunchMinAmpMinEntries->second.data());
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << "Value " << bunchMinAmpMinEntries->second << " not of expected type (int)" << ENDM;
+    }
+  }
+  auto bunchMinAmpFracSignal = mCustomParameters.find("BunchMinAmpFractionSignal");
+  if (bunchMinAmpFracSignal != mCustomParameters.end()) {
+    try {
+      mBunchMinCheckFractionSignal = std::stod(bunchMinAmpFracSignal->second.data());
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << "Value " << bunchMinAmpFracSignal->second << " not of expected type (double)" << ENDM;
     }
   }
 }
@@ -128,17 +146,19 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
     } else {
-      Float_t totentries = h->Integral(10, 100); // Exclude dominant part of the channels for which the signal is in the noise range below pedestal
-      Float_t entriesBadRegion = h->Integral(20, 60);
-      int first = h->GetXaxis()->GetFirst(),
-          last = h->GetXaxis()->GetLast();
-      h->GetXaxis()->SetRangeUser(20, 60);
-      Int_t maxbin = h->GetMaximumBin();
-      h->GetXaxis()->SetRange(first, last);
-      if (maxbin > 20 && maxbin < 50) {
-        // Float_t entries = h->GetBinContent(maxbin + 1);
-        if (entriesBadRegion > 0.5 * totentries) {
-          result = Quality::Bad;
+      Float_t totentries = h->Integral(10, 100);   // Exclude dominant part of the channels for which the signal is in the noise range below pedestal
+      if (totentries > mBunchMinCheckMinEntries) { // Do not check if we have only a few counts in the signal region
+        Float_t entriesBadRegion = h->Integral(20, 60);
+        int first = h->GetXaxis()->GetFirst(),
+            last = h->GetXaxis()->GetLast();
+        h->GetXaxis()->SetRangeUser(20, 60);
+        Int_t maxbin = h->GetMaximumBin();
+        h->GetXaxis()->SetRange(first, last);
+        if (maxbin > 20 && maxbin < 50) {
+          // Float_t entries = h->GetBinContent(maxbin + 1);
+          if (entriesBadRegion > mBunchMinCheckFractionSignal * totentries) {
+            result = Quality::Bad;
+          }
         }
       }
     } // checker for the raw ampl histos (second peak around 40)
@@ -388,7 +408,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     TLine* l11 = new TLine(-0.5, 200, 95.5, 200);
     TLine* l12 = new TLine(47.5, 200, 47.5, 207.5);
 
-    //vertical
+    // vertical
     TLine* l13 = new TLine(47.5, -0.5, 47.5, 128);
     TLine* l14 = new TLine(31.5, 128, 31.5, 200);
     TLine* l15 = new TLine(63.5, 128, 63.5, 200);
