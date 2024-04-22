@@ -26,7 +26,8 @@
 #include <TLine.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "Common/Utils.h"
 using namespace std;
 using namespace o2::quality_control;
@@ -111,14 +112,14 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
           }
           mNumErrors++;
           const std::string message = "Ratio " + mSignCheck + "\"Error\" threshold in element " + std::to_string(bin);
-          result.addReason(FlagReasonFactory::Unknown(), message);
+          result.addFlag(FlagTypeFactory::Unknown(), message);
           continue;
         } else if (isWarning) {
           if (result.isBetterThan(Quality::Medium))
             result.set(Quality::Medium);
           mNumWarnings++;
           const std::string message = "Ratio " + mSignCheck + "\"Warning\" threshold in element " + std::to_string(bin);
-          result.addReason(FlagReasonFactory::Unknown(), message);
+          result.addFlag(FlagTypeFactory::Unknown(), message);
         }
       }
     }
@@ -146,11 +147,11 @@ void LevelCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       msg->AddText(">> Quality::Good <<");
       msg->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      auto reasons = checkResult.getReasons();
+      auto flags = checkResult.getFlags();
       msg->SetFillColor(kRed);
       msg->AddText(">> Quality::Bad <<");
     } else if (checkResult == Quality::Medium) {
-      auto reasons = checkResult.getReasons();
+      auto flags = checkResult.getFlags();
       msg->SetFillColor(kOrange);
       msg->AddText(">> Quality::Medium <<");
     } else if (checkResult == Quality::Null) {

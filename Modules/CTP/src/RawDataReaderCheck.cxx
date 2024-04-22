@@ -27,7 +27,7 @@
 #include <DataFormatsCTP/Configuration.h>
 #include <DataFormatsParameters/GRPLHCIFData.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
 
 #include <DetectorsBase/GRPGeomHelper.h>
 

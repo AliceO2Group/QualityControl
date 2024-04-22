@@ -24,7 +24,8 @@
 
 #include <map>
 #include <algorithm>
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -67,7 +68,7 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
 
       if (!histogram) {
         ILOG(Error, Support) << "check(): MO " << mo->getName() << " not found" << ENDM;
-        result.addReason(FlagReasonFactory::Unknown(), "MO " + mo->getName() + " not found");
+        result.addFlag(FlagTypeFactory::Unknown(), "MO " + mo->getName() + " not found");
         result.set(Quality::Null);
         return result;
       }
@@ -102,14 +103,14 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
       // Check the biggest fraction of out-of-bunch-coll
       if (mFractionOutOfBunchColl > mThreshError) {
         result.set(Quality::Bad);
-        result.addReason(FlagReasonFactory::Unknown(),
-                         Form("Fraction of out of bunch collisions (%.2e) is above \"Error\" threshold (%.2e)",
-                              mFractionOutOfBunchColl, mThreshError));
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       Form("Fraction of out of bunch collisions (%.2e) is above \"Error\" threshold (%.2e)",
+                            mFractionOutOfBunchColl, mThreshError));
       } else if (mFractionOutOfBunchColl > mThreshWarning) {
         result.set(Quality::Medium);
-        result.addReason(FlagReasonFactory::Unknown(),
-                         Form("Fraction of out of bunch collisions (%.2e) is above \"Warning\" threshold (%.2e)",
-                              mFractionOutOfBunchColl, mThreshWarning));
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       Form("Fraction of out of bunch collisions (%.2e) is above \"Warning\" threshold (%.2e)",
+                            mFractionOutOfBunchColl, mThreshWarning));
       } else {
         result.set(Quality::Good);
       }
@@ -136,7 +137,7 @@ void OutOfBunchCollFeeModulesCheck::beautify(std::shared_ptr<MonitorObject> mo, 
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
     if (checkResult.isWorseThan(Quality::Good)) {
-      msg->AddText(checkResult.getReasons()[0].second.c_str());
+      msg->AddText(checkResult.getFlags()[0].second.c_str());
     }
     int color = kWhite;
     if (checkResult == Quality::Good) {

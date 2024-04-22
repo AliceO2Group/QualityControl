@@ -14,14 +14,14 @@
 /// \author Piotr Konopka
 ///
 
-#include "Common/TRFCollectionTask.h"
+#include "Common/FlagCollectionTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/RepoPathUtils.h"
-#include "QualityControl/QualitiesToTRFCollectionConverter.h"
+#include "QualityControl/QualitiesToFlagCollectionConverter.h"
 
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
@@ -30,21 +30,21 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::common
 {
 
-TRFCollectionTask::~TRFCollectionTask()
+FlagCollectionTask::~FlagCollectionTask()
 {
 }
 
-void TRFCollectionTask::configure(const boost::property_tree::ptree& config)
+void FlagCollectionTask::configure(const boost::property_tree::ptree& config)
 {
-  mConfig = TRFCollectionTaskConfig(getID(), config);
+  mConfig = FlagCollectionTaskConfig(getID(), config);
 }
 
-void TRFCollectionTask::initialize(Trigger t, framework::ServiceRegistryRef)
+void FlagCollectionTask::initialize(Trigger t, framework::ServiceRegistryRef)
 {
   mLastTimestampLimitStart = t.timestamp;
 }
 
-std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::transformQualities(repository::DatabaseInterface& qcdb, const uint64_t timestampLimitStart, const uint64_t timestampLimitEnd)
+std::unique_ptr<quality_control::QualityControlFlagCollection> FlagCollectionTask::transformQualities(repository::DatabaseInterface& qcdb, const uint64_t timestampLimitStart, const uint64_t timestampLimitEnd)
 {
   // ------ HELPERS ------
   std::function<std::vector<uint64_t>(const std::string& /*QO*/)> fetchAvailableTimestamps;
@@ -57,10 +57,10 @@ std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::tra
     ILOG(Error) << "Could not cast the database interface to CcdbDatabase, this task supports only the CCDB backend" << ENDM
   }
 
-  auto makeTRFC = [&]() {
-    return std::make_unique<TimeRangeFlagCollection>(mConfig.name, mConfig.detector,
-                                                     TimeRangeFlagCollection::RangeInterval{ timestampLimitStart, timestampLimitEnd },
-                                                     mConfig.runNumber, mConfig.periodName, mConfig.passName, mConfig.provenance);
+  auto makeQCFC = [&]() {
+    return std::make_unique<QualityControlFlagCollection>(mConfig.name, mConfig.detector,
+                                                          QualityControlFlagCollection::RangeInterval{ timestampLimitStart, timestampLimitEnd },
+                                                          mConfig.runNumber, mConfig.periodName, mConfig.passName, mConfig.provenance);
   };
 
   // ------ IMPLEMENTATION ------
@@ -68,11 +68,11 @@ std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::tra
   size_t totalQOsIncluded = 0;
   size_t totalWorseThanGoodQOs = 0;
 
-  auto mainTrfCollection = makeTRFC();
+  auto mainFlagCollection = makeQCFC();
   for (const auto& qoName : mConfig.qualityObjects) {
 
     std::string qoPath = RepoPathUtils::getQoPath(mConfig.detector, qoName);
-    QualitiesToTRFCollectionConverter converter(makeTRFC(), qoPath);
+    QualitiesToFlagCollectionConverter converter(makeQCFC(), qoPath);
 
     auto availableTimestamps = fetchAvailableTimestamps(qoName);
     auto firstMatchingTimestamp = std::upper_bound(availableTimestamps.begin(), availableTimestamps.end(), timestampLimitStart);
@@ -108,30 +108,30 @@ std::unique_ptr<quality_control::TimeRangeFlagCollection> TRFCollectionTask::tra
 
     totalQOsIncluded += converter.getQOsIncluded();
     totalWorseThanGoodQOs += converter.getWorseThanGoodQOs();
-    mainTrfCollection->merge(*converter.getResult());
+    mainFlagCollection->merge(*converter.getResult());
   }
 
-  ILOG(Info, Support) << "Total number of QOs included in TRFCollection: " << totalQOsIncluded << ENDM;
+  ILOG(Info, Support) << "Total number of QOs included in FlagCollection: " << totalQOsIncluded << ENDM;
   ILOG(Info, Support) << "Total number of worse than good QOs: " << totalWorseThanGoodQOs << ENDM;
-  ILOG(Info, Support) << "Number of TRFs: " << mainTrfCollection->size() << ENDM;
+  ILOG(Info, Support) << "Number of Flags: " << mainFlagCollection->size() << ENDM;
   // TODO: now we print it, but it should be stored in the QCDB after we have QC-547.
-  ILOG(Info) << *mainTrfCollection << ENDM;
+  ILOG(Info) << *mainFlagCollection << ENDM;
 
-  return mainTrfCollection;
+  return mainFlagCollection;
 }
 
-void TRFCollectionTask::update(Trigger, framework::ServiceRegistryRef)
+void FlagCollectionTask::update(Trigger, framework::ServiceRegistryRef)
 {
   throw std::runtime_error("Only two timestamps should be given to the task");
 }
 
-void TRFCollectionTask::finalize(Trigger t, framework::ServiceRegistryRef services)
+void FlagCollectionTask::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
   auto timestampLimitEnd = t.timestamp;
 
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  auto trfCollection = transformQualities(qcdb, mLastTimestampLimitStart, timestampLimitEnd);
-  qcdb.storeTRFC(std::shared_ptr<const TimeRangeFlagCollection>(trfCollection.release()));
+  auto flagCollection = transformQualities(qcdb, mLastTimestampLimitStart, timestampLimitEnd);
+  qcdb.storeQCFC(std::shared_ptr<const QualityControlFlagCollection>(flagCollection.release()));
 
   mLastTimestampLimitStart = timestampLimitEnd;
 }

@@ -23,7 +23,8 @@
 #include <TH1.h>
 #include <TPaveText.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -86,7 +87,7 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         mResultPertrigger = Quality::Bad;
         TText* checkMessagePerTriggerPtr = mTrackletPerTriggerMessage->AddText(TString::Format("Mean Per Trigger: %f is not found in bound region [%f, %f]", meanTrackletPerTrigger, mThresholdMeanLowPerTrigger, mThresholdMeanHighPerTrigger));
         checkMessagePerTriggerPtr->SetTextColor(kRed);
-        mResultPertrigger.addReason(FlagReasonFactory::Unknown(), "meanTrackletPerTrigger is not in bound region");
+        mResultPertrigger.addFlag(FlagTypeFactory::Unknown(), "meanTrackletPerTrigger is not in bound region");
       }
       h->GetListOfFunctions()->Add(mTrackletPerTriggerMessage->Clone());
     }
@@ -123,27 +124,27 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           TText* checkMessagePerTimeframePtr2 = mTrackletPerTimeFrameMessage->AddText("TrackletPerTimeFrame distribution in not accepeted as per given config");
           checkMessagePerTimeframePtr2->SetTextColor(kRed);
           mResultPerTimeFrame = Quality::Bad;
-          mResultPerTimeFrame.addReason(FlagReasonFactory::Unknown(), "TrackletPerTimeFrame distribution in not accepet");
+          mResultPerTimeFrame.addFlag(FlagTypeFactory::Unknown(), "TrackletPerTimeFrame distribution in not accepet");
         }
 
       } else {
         mResultPerTimeFrame = Quality::Bad;
         TText* checkMessagePerTimeframePtr = mTrackletPerTimeFrameMessage->AddText(TString::Format("Mean per Timeframe: %f is not found in bound region[%f, %f]", meanTrackletPerTimeframe, mThresholdMeanLowPerTimeFrame, mThresholdMeanHighPerTimeFrame));
         checkMessagePerTimeframePtr->SetTextColor(kRed);
-        mResultPerTimeFrame.addReason(FlagReasonFactory::Unknown(), "meanTrackletPerTimeframe is not in bound region");
+        mResultPerTimeFrame.addFlag(FlagTypeFactory::Unknown(), "meanTrackletPerTimeframe is not in bound region");
       }
       h2->GetListOfFunctions()->Add(mTrackletPerTimeFrameMessage->Clone());
     }
   }
   if (mResultPertrigger == Quality::Null && mResultPerTimeFrame == Quality::Null) {
     mFinalResult = Quality::Null;
-    mFinalResult.addReason(FlagReasonFactory::Unknown(), "Quality of both trackletspertimeframe and trackletsperevent is unknown");
+    mFinalResult.addFlag(FlagTypeFactory::Unknown(), "Quality of both trackletspertimeframe and trackletsperevent is unknown");
   } else if ((mResultPertrigger == Quality::Null && mResultPerTimeFrame == Quality::Good) || (mResultPertrigger == Quality::Good && mResultPerTimeFrame == Quality::Null)) {
     mFinalResult = Quality::Medium;
-    mFinalResult.addReason(FlagReasonFactory::Unknown(), "Quality of any of trackletspertimeframe and trackletsperevent is unknown");
+    mFinalResult.addFlag(FlagTypeFactory::Unknown(), "Quality of any of trackletspertimeframe and trackletsperevent is unknown");
   } else if (mResultPertrigger == Quality::Bad || mResultPerTimeFrame == Quality::Bad) {
     mFinalResult = Quality::Bad;
-    mFinalResult.addReason(FlagReasonFactory::Unknown(), "Quality of both or any of trackletspertimeframe and trackletsperevent is bad");
+    mFinalResult.addFlag(FlagTypeFactory::Unknown(), "Quality of both or any of trackletspertimeframe and trackletsperevent is bad");
   } else {
     mFinalResult = Quality::Good;
   }

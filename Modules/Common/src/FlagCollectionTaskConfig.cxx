@@ -10,17 +10,17 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TRFCollectionTaskConfig.cxx
+/// \file   FlagCollectionTaskConfig.cxx
 /// \author Piotr Konopka
 ///
 
-#include "Common/TRFCollectionTaskConfig.h"
+#include "Common/FlagCollectionTaskConfig.h"
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control_modules::common
 {
 
-TRFCollectionTaskConfig::TRFCollectionTaskConfig(std::string id, const boost::property_tree::ptree& config)
+FlagCollectionTaskConfig::FlagCollectionTaskConfig(std::string id, const boost::property_tree::ptree& config)
   : PostProcessingConfig(id, config), name(id)
 {
   detector = config.get<std::string>("qc.postprocessing." + id + ".detectorName");

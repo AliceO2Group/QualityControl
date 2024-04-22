@@ -18,6 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include <TPaveText.h>
 #include <TText.h>
 #include "TMath.h"
@@ -54,32 +55,32 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
         result.updateMetadata("CheckMean", "medium");
         result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: Mean (%.1f) is outside 5.2-5.9, ignore for COSMICS and TECHNICALS", h->GetMean()));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("Medium: Mean (%.1f) is outside 5.2-5.9, ignore for COSMICS and TECHNICALS", h->GetMean()));
       }
       if (h->GetBinContent(h->FindBin(4)) < 1e-15) {
         result.updateMetadata("CheckTracks4", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 4 clusters");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: no tracks with 4 clusters");
       }
       if (h->GetBinContent(h->FindBin(5)) < 1e-15) {
         result.updateMetadata("CheckTracks5", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 5 clusters");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: no tracks with 5 clusters");
       }
       if (h->GetBinContent(h->FindBin(6)) < 1e-15) {
         result.updateMetadata("CheckTracks6", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 6 clusters");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: no tracks with 6 clusters");
       }
       if (h->GetBinContent(h->FindBin(7)) < 1e-15) {
         result.updateMetadata("CheckTracks7", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks with 7 clusters");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: no tracks with 7 clusters");
       }
       if (h->GetEntries() < 1e-15) {
         result.updateMetadata("CheckEmpty", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks!");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: no tracks!");
       }
     }
 
@@ -100,17 +101,17 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       if (hAngular->GetEntries() < 1e-15) {
         result.updateMetadata("CheckAngEmpty", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: no tracks!");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: no tracks!");
       }
       if (ratioEta > mEtaRatio) {
         result.updateMetadata("CheckAsymmEta", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: Eta asymmetry");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: Eta asymmetry");
       }
       if (ratioPhi > mPhiRatio) {
         result.updateMetadata("CheckAsymmPhi", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD: Phi asymmetry");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD: Phi asymmetry");
       }
     }
 

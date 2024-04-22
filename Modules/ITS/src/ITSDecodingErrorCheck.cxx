@@ -19,6 +19,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "ITSMFTReconstruction/DecodingStat.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <fairlogger/Logger.h>
 #include "Common/Utils.h"
@@ -88,11 +89,11 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
             if (vDecErrorLimitsRatio[iBin - 1] <= h->GetBinContent(iBin) / TIME) {
               vListErrorIdBad.push_back(iBin - 1);
               result.set(Quality::Bad);
-              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+              result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
             } else if (vDecErrorLimitsRatio[iBin - 1] / 2 < h->GetBinContent(iBin) / TIME) {
               vListErrorIdMedium.push_back(iBin - 1);
               if (result != Quality::Bad) {
-                result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+                result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
                 result.set(Quality::Medium);
               }
             }
@@ -100,11 +101,11 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
             if (vDecErrorLimits[iBin - 1] <= h->GetBinContent(iBin)) {
               vListErrorIdBad.push_back(iBin - 1);
               result.set(Quality::Bad);
-              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+              result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
             } else if (vDecErrorLimits[iBin - 1] / 2 < h->GetBinContent(iBin)) {
               vListErrorIdMedium.push_back(iBin - 1);
               if (result != Quality::Bad) {
-                result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
+                result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("Medium: ID = %d, %s", iBin - 1, std::string(statistics.ErrNames[iBin - 1]).c_str()));
                 result.set(Quality::Medium);
               }
             }

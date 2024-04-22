@@ -25,7 +25,8 @@
 #include <TLine.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -80,7 +81,7 @@ Quality TriggersSwVsTcmCheck::check(std::map<std::string, std::shared_ptr<Monito
 
       if (!histogram) {
         ILOG(Error, Support) << "check(): MO TriggersSoftwareVsTCM not found" << ENDM;
-        result.addReason(FlagReasonFactory::Unknown(), "MO TriggersSoftwareVsTCM not found");
+        result.addFlag(FlagTypeFactory::Unknown(), "MO TriggersSoftwareVsTCM not found");
         result.set(Quality::Null);
         return result;
       }
@@ -93,7 +94,7 @@ Quality TriggersSwVsTcmCheck::check(std::map<std::string, std::shared_ptr<Monito
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), "Only SW or TCM trigger was activated");
+          result.addFlag(FlagTypeFactory::Unknown(), "Only SW or TCM trigger was activated");
         }
       }
     }
@@ -123,9 +124,9 @@ void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     histogram->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
-    auto reasons = checkResult.getReasons();
-    for (int i = 0; i < int(reasons.size()); i++) {
-      msg->AddText(reasons[i].second.c_str());
+    auto flags = checkResult.getFlags();
+    for (int i = 0; i < int(flags.size()); i++) {
+      msg->AddText(flags[i].second.c_str());
     }
     int color = kBlack;
     if (checkResult == Quality::Good) {

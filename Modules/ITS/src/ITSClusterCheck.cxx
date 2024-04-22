@@ -19,6 +19,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <fairlogger/Logger.h>
 #include <TH2.h>
@@ -62,7 +63,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > MaxEmptyLaneFraction) {
         result.updateMetadata("EmptyLaneFractionGlobal", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are empty", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are empty", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
       }
     } // end summary loop
 
@@ -97,7 +98,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           }
         }
         if (mediumHalfLayer)
-          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("Medium: Layer%d%s has high cluster occupancy;", ilayer, tb.c_str()));
+          result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("Medium: Layer%d%s has high cluster occupancy;", ilayer, tb.c_str()));
 
         // check for empty bins (empty staves)
         result.addMetadata(Form("Layer%d%s_empty", ilayer, tb.c_str()), "good");
@@ -125,7 +126,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           }
         }
         if (badHalfLayer)
-          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD: Layer%d%s has empty stave;", ilayer, tb.c_str()));
+          result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD: Layer%d%s has empty stave;", ilayer, tb.c_str()));
       }
     } // end GeneralOccupancy
   }

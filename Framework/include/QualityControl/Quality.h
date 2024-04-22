@@ -22,11 +22,11 @@
 #include <map>
 #include <vector>
 #include <utility>
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
 
 namespace o2::quality_control::core
 {
-using CommentedFlagReasons = std::vector<std::pair<FlagReason, std::string>>;
+using CommentedFlagTypes = std::vector<std::pair<FlagType, std::string>>;
 
 /// \brief  Class representing the quality of a MonitorObject.
 ///
@@ -55,7 +55,7 @@ class Quality
   static const Quality Bad;
   static const unsigned int NullLevel;
 
-  /// \brief Sets the Quality (without Reasons or Metadata).
+  /// \brief Sets the Quality (without Flags or Metadata).
   void set(const Quality&);
 
   unsigned int getLevel() const;
@@ -106,12 +106,12 @@ class Quality
   /// \return the value corresponding to the key if it was found, default value otherwise
   std::string getMetadata(const std::string& key, const std::string& defaultValue) const;
 
-  /// \brief Associate the Quality with a new reason and an optional comment
+  /// \brief Associate the Quality with a new flag and an optional comment
   /// \return reference to *this
-  Quality& addReason(const FlagReason& reason, std::string comment = "");
-  /// \brief Get the reasons with associated comments for the Quality
-  /// \return reason, if exists
-  const CommentedFlagReasons& getReasons() const;
+  Quality& addFlag(const FlagType& flag, std::string comment = "");
+  /// \brief Get the flags with associated comments for the Quality
+  /// \return flag, if exists
+  const CommentedFlagTypes& getFlags() const;
 
   static Quality fromString(const std::string& str);
 
@@ -119,7 +119,7 @@ class Quality
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
   std::string mName;
   std::map<std::string, std::string> mUserMetadata;
-  std::vector<std::pair<FlagReason, std::string>> mReasons;
+  std::vector<std::pair<FlagType, std::string>> mFlags;
 
   ClassDef(Quality, 2);
 };

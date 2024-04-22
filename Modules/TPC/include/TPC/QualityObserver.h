@@ -78,7 +78,7 @@ class QualityObserver : public PostProcessingInterface
   size_t mLineLength = 70;
 
   bool mViewDetails;
-  std::unordered_map<std::string, std::vector<std::string>> mReasons;
+  std::unordered_map<std::string, std::vector<std::string>> mFlags;
   std::unordered_map<std::string, std::vector<std::string>> mComments;
   std::string mQualityDetailChoice;
   std::unordered_map<std::string, bool> mQualityDetails;
