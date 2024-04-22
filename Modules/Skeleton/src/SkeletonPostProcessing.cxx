@@ -46,7 +46,7 @@ void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
   // previous run, then create the new one. ROOT may crash if there are two objects with the same name at the same time.
   mHistogramB.reset();
   mHistogramB = std::make_unique<TH1F>("exampleB", "exampleB", 20, 0, 30000);
-  // We request that the histogram A is published after each update(), up to and including finalize()
+  // We request that the histogram B is published after each update(), up to and including finalize()
   // The framework will stop publishing it after finalize()
   getObjectsManager()->startPublishing(mHistogramB.get(), PublicationPolicy::ThroughStop);
 }
@@ -55,7 +55,7 @@ void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
-  // Histogram C is recreated at each update and is expected to be published just one. We delete the previous
+  // Histogram C is recreated at each update and is expected to be published just once. We delete the previous
   // histogram and create the new one, then we start publishing it.
   mHistogramC.reset();
   mHistogramC = std::make_unique<TH1F>("exampleC", "exampleC", 20, 0, 30000);
