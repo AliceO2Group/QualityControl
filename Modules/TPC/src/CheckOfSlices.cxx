@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 #include "Common/Utils.h"
 #include "TPC/Utility.h"
+#include "Algorithm/RangeTokenizer.h"
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
@@ -32,6 +33,7 @@
 
 #include <vector>
 #include <numeric>
+#include <sstream>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -97,6 +99,12 @@ void CheckOfSlices::configure()
       std::swap(mRangeBad, mRangeMedium);
     }
     mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
+  }
+
+  std::string maskingValues = common::getFromConfig<string>(mCustomParameters, "maskedPoints", "");
+  mMaskedPoints.clear();
+  if (maskingValues != "") {
+    mMaskedPoints = RangeTokenizer::tokenize<int>(maskingValues);
   }
 }
 
@@ -168,7 +176,7 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
   }
 
-  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev);
+  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev, mMaskedPoints);
 
   for (size_t i = 0; i < v.size(); ++i) {
 
