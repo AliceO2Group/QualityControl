@@ -59,10 +59,12 @@ void QcMFTDigitCheck::configure()
     ILOG(Info, Support) << "Custom parameter - ZoneThresholdBad: " << param->second << ENDM;
     mZoneThresholdBad = stoi(param->second);
   }
+  mNoiseScan = 0;
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
     mNoiseScan = stoi(param->second);
   }
+  mNCyclesNoiseMap = 3;
   if (auto param = mCustomParameters.find("NCyclesNoiseMap"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NCyclesNoiseMap: " << param->second << ENDM;
     mNCyclesNoiseMap = stoi(param->second);
@@ -75,6 +77,7 @@ void QcMFTDigitCheck::configure()
   mNewNoisy = 0;
   mDissNoisy = 0;
   mTotalNoisy = 0;
+  mNCyclesNoiseMap = 0;
 }
 
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
