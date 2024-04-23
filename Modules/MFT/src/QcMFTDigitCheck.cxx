@@ -77,7 +77,6 @@ void QcMFTDigitCheck::configure()
   mNewNoisy = 0;
   mDissNoisy = 0;
   mTotalNoisy = 0;
-  mNCyclesNoiseMap = 0;
 }
 
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
