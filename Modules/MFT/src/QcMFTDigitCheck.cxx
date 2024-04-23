@@ -61,17 +61,17 @@ void QcMFTDigitCheck::configure()
   }
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
-    NoiseScan = stoi(param->second);
+    mNoiseScan = stoi(param->second);
   }
-  if (auto param = mCustomParameters.find("mreadNoiseMapCycle"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - mreadNoiseMapCycle: " << param->second << ENDM;
-    mreadNoiseMapCycle = stoi(param->second);
+  if (auto param = mCustomParameters.find("NCyclesNoiseMap"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NCyclesNoiseMap: " << param->second << ENDM;
+    mNCyclesNoiseMap = stoi(param->second);
   }
 
   // no call to beautifier yet
   mFirstCall = true;
 
-  nCycle = 0;
+  mNCycles = 0;
   mNewNoisy = 0;
   mDissNoisy = 0;
   mTotalNoisy = 0;
@@ -214,7 +214,7 @@ void QcMFTDigitCheck::createOutsideAccNames()
 
 void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  nCycle++;
+  mNCycles++;
   // set up masking of dead chips once
   if (mFirstCall) {
     mFirstCall = false;
@@ -262,13 +262,13 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       }
     }
   }
-  if (NoiseScan == 1) {
-    if (nCycle == 1) {
+  if (mNoiseScan == 1) {
+    if (mNCycles == 1) {
       readNoiseMap(mo);
       mOldNoisyPix = mNoisyPix;
     }
 
-    if (nCycle == mreadNoiseMapCycle) {
+    if (mNCycles == mNCyclesNoiseMap) {
       readNoiseMap(mo);
       mNewNoisyPix = mNoisyPix;
 

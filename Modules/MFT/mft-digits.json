@@ -66,7 +66,7 @@
           "ZoneThresholdMedium" : "2",
           "ZoneThresholdBad" : "5",
           "NoiseScan" : "1",
-          "mreadNoiseMapCycle" : "3"
+          "NCyclesNoiseMap" : "3"
         },
         "dataSource" : [ {
           "type" : "Task",
