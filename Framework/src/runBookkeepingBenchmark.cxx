@@ -12,7 +12,7 @@
 #include "QualityControl/Bookkeeping.h"
 #include <iostream>
 #include <boost/program_options.hpp>
-#include "BookkeepingApi/BkpProtoClientFactory.h"
+#include "BookkeepingApi/BkpClientFactory.h"
 #include "QualityControl/Activity.h"
 #include <Common/Timer.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -20,7 +20,6 @@
 using namespace std;
 namespace bpo = boost::program_options;
 using namespace o2::bkp::api;
-using namespace o2::bkp::api::proto;
 using namespace o2::quality_control::core;
 
 /**
@@ -74,7 +73,7 @@ int main(int argc, const char* argv[])
       totalNumberOfExecutions++;
       triggerTimer.reset(minDelay * 1000);
       timer.reset();
-      Bookkeeping::getInstance().populateActivity(activity, run);
+      Bookkeeping::getInstance().registerProcess(123, "asdf", "ITS", o2::bkp::DplProcessType::_NULL, "");
       auto duration = timer.getTime();
       if (printActivity) {
         cout << activity << endl;

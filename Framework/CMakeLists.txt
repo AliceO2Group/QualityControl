@@ -25,7 +25,7 @@ target_link_libraries(O2QualityControlTypes
   ROOT::Hist
   AliceO2::Common
   O2::DataFormatsQualityControl
-  AliceO2::BookkeepingProtoApi
+  AliceO2::BookkeepingApi
 )
 
 add_root_dictionary(O2QualityControlTypes
