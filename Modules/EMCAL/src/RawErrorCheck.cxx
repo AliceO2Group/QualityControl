@@ -14,7 +14,12 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 
+#include "DataFormatsEMCAL/ErrorTypeFEE.h"
 #include "EMCALBase/Geometry.h"
+#include "EMCALReconstruction/AltroDecoder.h"
+#include "EMCALReconstruction/CaloRawFitter.h"
+#include "EMCALReconstruction/RawDecodingError.h"
+#include "EMCALReconstruction/ReconstructionErrors.h"
 
 #include "EMCAL/RawErrorCheck.h"
 #include "QualityControl/MonitorObject.h"
@@ -48,6 +53,131 @@ void RawErrorCheck::configure()
       ILOG(Error, Support) << e.what() << ENDM;
     }
   }
+  const std::string keyThreshRawdataErrors = "ThresholdRDE",
+                    keyThreshPageError = "ThresholdPE",
+                    keyThreshMajorAltroError = "ThresholdMAAE",
+                    keyThreshMinorAltroError = "ThresholdMIAE",
+                    keyThresRawFitError = "ThresholdRFE",
+                    keyThresholdGeometryError = "ThresholdGEE",
+                    keyThresholdGainTypeError = "ThresholdGTE";
+  try {
+    for (auto& [param, value] : mCustomParameters.getAllDefaults()) {
+      if (param.find(keyThreshRawdataErrors) == 0) {
+        auto errortype = param.substr(keyThreshRawdataErrors.length());
+        auto errorcode = findErrorCodeRDE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram RawDataErrors: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdRDE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram RawDataErrors: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram RawDataErrors: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      if (param.find(keyThreshPageError) == 0) {
+        auto errortype = param.substr(keyThreshPageError.length());
+        auto errorcode = findErrorCodePE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram PageErrors: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdPE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram PageErrors: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram PageErrors: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      if (param.find(keyThreshMajorAltroError) == 0) {
+        auto errortype = param.substr(keyThreshMajorAltroError.length());
+        auto errorcode = findErrorCodeMAAE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram MajorAltroErrors: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdMAAE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram MajorAltroErrors: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram MajorAltroErrors: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      if (param.find(keyThreshMinorAltroError) == 0) {
+        auto errortype = param.substr(keyThreshMinorAltroError.length());
+        auto errorcode = findErrorCodeMIAE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram MinorAltroError: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdMAAE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram MinorAltroError: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram MinorAltroError: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      if (param.find(keyThresRawFitError) == 0) {
+        auto errortype = param.substr(keyThresRawFitError.length());
+        auto errorcode = findErrorCodeRFE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram RawFitError: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdRFE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram RawFitError: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram RawFitError: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      if (param.find(keyThresholdGeometryError) == 0) {
+        auto errortype = param.substr(keyThresholdGeometryError.length());
+        auto errorcode = findErrorCodeGEE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram GeometryError: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdGEE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram GeometryError: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram GeometryError: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      if (param.find(keyThresholdGainTypeError) == 0) {
+        auto errortype = param.substr(keyThresholdGainTypeError.length());
+        auto errorcode = findErrorCodeGTE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram GainTypeError: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdGTE[errorcode] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram GainTypeError: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram GainTypeError: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+    }
+  } catch (std::out_of_range& e) {
+    // Nothing to be done, no parameter found.
+    ILOG(Debug) << "Error in parameter extraction" << ENDM;
+  }
 }
 
 Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -57,20 +187,41 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   std::array<std::string, 2> channelgainhists = { { "ChannelLGnoHG", "ChannelHGnoLG" } };
   Quality result = Quality::Good;
 
+  std::map<std::string, const std::map<int, int>*> thresholdConfigErrorHists = {
+    { "RawDataErrors", &mErrorCountThresholdRDE },
+    { "PageErrors", &mErrorCountThresholdPE },
+    { "MajorAltroErrors", &mErrorCountThresholdMAAE },
+    { "MinorAltroError", &mErrorCountThresholdMIAE },
+    { "RawFitError", &mErrorCountThresholdRFE },
+    { "GeometryError", &mErrorCountThresholdGEE },
+    { "GainTypeError", &mErrorCountThresholdGTE }
+  };
+
   for (auto& [moName, mo] : *moMap) {
     if (std::find(errorhists.begin(), errorhists.end(), mo->getName()) != errorhists.end()) {
       // Check for presence of error codes
       auto* errorhist = dynamic_cast<TH2*>(mo->getObject());
 
-      for (int linkID = 0; linkID < errorhist->GetXaxis()->GetNbins(); linkID++) {
-        for (int errorcode = 0; errorcode < errorhist->GetYaxis()->GetNbins(); errorcode++) {
-          if (errorhist->GetBinContent(linkID + 1, errorcode + 1)) {
-            // Found raw data error
-            if (result != Quality::Bad) {
-              result = Quality::Bad;
-            }
-            result.addReason(FlagReasonFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " found in DDL " + std::to_string(linkID));
+      for (int errorcode = 0; errorcode < errorhist->GetYaxis()->GetNbins(); errorcode++) {
+        // try to find a threshold
+        int threshold = 0;
+        auto thresholdHandler = thresholdConfigErrorHists.find(mo->getName());
+        if (thresholdHandler != thresholdConfigErrorHists.end()) {
+          auto thresholdFound = thresholdHandler->second->find(errorcode);
+          if (thresholdFound != thresholdHandler->second->end()) {
+            threshold = thresholdFound->second;
           }
+        }
+        int numErrors = 0;
+        for (int linkID = 0; linkID < errorhist->GetXaxis()->GetNbins(); linkID++) {
+          numErrors += errorhist->GetBinContent(linkID + 1, errorcode + 1);
+        }
+        if (numErrors > threshold) {
+          // Found number of raw data errors is above threshold for bin
+          if (result != Quality::Bad) {
+            result = Quality::Bad;
+          }
+          result.addReason(FlagReasonFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(threshold));
         }
       }
     } else if (std::find(gainhists.begin(), gainhists.end(), mo->GetName()) != gainhists.end()) {
@@ -150,7 +301,7 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       }
     }
   }
-  //SM grid
+  // SM grid
   if (mo->getName().find("Channel") != std::string::npos) {
     auto* h2D = dynamic_cast<TH2*>(mo->getObject());
     // orizontal
@@ -170,7 +321,7 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     TLine* l11 = new TLine(-0.5, 200, 95.5, 200);
     TLine* l12 = new TLine(47.5, 200, 47.5, 207.5);
 
-    //vertical
+    // vertical
     TLine* l13 = new TLine(47.5, -0.5, 47.5, 128);
     TLine* l14 = new TLine(31.5, 128, 31.5, 200);
     TLine* l15 = new TLine(63.5, 128, 63.5, 200);
@@ -219,6 +370,90 @@ bool RawErrorCheck::decodeBool(std::string value) const
     return false;
   }
   throw std::runtime_error(fmt::format("Value {} not a boolean", value.data()).data());
+}
+
+int RawErrorCheck::findErrorCodeRDE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::ErrorTypeFEE::getNumberOfErrorTypes(); error++) {
+    if (std::string_view(o2::emcal::ErrorTypeFEE::getErrorTypeName(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
+}
+
+int RawErrorCheck::findErrorCodePE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::RawDecodingError::getNumberOfErrorTypes(); error++) {
+    if (std::string_view(o2::emcal::RawDecodingError::getErrorCodeNames(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
+}
+
+int RawErrorCheck::findErrorCodeMAAE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::AltroDecoderError::getNumberOfErrorTypes(); error++) {
+    if (std::string_view(o2::emcal::AltroDecoderError::getErrorTypeName(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
+}
+
+int RawErrorCheck::findErrorCodeMIAE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::MinorAltroDecodingError::getNumberOfErrorTypes(); error++) {
+    if (std::string_view(o2::emcal::MinorAltroDecodingError::getErrorTypeName(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
+}
+
+int RawErrorCheck::findErrorCodeRFE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::CaloRawFitter::getNumberOfErrorTypes(); error++) {
+    if (std::string_view(o2::emcal::CaloRawFitter::getErrorTypeName(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
+}
+
+int RawErrorCheck::findErrorCodeGEE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::reconstructionerrors::getNumberOfGeometryErrorCodes(); error++) {
+    if (std::string_view(o2::emcal::reconstructionerrors::getGeometryErrorName(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
+}
+
+int RawErrorCheck::findErrorCodeGTE(const std::string_view errorname) const
+{
+  int result = -1;
+  for (int error = 0; error < o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(); error++) {
+    if (std::string_view(o2::emcal::reconstructionerrors::getGainErrorName(error)) == errorname) {
+      result = error;
+      break;
+    }
+  }
+  return result;
 }
 
 } // namespace o2::quality_control_modules::emcal

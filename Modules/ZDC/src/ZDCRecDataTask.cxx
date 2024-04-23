@@ -46,7 +46,14 @@ ZDCRecDataTask::~ZDCRecDataTask()
   mVecCh.clear();
   mVecType.clear();
   mNameHisto.clear();
+
+  for (auto h : mHisto1D) {
+    delete h.histo;
+  }
   mHisto1D.clear();
+  for (auto h : mHisto2D) {
+    delete h.histo;
+  }
   mHisto2D.clear();
 }
 

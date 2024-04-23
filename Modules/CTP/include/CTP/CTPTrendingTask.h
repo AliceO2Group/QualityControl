@@ -49,6 +49,7 @@ class CTPTrendingTask : public PostProcessingInterface
   void initialize(Trigger, framework::ServiceRegistryRef) override;
   void update(Trigger, framework::ServiceRegistryRef) override;
   void finalize(Trigger, framework::ServiceRegistryRef) override;
+  void initCTP(Trigger& t);
 
  private:
   struct MetaData {
@@ -58,7 +59,7 @@ class CTPTrendingTask : public PostProcessingInterface
   void trendValues(const Trigger& t, quality_control::repository::DatabaseInterface& qcdb);
   void generatePlots();
 
-  o2::ctp::CTPConfiguration mCTPconfig;
+  o2::ctp::CTPConfiguration* mCTPconfig{ nullptr };
   TrendingConfigCTP mConfig;
   MetaData mMetaData;
   UInt_t mTime;

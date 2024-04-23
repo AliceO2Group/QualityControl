@@ -59,6 +59,13 @@ class RawCheck final : public o2::quality_control::checker::CheckInterface
   double mNsigmaFECMaxPayload = 2.; ///< Number of sigmas used in the FEC max payload check
   double mNsigmaPayloadSize = 2.;   ///< Number of sigmas used in the payload size check
 
+  /************************************************
+   * Settings for bunch min. amp checker          *
+   ************************************************/
+
+  int mBunchMinCheckMinEntries = 0;          ///< Min. number of entries for bunch min. amplitude in evaluation region
+  double mBunchMinCheckFractionSignal = 0.5; ///< Fraction of entries in signal region for bunch min. amp checker
+
   ClassDefOverride(RawCheck, 2);
 };
 

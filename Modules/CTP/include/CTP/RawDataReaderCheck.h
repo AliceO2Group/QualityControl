@@ -40,7 +40,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
   void startOfActivity(const Activity& activity) override;
 
-  ClassDefOverride(RawDataReaderCheck, 4);
+  ClassDefOverride(RawDataReaderCheck, 5);
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
@@ -49,10 +49,20 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   int mRunNumber;
   long int mTimestamp;
   float mThreshold;
-  int inputCycleCounter;
-  int classCycleCounter;
+  float mThresholdRateBad;
+  float mThresholdRateMedium;
+  float mThresholdRateRatioBad;
+  float mThresholdRateRatioMedium;
+  int cycleCounter;
+  int mIndexMBclass = -1;
+  float mFraction;
+  int mCycleDuration;
+  bool relativeRates = false;
+  bool inputRates = false;
   TH1F* fHistInputPrevious;
   TH1F* fHistClassesPrevious;
+  TH1F* fHistInputRatioPrevious;
+  TH1F* fHistClassRatioPrevious;
   std::vector<int> vGoodBC;
   std::vector<int> vMediumBC;
   std::vector<int> vBadBC;

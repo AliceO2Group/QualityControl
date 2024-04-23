@@ -15,73 +15,69 @@
 ///
 
 #include "QualityControl/CustomParameters.h"
-
-#define BOOST_TEST_MODULE Check test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "getTestDataDirectory.h"
+#include <iostream>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::core;
 using namespace std;
 
-BOOST_AUTO_TEST_CASE(test_cp_basic)
+TEST_CASE("test_cp_basic")
 {
   CustomParameters cp;
 
   cp.set("key", "value");
-  BOOST_CHECK_EQUAL(cp.at("key"), "value");
-  BOOST_CHECK_EQUAL(cp.at("key", "default"), "value");
-  BOOST_CHECK_EQUAL(cp.at("key", "default", "default"), "value");
+  CHECK(cp.at("key") == "value");
+  CHECK(cp.at("key", "default") == "value");
+  CHECK(cp.at("key", "default", "default") == "value");
 
   cp.set("key", "value_run1", "run1");
-  BOOST_CHECK_EQUAL(cp.at("key"), "value");
-  BOOST_CHECK_EQUAL(cp.at("key", "run1"), "value_run1");
-  BOOST_CHECK_EQUAL(cp.at("key", "run1", "default"), "value_run1");
+  CHECK(cp.at("key") == "value");
+  CHECK(cp.at("key", "run1") == "value_run1");
+  CHECK(cp.at("key", "run1", "default") == "value_run1");
 
   cp.set("key", "value_beam1", "default", "beam1");
-  BOOST_CHECK_EQUAL(cp.at("key"), "value");
-  BOOST_CHECK_EQUAL(cp.at("key", "default"), "value");
-  BOOST_CHECK_EQUAL(cp.at("key", "default", "beam1"), "value_beam1");
+  CHECK(cp.at("key") == "value");
+  CHECK(cp.at("key", "default") == "value");
+  CHECK(cp.at("key", "default", "beam1") == "value_beam1");
 
   cp.set("key", "value_run1_beam1", "run1", "beam1");
-  BOOST_CHECK_EQUAL(cp.at("key"), "value");
-  BOOST_CHECK_EQUAL(cp.at("key", "run1", "beam1"), "value_run1_beam1");
+  CHECK(cp.at("key") == "value");
+  CHECK(cp.at("key", "run1", "beam1") == "value_run1_beam1");
 
-  cout << cp << endl;
+  CHECK_NOTHROW(cout << cp << endl);
 }
 
-BOOST_AUTO_TEST_CASE(test_cp_iterators)
+TEST_CASE("test_cp_iterators")
 {
   CustomParameters cp;
   cp.set("key1", "value1", "run1", "beam1");
   auto param = cp.find("key1", "run1", "beam1");
-  BOOST_CHECK(param != cp.end());
+  CHECK(param != cp.end());
   if (param != cp.end()) {
-    BOOST_CHECK_EQUAL(param->second, "value1");
+    CHECK(param->second == "value1");
   }
 
   cp.set("key2", "value2");
   param = cp.find("key2");
-  BOOST_CHECK(param != cp.end());
+  CHECK(param != cp.end());
   if (param != cp.end()) {
-    BOOST_CHECK_EQUAL(param->second, "value2");
+    CHECK(param->second == "value2");
   }
 
   param = cp.find("not_found");
-  BOOST_CHECK(param == cp.end());
+  CHECK(param == cp.end());
 
   param = cp.find("not_found", "run1");
-  BOOST_CHECK(param == cp.end());
+  CHECK(param == cp.end());
 
   param = cp.find("not_found", "run1", "beam1");
-  BOOST_CHECK(param == cp.end());
+  CHECK(param == cp.end());
 }
 
-BOOST_AUTO_TEST_CASE(test_cp_misc)
+TEST_CASE("test_cp_misc")
 {
   CustomParameters cp;
   cp.set("aaa", "AAA");
@@ -92,41 +88,41 @@ BOOST_AUTO_TEST_CASE(test_cp_misc)
   cp.set("bbb", "BBB", "runX");
   cp.set("ccc", "CCC", "runY");
 
-  BOOST_CHECK_EQUAL(cp.count("aaa"), 1);
-  BOOST_CHECK_EQUAL(cp.count("bbb"), 1);
-  BOOST_CHECK_EQUAL(cp.count("aaa"), 1);
-  BOOST_CHECK_EQUAL(cp.count("aaa"), 1);
-  BOOST_CHECK_EQUAL(cp.at("aaa"), "AAA");
-  BOOST_CHECK_EQUAL(cp.at("bbb"), "BBB");
-  BOOST_CHECK_EQUAL(cp.at("aaa", "runX"), "AAA");
+  CHECK(cp.count("aaa") == 1);
+  CHECK(cp.count("bbb") == 1);
+  CHECK(cp.count("aaa") == 1);
+  CHECK(cp.count("aaa") == 1);
+  CHECK(cp.at("aaa") == "AAA");
+  CHECK(cp.at("bbb") == "BBB");
+  CHECK(cp.at("aaa", "runX") == "AAA");
 
-  BOOST_CHECK_THROW(cp.at("not_found"), std::out_of_range);
-  BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found", "default_value"), "default_value");
-  BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found"), "");
-  BOOST_CHECK_EQUAL(cp.atOrDefaultValue("not_found", "default_value2", "asdf", "adsf"), "default_value2");
+  CHECK_THROWS_AS(cp.at("not_found"), std::out_of_range);
+  CHECK(cp.atOrDefaultValue("not_found", "default_value") == "default_value");
+  CHECK(cp.atOrDefaultValue("not_found") == "");
+  CHECK(cp.atOrDefaultValue("not_found", "default_value2", "asdf", "adsf") == "default_value2");
 
-  BOOST_CHECK_EQUAL(cp["aaa"], "AAA");
-  BOOST_CHECK_EQUAL(cp["ccc"], "CCC");
+  CHECK(cp["aaa"] == "AAA");
+  CHECK(cp["ccc"] == "CCC");
 
   auto all = cp.getAllForRunBeam("runX", "default");
   auto another = cp.getAllForRunBeam("default", "default");
   auto same = cp.getAllDefaults();
-  BOOST_CHECK_EQUAL(another.size(), same.size());
-  BOOST_CHECK_EQUAL(all.size(), 2);
-  BOOST_CHECK_EQUAL(another.size(), 3);
+  CHECK(another.size() == same.size());
+  CHECK(all.size() == 2);
+  CHECK(another.size() == 3);
 
-  BOOST_CHECK_NO_THROW(cp["not_found"]); // this won't throw, it will create an empty value at "not_found"
-  BOOST_CHECK_EQUAL(cp.count("not_found"), 1);
-  BOOST_CHECK_EQUAL(cp.at("not_found"), "");
+  CHECK_NOTHROW(cp["not_found"]); // this won't throw, it will create an empty value at "not_found"
+  CHECK(cp.count("not_found") == 1);
+  CHECK(cp.at("not_found") == "");
 
   // test bracket assignemnt
   cp["something"] = "else";
-  BOOST_CHECK_EQUAL(cp.at("something"), "else");
+  CHECK(cp.at("something") == "else");
   cp["something"] = "asdf";
-  BOOST_CHECK_EQUAL(cp.at("something"), "asdf");
+  CHECK(cp.at("something") == "asdf");
 }
 
-BOOST_AUTO_TEST_CASE(test_at_optional)
+TEST_CASE("test_at_optional")
 {
   CustomParameters cp;
   cp.set("aaa", "AAA");
@@ -134,12 +130,12 @@ BOOST_AUTO_TEST_CASE(test_at_optional)
   cp.set("aaa", "AAA", "runX");
   cp.set("aaa", "AAA", "runX", "beamB");
 
-  BOOST_CHECK_EQUAL(cp.atOptional("aaa").value(), "AAA");
-  BOOST_CHECK_EQUAL(cp.atOptional("abc").has_value(), false);
-  BOOST_CHECK_EQUAL(cp.atOptional("abc").value_or("bla"), "bla");
+  CHECK(cp.atOptional("aaa").value() == "AAA");
+  CHECK(cp.atOptional("abc").has_value() == false);
+  CHECK(cp.atOptional("abc").value_or("bla") == "bla");
 }
 
-BOOST_AUTO_TEST_CASE(test_at_optional_activity)
+TEST_CASE("test_at_optional_activity")
 {
   Activity activity;
   activity.mBeamType = "PROTON-PROTON";
@@ -153,17 +149,17 @@ BOOST_AUTO_TEST_CASE(test_at_optional_activity)
   cp.set("aaa", "DDD", "PHYSICS", "Pb-Pb");
   cp.set("aaa", "AAA", "TECHNICAL", "PROTON-PROTON");
 
-  BOOST_CHECK_EQUAL(cp.atOptional("aaa", activity).value(), "CCC");
-  BOOST_CHECK_EQUAL(cp.atOptional("abc", activity).has_value(), false);
-  BOOST_CHECK_EQUAL(cp.atOptional("abc", activity).value_or("bla"), "bla");
+  CHECK(cp.atOptional("aaa", activity).value() == "CCC");
+  CHECK(cp.atOptional("abc", activity).has_value() == false);
+  CHECK(cp.atOptional("abc", activity).value_or("bla") == "bla");
 
   Activity activity2;
   activity.mBeamType = "Pb-Pb";
   activity.mType = 1;
-  BOOST_CHECK_EQUAL(cp.atOptional("aaa", activity).value(), "DDD");
+  CHECK(cp.atOptional("aaa", activity).value() == "DDD");
 }
 
-BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
+TEST_CASE("test_cp_new_access_pattern")
 {
   CustomParameters cp;
   cp.set("aaa", "AAA");
@@ -176,17 +172,17 @@ BOOST_AUTO_TEST_CASE(test_cp_new_access_pattern)
 
   // if we have a default value
   std::string param = cp.atOrDefaultValue("myOwnKey", "1");
-  BOOST_CHECK_EQUAL(std::stoi(param), 1);
+  CHECK(std::stoi(param) == 1);
   param = cp.atOrDefaultValue("aaa", "1");
-  BOOST_CHECK_EQUAL(param, "AAA");
+  CHECK(param == "AAA");
 
   // if we don't have a default value and only want to do something if there is a value:
   if (auto param2 = cp.find("ccc"); param2 != cp.end()) {
-    BOOST_CHECK_EQUAL(std::stoi(param2->second), 1);
+    CHECK(std::stoi(param2->second) == 1);
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_load_from_ptree)
+TEST_CASE("test_load_from_ptree")
 {
   boost::property_tree::ptree jsontree;
   std::string configFilePath = std::string(getTestDataDirectory()) + "testWorkflow.json";
@@ -200,20 +196,20 @@ BOOST_AUTO_TEST_CASE(test_load_from_ptree)
   CustomParameters cp;
   cp.populateCustomParameters(params);
 
-  cout << cp << endl;
+  CHECK_NOTHROW(cout << cp << endl);
 
-  BOOST_CHECK_EQUAL(cp.at("myOwnKey"), "myOwnValue");
-  BOOST_CHECK_EQUAL(cp.at("myOwnKey1", "PHYSICS"), "myOwnValue1b");
-  BOOST_CHECK_EQUAL(cp.atOptional("asdf").has_value(), false);
+  CHECK(cp.at("myOwnKey") == "myOwnValue");
+  CHECK(cp.at("myOwnKey1", "PHYSICS") == "myOwnValue1b");
+  CHECK(cp.atOptional("asdf").has_value() == false);
 }
 
-BOOST_AUTO_TEST_CASE(test_default_if_not_found_at_optional)
+TEST_CASE("test_default_if_not_found_at_optional")
 {
   CustomParameters cp;
 
   // no default values are in the CP, we get an empty result
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS", "proton-proton").has_value(), false);
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "TECHNICAL", "proton-proton").has_value(), false);
+  CHECK(cp.atOptional("key", "PHYSICS", "proton-proton").has_value() == false);
+  CHECK(cp.atOptional("key", "TECHNICAL", "proton-proton").has_value() == false);
 
   // prepare the CP
   cp.set("key", "valueDefaultDefault", "default", "default");
@@ -223,25 +219,25 @@ BOOST_AUTO_TEST_CASE(test_default_if_not_found_at_optional)
   cp.set("key", "valueCosmicsDefault", "default", "PROTON-PROTON");
 
   // check the data
-  BOOST_CHECK_EQUAL(cp.atOptional("key").value(), "valueDefaultDefault");
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS").value(), "valuePhysicsDefault");
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS", "Pb-Pb").value(), "valuePhysicsPbPb");
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "COSMICS", "default").value(), "valueCosmicsDefault");
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "default", "PROTON-PROTON").value(), "valueCosmicsDefault");
+  CHECK(cp.atOptional("key").value() == "valueDefaultDefault");
+  CHECK(cp.atOptional("key", "PHYSICS").value() == "valuePhysicsDefault");
+  CHECK(cp.atOptional("key", "PHYSICS", "Pb-Pb").value() == "valuePhysicsPbPb");
+  CHECK(cp.atOptional("key", "COSMICS", "default").value() == "valueCosmicsDefault");
+  CHECK(cp.atOptional("key", "default", "PROTON-PROTON").value() == "valueCosmicsDefault");
 
   // check when something is missing
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "PHYSICS", "PROTON-PROTON").value(), "valuePhysicsDefault");   // key is not defined for pp
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "TECHNICAL", "STRANGE").value(), "valueDefaultDefault");       // key is not defined for run nor beam
-  BOOST_CHECK_EQUAL(cp.atOptional("key", "TECHNICAL", "PROTON-PROTON").value(), "valueCosmicsDefault"); // key is not defined for technical
+  CHECK(cp.atOptional("key", "PHYSICS", "PROTON-PROTON").value() == "valuePhysicsDefault");   // key is not defined for pp
+  CHECK(cp.atOptional("key", "TECHNICAL", "STRANGE").value() == "valueDefaultDefault");       // key is not defined for run nor beam
+  CHECK(cp.atOptional("key", "TECHNICAL", "PROTON-PROTON").value() == "valueCosmicsDefault"); // key is not defined for technical
 }
 
-BOOST_AUTO_TEST_CASE(test_default_if_not_found_at)
+TEST_CASE("test_default_if_not_found_at")
 {
   CustomParameters cp;
 
   // no default values are in the CP, we get an empty result
-  BOOST_CHECK_THROW(cp.at("key", "PHYSICS", "proton-proton"), std::out_of_range);
-  BOOST_CHECK_THROW(cp.at("key", "TECHNICAL", "proton-proton"), std::out_of_range);
+  CHECK_THROWS_AS(cp.at("key", "PHYSICS", "proton-proton"), std::out_of_range);
+  CHECK_THROWS_AS(cp.at("key", "TECHNICAL", "proton-proton"), std::out_of_range);
 
   // prepare the CP
   cp.set("key", "valueDefaultDefault", "default", "default");
@@ -251,14 +247,21 @@ BOOST_AUTO_TEST_CASE(test_default_if_not_found_at)
   cp.set("key", "valueCosmicsDefault", "default", "PROTON-PROTON");
 
   // check the data
-  BOOST_CHECK_EQUAL(cp.at("key"), "valueDefaultDefault");
-  BOOST_CHECK_EQUAL(cp.at("key", "PHYSICS"), "valuePhysicsDefault");
-  BOOST_CHECK_EQUAL(cp.at("key", "PHYSICS", "Pb-Pb"), "valuePhysicsPbPb");
-  BOOST_CHECK_EQUAL(cp.at("key", "COSMICS", "default"), "valueCosmicsDefault");
-  BOOST_CHECK_EQUAL(cp.at("key", "default", "PROTON-PROTON"), "valueCosmicsDefault");
+  CHECK(cp.at("key") == "valueDefaultDefault");
+  CHECK(cp.at("key", "PHYSICS") == "valuePhysicsDefault");
+  CHECK(cp.at("key", "PHYSICS", "Pb-Pb") == "valuePhysicsPbPb");
+  CHECK(cp.at("key", "COSMICS", "default") == "valueCosmicsDefault");
+  CHECK(cp.at("key", "default", "PROTON-PROTON") == "valueCosmicsDefault");
 
   // check when something is missing
-  BOOST_CHECK_EQUAL(cp.at("key", "PHYSICS", "PROTON-PROTON"), "valuePhysicsDefault");   // key is not defined for pp
-  BOOST_CHECK_EQUAL(cp.at("key", "TECHNICAL", "STRANGE"), "valueDefaultDefault");       // key is not defined for run nor beam
-  BOOST_CHECK_EQUAL(cp.at("key", "TECHNICAL", "PROTON-PROTON"), "valueCosmicsDefault"); // key is not defined for technical
+  CHECK(cp.at("key", "PHYSICS", "PROTON-PROTON") == "valuePhysicsDefault");   // key is not defined for pp
+  CHECK(cp.at("key", "TECHNICAL", "STRANGE") == "valueDefaultDefault");       // key is not defined for run nor beam
+  CHECK(cp.at("key", "TECHNICAL", "PROTON-PROTON") == "valueCosmicsDefault"); // key is not defined for technical
+}
+
+TEST_CASE("test_getAllDefaults")
+{
+  CustomParameters cp;
+  auto result = cp.getAllDefaults();
+  CHECK(result.size() == 0);
 }
