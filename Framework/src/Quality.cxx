@@ -93,14 +93,14 @@ std::string Quality::getMetadata(const std::string& key, const std::string& defa
   return mUserMetadata.count(key) > 0 ? mUserMetadata.at(key) : defaultValue;
 }
 
-Quality& Quality::addReason(const FlagReason& reason, std::string comment)
+Quality& Quality::addFlag(const FlagType& flag, std::string comment)
 {
-  mReasons.emplace_back(std::move(reason), std::move(comment));
+  mFlags.emplace_back(std::move(flag), std::move(comment));
   return *this;
 }
-const CommentedFlagReasons& Quality::getReasons() const
+const CommentedFlagTypes& Quality::getFlags() const
 {
-  return mReasons;
+  return mFlags;
 }
 
 Quality Quality::fromString(const std::string& str)

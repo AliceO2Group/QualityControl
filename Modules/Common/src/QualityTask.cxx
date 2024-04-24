@@ -272,7 +272,7 @@ void QualityTask::update(quality_control::postprocessing::Trigger t, framework::
       }
 
       if (std::find(qualityGroupConfig.ignoreQualitiesDetails.begin(), qualityGroupConfig.ignoreQualitiesDetails.end(), quality) == qualityGroupConfig.ignoreQualitiesDetails.end()) {
-        for (const auto& [flag, comment] : qo->getReasons()) {
+        for (const auto& [flag, comment] : qo->getFlags()) {
           if (comment.empty()) {
             lines.emplace_back(Message{ fmt::format("#color[{}]{{#rightarrow Flag: {}}}", kGray + 2, flag.getName()) });
           } else {

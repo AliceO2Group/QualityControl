@@ -16,6 +16,7 @@
 
 #include "Common/WorstOfAllAggregator.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control;
@@ -31,17 +32,17 @@ std::map<std::string, Quality> WorstOfAllAggregator::aggregate(QualityObjectsMap
 {
   if (qoMap.empty()) {
     Quality null = Quality::Null;
-    null.addReason(FlagReasonFactory::UnknownQuality(),
-                   "QO map given to the aggregator '" + mName + "' is empty.");
+    null.addFlag(FlagTypeFactory::UnknownQuality(),
+                 "QO map given to the aggregator '" + mName + "' is empty.");
     return { { mName, null } };
   }
 
-  // we return the worse quality of all the objects we receive, but we preserve all FlagReasons
+  // we return the worse quality of all the objects we receive, but we preserve all FlagTypes
   Quality current = Quality::Good;
   for (const auto& [qoName, qo] : qoMap) {
     (void)qoName;
-    for (const auto& reason : qo->getReasons()) {
-      current.addReason(reason.first, reason.second);
+    for (const auto& flag : qo->getFlags()) {
+      current.addFlag(flag.first, flag.second);
     }
     if (qo->getQuality().isWorseThan(current)) {
       current.set(qo->getQuality());

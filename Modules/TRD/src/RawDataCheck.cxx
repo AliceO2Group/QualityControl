@@ -30,7 +30,8 @@
 #include <TMath.h>
 
 // O2
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DataFormatsParameters/GRPECSObject.h>
 #include <CCDB/BasicCCDBManager.h>

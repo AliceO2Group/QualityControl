@@ -32,7 +32,8 @@
 #include <TList.h>
 #include <TLine.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -221,7 +222,7 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result != Quality::Bad) {
             result = Quality::Bad;
           }
-          result.addReason(FlagReasonFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(threshold));
+          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(threshold));
         }
       }
     } else if (std::find(gainhists.begin(), gainhists.end(), mo->GetName()) != gainhists.end()) {
@@ -240,7 +241,7 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
             if (result != Quality::Bad) {
               result = Quality::Bad;
             }
-            result.addReason(FlagReasonFactory::Unknown(), "Gain error " + errortype + " in FEC " + std::to_string(fecID) + " of DDL " + std::to_string(linkID));
+            result.addFlag(FlagTypeFactory::Unknown(), "Gain error " + errortype + " in FEC " + std::to_string(fecID) + " of DDL " + std::to_string(linkID));
             ILOG(Debug, Support) << "Detected " << errortype << " in FEC " << fecID << " of DDL " << linkID << ENDM;
           }
         }
@@ -262,7 +263,7 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
             }
             // Get position in supermodule
             auto [supermoduleID, rowSM, columnSM] = mGeometry->GetPositionInSupermoduleFromGlobalRowCol(row, column);
-            result.addReason(FlagReasonFactory::Unknown(), "Gain error " + errortype + " in channel col " + std::to_string(column) + " row " + std::to_string(column) + " (SM " + std::to_string(supermoduleID) + ", row " + std::to_string(rowSM) + " col " + std::to_string(columnSM) + ")");
+            result.addFlag(FlagTypeFactory::Unknown(), "Gain error " + errortype + " in channel col " + std::to_string(column) + " row " + std::to_string(column) + " (SM " + std::to_string(supermoduleID) + ", row " + std::to_string(rowSM) + " col " + std::to_string(columnSM) + ")");
             ILOG(Debug, Support) << "Detected " << errortype << " in column " << column << " row  " << row << " ( SM " << supermoduleID << ", " << columnSM << ", " << rowSM << ")" << ENDM;
           }
         }
@@ -296,8 +297,8 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     msg->Draw();
     // Notify about found errors on the infoLogger:
     if (mNotifyInfologger) {
-      for (const auto& reason : checkResult.getReasons()) {
-        ILOG(Warning, Support) << "Raw Error in " << mo->GetName() << " found: " << reason.second << ENDM;
+      for (const auto& flag : checkResult.getFlags()) {
+        ILOG(Warning, Support) << "Raw Error in " << mo->GetName() << " found: " << flag.second << ENDM;
       }
     }
   }

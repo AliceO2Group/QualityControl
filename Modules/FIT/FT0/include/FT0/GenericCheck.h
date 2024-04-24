@@ -18,7 +18,8 @@
 #define QC_MODULE_FT0_FT0GENERICCHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::ft0
@@ -52,12 +53,12 @@ class SingleCheck
       if (checkedValue > mThresholdError) {
         if (result.isBetterThan(Quality::Bad))
           result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("%.3f > %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
         log += "-> Bad";
       } else if (checkedValue > mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("%.3f > %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
         log += "-> Medium";
       } else {
         log += "-> OK";
@@ -66,12 +67,12 @@ class SingleCheck
       if (checkedValue < mThresholdError) {
         if (result.isBetterThan(Quality::Bad))
           result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("%.3f < %.3f (%s error limit)", checkedValue, mThresholdError, mCheckName.c_str()));
         log += "-> Bad";
       } else if (checkedValue < mThresholdWarning) {
         if (result.isBetterThan(Quality::Medium))
           result.set(Quality::Medium);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("%.3f < %.3f (%s warning limit)", checkedValue, mThresholdWarning, mCheckName.c_str()));
         log += "-> Medium";
       } else {
         log += "-> OK";

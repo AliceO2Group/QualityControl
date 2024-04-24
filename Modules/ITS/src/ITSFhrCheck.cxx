@@ -19,6 +19,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <fairlogger/Logger.h>
 #include <TH1.h>
@@ -47,7 +48,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
       if (h->GetMaximum() > 0) {
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "BAD:Decoding error(s) detected;");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "BAD:Decoding error(s) detected;");
       }
     } else if (mo->getName() == "General/General_Occupancy") {
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
@@ -83,7 +84,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             result.set(Quality::Bad);
             TString text = "Bad: IB stave has high FHR;";
             if (!checkReason(result, text))
-              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
+              result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
           }
         } else { // OB
           fhrcutOB = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "fhrcutOB", fhrcutOB);
@@ -92,7 +93,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             result.set(Quality::Bad);
             TString text = "Bad: OB stave has high FHR;";
             if (!checkReason(result, text))
-              result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
+              result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
           }
         }
 
@@ -106,12 +107,12 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         if (nBadStaves[iSector] / 48 > 0.1) {
           result.updateMetadata("Gen_Occu_empty", "bad");
           result.set(Quality::Bad);
-          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "Bad: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
+          result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "Bad: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
           break;
         } else if (nBadStaves[iSector] / 48 > 0.05) {
           result.updateMetadata("Gen_Occu_empty", "medium");
           result.set(Quality::Medium);
-          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "Medium: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
+          result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "Medium: Many empty staves in sector; IGNORE if run has just started OR it's TECH RUN");
         }
       }
 
@@ -366,9 +367,9 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 }
 bool ITSFhrCheck::checkReason(Quality checkResult, TString text)
 {
-  auto reasons = checkResult.getReasons();
-  for (int i = 0; i < int(reasons.size()); i++) {
-    if (text.Contains(reasons[i].second.c_str()))
+  auto flags = checkResult.getFlags();
+  for (int i = 0; i < int(flags.size()); i++) {
+    if (text.Contains(flags[i].second.c_str()))
       return true;
   }
   return false;

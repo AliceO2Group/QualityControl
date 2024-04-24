@@ -80,7 +80,7 @@ add_library(O2QualityControl
   src/MonitorObjectCollection.cxx
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
-  src/QualitiesToTRFCollectionConverter.cxx
+  src/QualitiesToFlagCollectionConverter.cxx
   src/Calculators.cxx
   src/DataSourceSpec.cxx
   src/RootFileSink.cxx
@@ -278,7 +278,7 @@ set(TEST_SRCS
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testRepoPathUtils.cxx
-    test/testQualitiesToTRFCollectionConverter.cxx
+    test/testQualitiesToFlagCollectionConverter.cxx
     test/testUserCodeInterface.cxx
   )
 

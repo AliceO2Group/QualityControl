@@ -25,7 +25,8 @@
 #include <TPaveText.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "Common/Utils.h"
 
 using namespace std;
@@ -91,7 +92,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
     reason = Form("Cannot compute quality due to problem with retieving MO");
   if (reason != "") {
     result.set(Quality::Null);
-    result.addReason(FlagReasonFactory::Unknown(), reason);
+    result.addFlag(FlagTypeFactory::Unknown(), reason);
     ILOG(Warning) << reason << ENDM;
     return result;
   }
@@ -107,14 +108,14 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
 
   if (mFractionOutOfBunchColl > mThreshError) {
     result.set(Quality::Bad);
-    result.addReason(FlagReasonFactory::Unknown(),
-                     Form("fraction of out of bunch collisions (%.2e) is above \"Error\" threshold (%.2e)",
-                          mFractionOutOfBunchColl, mThreshError));
+    result.addFlag(FlagTypeFactory::Unknown(),
+                   Form("fraction of out of bunch collisions (%.2e) is above \"Error\" threshold (%.2e)",
+                        mFractionOutOfBunchColl, mThreshError));
   } else if (mFractionOutOfBunchColl > mThreshWarning) {
     result.set(Quality::Medium);
-    result.addReason(FlagReasonFactory::Unknown(),
-                     Form("fraction of out of bunch collisions (%.2e) is above \"Warning\" threshold (%.2e)",
-                          mFractionOutOfBunchColl, mThreshWarning));
+    result.addFlag(FlagTypeFactory::Unknown(),
+                   Form("fraction of out of bunch collisions (%.2e) is above \"Warning\" threshold (%.2e)",
+                        mFractionOutOfBunchColl, mThreshWarning));
   }
 
   for (int i = 1; i < hOutOfBunchColl->GetNbinsX() + 1; i++) {

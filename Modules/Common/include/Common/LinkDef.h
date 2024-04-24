@@ -14,7 +14,7 @@
 #pragma link C++ class o2::quality_control_modules::common::THnSparse5Reductor + ;
 #pragma link C++ class o2::quality_control_modules::common::QualityReductor + ;
 #pragma link C++ class o2::quality_control_modules::common::EverIncreasingGraph + ;
-#pragma link C++ class o2::quality_control_modules::common::TRFCollectionTask + ;
+#pragma link C++ class o2::quality_control_modules::common::FlagCollectionTask + ;
 #pragma link C++ class o2::quality_control_modules::common::QualityTask + ;
 #pragma link C++ class o2::quality_control_modules::common::BigScreen + ;
 #pragma link C++ class o2::quality_control_modules::common::WorstOfAllAggregator + ;
