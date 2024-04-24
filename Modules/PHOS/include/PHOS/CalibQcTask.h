@@ -49,7 +49,7 @@ class CalibQcTask final : public TaskInterface
  protected:
  private:
   int mMode = 0; ///< Mode of operation: 0: badMap, 1: Pedestals, 2: LED
-  static constexpr short NHIST2D = 9;
+  static constexpr short NHIST2D = 25;
   enum histos2D { kChangeHGM1,
                   kChangeHGM2,
                   kChangeHGM3,
@@ -58,6 +58,22 @@ class CalibQcTask final : public TaskInterface
                   kChangeLGM2,
                   kChangeLGM3,
                   kChangeLGM4,
+                  kValueHGM1,
+                  kValueHGM2,
+                  kValueHGM3,
+                  kValueHGM4,
+                  kValueLGM1,
+                  kValueLGM2,
+                  kValueLGM3,
+                  kValueLGM4,
+                  kRMSHGM1,
+                  kRMSHGM2,
+                  kRMSHGM3,
+                  kRMSHGM4,
+                  kRMSLGM1,
+                  kRMSLGM2,
+                  kRMSLGM3,
+                  kRMSLGM4,
                   kL1phase
   };
   std::array<TH2F*, NHIST2D> mHist2D = { nullptr }; ///< Array of 2D histograms
