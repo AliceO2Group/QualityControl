@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(test_AdjacentQOs)
   };
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
-  ;
+
   for (const auto& qo : qos) {
     converter(qo);
   }
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE(test_TheSameFlagsButSeparated)
 
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
-  
+
   for (const auto& qo : qos) {
     converter(qo);
   }
