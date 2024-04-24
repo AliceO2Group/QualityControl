@@ -103,6 +103,86 @@ ITSTrackSimTask::~ITSTrackSimTask()
   delete hNumDuplicate_r;
   delete hDuplicate_z;
   delete hNumDuplicate_z;
+
+  delete hNumRecoFake_QoverPt;
+  delete hDenTrue_QoverPt;
+  delete hFakeTrack_QoverPt;
+
+  delete hNumRecoFake_4Cluster_pt;
+  delete hDenTrue_4Cluster_pt;
+  delete hFakeTrack_4Cluster_pt;
+  delete hNumRecoFake_4Cluster_eta;
+  delete hDenTrue_4Cluster_eta;
+  delete hFakeTrack_4Cluster_eta;
+  delete hNumRecoFake_4Cluster_phi;
+  delete hDenTrue_4Cluster_phi;
+  delete hFakeTrack_4Cluster_phi;
+  delete hNumRecoFake_4Cluster_r;
+  delete hDenTrue_4Cluster_r;
+  delete hFakeTrack_4Cluster_r;
+  delete hNumRecoFake_4Cluster_z;
+  delete hDenTrue_4Cluster_z;
+  delete hFakeTrack_4Cluster_z;
+  delete hNumRecoFake_4Cluster_QoverPt;
+  delete hDenTrue_4Cluster_QoverPt;
+  delete hFakeTrack_4Cluster_QoverPt;
+
+  delete hNumRecoFake_5Cluster_pt;
+  delete hDenTrue_5Cluster_pt;
+  delete hFakeTrack_5Cluster_pt;
+  delete hNumRecoFake_5Cluster_eta;
+  delete hDenTrue_5Cluster_eta;
+  delete hFakeTrack_5Cluster_eta;
+  delete hNumRecoFake_5Cluster_phi;
+  delete hDenTrue_5Cluster_phi;
+  delete hFakeTrack_5Cluster_phi;
+  delete hNumRecoFake_5Cluster_r;
+  delete hDenTrue_5Cluster_r;
+  delete hFakeTrack_5Cluster_r;
+  delete hNumRecoFake_5Cluster_z;
+  delete hDenTrue_5Cluster_z;
+  delete hFakeTrack_5Cluster_z;
+  delete hNumRecoFake_5Cluster_QoverPt;
+  delete hDenTrue_5Cluster_QoverPt;
+  delete hFakeTrack_5Cluster_QoverPt;
+
+  delete hNumRecoFake_6Cluster_pt;
+  delete hDenTrue_6Cluster_pt;
+  delete hFakeTrack_6Cluster_pt;
+  delete hNumRecoFake_6Cluster_eta;
+  delete hDenTrue_6Cluster_eta;
+  delete hFakeTrack_6Cluster_eta;
+  delete hNumRecoFake_6Cluster_phi;
+  delete hDenTrue_6Cluster_phi;
+  delete hFakeTrack_6Cluster_phi;
+  delete hNumRecoFake_6Cluster_r;
+  delete hDenTrue_6Cluster_r;
+  delete hFakeTrack_6Cluster_r;
+  delete hNumRecoFake_6Cluster_z;
+  delete hDenTrue_6Cluster_z;
+  delete hFakeTrack_6Cluster_z;
+  delete hNumRecoFake_6Cluster_QoverPt;
+  delete hDenTrue_6Cluster_QoverPt;
+  delete hFakeTrack_6Cluster_QoverPt;
+
+  delete hNumRecoFake_7Cluster_pt;
+  delete hDenTrue_7Cluster_pt;
+  delete hFakeTrack_7Cluster_pt;
+  delete hNumRecoFake_7Cluster_eta;
+  delete hDenTrue_7Cluster_eta;
+  delete hFakeTrack_7Cluster_eta;
+  delete hNumRecoFake_7Cluster_phi;
+  delete hDenTrue_7Cluster_phi;
+  delete hFakeTrack_7Cluster_phi;
+  delete hNumRecoFake_7Cluster_r;
+  delete hDenTrue_7Cluster_r;
+  delete hFakeTrack_7Cluster_r;
+  delete hNumRecoFake_7Cluster_z;
+  delete hDenTrue_7Cluster_z;
+  delete hFakeTrack_7Cluster_z;
+  delete hNumRecoFake_7Cluster_QoverPt;
+  delete hDenTrue_7Cluster_QoverPt;
+  delete hFakeTrack_7Cluster_QoverPt;
 }
 
 void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -182,9 +262,10 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int i = 0; i < reader.getNEvents(0); ++i) {
     std::vector<MCTrack> const& mcArr = reader.getTracks(i);
     auto mcHeader = reader.getMCEventHeader(0, i); // SourceID=0 for ITS
-    for (int mc = 0; mc < mcArr.size(); mc++) {
 
+    for (int mc = 0; mc < mcArr.size(); mc++) {
       const auto& mcTrack = (mcArr)[mc];
+
       info[i][mc].isFilled = false;
       if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)
         continue;
@@ -194,7 +275,6 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       if (info[i][mc].clusters != 0b1111111)
         continue;
-
       Double_t distance = sqrt(pow(mcHeader.GetX() - mcTrack.Vx(), 2) + pow(mcHeader.GetY() - mcTrack.Vy(), 2) + pow(mcHeader.GetZ() - mcTrack.Vz(), 2));
       info[i][mc].isFilled = true;
       info[i][mc].r = distance;
@@ -205,7 +285,6 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       info[i][mc].isPrimary = mcTrack.isPrimary();
       if (mcTrack.isPrimary()) {
         hPrimaryGen_pt->Fill(mcTrack.GetPt());
-
         // True Generated primaries: denominator of the efficiency plots
         hDenTrue_r->Fill(distance);
         hDenTrue_pt->Fill(mcTrack.GetPt());
@@ -227,10 +306,45 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
     Float_t ip[2]{ 0., 0. };
     Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex at 0,0,0
     track.getImpactParams(vx, vy, vz, bz, ip);
+    Int_t iNClusters = track.getNumberOfClusters();
 
     hAngularDistribution->Fill(track.getEta(), track.getPhi());
 
     if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
+
+      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
+        // True Generated primaries for QoverPt plot, because MCTrack does not have charge function
+        hDenTrue_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        if (iNClusters == 4) {
+          hDenTrue_4Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_4Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hDenTrue_4Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_4Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hDenTrue_4Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hDenTrue_4Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+        } else if (iNClusters == 5) {
+          hDenTrue_5Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_5Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hDenTrue_5Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_5Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hDenTrue_5Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hDenTrue_5Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+        } else if (iNClusters == 6) {
+          hDenTrue_6Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_6Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hDenTrue_6Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_6Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hDenTrue_6Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hDenTrue_6Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+        } else if (iNClusters == 7) {
+          hDenTrue_7Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_7Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hDenTrue_7Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hDenTrue_7Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hDenTrue_7Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hDenTrue_7Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+        }
+      }
 
       if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isReco != 0) {
         hNumDuplicate_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
@@ -249,6 +363,37 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
         hNumRecoFake_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
         hNumRecoFake_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
         hNumRecoFake_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+        hNumRecoFake_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        if (iNClusters == 4) {
+          hNumRecoFake_4Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_4Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hNumRecoFake_4Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hNumRecoFake_4Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hNumRecoFake_4Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hNumRecoFake_4Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        } else if (iNClusters == 5) {
+          hNumRecoFake_5Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_5Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hNumRecoFake_5Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hNumRecoFake_5Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hNumRecoFake_5Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hNumRecoFake_5Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        } else if (iNClusters == 6) {
+          hNumRecoFake_6Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_6Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hNumRecoFake_6Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hNumRecoFake_6Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hNumRecoFake_6Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hNumRecoFake_6Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        } else if (iNClusters == 7) {
+          hNumRecoFake_7Cluster_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_7Cluster_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+          hNumRecoFake_7Cluster_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+          hNumRecoFake_7Cluster_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hNumRecoFake_7Cluster_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hNumRecoFake_7Cluster_QoverPt->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        }
+
         if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
           hTrackImpactTransvFake->Fill(ip[0]);
           hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
@@ -302,6 +447,61 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
   hEfficiency_z->SetTotalHistogram(*hDenTrue_z, "f");
   hDuplicate_z->SetPassedHistogram(*hNumDuplicate_z, "f");
   hDuplicate_z->SetTotalHistogram(*hDenTrue_z, "f");
+
+  hFakeTrack_QoverPt->SetPassedHistogram(*hNumRecoFake_QoverPt, "f");
+  hFakeTrack_QoverPt->SetTotalHistogram(*hDenTrue_QoverPt, "f");
+
+  hFakeTrack_4Cluster_pt->SetPassedHistogram(*hNumRecoFake_4Cluster_pt, "f");
+  hFakeTrack_4Cluster_pt->SetTotalHistogram(*hDenTrue_4Cluster_pt, "f");
+  hFakeTrack_4Cluster_phi->SetPassedHistogram(*hNumRecoFake_4Cluster_phi, "f");
+  hFakeTrack_4Cluster_phi->SetTotalHistogram(*hDenTrue_4Cluster_phi, "f");
+  hFakeTrack_4Cluster_eta->SetPassedHistogram(*hNumRecoFake_4Cluster_eta, "f");
+  hFakeTrack_4Cluster_eta->SetTotalHistogram(*hDenTrue_4Cluster_eta, "f");
+  hFakeTrack_4Cluster_r->SetPassedHistogram(*hNumRecoFake_4Cluster_r, "f");
+  hFakeTrack_4Cluster_r->SetTotalHistogram(*hDenTrue_4Cluster_r, "f");
+  hFakeTrack_4Cluster_z->SetPassedHistogram(*hNumRecoFake_4Cluster_z, "f");
+  hFakeTrack_4Cluster_z->SetTotalHistogram(*hDenTrue_4Cluster_z, "f");
+  hFakeTrack_4Cluster_QoverPt->SetPassedHistogram(*hNumRecoFake_4Cluster_QoverPt, "f");
+  hFakeTrack_4Cluster_QoverPt->SetTotalHistogram(*hDenTrue_4Cluster_QoverPt, "f");
+
+  hFakeTrack_5Cluster_pt->SetPassedHistogram(*hNumRecoFake_5Cluster_pt, "f");
+  hFakeTrack_5Cluster_pt->SetTotalHistogram(*hDenTrue_5Cluster_pt, "f");
+  hFakeTrack_5Cluster_phi->SetPassedHistogram(*hNumRecoFake_5Cluster_phi, "f");
+  hFakeTrack_5Cluster_phi->SetTotalHistogram(*hDenTrue_5Cluster_phi, "f");
+  hFakeTrack_5Cluster_eta->SetPassedHistogram(*hNumRecoFake_5Cluster_eta, "f");
+  hFakeTrack_5Cluster_eta->SetTotalHistogram(*hDenTrue_5Cluster_eta, "f");
+  hFakeTrack_5Cluster_r->SetPassedHistogram(*hNumRecoFake_5Cluster_r, "f");
+  hFakeTrack_5Cluster_r->SetTotalHistogram(*hDenTrue_5Cluster_r, "f");
+  hFakeTrack_5Cluster_z->SetPassedHistogram(*hNumRecoFake_5Cluster_z, "f");
+  hFakeTrack_5Cluster_z->SetTotalHistogram(*hDenTrue_5Cluster_z, "f");
+  hFakeTrack_5Cluster_QoverPt->SetPassedHistogram(*hNumRecoFake_5Cluster_QoverPt, "f");
+  hFakeTrack_5Cluster_QoverPt->SetTotalHistogram(*hDenTrue_5Cluster_QoverPt, "f");
+
+  hFakeTrack_6Cluster_pt->SetPassedHistogram(*hNumRecoFake_6Cluster_pt, "f");
+  hFakeTrack_6Cluster_pt->SetTotalHistogram(*hDenTrue_6Cluster_pt, "f");
+  hFakeTrack_6Cluster_phi->SetPassedHistogram(*hNumRecoFake_6Cluster_phi, "f");
+  hFakeTrack_6Cluster_phi->SetTotalHistogram(*hDenTrue_6Cluster_phi, "f");
+  hFakeTrack_6Cluster_eta->SetPassedHistogram(*hNumRecoFake_6Cluster_eta, "f");
+  hFakeTrack_6Cluster_eta->SetTotalHistogram(*hDenTrue_6Cluster_eta, "f");
+  hFakeTrack_6Cluster_r->SetPassedHistogram(*hNumRecoFake_6Cluster_r, "f");
+  hFakeTrack_6Cluster_r->SetTotalHistogram(*hDenTrue_6Cluster_r, "f");
+  hFakeTrack_6Cluster_z->SetPassedHistogram(*hNumRecoFake_6Cluster_z, "f");
+  hFakeTrack_6Cluster_z->SetTotalHistogram(*hDenTrue_6Cluster_z, "f");
+  hFakeTrack_6Cluster_QoverPt->SetPassedHistogram(*hNumRecoFake_6Cluster_QoverPt, "f");
+  hFakeTrack_6Cluster_QoverPt->SetTotalHistogram(*hDenTrue_6Cluster_QoverPt, "f");
+
+  hFakeTrack_7Cluster_pt->SetPassedHistogram(*hNumRecoFake_7Cluster_pt, "f");
+  hFakeTrack_7Cluster_pt->SetTotalHistogram(*hDenTrue_7Cluster_pt, "f");
+  hFakeTrack_7Cluster_phi->SetPassedHistogram(*hNumRecoFake_7Cluster_phi, "f");
+  hFakeTrack_7Cluster_phi->SetTotalHistogram(*hDenTrue_7Cluster_phi, "f");
+  hFakeTrack_7Cluster_eta->SetPassedHistogram(*hNumRecoFake_7Cluster_eta, "f");
+  hFakeTrack_7Cluster_eta->SetTotalHistogram(*hDenTrue_7Cluster_eta, "f");
+  hFakeTrack_7Cluster_r->SetPassedHistogram(*hNumRecoFake_7Cluster_r, "f");
+  hFakeTrack_7Cluster_r->SetTotalHistogram(*hDenTrue_7Cluster_r, "f");
+  hFakeTrack_7Cluster_z->SetPassedHistogram(*hNumRecoFake_7Cluster_z, "f");
+  hFakeTrack_7Cluster_z->SetTotalHistogram(*hDenTrue_7Cluster_z, "f");
+  hFakeTrack_7Cluster_QoverPt->SetPassedHistogram(*hNumRecoFake_7Cluster_QoverPt, "f");
+  hFakeTrack_7Cluster_QoverPt->SetTotalHistogram(*hDenTrue_7Cluster_QoverPt, "f");
 }
 
 void ITSTrackSimTask::endOfCycle()
@@ -348,6 +548,61 @@ void ITSTrackSimTask::reset()
 
   hAngularDistribution->Reset();
   hNumDuplicate_pt->Reset();
+
+  hNumRecoFake_QoverPt->Reset();
+  hDenTrue_QoverPt->Reset();
+
+  hNumRecoFake_4Cluster_pt->Reset();
+  hDenTrue_4Cluster_pt->Reset();
+  hNumRecoFake_4Cluster_phi->Reset();
+  hDenTrue_4Cluster_phi->Reset();
+  hNumRecoFake_4Cluster_eta->Reset();
+  hDenTrue_4Cluster_eta->Reset();
+  hNumRecoFake_4Cluster_r->Reset();
+  hDenTrue_4Cluster_r->Reset();
+  hNumRecoFake_4Cluster_z->Reset();
+  hDenTrue_4Cluster_z->Reset();
+  hNumRecoFake_4Cluster_QoverPt->Reset();
+  hDenTrue_4Cluster_QoverPt->Reset();
+
+  hNumRecoFake_5Cluster_pt->Reset();
+  hDenTrue_5Cluster_pt->Reset();
+  hNumRecoFake_5Cluster_phi->Reset();
+  hDenTrue_5Cluster_phi->Reset();
+  hNumRecoFake_5Cluster_eta->Reset();
+  hDenTrue_5Cluster_eta->Reset();
+  hNumRecoFake_5Cluster_r->Reset();
+  hDenTrue_5Cluster_r->Reset();
+  hNumRecoFake_5Cluster_z->Reset();
+  hDenTrue_5Cluster_z->Reset();
+  hNumRecoFake_5Cluster_QoverPt->Reset();
+  hDenTrue_5Cluster_QoverPt->Reset();
+
+  hNumRecoFake_6Cluster_pt->Reset();
+  hDenTrue_6Cluster_pt->Reset();
+  hNumRecoFake_6Cluster_phi->Reset();
+  hDenTrue_6Cluster_phi->Reset();
+  hNumRecoFake_6Cluster_eta->Reset();
+  hDenTrue_6Cluster_eta->Reset();
+  hNumRecoFake_6Cluster_r->Reset();
+  hDenTrue_6Cluster_r->Reset();
+  hNumRecoFake_6Cluster_z->Reset();
+  hDenTrue_6Cluster_z->Reset();
+  hNumRecoFake_6Cluster_QoverPt->Reset();
+  hDenTrue_6Cluster_QoverPt->Reset();
+
+  hNumRecoFake_7Cluster_pt->Reset();
+  hDenTrue_7Cluster_pt->Reset();
+  hNumRecoFake_7Cluster_phi->Reset();
+  hDenTrue_7Cluster_phi->Reset();
+  hNumRecoFake_7Cluster_eta->Reset();
+  hDenTrue_7Cluster_eta->Reset();
+  hNumRecoFake_7Cluster_r->Reset();
+  hDenTrue_7Cluster_r->Reset();
+  hNumRecoFake_7Cluster_z->Reset();
+  hDenTrue_7Cluster_z->Reset();
+  hNumRecoFake_7Cluster_QoverPt->Reset();
+  hDenTrue_7Cluster_QoverPt->Reset();
 }
 
 void ITSTrackSimTask::createAllHistos()
@@ -438,6 +693,112 @@ void ITSTrackSimTask::createAllHistos()
   addObject(hAngularDistribution);
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
   hAngularDistribution->SetStats(0);
+
+  hFakeTrack_QoverPt = new TEfficiency("faketrack_QoverPt", "#it{Q/p}_{T} fake-track rate;#it{Q/p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
+  addObject(hFakeTrack_QoverPt);
+  hNumRecoFake_QoverPt = new TH1D("NumRecoFake_QoverPt", "", nb, xbins);
+  hDenTrue_QoverPt = new TH1D("DenTrueMC_QoverPt", "", nb, xbins);
+
+  // Fake track rate plots for 4 cluster tracks
+  hFakeTrack_4Cluster_pt = new TEfficiency("faketrack_4Cluster_pt", "#it{p}_{T} fake-track rate 4 cluster tracks;#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
+  addObject(hFakeTrack_4Cluster_pt);
+  hNumRecoFake_4Cluster_pt = new TH1D("NumRecoFake_4Cluster_pt", "", nb, xbins);
+  hDenTrue_4Cluster_pt = new TH1D("DenTrueMC_4Cluster_pt", "", nb, xbins);
+  hFakeTrack_4Cluster_phi = new TEfficiency("faketrack_4Cluster_phi", "#phi fake-track rate 4 cluster tracks;#phi;Fake-track rate 4 cluster tracks", 60, 0, TMath::TwoPi());
+  addObject(hFakeTrack_4Cluster_phi);
+  hNumRecoFake_4Cluster_phi = new TH1D("NumRecoFake_4Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hDenTrue_4Cluster_phi = new TH1D("DenTrueMC_4Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hFakeTrack_4Cluster_eta = new TEfficiency("faketrack_4Cluster_eta", "#eta fake-track rate 4 cluster tracks;#eta;Fake-track rate 4 cluster tracks", 30, -1.5, 1.5);
+  addObject(hFakeTrack_4Cluster_eta);
+  hNumRecoFake_4Cluster_eta = new TH1D("NumRecoFake_4Cluster_eta", "", 30, -1.5, 1.5);
+  hDenTrue_4Cluster_eta = new TH1D("DenTrueMC_4Cluster_eta", "", 30, -1.5, 1.5);
+  hFakeTrack_4Cluster_r = new TEfficiency("faketrack_4Cluster_r", "r fake-track rate 4 cluster tracks;r (cm);Fake-track rate 4 cluster tracks", 100, 0, 5);
+  addObject(hFakeTrack_4Cluster_r);
+  hNumRecoFake_4Cluster_r = new TH1D("NumRecoFake_4Cluster_r", "", 100, 0, 5);
+  hDenTrue_4Cluster_r = new TH1D("DenTrueMC_4Cluster_r", "", 100, 0, 5);
+  hFakeTrack_4Cluster_z = new TEfficiency("faketrack_4Cluster_z", "z fake-track rate 4 cluster tracks;z (cm);Fake-track rate 4 cluster tracks", 101, -5, 5);
+  addObject(hFakeTrack_4Cluster_z);
+  hNumRecoFake_4Cluster_z = new TH1D("NumRecoFake_4Cluster_z", "", 101, -5, 5);
+  hDenTrue_4Cluster_z = new TH1D("DenTrueMC_4Cluster_z", "", 101, -5, 5);
+  hFakeTrack_4Cluster_QoverPt = new TEfficiency("faketrack_4Cluster_QoverPt", "#it{Q/p}_{T} fake-track rate 4 cluster tracks;#it{Q/p}_{T} (GeV/#it{c});Fake-track rate 4 cluster tracks", nb, xbins);
+  addObject(hFakeTrack_4Cluster_QoverPt);
+  hNumRecoFake_4Cluster_QoverPt = new TH1D("NumRecoFake_4Cluster_QoverPt", "", nb, xbins);
+  hDenTrue_4Cluster_QoverPt = new TH1D("DenTrueMC_4Cluster_QoverPt", "", nb, xbins);
+  // Fake track rate plots for 5 cluster tracks
+  hFakeTrack_5Cluster_pt = new TEfficiency("faketrack_5Cluster_pt", "#it{p}_{T} fake-track rate 5 cluster tracks;#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
+  addObject(hFakeTrack_5Cluster_pt);
+  hNumRecoFake_5Cluster_pt = new TH1D("NumRecoFake_5Cluster_pt", "", nb, xbins);
+  hDenTrue_5Cluster_pt = new TH1D("DenTrueMC_5Cluster_pt", "", nb, xbins);
+  hFakeTrack_5Cluster_phi = new TEfficiency("faketrack_5Cluster_phi", "#phi fake-track rate 5 cluster tracks;#phi;Fake-track rate 5 cluster tracks", 60, 0, TMath::TwoPi());
+  addObject(hFakeTrack_5Cluster_phi);
+  hNumRecoFake_5Cluster_phi = new TH1D("NumRecoFake_5Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hDenTrue_5Cluster_phi = new TH1D("DenTrueMC_5Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hFakeTrack_5Cluster_eta = new TEfficiency("faketrack_5Cluster_eta", "#eta fake-track rate 5 cluster tracks;#eta;Fake-track rate 5 cluster tracks", 30, -1.5, 1.5);
+  addObject(hFakeTrack_5Cluster_eta);
+  hNumRecoFake_5Cluster_eta = new TH1D("NumRecoFake_5Cluster_eta", "", 30, -1.5, 1.5);
+  hDenTrue_5Cluster_eta = new TH1D("DenTrueMC_5Cluster_eta", "", 30, -1.5, 1.5);
+  hFakeTrack_5Cluster_r = new TEfficiency("faketrack_5Cluster_r", "r fake-track rate 5 cluster tracks;r (cm);Fake-track rate 5 cluster tracks", 100, 0, 5);
+  addObject(hFakeTrack_5Cluster_r);
+  hNumRecoFake_5Cluster_r = new TH1D("NumRecoFake_5Cluster_r", "", 100, 0, 5);
+  hDenTrue_5Cluster_r = new TH1D("DenTrueMC_5Cluster_r", "", 100, 0, 5);
+  hFakeTrack_5Cluster_z = new TEfficiency("faketrack_5Cluster_z", "z fake-track rate 5 cluster tracks;z (cm);Fake-track rate 5 cluster tracks", 101, -5, 5);
+  addObject(hFakeTrack_5Cluster_z);
+  hNumRecoFake_5Cluster_z = new TH1D("NumRecoFake_5Cluster_z", "", 101, -5, 5);
+  hDenTrue_5Cluster_z = new TH1D("DenTrueMC_5Cluster_z", "", 101, -5, 5);
+  hFakeTrack_5Cluster_QoverPt = new TEfficiency("faketrack_5Cluster_QoverPt", "#it{Q/p}_{T} fake-track rate 5 cluster tracks;#it{Q/p}_{T} (GeV/#it{c});Fake-track rate 5 cluster tracks", nb, xbins);
+  addObject(hFakeTrack_5Cluster_QoverPt);
+  hNumRecoFake_5Cluster_QoverPt = new TH1D("NumRecoFake_5Cluster_QoverPt", "", nb, xbins);
+  hDenTrue_5Cluster_QoverPt = new TH1D("DenTrueMC_5Cluster_QoverPt", "", nb, xbins);
+  // Fake track rate plots for 6 cluster tracks
+  hFakeTrack_6Cluster_pt = new TEfficiency("faketrack_6Cluster_pt", "#it{p}_{T} fake-track rate 6 cluster tracks;#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
+  addObject(hFakeTrack_6Cluster_pt);
+  hNumRecoFake_6Cluster_pt = new TH1D("NumRecoFake_6Cluster_pt", "", nb, xbins);
+  hDenTrue_6Cluster_pt = new TH1D("DenTrueMC_6Cluster_pt", "", nb, xbins);
+  hFakeTrack_6Cluster_phi = new TEfficiency("faketrack_6Cluster_phi", "#phi fake-track rate 6 cluster tracks;#phi;Fake-track rate 6 cluster tracks", 60, 0, TMath::TwoPi());
+  addObject(hFakeTrack_6Cluster_phi);
+  hNumRecoFake_6Cluster_phi = new TH1D("NumRecoFake_6Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hDenTrue_6Cluster_phi = new TH1D("DenTrueMC_6Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hFakeTrack_6Cluster_eta = new TEfficiency("faketrack_6Cluster_eta", "#eta fake-track rate 6 cluster tracks;#eta;Fake-track rate 6 cluster tracks", 30, -1.5, 1.5);
+  addObject(hFakeTrack_6Cluster_eta);
+  hNumRecoFake_6Cluster_eta = new TH1D("NumRecoFake_6Cluster_eta", "", 30, -1.5, 1.5);
+  hDenTrue_6Cluster_eta = new TH1D("DenTrueMC_6Cluster_eta", "", 30, -1.5, 1.5);
+  hFakeTrack_6Cluster_r = new TEfficiency("faketrack_6Cluster_r", "r fake-track rate 6 cluster tracks;r (cm);Fake-track rate 6 cluster tracks", 100, 0, 5);
+  addObject(hFakeTrack_6Cluster_r);
+  hNumRecoFake_6Cluster_r = new TH1D("NumRecoFake_6Cluster_r", "", 100, 0, 5);
+  hDenTrue_6Cluster_r = new TH1D("DenTrueMC_6Cluster_r", "", 100, 0, 5);
+  hFakeTrack_6Cluster_z = new TEfficiency("faketrack_6Cluster_z", "z fake-track rate 6 cluster tracks;z (cm);Fake-track rate 6 cluster tracks", 101, -5, 5);
+  addObject(hFakeTrack_6Cluster_z);
+  hNumRecoFake_6Cluster_z = new TH1D("NumRecoFake_6Cluster_z", "", 101, -5, 5);
+  hDenTrue_6Cluster_z = new TH1D("DenTrueMC_6Cluster_z", "", 101, -5, 5);
+  hFakeTrack_6Cluster_QoverPt = new TEfficiency("faketrack_6Cluster_QoverPt", "#it{Q/p}_{T} fake-track rate 6 cluster tracks;#it{Q/p}_{T} (GeV/#it{c});Fake-track rate 6 cluster tracks", nb, xbins);
+  addObject(hFakeTrack_6Cluster_QoverPt);
+  hNumRecoFake_6Cluster_QoverPt = new TH1D("NumRecoFake_6Cluster_QoverPt", "", nb, xbins);
+  hDenTrue_6Cluster_QoverPt = new TH1D("DenTrueMC_6Cluster_QoverPt", "", nb, xbins);
+  // Fake track rate plots for 7 cluster tracks
+  hFakeTrack_7Cluster_pt = new TEfficiency("faketrack_7Cluster_pt", "#it{p}_{T} fake-track rate 7 cluster tracks;#it{p}_{T} (GeV/#it{c});Fake-track rate", nb, xbins);
+  addObject(hFakeTrack_7Cluster_pt);
+  hNumRecoFake_7Cluster_pt = new TH1D("NumRecoFake_7Cluster_pt", "", nb, xbins);
+  hDenTrue_7Cluster_pt = new TH1D("DenTrueMC_7Cluster_pt", "", nb, xbins);
+  hFakeTrack_7Cluster_phi = new TEfficiency("faketrack_7Cluster_phi", "#phi fake-track rate 7 cluster tracks;#phi;Fake-track rate 7 cluster tracks", 60, 0, TMath::TwoPi());
+  addObject(hFakeTrack_7Cluster_phi);
+  hNumRecoFake_7Cluster_phi = new TH1D("NumRecoFake_7Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hDenTrue_7Cluster_phi = new TH1D("DenTrueMC_7Cluster_phi", "", 60, 0, TMath::TwoPi());
+  hFakeTrack_7Cluster_eta = new TEfficiency("faketrack_7Cluster_eta", "#eta fake-track rate 7 cluster tracks;#eta;Fake-track rate 7 cluster tracks", 30, -1.5, 1.5);
+  addObject(hFakeTrack_7Cluster_eta);
+  hNumRecoFake_7Cluster_eta = new TH1D("NumRecoFake_7Cluster_eta", "", 30, -1.5, 1.5);
+  hDenTrue_7Cluster_eta = new TH1D("DenTrueMC_7Cluster_eta", "", 30, -1.5, 1.5);
+  hFakeTrack_7Cluster_r = new TEfficiency("faketrack_7Cluster_r", "r fake-track rate 7 cluster tracks;r (cm);Fake-track rate 7 cluster tracks", 100, 0, 5);
+  addObject(hFakeTrack_7Cluster_r);
+  hNumRecoFake_7Cluster_r = new TH1D("NumRecoFake_7Cluster_r", "", 100, 0, 5);
+  hDenTrue_7Cluster_r = new TH1D("DenTrueMC_7Cluster_r", "", 100, 0, 5);
+  hFakeTrack_7Cluster_z = new TEfficiency("faketrack_7Cluster_z", "z fake-track rate 7 cluster tracks;z (cm);Fake-track rate 7 cluster tracks", 101, -5, 5);
+  addObject(hFakeTrack_7Cluster_z);
+  hNumRecoFake_7Cluster_z = new TH1D("NumRecoFake_7Cluster_z", "", 101, -5, 5);
+  hDenTrue_7Cluster_z = new TH1D("DenTrueMC_7Cluster_z", "", 101, -5, 5);
+  hFakeTrack_7Cluster_QoverPt = new TEfficiency("faketrack_7Cluster_QoverPt", "#it{Q/p}_{T} fake-track rate 7 cluster tracks;#it{Q/p}_{T} (GeV/#it{c});Fake-track rate 7 cluster tracks", nb, xbins);
+  addObject(hFakeTrack_7Cluster_QoverPt);
+  hNumRecoFake_7Cluster_QoverPt = new TH1D("NumRecoFake_7Cluster_QoverPt", "", nb, xbins);
+  hDenTrue_7Cluster_QoverPt = new TH1D("DenTrueMC_7Cluster_QoverPt", "", nb, xbins);
 }
 
 void ITSTrackSimTask::addObject(TObject* aObject)
