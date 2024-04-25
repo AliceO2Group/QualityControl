@@ -96,7 +96,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   map<string, string> metadata; // can be empty
 
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
-  if(lhcifdata == nullptr) {
+  if (lhcifdata == nullptr) {
     ILOG(Info, Support) << "LHC data not found for timestamp:" << mTimestamp << ENDM;
     return result;
   }
@@ -115,7 +115,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   for (auto const& bc : bcs) {
     lhcBC_bitset.set(bc, 1);
   }
-  //int nhistos = (*moMap).size();
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
@@ -244,7 +243,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   }
   if ((vBadBC.size() > 0) || (vIndexBad.size() > 0)) {
     result = Quality::Bad;
-  } else if ((vMediumBC.size()  > 0) || (vIndexMedium.size() > 0)){
+  } else if ((vMediumBC.size() > 0) || (vIndexMedium.size() > 0)) {
     result = Quality::Medium;
   } else {
     result = Quality::Good;
