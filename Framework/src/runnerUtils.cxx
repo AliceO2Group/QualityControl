@@ -16,6 +16,7 @@
 ///
 
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/stringUtils.h"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <CommonUtils/StringUtils.h>
@@ -62,14 +63,8 @@ bool hasChecks(const std::string& configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
-bool is_unsigned_integer(const std::string& s)
-{
-  return !s.empty() && std::find_if(s.begin(),
-                                    s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
-}
-
 /**
- * If the runType is of legacy type, i.e. an integer, it will be replaced by the corresponding string representation.
+ * If the runType is of legacy type, i.e. an integer, the corresponding string representation is returned.
  * In case we cannot find a string representation we use "NONE".
  * @param runType
  */
@@ -77,7 +72,7 @@ std::string_view translateIntegerRunType(const std::string& runType)
 {
   // runType used to be an integer. If we find an integer in a config file, the risk is that it is translated directly to a string (2->"2").
   // We must rather translate the integer into the corresponding run type string if at all possible.
-  if (is_unsigned_integer(runType)) {
+  if (isUnsignedInteger(runType)) {
     try {
       ILOG(Warning, Ops) << "Activity type was provided as an integer. A matching activity type could be found: " << parameters::GRPECS::RunTypeNames.at(std::stoi(runType)) << ". Consider using the string representation of the run type." << ENDM;
       return parameters::GRPECS::RunTypeNames.at(std::stoi(runType));

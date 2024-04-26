@@ -43,7 +43,7 @@ bool parseBoolParam(const CustomParameters& customParameters, const std::string&
 /**
  * Check if the string contains only digits.
  */
-bool isOnlyDigits(std::string s);
+bool isUnsignedInteger(const std::string& s);
 
 } // namespace o2::quality_control::core
 

@@ -26,12 +26,12 @@ using namespace o2::quality_control::core;
 
 BOOST_AUTO_TEST_CASE(test_is_number)
 {
-  BOOST_CHECK_EQUAL(isOnlyDigits("1"), true);
-  BOOST_CHECK_EQUAL(isOnlyDigits("-1"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("1000000"), true);
-  BOOST_CHECK_EQUAL(isOnlyDigits("0.1"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits(".2"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("x"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("1x"), false);
-  BOOST_CHECK_EQUAL(isOnlyDigits("......"), false);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("1"), true);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("-1"), false);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("1000000"), true);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("0.1"), false);
+  BOOST_CHECK_EQUAL(isUnsignedInteger(".2"), false);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("x"), false);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("1x"), false);
+  BOOST_CHECK_EQUAL(isUnsignedInteger("......"), false);
 }
