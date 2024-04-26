@@ -48,6 +48,11 @@ GID::mask_t adaptSource(GID::mask_t src)
     src.set(GID::Source::MCH);
     src.set(GID::Source::MID);
   }
+  if (src[GID::Source::MFTMCH] == 1) {
+    // ensure we request the individual tracks as we use their information in the plotter
+    src.set(GID::Source::MFT);
+    src.set(GID::Source::MCH);
+  }
   if (src[GID::Source::MCHMID] == 1) {
     // ensure we request the individual tracks as we use their information in the plotter
     src.set(GID::Source::MCH);
@@ -260,9 +265,6 @@ void TracksTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (!assertInputs(ctx)) {
     return;
   }
-
-  auto tracksMCH = ctx.inputs().get<gsl::span<o2::mch::TrackMCH>>("trackMCH");
-  auto clusters = ctx.inputs().get<gsl::span<o2::mch::Cluster>>("trackMCHTRACKCLUSTERS");
 
   ILOG(Debug, Devel) << "Debug: Asserted inputs" << ENDM;
 
