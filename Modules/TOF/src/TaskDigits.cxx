@@ -32,6 +32,7 @@
 #include <Framework/InputRecord.h>
 #include "CommonConstants/LHCConstants.h"
 #include "DataFormatsTOF/Diagnostic.h"
+#include "CCDB/BasicCCDBManager.h"
 #include "Framework/TimingInfo.h"
 #include "DetectorsBase/GeometryManager.h"
 
@@ -239,6 +240,12 @@ void TaskDigits::startOfCycle()
 
 void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  if (mApplyCalib && !mCalChannel) {
+    auto creationTime = ctx.services().get<o2::framework::TimingInfo>().creation;
+    mCalChannel = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::dataformats::CalibTimeSlewingParamTOF>("TOF/Calib/ChannelCalib", creationTime);
+    mLHCphase = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::dataformats::CalibLHCphaseTOF>("TOF/Calib/LHCphase", creationTime);
+  }
+
   // Get TOF digits
   const auto& digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
   // Get TOF Readout window
@@ -378,12 +385,10 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       o2::tof::Geo::getPos(det, pos);
       float length = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
-      if (mApplyCalib) { // calibration
-        auto calChannel = ctx.inputs().get<o2::dataformats::CalibTimeSlewingParamTOF*>("channelCalib");
-        auto lhcPhase = ctx.inputs().get<o2::dataformats::CalibLHCphaseTOF*>("lhcPhase");
+      if (mCalChannel) {                                           // calibration
         float timeTDCcorr = digit.getTDC() * o2::tof::Geo::TDCBIN; // in ps
-        timeTDCcorr -= calChannel->evalTimeSlewing(digit.getChannel(), 0.0);
-        timeTDCcorr -= lhcPhase->getLHCphase(0);
+        timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0);
+        timeTDCcorr -= mLHCphase->getLHCphase(0);
         timeTDCcorr -= length * 33.356410 - 1000;                                                                                                 // subract path (1ns margin)
         bcCorrCable += int(o2::constants::lhc::LHCMaxBunches + timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV) - o2::constants::lhc::LHCMaxBunches; // to truncate in the proper way
       } else {
