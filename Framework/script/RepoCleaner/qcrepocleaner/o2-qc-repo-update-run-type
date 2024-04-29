@@ -12,7 +12,7 @@ def parse_args():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
     parser = argparse.ArgumentParser(description='Update the run type of all versions in a path. The run types for each run are '
-                                                 'provided in a csv file whose format is the one from the bookkeeping.')
+                                                 'provided in a csv file whose format is the one from the bookkeeping, with headers.')
     parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
