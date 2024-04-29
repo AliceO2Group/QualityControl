@@ -426,8 +426,8 @@ BOOST_AUTO_TEST_CASE(ccdb_qcfc)
   std::shared_ptr<QualityControlFlagCollection> qcfc1{ new QualityControlFlagCollection{ qcfcName, "TST", { 45, 500000 }, 42, "LHC42x", "spass", "qc" } };
   qcfc1->insert({ 50, 77, FlagTypeFactory::Invalid(), "a comment", "a source" });
   qcfc1->insert({ 51, 77, FlagTypeFactory::Invalid() });
-  qcfc1->insert({ 1234, 3434, FlagTypeFactory::LimitedAcceptance() });
-  qcfc1->insert({ 50, 77, FlagTypeFactory::LimitedAcceptance() });
+  qcfc1->insert({ 1234, 3434, FlagTypeFactory::BadPID() });
+  qcfc1->insert({ 50, 77, FlagTypeFactory::BadPID() });
   qcfc1->insert({ 43434, 63421, FlagTypeFactory::NotBadFlagExample() });
 
   f.backend->storeQCFC(qcfc1);

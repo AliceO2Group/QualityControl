@@ -123,15 +123,15 @@ TEST_CASE("qo_flags")
   QualityObject qo1(Quality::Bad, "xyzCheck", "DET");
   qo1.addFlag(FlagTypeFactory::BadTracking(), "exception in x");
   qo1.addFlag(FlagTypeFactory::BadTracking(), "exception in y");
-  qo1.addFlag(FlagTypeFactory::LimitedAcceptance(), "sector C off");
+  qo1.addFlag(FlagTypeFactory::BadPID(), "sector C off");
 
   auto flags1 = qo1.getFlags();
   CHECK(flags1[0].first == FlagTypeFactory::BadTracking());
   CHECK(flags1[0].second == "exception in x");
   CHECK(flags1[1].first == FlagTypeFactory::BadTracking());
   CHECK(flags1[1].second == "exception in y");
-  CHECK(flags1[2].first == FlagTypeFactory::LimitedAcceptance());
-  CHECK(flags1[2].second == "sector C off");
+  CHECK(flags1[2].first == FlagTypeFactory::BadPID());
+  CHECK(flags1[2].second == "wrong time of flight due to the summer time change");
 
   auto qo2 = qo1;
   auto flags2 = qo2.getFlags();
@@ -139,8 +139,8 @@ TEST_CASE("qo_flags")
   CHECK(flags2[0].second == "exception in x");
   CHECK(flags2[1].first == FlagTypeFactory::BadTracking());
   CHECK(flags2[1].second == "exception in y");
-  CHECK(flags2[2].first == FlagTypeFactory::LimitedAcceptance());
-  CHECK(flags2[2].second == "sector C off");
+  CHECK(flags2[2].first == FlagTypeFactory::BadPID());
+  CHECK(flags2[2].second == "wrong time of flight due to the summer time change");
 
   auto quality = qo1.getQuality();
   auto flags3 = quality.getFlags();
@@ -148,6 +148,6 @@ TEST_CASE("qo_flags")
   CHECK(flags3[0].second == "exception in x");
   CHECK(flags3[1].first == FlagTypeFactory::BadTracking());
   CHECK(flags3[1].second == "exception in y");
-  CHECK(flags3[2].first == FlagTypeFactory::LimitedAcceptance());
+  CHECK(flags3[2].first == FlagTypeFactory::BadPID());
   CHECK(flags3[2].second == "sector C off");
 }
