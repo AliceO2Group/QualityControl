@@ -123,7 +123,7 @@ TEST_CASE("qo_flags")
   QualityObject qo1(Quality::Bad, "xyzCheck", "DET");
   qo1.addFlag(FlagTypeFactory::BadTracking(), "exception in x");
   qo1.addFlag(FlagTypeFactory::BadTracking(), "exception in y");
-  qo1.addFlag(FlagTypeFactory::BadPID(), "sector C off");
+  qo1.addFlag(FlagTypeFactory::BadPID(), "wrong time of flight due to the summer time change");
 
   auto flags1 = qo1.getFlags();
   CHECK(flags1[0].first == FlagTypeFactory::BadTracking());
