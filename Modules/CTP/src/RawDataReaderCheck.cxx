@@ -96,11 +96,13 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   map<string, string> metadata; // can be empty
 
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
+  if (lhcifdata == nullptr) {
+    ILOG(Info, Support) << "LHC data not found for timestamp:" << mTimestamp << ENDM;
+    return result;
+  }
   auto bfilling = lhcifdata->getBunchFilling();
-
   std::vector<int> bcs = bfilling.getFilledBCs();
-  o2::ctp::BCMask* bcmask;
-  std::bitset<o2::constants::lhc::LHCMaxBunches> lhcBC_bitset = bcmask->BCmask;
+  std::bitset<o2::constants::lhc::LHCMaxBunches> lhcBC_bitset;
   lhcBC_bitset.reset();
   vBadBC.clear();
   vMediumBC.clear();
@@ -113,7 +115,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   for (auto const& bc : bcs) {
     lhcBC_bitset.set(bc, 1);
   }
-
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
@@ -137,13 +138,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         } else if (lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold) {
           vGoodBC.push_back(i);
         }
-      }
-      if (vBadBC.size() > 0) {
-        result = Quality::Bad;
-      } else if (vMediumBC.size() > 0) {
-        result = Quality::Medium;
-      } else {
-        result = Quality::Good;
       }
     } else {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
@@ -216,7 +210,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           thrBad = mThresholdRateRatioBad;
           thrMedium = mThresholdRateRatioMedium;
         }
-
         for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
           if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrBad) {
             vIndexBad.push_back(i);
@@ -224,17 +217,9 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
             vIndexMedium.push_back(i);
           }
         }
-        if (vIndexBad.size() > 0) {
-          result = Quality::Bad;
-        } else if (vIndexMedium.size() > 0) {
-          result = Quality::Medium;
-        } else {
-          result = Quality::Good;
-        }
         delete fHistDifference;
         delete fHistPrev;
       }
-
       if (inputRates && !relativeRates) {
         delete fHistInputPrevious;
         fHistInputPrevious = (TH1F*)h->Clone();
@@ -251,13 +236,18 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         delete fHistClassRatioPrevious;
         fHistClassRatioPrevious = (TH1F*)h->Clone();
       }
-
       if (!relativeRates && inputRates) {
         cycleCounter++;
       }
     }
   }
-
+  if ((vBadBC.size() > 0) || (vIndexBad.size() > 0)) {
+    result = Quality::Bad;
+  } else if ((vMediumBC.size() > 0) || (vIndexMedium.size() > 0)) {
+    result = Quality::Medium;
+  } else {
+    result = Quality::Good;
+  }
   return result;
 }
 
