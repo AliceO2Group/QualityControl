@@ -149,5 +149,5 @@ TEST_CASE("qo_flags")
   CHECK(flags3[1].first == FlagTypeFactory::BadTracking());
   CHECK(flags3[1].second == "exception in y");
   CHECK(flags3[2].first == FlagTypeFactory::BadPID());
-  CHECK(flags3[2].second == "sector C off");
+  CHECK(flags3[2].second == "wrong time of flight due to the summer time change");
 }
