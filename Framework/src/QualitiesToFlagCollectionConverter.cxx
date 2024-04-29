@@ -66,6 +66,8 @@ void QualitiesToFlagCollectionConverter::operator()(const QualityObject& newQO)
   if (newQO.getQuality().isWorseThan(Quality::Good)) {
     mWorseThanGoodQOs++;
   }
+  // TODO support a scenario when at the beginning of run the data Quality is null, because it could not be judged,
+  // but then it evolves to bad or good. Null quality should be probably removed.
 
   uint64_t validFrom = strtoull(newQO.getMetadata(metadata_keys::validFrom).c_str(), nullptr, 10);
   uint64_t validUntil = strtoull(newQO.getMetadata(metadata_keys::validUntil).c_str(), nullptr, 10);

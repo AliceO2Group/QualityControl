@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(test_KnownFlags)
   };
   qos[1].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
   qos[2].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
-  qos[2].addFlag(FlagTypeFactory::LimitedAcceptance(), "Sector C was off");
+  qos[2].addFlag(FlagTypeFactory::BadHadronPID(), "evil CERN scientists changed the proton mass");
   qos[3].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
 
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
@@ -267,8 +267,8 @@ BOOST_AUTO_TEST_CASE(test_KnownFlags)
   auto& flag2 = *(++qcfc->begin());
   BOOST_CHECK_EQUAL(flag2.getStart(), 30);
   BOOST_CHECK_EQUAL(flag2.getEnd(), 50);
-  BOOST_CHECK_EQUAL(flag2.getFlag(), FlagTypeFactory::LimitedAcceptance());
-  BOOST_CHECK_EQUAL(flag2.getComment(), "Sector C was off");
+  BOOST_CHECK_EQUAL(flag2.getFlag(), FlagTypeFactory::BadHadronPID());
+  BOOST_CHECK_EQUAL(flag2.getComment(), "evil CERN scientists changed the proton mass");
   BOOST_CHECK_EQUAL(flag2.getSource(), "qc/DET/QO/xyzCheck");
 }
 

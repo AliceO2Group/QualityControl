@@ -58,15 +58,15 @@ TEST_CASE("quality_flags")
   Quality myQuality = Quality::Bad;
   myQuality.addFlag(FlagTypeFactory::BadTracking(), "exception in x");
   myQuality.addFlag(FlagTypeFactory::BadTracking(), "exception in y");
-  myQuality.addFlag(FlagTypeFactory::LimitedAcceptance(), "sector C off");
+  myQuality.addFlag(FlagTypeFactory::BadPID(), "Bethe and Bloch had a bad day");
 
   auto myFlags = myQuality.getFlags();
   CHECK(myFlags[0].first == FlagTypeFactory::BadTracking());
   CHECK(myFlags[0].second == "exception in x");
   CHECK(myFlags[1].first == FlagTypeFactory::BadTracking());
   CHECK(myFlags[1].second == "exception in y");
-  CHECK(myFlags[2].first == FlagTypeFactory::LimitedAcceptance());
-  CHECK(myFlags[2].second == "sector C off");
+  CHECK(myFlags[2].first == FlagTypeFactory::BadPID());
+  CHECK(myFlags[2].second == "Bethe and Bloch had a bad day");
 
   auto copyQuality = myQuality;
   auto copyFlags = copyQuality.getFlags();
@@ -74,8 +74,8 @@ TEST_CASE("quality_flags")
   CHECK(copyFlags[0].second == "exception in x");
   CHECK(copyFlags[1].first == FlagTypeFactory::BadTracking());
   CHECK(copyFlags[1].second == "exception in y");
-  CHECK(copyFlags[2].first == FlagTypeFactory::LimitedAcceptance());
-  CHECK(copyFlags[2].second == "sector C off");
+  CHECK(copyFlags[2].first == FlagTypeFactory::BadPID());
+  CHECK(copyFlags[2].second == "Bethe and Bloch had a bad day");
 }
 
 } // namespace o2::quality_control::core
