@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
   qoNull->addFlag(FlagTypeFactory::BadTracking(), "oh no");
   std::shared_ptr<QualityObject> qoGood = std::make_shared<QualityObject>(Quality::Good, "testCheckGood", "TST");
   std::shared_ptr<QualityObject> qoMedium = std::make_shared<QualityObject>(Quality::Medium, "testCheckMedium", "TST");
-  qoMedium->addFlag(FlagTypeFactory::LimitedAcceptance(), "booo");
+  qoMedium->addFlag(FlagTypeFactory::BadPID(), "booo");
   std::shared_ptr<QualityObject> qoBad = std::make_shared<QualityObject>(Quality::Bad, "testCheckBad", "TST");
   QualityObjectsMapType input;
 
@@ -64,21 +64,21 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
   BOOST_REQUIRE_EQUAL(result3.size(), 1);
   BOOST_CHECK_EQUAL(result3["agg1"], Quality::Medium);
   BOOST_REQUIRE_EQUAL(result3["agg1"].getFlags().size(), 1);
-  BOOST_CHECK_EQUAL(result3["agg1"].getFlags().at(0).first, FlagTypeFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(result3["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
 
   input[qoBad->getName()] = qoBad;
   std::map<std::string, Quality> result4 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result4.size(), 1);
   BOOST_CHECK_EQUAL(result4["agg1"], Quality::Bad);
   BOOST_REQUIRE_EQUAL(result4["agg1"].getFlags().size(), 1);
-  BOOST_CHECK_EQUAL(result4["agg1"].getFlags().at(0).first, FlagTypeFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(result4["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
 
   input[qoNull->getName()] = qoNull;
   std::map<std::string, Quality> result5 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result5.size(), 1);
   BOOST_CHECK_EQUAL(result5["agg1"], Quality::Null);
   BOOST_REQUIRE_EQUAL(result5["agg1"].getFlags().size(), 2);
-  BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(0).first, FlagTypeFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
   BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(1).first, FlagTypeFactory::BadTracking());
 }
 
