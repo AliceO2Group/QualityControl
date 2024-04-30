@@ -32,7 +32,8 @@
 #include <TFile.h>
 #include <TPolyMarker.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <utility>
 #include <type_traits>
@@ -83,7 +84,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
         }
         auto ranges = findRanges(badBins);
         if (ptQual == Quality::Bad) {
-          result.addReason(FlagReasonFactory::BadTracking(), "Check vdrift online calibration and ITS/TPC QC");
+          result.addFlag(FlagTypeFactory::BadTracking(), "Check vdrift online calibration and ITS/TPC QC");
           result.updateMetadata("checkPtQuality", "bad");
 
           std::string cBins{ "Bad matching efficiency in: " };
@@ -126,7 +127,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
         }
         auto ranges = findRanges(badBins);
         if (phiQual == Quality::Bad) {
-          result.addReason(FlagReasonFactory::BadTracking(), "Check TPC sectors or ITS staves QC!");
+          result.addFlag(FlagTypeFactory::BadTracking(), "Check TPC sectors or ITS staves QC!");
           result.updateMetadata("checkPhiQuality", "bad");
 
           std::string cBins{ "Bad matching efficiency in: " };

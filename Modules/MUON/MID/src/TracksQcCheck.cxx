@@ -27,7 +27,8 @@
 #include <TLatex.h>
 #include <TLine.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -85,14 +86,14 @@ Quality TracksQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if ((i == 1) && (h->GetBinContent(i) < mRatio44Threshold)) {
             result = Quality::Bad;
 
-            result.addReason(FlagReasonFactory::Unknown(),
-                             "Global Ratio44 too low : bin " + std::to_string(i));
+            result.addFlag(FlagTypeFactory::Unknown(),
+                           "Global Ratio44 too low : bin " + std::to_string(i));
             lineThreshold->SetLineColor(kRed);
             break;
           } else if ((i > 1) && (i < 10) && (h->GetBinContent(i) < mRatio44Threshold)) {
             result = Quality::Medium;
-            result.addReason(FlagReasonFactory::Unknown(),
-                             "Ratio44 too low in bin " + std::to_string(i));
+            result.addFlag(FlagTypeFactory::Unknown(),
+                           "Ratio44 too low in bin " + std::to_string(i));
             lineThreshold->SetLineColor(kOrange);
             break;
           }

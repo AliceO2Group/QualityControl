@@ -22,7 +22,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <QualityControl/Quality.h>
-#include "DataFormatsQualityControl/FlagReasons.h"
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
@@ -39,46 +40,46 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
 
   // prepare data
   std::shared_ptr<QualityObject> qoNull = std::make_shared<QualityObject>(Quality::Null, "testCheckNull", "TST");
-  qoNull->addReason(FlagReasonFactory::BadTracking(), "oh no");
+  qoNull->addFlag(FlagTypeFactory::BadTracking(), "oh no");
   std::shared_ptr<QualityObject> qoGood = std::make_shared<QualityObject>(Quality::Good, "testCheckGood", "TST");
   std::shared_ptr<QualityObject> qoMedium = std::make_shared<QualityObject>(Quality::Medium, "testCheckMedium", "TST");
-  qoMedium->addReason(FlagReasonFactory::LimitedAcceptance(), "booo");
+  qoMedium->addFlag(FlagTypeFactory::BadPID(), "booo");
   std::shared_ptr<QualityObject> qoBad = std::make_shared<QualityObject>(Quality::Bad, "testCheckBad", "TST");
   QualityObjectsMapType input;
 
   std::map<std::string, Quality> result1 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result1.size(), 1);
   BOOST_CHECK_EQUAL(result1["agg1"], Quality::Null); // because empty vector passed
-  BOOST_REQUIRE_EQUAL(result1["agg1"].getReasons().size(), 1);
-  BOOST_CHECK_EQUAL(result1["agg1"].getReasons().at(0).first, FlagReasonFactory::UnknownQuality());
+  BOOST_REQUIRE_EQUAL(result1["agg1"].getFlags().size(), 1);
+  BOOST_CHECK_EQUAL(result1["agg1"].getFlags().at(0).first, FlagTypeFactory::UnknownQuality());
 
   input[qoGood->getName()] = qoGood;
   std::map<std::string, Quality> result2 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result2.size(), 1);
   BOOST_CHECK_EQUAL(result2["agg1"], Quality::Good);
-  BOOST_CHECK_EQUAL(result2["agg1"].getReasons().size(), 0);
+  BOOST_CHECK_EQUAL(result2["agg1"].getFlags().size(), 0);
 
   input[qoMedium->getName()] = qoMedium;
   std::map<std::string, Quality> result3 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result3.size(), 1);
   BOOST_CHECK_EQUAL(result3["agg1"], Quality::Medium);
-  BOOST_REQUIRE_EQUAL(result3["agg1"].getReasons().size(), 1);
-  BOOST_CHECK_EQUAL(result3["agg1"].getReasons().at(0).first, FlagReasonFactory::LimitedAcceptance());
+  BOOST_REQUIRE_EQUAL(result3["agg1"].getFlags().size(), 1);
+  BOOST_CHECK_EQUAL(result3["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
 
   input[qoBad->getName()] = qoBad;
   std::map<std::string, Quality> result4 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result4.size(), 1);
   BOOST_CHECK_EQUAL(result4["agg1"], Quality::Bad);
-  BOOST_REQUIRE_EQUAL(result4["agg1"].getReasons().size(), 1);
-  BOOST_CHECK_EQUAL(result4["agg1"].getReasons().at(0).first, FlagReasonFactory::LimitedAcceptance());
+  BOOST_REQUIRE_EQUAL(result4["agg1"].getFlags().size(), 1);
+  BOOST_CHECK_EQUAL(result4["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
 
   input[qoNull->getName()] = qoNull;
   std::map<std::string, Quality> result5 = agg1.aggregate(input);
   BOOST_REQUIRE_EQUAL(result5.size(), 1);
   BOOST_CHECK_EQUAL(result5["agg1"], Quality::Null);
-  BOOST_REQUIRE_EQUAL(result5["agg1"].getReasons().size(), 2);
-  BOOST_CHECK_EQUAL(result5["agg1"].getReasons().at(0).first, FlagReasonFactory::LimitedAcceptance());
-  BOOST_CHECK_EQUAL(result5["agg1"].getReasons().at(1).first, FlagReasonFactory::BadTracking());
+  BOOST_REQUIRE_EQUAL(result5["agg1"].getFlags().size(), 2);
+  BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
+  BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(1).first, FlagTypeFactory::BadTracking());
 }
 
 } // namespace o2::quality_control_modules::common

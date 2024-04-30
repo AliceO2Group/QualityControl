@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TRFCollectionTaskConfig.h
+/// \file   FlagCollectionTaskConfig.h
 /// \author Piotr Konopka
 ///
 
@@ -24,12 +24,12 @@
 namespace o2::quality_control_modules::common
 {
 
-//todo pretty print
-/// \brief  TRFCollectionTaskConfig configuration structure
-struct TRFCollectionTaskConfig : quality_control::postprocessing::PostProcessingConfig {
-  TRFCollectionTaskConfig() = default;
-  TRFCollectionTaskConfig(std::string name, const boost::property_tree::ptree& config);
-  ~TRFCollectionTaskConfig() = default;
+// todo pretty print
+/// \brief  FlagCollectionTaskConfig configuration structure
+struct FlagCollectionTaskConfig : quality_control::postprocessing::PostProcessingConfig {
+  FlagCollectionTaskConfig() = default;
+  FlagCollectionTaskConfig(std::string name, const boost::property_tree::ptree& config);
+  ~FlagCollectionTaskConfig() = default;
 
   // todo: almost all here duplicates the parent class, remove
   std::string name;

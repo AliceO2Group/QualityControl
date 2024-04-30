@@ -25,7 +25,8 @@
 #include <TFitResult.h>
 
 #include <fairlogger/Logger.h>
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -155,7 +156,7 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       if (FitResult->CovMatrixStatus() != 3) // if covMatrix is not accurate
       {
         result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "Covariance matrix is not accurate.");
+        result.addFlag(FlagTypeFactory::Unknown(), "Covariance matrix is not accurate.");
         return result;
       }
 
@@ -171,7 +172,7 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 
       if (Chi2byNDF > chi2byNDF_threshold) {
         result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "chi2/ndf is very large");
+        result.addFlag(FlagTypeFactory::Unknown(), "chi2/ndf is very large");
         return result;
       }
 
@@ -182,7 +183,7 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 
       if ((peak_value_x < x1) && (peak_value_x > x0)) {
         result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "pulse peak is in first bin");
+        result.addFlag(FlagTypeFactory::Unknown(), "pulse peak is in first bin");
         // LOG(info)<<"peak is in the first bin from left";
         return result;
       } else if ((peak_value_x < x2) && (peak_value_x > x1)) {
@@ -194,7 +195,7 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       } else {
         // LOG(info)<<"peak is not in Good region";
         result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "amplification peak is not in good position. Out of [" + std::to_string(x0) + " " + std::to_string(x3) + "] range");
+        result.addFlag(FlagTypeFactory::Unknown(), "amplification peak is not in good position. Out of [" + std::to_string(x0) + " " + std::to_string(x3) + "] range");
         return result;
       }
 

@@ -19,9 +19,10 @@
 
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
 #include "DataFormatsFIT/DeadChannelMap.h"
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 namespace o2::quality_control_modules::fdd
 {
@@ -84,7 +85,7 @@ class SingleCheck
       if (mBinNumberX) {
         reason += Form(" for channel %d", mBinNumberX);
       }
-      result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), reason);
+      result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), reason);
     }
 
     ILOG(Debug, Support) << log << ENDM;

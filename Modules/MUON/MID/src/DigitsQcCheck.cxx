@@ -15,7 +15,8 @@
 ///
 
 #include "MID/DigitsQcCheck.h"
-#include "DataFormatsQualityControl/FlagReasons.h"
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
@@ -158,15 +159,15 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (nBadLB > mNbBadLocalBoard) {
             qual = Quality::Bad;
           }
-          auto flag = o2::quality_control::FlagReason();
-          qual.addReason(flag, fmt::format("{} boards > {} kHz", nBadLB, mLocalBoardThreshold));
+          auto flag = o2::quality_control::FlagType();
+          qual.addFlag(flag, fmt::format("{} boards > {} kHz", nBadLB, mLocalBoardThreshold));
         } else if (nEmptyLB > 0) {
           qual = Quality::Medium;
           if (nEmptyLB > mNbEmptyLocalBoard) {
             qual = Quality::Bad;
           }
-          auto flag = o2::quality_control::FlagReason();
-          qual.addReason(flag, fmt::format("{} boards empty", nEmptyLB));
+          auto flag = o2::quality_control::FlagType();
+          qual.addFlag(flag, fmt::format("{} boards empty", nEmptyLB));
         }
         mQualityMap[item.second->getName()] = qual;
         result = qual;
@@ -249,8 +250,8 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       auto histo = dynamic_cast<TH2F*>(mo->getObject());
       if (mo->getName() == lbHistoName) {
         // This is LocalBoardsMap and it was already scaled in the checker
-        if (!checkResult.getReasons().empty()) {
-          mHistoHelper.addLatex(histo, 0.12, 0.72, color, checkResult.getReasons().front().second.c_str());
+        if (!checkResult.getFlags().empty()) {
+          mHistoHelper.addLatex(histo, 0.12, 0.72, color, checkResult.getFlags().front().second.c_str());
         }
         mHistoHelper.addLatex(histo, 0.3, 0.32, color, fmt::format("Quality::{}", checkResult.getName()));
         histo->SetMaximum(zcontoursLoc4.back());

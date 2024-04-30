@@ -22,11 +22,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
 #include <Common/Exceptions.h>
-
-namespace o2::quality_control
-{
-class TimeRangeFlagCollection;
-}
+#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 
 namespace o2::quality_control::core
 {
@@ -112,23 +108,23 @@ class RepoPathUtils
   }
 
   /**
-   * Compute and return the path to the TRFCollection.
-   * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
+   * Compute and return the path to the FlagCollection.
+   * Current algorithm does <provenance(qc)>/<detectorCode>/QCFC/<qcfcName>
    * @param detectorCode
-   * @param trfcName
+   * @param qcfcName
    * @param provenance
-   * @return the path to the TRFCollection
+   * @return the path to the QCFCollection
    */
-  static std::string getTrfcPath(const std::string& detectorCode,
-                                 const std::string& trfcName,
+  static std::string getQcfcPath(const std::string& detectorCode,
+                                 const std::string& qcfcName,
                                  const std::string& provenance = "qc");
   /**
-   * Compute and return the path to the TRFCollection.
-   * Current algorithm does <provenance(qc)>/<detectorCode>/TRFC/<trfcName>
-   * @param trfc
-   * @return the path to the TRFCollection
+   * Compute and return the path to the QCFCollection.
+   * Current algorithm does <provenance(qc)>/<detectorCode>/QCFC/<qcfcName>
+   * @param qcfc
+   * @return the path to the QCFCollection
    */
-  static std::string getTrfcPath(const TimeRangeFlagCollection* trfc);
+  static std::string getQcfcPath(const QualityControlFlagCollection* qcfc);
 
   static constexpr auto allowedProvenancesMessage = R"(Allowed provenances are "qc" (real data processed synchronously), "qc_async" (real data processed asynchronously) and "qc_mc" (simulated data).)";
   static bool isProvenanceAllowed(const std::string& provenance);

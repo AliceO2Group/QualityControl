@@ -26,9 +26,9 @@
       }
     },
     "postprocessing": {
-      "TRFCollectionQcCheck": {
+      "FlagCollectionQcCheck": {
         "active": "true",
-        "className": "o2::quality_control_modules::common::TRFCollectionTask",
+        "className": "o2::quality_control_modules::common::FlagCollectionTask",
         "moduleName": "QcCommon",
         "detectorName": "TST",
         "initTrigger": [],

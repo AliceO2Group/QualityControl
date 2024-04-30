@@ -61,7 +61,6 @@ int main(int argc, const char* argv[])
   AliceO2::Common::Timer timer;
   AliceO2::Common::Timer triggerTimer;
   triggerTimer.reset();
-  Activity activity;
   double totalDuration = 0;
   double cycleDuration = 0;
   int numberOfExecutionsInCycle = 0;
@@ -75,9 +74,6 @@ int main(int argc, const char* argv[])
       timer.reset();
       Bookkeeping::getInstance().registerProcess(123, "asdf", "ITS", o2::bkp::DplProcessType::_NULL, "");
       auto duration = timer.getTime();
-      if (printActivity) {
-        cout << activity << endl;
-      }
       totalDuration += duration;
       cycleDuration += duration;
       if (totalNumberOfExecutions % printCycles == 0) {
