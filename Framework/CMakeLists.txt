@@ -35,6 +35,24 @@ add_root_dictionary(O2QualityControlTypes
   include/QualityControl/Activity.h
   LINKDEF include/QualityControl/TypesLinkDef.h)
 
+# ---- Kafka ----
+
+add_library(O2QualityControlKafkaProtos OBJECT
+  proto/events.proto)
+
+target_link_libraries(O2QualityControlKafkaProtos PUBLIC
+  protobuf::libprotobuf
+)
+
+target_include_directories(O2QualityControlKafkaProtos PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+)
+
+protobuf_generate(
+  TARGET O2QualityControlKafkaProtos
+  IMPORT_DIRS "${CMAKE_CURRENT_LIST_DIR}/proto"
+  PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto")
+
 # ---- Library ----
 
 add_library(O2QualityControl
@@ -48,36 +66,27 @@ add_library(O2QualityControl
   src/AggregatorRunnerFactory.cxx
   src/CheckInterface.cxx
   src/AggregatorInterface.cxx
-  src/DatabaseFactory.cxx
+  src/AggregatorRunner.cxx
+  src/AggregatorRunnerFactory.cxx
+  src/Bookkeeping.cxx
+  src/Calculators.cxx
   src/CcdbDatabase.cxx
-  src/QcInfoLogger.cxx
-  src/TaskFactory.cxx
-  src/TaskRunner.cxx
-  src/TaskRunnerFactory.cxx
-  src/TaskInterface.cxx
-  src/UserCodeInterface.cxx
-  src/RepositoryBenchmark.cxx
-  src/RepoPathUtils.cxx
-  src/stringUtils.cxx
+  src/Check.cxx
+  src/CheckInterface.cxx
+  src/CheckRunner.cxx
+  src/CheckRunnerFactory.cxx
+  src/ConfigParamGlo.cxx
+  src/CustomParameters.cxx
+  src/DataProducer.cxx
+  src/DataProducerExample.cxx
+  src/DataSourceSpec.cxx
+  src/DatabaseFactory.cxx
+  src/DummyDatabase.cxx
+  src/HashDataDescription.cxx
+  src/HistoProducer.cxx
   src/InfrastructureGenerator.cxx
   src/InfrastructureSpecReader.cxx
-  src/Check.cxx
-  src/Aggregator.cxx
-  src/HashDataDescription.cxx
-  src/ServiceDiscovery.cxx
-  src/Triggers.cxx
-  src/TriggerHelpers.cxx
-  src/PostProcessingRunner.cxx
-  src/PostProcessingFactory.cxx
-  src/PostProcessingConfig.cxx
-  src/PostProcessingInterface.cxx
-  src/PostProcessingDevice.cxx
-  src/TrendingTask.cxx
-  src/TrendingTaskConfig.cxx
-  src/DummyDatabase.cxx
-  src/DataProducer.cxx
-  src/HistoProducer.cxx
-  src/DataProducerExample.cxx
+  src/KafkaConsumer.cxx
   src/MonitorObjectCollection.cxx
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
@@ -86,21 +95,28 @@ add_library(O2QualityControl
   src/DataSourceSpec.cxx
   src/RootFileSink.cxx
   src/RootFileSource.cxx
-  src/UpdatePolicyType.cxx
-  src/RootClassFactory.cxx
-  src/ConfigParamGlo.cxx
+  src/RootFileStorage.cxx
+  src/ServiceDiscovery.cxx
   src/SliceTrendingTask.cxx
   src/SliceTrendingTaskConfig.cxx
-  src/Bookkeeping.cxx
-  src/CustomParameters.cxx
-  src/runnerUtils.cxx
+  src/TaskFactory.cxx
+  src/TaskInterface.cxx
+  src/TaskRunner.cxx
+  src/TaskRunnerFactory.cxx
   src/Timekeeper.cxx
-  src/TimekeeperSynchronous.cxx
   src/TimekeeperAsynchronous.cxx
-  src/WorkflowType.cxx
   src/TimekeeperFactory.cxx
-  src/RootFileStorage.cxx
-  src/ReductorHelpers.cxx)
+  src/TimekeeperSynchronous.cxx
+  src/TrendingTask.cxx
+  src/TrendingTaskConfig.cxx
+  src/TriggerHelpers.cxx
+  src/Triggers.cxx
+  src/UpdatePolicyManager.cxx
+  src/UpdatePolicyType.cxx
+  src/UserCodeInterface.cxx
+  src/WorkflowType.cxx
+  src/runnerUtils.cxx
+  src/stringUtils.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -130,6 +146,7 @@ target_link_libraries(O2QualityControl
                              O2::DataFormatsQualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
+                             O2QualityControlKafkaProtos
                       PRIVATE Boost::system
                               CURL::libcurl)
 
@@ -392,7 +409,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES}
+install(TARGETS O2QualityControl O2QualityControlTypes O2QualityControlKafkaProtos ${EXE_NAMES}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
