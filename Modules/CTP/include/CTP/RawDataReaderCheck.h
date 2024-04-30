@@ -59,10 +59,10 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   int mCycleDuration;
   bool relativeRates = false;
   bool inputRates = false;
-  TH1F* fHistInputPrevious;
-  TH1F* fHistClassesPrevious;
-  TH1F* fHistInputRatioPrevious;
-  TH1F* fHistClassRatioPrevious;
+  TH1F* fHistInputPrevious = nullptr;
+  TH1F* fHistClassesPrevious = nullptr;
+  TH1F* fHistInputRatioPrevious = nullptr;
+  TH1F* fHistClassRatioPrevious = nullptr;
   std::vector<int> vGoodBC;
   std::vector<int> vMediumBC;
   std::vector<int> vBadBC;
