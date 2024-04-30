@@ -99,6 +99,8 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   if (lhcifdata == nullptr) {
     ILOG(Info, Support) << "LHC data not found for timestamp:" << mTimestamp << ENDM;
     return result;
+  } else {
+    ILOG(Info, Support) << "LHC data found for timestamp:" << mTimestamp << ENDM;
   }
   auto bfilling = lhcifdata->getBunchFilling();
   std::vector<int> bcs = bfilling.getFilledBCs();
@@ -126,7 +128,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       }
       mThreshold = h->GetEntries() / getNumberFilledBins(h);
       mThreshold = mThreshold - sqrt(mThreshold);
-
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
         if (lhcBC_bitset[i]) {
           ILOG(Info, Support) << i << " ";
@@ -142,7 +143,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
     } else {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       if (!h) {
-        ILOG(Info, Support) << "histogram for input/class rate is not found for check" << ENDM;
+        //ILOG(Debug, Devel) << "histogram for input/class rate is not found for check" << ENDM;
         continue;
       }
       std::string moName = mo->getName();
@@ -161,10 +162,9 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           h->Scale(1. / h->GetBinContent(mIndexMBclass));
         }
       }
-
       if (cycleCounter > 1) { // skipping the check for first two cycles, as the first one is arbitrary long
         TH1F* fHistDifference = (TH1F*)h->Clone();
-        TH1F* fHistPrev;
+        TH1F* fHistPrev = nullptr;;
         if (inputRates && !relativeRates) {
           if (fHistInputPrevious) {
             fHistPrev = (TH1F*)fHistInputPrevious->Clone();
@@ -199,7 +199,12 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         }
         if (!relativeRates) {
           fHistDifference->Scale(1. / (mCycleDuration * mFraction));
-          fHistPrev->Scale(1. / (mCycleDuration * mFraction));
+          if(fHistPrev == nullptr) {
+            std::cout << " crashing here" << std::endl;
+            return result;
+          } else {
+            fHistPrev->Scale(1. / (mCycleDuration * mFraction));
+          }
         }
         fHistDifference->Add(fHistPrev, -1); // Calculate relative difference w.r.t. rate in previous cycle
         fHistDifference->Divide(fHistPrev);
@@ -218,22 +223,32 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           }
         }
         delete fHistDifference;
-        delete fHistPrev;
+        if(fHistPrev) {
+          delete fHistPrev;
+        }
       }
       if (inputRates && !relativeRates) {
-        delete fHistInputPrevious;
+        if(fHistInputPrevious) {
+          delete fHistInputPrevious;
+        }
         fHistInputPrevious = (TH1F*)h->Clone();
       }
       if (inputRates && relativeRates) {
-        delete fHistInputRatioPrevious;
+        if( fHistInputRatioPrevious ) {
+          delete fHistInputRatioPrevious;
+        }
         fHistInputRatioPrevious = (TH1F*)h->Clone();
       }
       if (!inputRates && !relativeRates) {
-        delete fHistClassesPrevious;
+        if( fHistClassesPrevious ) {
+          delete fHistClassesPrevious;
+        }
         fHistClassesPrevious = (TH1F*)h->Clone();
       }
       if (!inputRates && relativeRates) {
-        delete fHistClassRatioPrevious;
+        if( fHistClassRatioPrevious ) {
+          delete fHistClassRatioPrevious;
+        }
         fHistClassRatioPrevious = (TH1F*)h->Clone();
       }
       if (!relativeRates && inputRates) {
@@ -344,6 +359,10 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetTextColor(kGreen + 1);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
+    }
+    if( relativeRates ) {
+      h->SetMarkerStyle(20);
+      //h->SetOption("HIST");
     }
   }
 }
