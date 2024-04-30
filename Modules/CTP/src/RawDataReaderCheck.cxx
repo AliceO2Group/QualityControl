@@ -143,7 +143,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
     } else {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       if (!h) {
-        //ILOG(Debug, Devel) << "histogram for input/class rate is not found for check" << ENDM;
+        // ILOG(Debug, Devel) << "histogram for input/class rate is not found for check" << ENDM;
         continue;
       }
       std::string moName = mo->getName();
@@ -164,7 +164,8 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       }
       if (cycleCounter > 1) { // skipping the check for first two cycles, as the first one is arbitrary long
         TH1F* fHistDifference = (TH1F*)h->Clone();
-        TH1F* fHistPrev = nullptr;;
+        TH1F* fHistPrev = nullptr;
+        ;
         if (inputRates && !relativeRates) {
           if (fHistInputPrevious) {
             fHistPrev = (TH1F*)fHistInputPrevious->Clone();
@@ -199,7 +200,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         }
         if (!relativeRates) {
           fHistDifference->Scale(1. / (mCycleDuration * mFraction));
-          if(fHistPrev == nullptr) {
+          if (fHistPrev == nullptr) {
             std::cout << " crashing here" << std::endl;
             return result;
           } else {
@@ -223,30 +224,30 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
           }
         }
         delete fHistDifference;
-        if(fHistPrev) {
+        if (fHistPrev) {
           delete fHistPrev;
         }
       }
       if (inputRates && !relativeRates) {
-        if(fHistInputPrevious) {
+        if (fHistInputPrevious) {
           delete fHistInputPrevious;
         }
         fHistInputPrevious = (TH1F*)h->Clone();
       }
       if (inputRates && relativeRates) {
-        if( fHistInputRatioPrevious ) {
+        if (fHistInputRatioPrevious) {
           delete fHistInputRatioPrevious;
         }
         fHistInputRatioPrevious = (TH1F*)h->Clone();
       }
       if (!inputRates && !relativeRates) {
-        if( fHistClassesPrevious ) {
+        if (fHistClassesPrevious) {
           delete fHistClassesPrevious;
         }
         fHistClassesPrevious = (TH1F*)h->Clone();
       }
       if (!inputRates && relativeRates) {
-        if( fHistClassRatioPrevious ) {
+        if (fHistClassRatioPrevious) {
           delete fHistClassRatioPrevious;
         }
         fHistClassRatioPrevious = (TH1F*)h->Clone();
@@ -360,9 +361,9 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
     }
-    if( relativeRates ) {
+    if (relativeRates) {
       h->SetMarkerStyle(20);
-      //h->SetOption("HIST");
+      // h->SetOption("HIST");
     }
   }
 }
