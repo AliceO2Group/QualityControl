@@ -1,6 +1,3 @@
-// R__ADD_INCLUDE_PATH(/Users/ar2545/alice/QualityControl/Framework/include)
-////
-
 #include "QualityControl/MonitorObject.h"
 #include "EMCAL/PayloadPerEventDDLCheck.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -23,6 +20,26 @@ using namespace std;
 
 namespace o2::quality_control_modules::emcal
 {
+// configure threshold-based checkers
+auto nChiSqMedPayloadThresh = mCustomParameters.find("ChiSqMedPayloadThresh");
+if (nChiSqMedPayloadThresh != mCustomParameters.end()) {
+  try {
+    mChiSqMedPayloadThresh = std::stod(nChiSqMedPayloadThresh->second);
+  } catch (std::exception& e) {
+    ILOG(Error, Support) << fmt::format("Value {} not a double", nChiSqMedPayloadThresh->second.data()) << ENDM;
+  }
+}
+
+auto nBadChiSqLowPayloadThresh = mCustomParameters.find("BadChiSqLowPayloadThresh");
+if (nBadChiSqLowPayloadThresh != mCustomParameters.end()) {
+  try {
+    mChiSqBadLowPayloadThresh = std::stod(nBadChiSqLowPayloadThresh->second);
+  } catch (std::exception& e) {
+    ILOG(Error, Support) << fmt::format("Value {} not a double", nBadChiSqLowPayloadThresh->second.data()) << ENDM;
+  }
+}
+}
+
 Quality PayloadPerEventDDLCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   if (!mCalibReference) {
@@ -44,11 +61,11 @@ Quality PayloadPerEventDDLCheck::check(std::map<std::string, std::shared_ptr<Mon
       h_y_ref->Scale(1. / h_y_ref->Integral());
       Double_t chisq_val = h_y->Chi2Test(h_y_ref, "UU NORM CHI2/NDF");
 
-      if (chisq_val > 3) {
+      if (chisq_val > mChiSqMedPayloadThresh) {
         result = Quality::Medium;
         continue;
       }
-      if (5 < chisq_val && chisq_val < 7) {
+      if (mChiSqBadLowPayloadThresh < chisq_val) {
         result = Quality::Bad;
         break;
       }

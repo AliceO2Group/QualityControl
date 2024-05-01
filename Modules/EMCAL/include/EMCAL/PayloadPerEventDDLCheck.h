@@ -35,6 +35,7 @@ class PayloadPerEventDDLCheck : public o2::quality_control::checker::CheckInterf
   ~PayloadPerEventDDLCheck() override = default;
 
   // Override interface
+  void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
@@ -44,8 +45,10 @@ class PayloadPerEventDDLCheck : public o2::quality_control::checker::CheckInterf
   //     * reference histograms                             *
   //     ************************************************/
   TH2* mCalibReference = nullptr;
+  double mChiSqMedPayloadThresh = 3;    ///< If ChiSq greater than this value, quality is medium
+  double mChiSqBadLowPayloadThresh = 5; ///< Low threshold of bad ChiSq
 
-  ClassDefOverride(PayloadPerEventDDLCheck, 2);
+  ClassDefOverride(PayloadPerEventDDLCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::emcal
