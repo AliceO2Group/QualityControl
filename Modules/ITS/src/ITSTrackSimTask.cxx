@@ -89,7 +89,7 @@ ITSTrackSimTask::~ITSTrackSimTask()
   delete hDuplicate_z;
   delete hNumDuplicate_z;
 
-  for(Int_t icls = 0; icls < 4; icls++) {
+  for (Int_t icls = 0; icls < 4; icls++) {
     delete hNumRecoFake_pt[icls];
     delete hDenTrue_pt[icls];
     delete hFakeTrack_pt[icls];
@@ -363,7 +363,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
   hDuplicate_z->SetPassedHistogram(*hNumDuplicate_z, "f");
   hDuplicate_z->SetTotalHistogram(*hDenTrue_z[4], "f");
 
-  for(Int_t icls = 0; icls < 5; icls++) {
+  for (Int_t icls = 0; icls < 5; icls++) {
     hFakeTrack_pt[icls]->SetPassedHistogram(*hNumRecoFake_pt[icls], "f");
     hFakeTrack_pt[icls]->SetTotalHistogram(*hDenTrue_pt[icls], "f");
     hFakeTrack_phi[icls]->SetPassedHistogram(*hNumRecoFake_phi[icls], "f");
@@ -409,8 +409,8 @@ void ITSTrackSimTask::reset()
 
   hAngularDistribution->Reset();
   hNumDuplicate_pt->Reset();
-  
-  for(Int_t icls = 0; icls < 5; icls++) {
+
+  for (Int_t icls = 0; icls < 5; icls++) {
     hNumRecoFake_pt[icls]->Reset();
     hDenTrue_pt[icls]->Reset();
     hNumRecoFake_phi[icls]->Reset();
@@ -494,7 +494,7 @@ void ITSTrackSimTask::createAllHistos()
   hNumRecoFake_QoverPt[4] = new TH1D("NumRecoFake_QoverPt", "", nb, xbins);
   hDenTrue_QoverPt[4] = new TH1D("DenTrueMC_QoverPt", "", nb, xbins);
 
-  for(Int_t icls = 0; icls < 4; icls++) {
+  for (Int_t icls = 0; icls < 4; icls++) {
     hFakeTrack_pt[icls] = new TEfficiency(Form("faketrack_%dCluster_pt", icls + 4), Form("#it{p}_{T} fake-track rate %d cluster tracks;#it{p}_{T} (GeV/#it{c});Fake-track rate", icls + 4), nb, xbins);
     addObject(hFakeTrack_pt[icls]);
     hNumRecoFake_pt[icls] = new TH1D(Form("NumRecoFake_%dCluster_pt", icls + 4), "", nb, xbins);

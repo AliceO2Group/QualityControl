@@ -73,12 +73,11 @@ class ITSTrackSimTask : public TaskInterface
   std::vector<std::vector<InfoStruct>> info;
   std::vector<TObject*> mPublishedObjects;
 
-
   TEfficiency *hEfficiency_pt, *hEfficiency_phi, *hEfficiency_eta, *hEfficiency_z, *hEfficiency_r;
-  TEfficiency *hFakeTrack_pt[5], *hFakeTrack_phi[5], *hFakeTrack_eta[5], *hFakeTrack_z[5], *hFakeTrack_r[5], *hFakeTrack_QoverPt[5];  //idxs 0 to 3 -> 4 to 7 cluster tracks, idx 4 - total
+  TEfficiency *hFakeTrack_pt[5], *hFakeTrack_phi[5], *hFakeTrack_eta[5], *hFakeTrack_z[5], *hFakeTrack_r[5], *hFakeTrack_QoverPt[5]; // idxs 0 to 3 -> 4 to 7 cluster tracks, idx 4 - total
   TH1D *hNumRecoFake_pt[5], *hNumRecoFake_phi[5], *hNumRecoFake_eta[5], *hNumRecoFake_z[5], *hNumRecoFake_r[5], *hNumRecoFake_QoverPt[5];
   TH1D *hDenTrue_pt[5], *hDenTrue_phi[5], *hDenTrue_eta[5], *hDenTrue_z[5], *hDenTrue_r[5], *hDenTrue_QoverPt[5];
-  
+
   TH1D* hNumRecoValid_pt;
   TH1D* hNumRecoValid_eta;
   TH1D* hNumRecoValid_phi;
