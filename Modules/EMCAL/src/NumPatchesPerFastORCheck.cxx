@@ -18,6 +18,8 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "EMCALBase/Geometry.h"
 #include <fairlogger/Logger.h>
 // ROOT
@@ -47,7 +49,16 @@ void NumPatchesPerFastORCheck::configure()
     try {
       mBadThresholdNumPatchesPerFastOR = std::stof(nBadThresholdNumPatchesPerFastOR->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << fmt::format("Value {} not a float", nBadThresholdNumPatchesPerFastOR->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " << nBadThresholdNumPatchesPerFastOR->second.data() << " not a float" << ENDM;
+    }
+  }
+
+  auto nMediumThresholdNumPatchesPerFastOR = mCustomParameters.find("MediumThresholdNumPatchesPerFastOR");
+  if (nMediumThresholdNumPatchesPerFastOR != mCustomParameters.end()) {
+    try {
+      mMediumThresholdNumPatchesPerFastOR = std::stof(nMediumThresholdNumPatchesPerFastOR->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << "Value " << nMediumThresholdNumPatchesPerFastOR->second.data() << " not a float" << ENDM;
     }
   }
 
@@ -57,7 +68,7 @@ void NumPatchesPerFastORCheck::configure()
     try {
       mSigmaTSpectrum = std::stof(nSigmaTSpectrum->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << fmt::format("Value {} not a float", nSigmaTSpectrum->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " << nSigmaTSpectrum->second.data() << " not a float" << ENDM;
     }
   }
 
@@ -66,7 +77,16 @@ void NumPatchesPerFastORCheck::configure()
     try {
       mThreshTSpectrum = std::stof(nThreshTSpectrum->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << fmt::format("Value {} not a float", nThreshTSpectrum->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " << nThreshTSpectrum->second.data() << " not a float" << ENDM;
+    }
+  }
+
+  auto logLevelIL = mCustomParameters.find("LogLevelIL");
+  if (logLevelIL != mCustomParameters.end()) {
+    try {
+      mLogLevelIL = std::stoi(logLevelIL->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << "Value " << logLevelIL->second << " not an integer" << ENDM;
     }
   }
 }
@@ -75,8 +95,8 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
-  mErrorMessage.str("");
   mNoisyTRUPositions.clear();
+  std::stringstream messagebuilder;
 
   if (mo->getName() == "NumberOfPatchesWithFastOR") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
@@ -102,24 +122,43 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
         Double_t* xpeaks = peakfinder.GetPositionX();
         Double_t* ypeaks = peakfinder.GetPositionY();
         std::sort(ypeaks, ypeaks + nfound, std::greater<double>()); // sort peaks in descending order to easy pick the y value of max peak
-        double threshold = mBadThresholdNumPatchesPerFastOR * mean;
+        double thresholdBad = mBadThresholdNumPatchesPerFastOR * mean,
+               thresholdMedium = mMediumThresholdNumPatchesPerFastOR * mean;
 
         for (Int_t n_peak = 0; n_peak < nfound; n_peak++) {
           Int_t bin = h->GetXaxis()->FindBin(xpeaks[n_peak]);
           Double_t peak_val = h->GetBinContent(bin);
 
-          if (peak_val > threshold) {
-            result = Quality::Bad;
+          if (peak_val > thresholdBad || peak_val > thresholdMedium) {
             Double_t peak_pos = h->GetXaxis()->GetBinCenter(bin);
             auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(peak_pos);
-            mErrorMessage << "TRU " << truID << " has a noisy FastOR at position " << fastorTRU << " in TRU." << std::endl;
-            ILOG(Error, Support) << "TRU " << truID << " has a noisy FastOR at position " << fastorTRU << " in TRU." << ENDM;
-            mNoisyTRUPositions.push_back(std::make_pair(truID, fastorTRU));
+            auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(peak_pos);
+            FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+            if (peak_val > thresholdBad) {
+              result = Quality::Bad;
+              std::string errorMessage = "TRU " + std::to_string(truID) + " has a noisy FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
+              messagebuilder << errorMessage << std::endl;
+              if (mLogLevelIL > 1) {
+                ILOG(Error, Support) << errorMessage << ENDM;
+              }
+              mNoisyTRUPositions.insert(obj);
+            } else if (peak_val > thresholdMedium) {
+              if (result != Quality::Bad) {
+                result = Quality::Medium;
+                std::string errorMessage = "TRU " + std::to_string(truID) + " has a high rate in FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
+                messagebuilder << errorMessage << std::endl;
+                if (mLogLevelIL > 2) {
+                  ILOG(Warning, Support) << errorMessage << ENDM;
+                }
+                mHighCountTRUPositions.insert(obj);
+              }
+            }
           }
         }
       }
     }
   }
+  result.addFlag(o2::quality_control::FlagTypeFactory::BadEMCalorimetry(), messagebuilder.str());
 
   return result;
 }
@@ -133,19 +172,17 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (checkResult == Quality::Bad) {
       TLatex* msg;
-      if (!mErrorMessage.str().empty()) {
-        ILOG(Error, Support) << mErrorMessage.str() << ENDM;
-        msg = new TLatex(0.15, 0.84, "#color[2]{Error: Noisy TRU(s)}");
-        msg->SetNDC();
-        msg->SetTextSize(16);
-        msg->SetTextFont(43);
-        msg->SetTextColor(kRed);
-        h->GetListOfFunctions()->Add(msg);
-        msg->Draw();
-      }
-      for (int iErr = 0; iErr < mNoisyTRUPositions.size(); iErr++) {
+      msg = new TLatex(0.15, 0.84, "#color[2]{Error: Noisy TRU(s)}");
+      msg->SetNDC();
+      msg->SetTextSize(16);
+      msg->SetTextFont(43);
+      msg->SetTextColor(kRed);
+      h->GetListOfFunctions()->Add(msg);
+      msg->Draw();
+      int iErr = 0;
+      for (const auto& noiseinfo : mNoisyTRUPositions) {
         stringstream errorMessageIndiv;
-        errorMessageIndiv << "Position " << mNoisyTRUPositions[iErr].second << " in TRU " << mNoisyTRUPositions[iErr].first << " is noisy." << std::endl;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " is noisy." << std::endl;
         msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -153,7 +190,49 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
         msg->SetTextColor(kRed);
         h->GetListOfFunctions()->Add(msg);
         msg->Draw();
-        ILOG(Error, Support) << errorMessageIndiv.str() << ENDM;
+        if (mLogLevelIL > 0) {
+          ILOG(Error, Support) << errorMessageIndiv.str() << ENDM;
+        }
+        iErr++;
+      }
+      for (const auto& noiseinfo : mHighCountTRUPositions) {
+        stringstream errorMessageIndiv;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts" << std::endl;
+        msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
+        msg->SetNDC();
+        msg->SetTextSize(16);
+        msg->SetTextFont(43);
+        msg->SetTextColor(kOrange);
+        h->GetListOfFunctions()->Add(msg);
+        msg->Draw();
+        if (mLogLevelIL > 0) {
+          ILOG(Warning, Support) << errorMessageIndiv.str() << ENDM;
+        }
+        iErr++;
+      }
+    } else if (checkResult == Quality::Medium) {
+      TLatex* msg;
+      msg = new TLatex(0.15, 0.84, "#color[2]{Error: High rate TRU(s)}");
+      msg->SetNDC();
+      msg->SetTextSize(16);
+      msg->SetTextFont(43);
+      msg->SetTextColor(kRed);
+      h->GetListOfFunctions()->Add(msg);
+      int iErr = 0;
+      for (const auto& noiseinfo : mHighCountTRUPositions) {
+        stringstream errorMessageIndiv;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts" << std::endl;
+        msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
+        msg->SetNDC();
+        msg->SetTextSize(16);
+        msg->SetTextFont(43);
+        msg->SetTextColor(kOrange);
+        h->GetListOfFunctions()->Add(msg);
+        msg->Draw();
+        if (mLogLevelIL > 0) {
+          ILOG(Warning, Support) << errorMessageIndiv.str() << ENDM;
+        }
+        iErr++;
       }
     }
   }
