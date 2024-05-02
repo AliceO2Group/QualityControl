@@ -59,7 +59,7 @@ TEST_CASE("int_write_read")
   TH1I* histoBefore = new TH1I("histo 1d", "histo 1d", bins, min, max);
   histoBefore->Fill(5);
   MonitorObject* moHistoBefore = new MonitorObject(histoBefore, "histo 1d", "class", "DET");
-  moHistoBefore->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 100, 300 } });
+  moHistoBefore->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 100, 300 } });
   moHistoBefore->setIsOwner(true);
   mocBefore->Add(moHistoBefore);
   {
@@ -130,7 +130,7 @@ TEST_CASE("mw_write_read")
   TH1I* histoBefore = new TH1I("histo 1d", "histo 1d", bins, min, max);
   histoBefore->Fill(5);
   MonitorObject* moHistoBefore = new MonitorObject(histoBefore, "histo 1d", "class", "DET");
-  moHistoBefore->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 100, 300 } });
+  moHistoBefore->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 100, 300 } });
   moHistoBefore->setIsOwner(true);
   mocBefore->Add(moHistoBefore);
   {
@@ -206,14 +206,14 @@ TEST_CASE("read_structure")
   TH1I* histo1 = new TH1I("histo 1", "histo 1", bins, min, max);
   histo1->Fill(5);
   MonitorObject* moHisto1 = new MonitorObject(histo1, "histo 1", "class", "DET");
-  moHisto1->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 100, 300 } });
+  moHisto1->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 100, 300 } });
   moHisto1->setIsOwner(true);
   moc->Add(moHisto1);
 
   TH1I* histo2 = new TH1I("histo 2", "histo 2", bins, min, max);
   histo1->Fill(5);
   MonitorObject* moHisto2 = new MonitorObject(histo2, "histo 2", "class", "DET");
-  moHisto2->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 100, 300 } });
+  moHisto2->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 100, 300 } });
   moHisto2->setIsOwner(true);
   moc->Add(moHisto2);
 
@@ -339,14 +339,14 @@ TEST_CASE("walking")
   TH1I* histo1 = new TH1I("histo 1", "histo 1", bins, min, max);
   histo1->Fill(5);
   MonitorObject* moHisto1 = new MonitorObject(histo1, "histo 1", "class", "DET");
-  moHisto1->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 100, 300 } });
+  moHisto1->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 100, 300 } });
   moHisto1->setIsOwner(true);
   moc->Add(moHisto1);
 
   TH1I* histo2 = new TH1I("histo 2", "histo 2", bins, min, max);
   histo1->Fill(5);
   MonitorObject* moHisto2 = new MonitorObject(histo2, "histo 2", "class", "DET");
-  moHisto2->setActivity({ 300000, 1, "LHC32x", "apass2", "qc_async", { 100, 300 } });
+  moHisto2->setActivity({ 300000, "PHYSICS", "LHC32x", "apass2", "qc_async", { 100, 300 } });
   moHisto2->setIsOwner(true);
   moc->Add(moHisto2);
 
