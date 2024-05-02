@@ -42,13 +42,13 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
   void startOfActivity(const Activity& activity) override;
   static constexpr double_t nofOrbitsPerTF = 32;
-  static constexpr double_t TimeTF = nofOrbitsPerTF*o2::constants::lhc::LHCOrbitMUS/1e6; // in seconds
+  static constexpr double_t TimeTF = nofOrbitsPerTF * o2::constants::lhc::LHCOrbitMUS / 1e6; // in seconds
   ClassDefOverride(RawDataReaderCheck, 5);
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
   int getNumberFilledBins(TH1F* hist);
-  int checkChange(TH1F* fHistDiference,TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium);
+  int checkChange(TH1F* fHistDiference, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium);
   int mRunNumber;
   long int mTimestamp;
   float mThreshold;

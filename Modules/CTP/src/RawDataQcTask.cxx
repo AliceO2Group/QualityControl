@@ -82,8 +82,8 @@ void CTPRawDataReaderTask::startOfCycle()
 
 void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  //LOG(info) << "============  Starting monitoring ================== ";
-  //  get the input
+  // LOG(info) << "============  Starting monitoring ================== ";
+  //   get the input
   std::vector<o2::framework::InputSpec> filter;
   std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
   std::vector<o2::ctp::CTPDigit> outputDigits;
@@ -99,8 +99,8 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (digit.CTPInputMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
-          mHistoInputs->Fill(ctpinputs[i],1);
-          mHistoInputRatios->Fill(ctpinputs[i],1);
+          mHistoInputs->Fill(ctpinputs[i], 1);
+          mHistoInputRatios->Fill(ctpinputs[i], 1);
           if (i == indexTvx - 1)
             mHistoMTVXBC->Fill(bcid);
         }
@@ -117,7 +117,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   mHistoInputs->Fill(o2::ctp::CTP_NINPUTS);
   mHistoClasses->Fill(o2::ctp::CTP_NCLASSES);
-  //std::cout << " N TFs:" << mNTF << std::endl;
+  // std::cout << " N TFs:" << mNTF << std::endl;
 }
 
 void CTPRawDataReaderTask::endOfCycle()

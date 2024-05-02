@@ -89,7 +89,7 @@ void RawDataReaderCheck::configure()
 
 Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  //ILOG(Info, Support) << "===> Starting check " << ENDM;
+  // ILOG(Info, Support) << "===> Starting check " << ENDM;
   Quality result = Quality::Null;
 
   vBadBC.clear();
@@ -101,11 +101,11 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   flagInput = false;
 
   for (auto& [moName, mo] : *moMap) {
-    //std::cout << moName << " names " << mo->getName() << std::endl;
-    if(moName.find("Ratio") != std::string::npos) {
+    // std::cout << moName << " names " << mo->getName() << std::endl;
+    if (moName.find("Ratio") != std::string::npos) {
       flagRatio = true;
     }
-    if(moName.find("input") != std::string::npos) {
+    if (moName.find("input") != std::string::npos) {
       flagInput = true;
     }
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
@@ -115,52 +115,52 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
     }
     if (mo->getName() == "bcMTVX") {
       mThreshold = h->GetEntries() / mLHCBCs.count();
-      //mThreshold = mThreshold - sqrt(mThreshold);
+      // mThreshold = mThreshold - sqrt(mThreshold);
       mThreshold = sqrt(mThreshold);
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
-        //if (mLHCBCs[i]) {
-        //  ILOG(Info, Support) << i << " ";
-        //}
+        // if (mLHCBCs[i]) {
+        //   ILOG(Info, Support) << i << " ";
+        // }
         if (mLHCBCs[i] && h->GetBinContent(i + 1) <= mThreshold) {
           vMediumBC.push_back(i);
-          //std::cout << i << " madium " << h->GetBinContent(i + 1) << std::endl;
+          // std::cout << i << " madium " << h->GetBinContent(i + 1) << std::endl;
         } else if (!mLHCBCs[i] && h->GetBinContent(i + 1) > mThreshold) {
           vBadBC.push_back(i);
         } else if (mLHCBCs[i] && h->GetBinContent(i + 1) > mThreshold) {
           vGoodBC.push_back(i);
         }
       }
-    } else if( mo->getName() == "inputs") {
-      //std::cout << "bin 48:" << h->GetBinContent(o2::ctp::CTP_NINPUTS+1) << " 1 " << h->GetBinContent(1) << std::endl;
-      h->Scale(1./h->GetBinContent(o2::ctp::CTP_NINPUTS+1)/TimeTF);
+    } else if (mo->getName() == "inputs") {
+      // std::cout << "bin 48:" << h->GetBinContent(o2::ctp::CTP_NINPUTS+1) << " 1 " << h->GetBinContent(1) << std::endl;
+      h->Scale(1. / h->GetBinContent(o2::ctp::CTP_NINPUTS + 1) / TimeTF);
       TH1F* fHistDifference = (TH1F*)h->Clone();
-      if( fHistInputPrevious) {
-        checkChange(fHistDifference,fHistInputPrevious,vIndexBad,vIndexMedium);
+      if (fHistInputPrevious) {
+        checkChange(fHistDifference, fHistInputPrevious, vIndexBad, vIndexMedium);
         delete fHistInputPrevious;
       }
       fHistInputPrevious = (TH1F*)h->Clone();
-    } else if( mo->getName() == "inputRatio") {
+    } else if (mo->getName() == "inputRatio") {
       if (h->GetBinContent(3) != 0) {
         h->Scale(1. / h->GetBinContent(3));
       }
-      if(fHistInputRatioPrevious) {
+      if (fHistInputRatioPrevious) {
         delete fHistInputRatioPrevious;
       }
       fHistInputRatioPrevious = (TH1F*)h->Clone();
-    } else if( mo->getName() == "classes") {
-      //std::cout << "bin 64:" << h->GetBinContent(o2::ctp::CTP_NCLASSES+1) << " 1 " << h->GetBinContent(1) << std::endl;
-      h->Scale(1./h->GetBinContent(o2::ctp::CTP_NCLASSES+1)/TimeTF);
+    } else if (mo->getName() == "classes") {
+      // std::cout << "bin 64:" << h->GetBinContent(o2::ctp::CTP_NCLASSES+1) << " 1 " << h->GetBinContent(1) << std::endl;
+      h->Scale(1. / h->GetBinContent(o2::ctp::CTP_NCLASSES + 1) / TimeTF);
       TH1F* fHistDifference = (TH1F*)h->Clone();
-      if( fHistClassesPrevious ) {
-        checkChange(fHistDifference,fHistClassesPrevious,vIndexBad,vIndexMedium);
+      if (fHistClassesPrevious) {
+        checkChange(fHistDifference, fHistClassesPrevious, vIndexBad, vIndexMedium);
         delete fHistClassesPrevious;
       }
       fHistClassesPrevious = (TH1F*)h->Clone();
-    } else if( mo->getName() == "classRatio") {
+    } else if (mo->getName() == "classRatio") {
       if (h->GetBinContent(mIndexMBclass) != 0) {
         h->Scale(1. / h->GetBinContent(mIndexMBclass));
       }
-      if( fHistClassRatioPrevious ) {
+      if (fHistClassRatioPrevious) {
         delete fHistClassRatioPrevious;
       }
       fHistClassRatioPrevious = (TH1F*)h->Clone();
@@ -176,10 +176,10 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
     result = Quality::Good;
   }
   cycleCounter++;
-  //LOG(info) << "Cycle ===================>" << cycleCounter;
+  // LOG(info) << "Cycle ===================>" << cycleCounter;
   return result;
 }
-int RawDataReaderCheck::checkChange(TH1F* fHistDifference, TH1F* fHistPrev,std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium)
+int RawDataReaderCheck::checkChange(TH1F* fHistDifference, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium)
 {
   fHistDifference->Add(fHistPrev, -1); // Calculate relative difference w.r.t. rate in previous cycle
   fHistDifference->Divide(fHistPrev);
@@ -199,7 +199,6 @@ int RawDataReaderCheck::checkChange(TH1F* fHistDifference, TH1F* fHistPrev,std::
   }
   return 0;
 }
-
 
 std::string RawDataReaderCheck::getAcceptedType() { return "TH1"; }
 
@@ -298,10 +297,10 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->GetListOfFunctions()->Add(msg->Clone());
     }
     h->SetMarkerStyle(20);
-    //h->SetOption("HIST");
-    if( flagInput) {
+    // h->SetOption("HIST");
+    if (flagInput) {
       h->LabelsOption("v");
-      //h->LabelsOption("a");
+      // h->LabelsOption("a");
     }
     h->LabelsDeflate("X");
   }
@@ -335,7 +334,7 @@ void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
   CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
   bool ok;
   o2::ctp::CTPConfiguration CTPconfig = CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
-  if(ok) {
+  if (ok) {
     // get the index of the MB reference class
     ILOG(Info, Support) << "CTP config found, run:" << run << ENDM;
     std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
