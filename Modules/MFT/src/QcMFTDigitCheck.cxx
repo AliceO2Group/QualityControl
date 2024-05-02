@@ -265,8 +265,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
   if (mNoiseScan == 1) {
     if (mNCycles == 1) {
-      // long timestamp = mo->getValidity().getMin();
-      long timestamp = 1714531157487;
+      long timestamp = mo->getValidity().getMin();
       readNoiseMap(mo, timestamp);
       mOldNoisyPix = mNoisyPix;
     }
