@@ -73,30 +73,17 @@ class ITSTrackSimTask : public TaskInterface
   std::vector<std::vector<InfoStruct>> info;
   std::vector<TObject*> mPublishedObjects;
 
-  TH1D* hNumRecoValid_pt;
-  TH1D* hNumRecoFake_pt;
-  TH1D* hDenTrue_pt;
+
   TEfficiency *hEfficiency_pt, *hEfficiency_phi, *hEfficiency_eta, *hEfficiency_z, *hEfficiency_r;
-  TEfficiency *hFakeTrack_pt, *hFakeTrack_phi, *hFakeTrack_eta, *hFakeTrack_z, *hFakeTrack_r, *hFakeTrack_QoverPt;
-
+  TEfficiency *hFakeTrack_pt[5], *hFakeTrack_phi[5], *hFakeTrack_eta[5], *hFakeTrack_z[5], *hFakeTrack_r[5], *hFakeTrack_QoverPt[5];  //idxs 0 to 3 -> 4 to 7 cluster tracks, idx 4 - total
+  TH1D *hNumRecoFake_pt[5], *hNumRecoFake_phi[5], *hNumRecoFake_eta[5], *hNumRecoFake_z[5], *hNumRecoFake_r[5], *hNumRecoFake_QoverPt[5];
+  TH1D *hDenTrue_pt[5], *hDenTrue_phi[5], *hDenTrue_eta[5], *hDenTrue_z[5], *hDenTrue_r[5], *hDenTrue_QoverPt[5];
+  
+  TH1D* hNumRecoValid_pt;
   TH1D* hNumRecoValid_eta;
-  TH1D* hNumRecoFake_eta;
-  TH1D* hDenTrue_eta;
-
   TH1D* hNumRecoValid_phi;
-  TH1D* hNumRecoFake_phi;
-  TH1D* hDenTrue_phi;
-
   TH1D* hNumRecoValid_r;
-  TH1D* hNumRecoFake_r;
-  TH1D* hDenTrue_r;
-
   TH1D* hNumRecoValid_z;
-  TH1D* hNumRecoFake_z;
-  TH1D* hDenTrue_z;
-
-  TH1D* hNumRecoFake_QoverPt;
-  TH1D* hDenTrue_QoverPt;
 
   TH1F* hTrackImpactTransvFake;
   TH1F* hTrackImpactTransvValid;
@@ -108,21 +95,6 @@ class ITSTrackSimTask : public TaskInterface
 
   TEfficiency *hDuplicate_pt, *hDuplicate_phi, *hDuplicate_eta, *hDuplicate_z, *hDuplicate_r;
   TH1D *hNumDuplicate_pt, *hNumDuplicate_phi, *hNumDuplicate_eta, *hNumDuplicate_z, *hNumDuplicate_r;
-
-  TEfficiency *hFakeTrack_4Cluster_pt, *hFakeTrack_4Cluster_phi, *hFakeTrack_4Cluster_eta, *hFakeTrack_4Cluster_z, *hFakeTrack_4Cluster_r, *hFakeTrack_4Cluster_QoverPt;
-  TEfficiency *hFakeTrack_5Cluster_pt, *hFakeTrack_5Cluster_phi, *hFakeTrack_5Cluster_eta, *hFakeTrack_5Cluster_z, *hFakeTrack_5Cluster_r, *hFakeTrack_5Cluster_QoverPt;
-  TEfficiency *hFakeTrack_6Cluster_pt, *hFakeTrack_6Cluster_phi, *hFakeTrack_6Cluster_eta, *hFakeTrack_6Cluster_z, *hFakeTrack_6Cluster_r, *hFakeTrack_6Cluster_QoverPt;
-  TEfficiency *hFakeTrack_7Cluster_pt, *hFakeTrack_7Cluster_phi, *hFakeTrack_7Cluster_eta, *hFakeTrack_7Cluster_z, *hFakeTrack_7Cluster_r, *hFakeTrack_7Cluster_QoverPt;
-
-  TH1D *hNumRecoFake_4Cluster_pt, *hNumRecoFake_4Cluster_phi, *hNumRecoFake_4Cluster_eta, *hNumRecoFake_4Cluster_z, *hNumRecoFake_4Cluster_r, *hNumRecoFake_4Cluster_QoverPt;
-  TH1D *hNumRecoFake_5Cluster_pt, *hNumRecoFake_5Cluster_phi, *hNumRecoFake_5Cluster_eta, *hNumRecoFake_5Cluster_z, *hNumRecoFake_5Cluster_r, *hNumRecoFake_5Cluster_QoverPt;
-  TH1D *hNumRecoFake_6Cluster_pt, *hNumRecoFake_6Cluster_phi, *hNumRecoFake_6Cluster_eta, *hNumRecoFake_6Cluster_z, *hNumRecoFake_6Cluster_r, *hNumRecoFake_6Cluster_QoverPt;
-  TH1D *hNumRecoFake_7Cluster_pt, *hNumRecoFake_7Cluster_phi, *hNumRecoFake_7Cluster_eta, *hNumRecoFake_7Cluster_z, *hNumRecoFake_7Cluster_r, *hNumRecoFake_7Cluster_QoverPt;
-
-  TH1D *hDenTrue_4Cluster_pt, *hDenTrue_4Cluster_phi, *hDenTrue_4Cluster_eta, *hDenTrue_4Cluster_z, *hDenTrue_4Cluster_r, *hDenTrue_4Cluster_QoverPt;
-  TH1D *hDenTrue_5Cluster_pt, *hDenTrue_5Cluster_phi, *hDenTrue_5Cluster_eta, *hDenTrue_5Cluster_z, *hDenTrue_5Cluster_r, *hDenTrue_5Cluster_QoverPt;
-  TH1D *hDenTrue_6Cluster_pt, *hDenTrue_6Cluster_phi, *hDenTrue_6Cluster_eta, *hDenTrue_6Cluster_z, *hDenTrue_6Cluster_r, *hDenTrue_6Cluster_QoverPt;
-  TH1D *hDenTrue_7Cluster_pt, *hDenTrue_7Cluster_phi, *hDenTrue_7Cluster_eta, *hDenTrue_7Cluster_z, *hDenTrue_7Cluster_r, *hDenTrue_7Cluster_QoverPt;
 
   int mRunNumber = 0;
   std::string mO2GrpPath;
