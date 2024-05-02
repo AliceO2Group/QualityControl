@@ -44,8 +44,13 @@ def run(args):
     file = open(args.runs_file)
     csvreader = csv.DictReader(file)
     for row in csvreader:
-        run_number = row["runNumber"]
-        run_type = row["runType"]
+        try:
+            run_number = row["runNumber"]
+            run_type = row["runType"]
+        except KeyError:  # pragma: no coverage
+            logging.fatal(f"Could not find columns `runNumber` and `runType` in {args.runs_file}, make sure the column headers are correct.")
+            exit(1)
+
         if run_type == "null":
             logging.debug(f"Skipping run {run_number} because its type is `null`")
             continue
