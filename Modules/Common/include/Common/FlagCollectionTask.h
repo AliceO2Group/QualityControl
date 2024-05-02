@@ -10,23 +10,20 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TRFCollectionTask.h
+/// \file   FlagCollectionTask.h
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TRFCOLLECTIONTASK_H
-#define QUALITYCONTROL_TRFCOLLECTIONTASK_H
+#ifndef QUALITYCONTROL_QCFCOLLECTIONTASK_H
+#define QUALITYCONTROL_QCFCOLLECTIONTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "Common/TRFCollectionTaskConfig.h"
+#include "Common/FlagCollectionTaskConfig.h"
+#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 
 namespace o2::quality_control::repository
 {
 class DatabaseInterface;
-}
-namespace o2::quality_control
-{
-class TimeRangeFlagCollection;
 }
 
 namespace o2::quality_control_modules::common
@@ -34,13 +31,13 @@ namespace o2::quality_control_modules::common
 
 /// \brief Example Quality Control Postprocessing Task
 /// \author My Name
-class TRFCollectionTask final : public quality_control::postprocessing::PostProcessingInterface
+class FlagCollectionTask final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
   /// \brief Constructor
-  TRFCollectionTask() = default;
+  FlagCollectionTask() = default;
   /// \brief Destructor
-  ~TRFCollectionTask() override;
+  ~FlagCollectionTask() override;
 
   void configure(const boost::property_tree::ptree& config) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
@@ -48,14 +45,14 @@ class TRFCollectionTask final : public quality_control::postprocessing::PostProc
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
-  std::unique_ptr<quality_control::TimeRangeFlagCollection>
+  std::unique_ptr<quality_control::QualityControlFlagCollection>
     transformQualities(quality_control::repository::DatabaseInterface& qcdb, const uint64_t timestampLimitStart, const uint64_t timestampLimitEnd);
 
  private:
-  TRFCollectionTaskConfig mConfig;
+  FlagCollectionTaskConfig mConfig;
   uint64_t mLastTimestampLimitStart = 0;
 };
 
 } // namespace o2::quality_control_modules::common
 
-#endif //QUALITYCONTROL_TRFCOLLECTIONTASK_H
+#endif // QUALITYCONTROL_QCFCOLLECTIONTASK_H

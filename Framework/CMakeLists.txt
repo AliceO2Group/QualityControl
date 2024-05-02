@@ -1,5 +1,5 @@
 # Produce the final Version.h using template Version.h.in and substituting
-# variables. We don't want to polute our source tree with it, thus putting it in
+# variables. We don't want to pollute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
@@ -80,7 +80,7 @@ add_library(O2QualityControl
   src/MonitorObjectCollection.cxx
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
-  src/QualitiesToTRFCollectionConverter.cxx
+  src/QualitiesToFlagCollectionConverter.cxx
   src/Calculators.cxx
   src/DataSourceSpec.cxx
   src/RootFileSink.cxx
@@ -278,9 +278,11 @@ set(TEST_SRCS
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testRepoPathUtils.cxx
-    test/testQualitiesToTRFCollectionConverter.cxx
+    test/testQualitiesToFlagCollectionConverter.cxx
     test/testUserCodeInterface.cxx
-  )
+    test/testStringUtils.cxx
+    test/testRunnerUtils.cxx
+)
 
 set(TEST_ARGS
     ""
@@ -297,6 +299,8 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
+    ""
     ""
     ""
     ""

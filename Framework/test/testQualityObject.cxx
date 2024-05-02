@@ -18,7 +18,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/testUtils.h"
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <catch_amalgamated.hpp>
 
@@ -117,36 +118,36 @@ TEST_CASE("qopath")
   CHECK_THROWS_AS(qo4.getPath(), AliceO2::Common::FatalException);
 }
 
-TEST_CASE("qo_reasons")
+TEST_CASE("qo_flags")
 {
   QualityObject qo1(Quality::Bad, "xyzCheck", "DET");
-  qo1.addReason(FlagReasonFactory::BadTracking(), "exception in x");
-  qo1.addReason(FlagReasonFactory::BadTracking(), "exception in y");
-  qo1.addReason(FlagReasonFactory::LimitedAcceptance(), "sector C off");
+  qo1.addFlag(FlagTypeFactory::BadTracking(), "exception in x");
+  qo1.addFlag(FlagTypeFactory::BadTracking(), "exception in y");
+  qo1.addFlag(FlagTypeFactory::BadPID(), "wrong time of flight due to the summer time change");
 
-  auto reasons1 = qo1.getReasons();
-  CHECK(reasons1[0].first == FlagReasonFactory::BadTracking());
-  CHECK(reasons1[0].second == "exception in x");
-  CHECK(reasons1[1].first == FlagReasonFactory::BadTracking());
-  CHECK(reasons1[1].second == "exception in y");
-  CHECK(reasons1[2].first == FlagReasonFactory::LimitedAcceptance());
-  CHECK(reasons1[2].second == "sector C off");
+  auto flags1 = qo1.getFlags();
+  CHECK(flags1[0].first == FlagTypeFactory::BadTracking());
+  CHECK(flags1[0].second == "exception in x");
+  CHECK(flags1[1].first == FlagTypeFactory::BadTracking());
+  CHECK(flags1[1].second == "exception in y");
+  CHECK(flags1[2].first == FlagTypeFactory::BadPID());
+  CHECK(flags1[2].second == "wrong time of flight due to the summer time change");
 
   auto qo2 = qo1;
-  auto reasons2 = qo2.getReasons();
-  CHECK(reasons2[0].first == FlagReasonFactory::BadTracking());
-  CHECK(reasons2[0].second == "exception in x");
-  CHECK(reasons2[1].first == FlagReasonFactory::BadTracking());
-  CHECK(reasons2[1].second == "exception in y");
-  CHECK(reasons2[2].first == FlagReasonFactory::LimitedAcceptance());
-  CHECK(reasons2[2].second == "sector C off");
+  auto flags2 = qo2.getFlags();
+  CHECK(flags2[0].first == FlagTypeFactory::BadTracking());
+  CHECK(flags2[0].second == "exception in x");
+  CHECK(flags2[1].first == FlagTypeFactory::BadTracking());
+  CHECK(flags2[1].second == "exception in y");
+  CHECK(flags2[2].first == FlagTypeFactory::BadPID());
+  CHECK(flags2[2].second == "wrong time of flight due to the summer time change");
 
   auto quality = qo1.getQuality();
-  auto reasons3 = quality.getReasons();
-  CHECK(reasons3[0].first == FlagReasonFactory::BadTracking());
-  CHECK(reasons3[0].second == "exception in x");
-  CHECK(reasons3[1].first == FlagReasonFactory::BadTracking());
-  CHECK(reasons3[1].second == "exception in y");
-  CHECK(reasons3[2].first == FlagReasonFactory::LimitedAcceptance());
-  CHECK(reasons3[2].second == "sector C off");
+  auto flags3 = quality.getFlags();
+  CHECK(flags3[0].first == FlagTypeFactory::BadTracking());
+  CHECK(flags3[0].second == "exception in x");
+  CHECK(flags3[1].first == FlagTypeFactory::BadTracking());
+  CHECK(flags3[1].second == "exception in y");
+  CHECK(flags3[2].first == FlagTypeFactory::BadPID());
+  CHECK(flags3[2].second == "wrong time of flight due to the summer time change");
 }

@@ -20,7 +20,8 @@
 #include "TOF/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -53,8 +54,8 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
       auto* h = static_cast<TH1F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
-        result.addReason(FlagReasonFactory::NoDetectorData(),
-                         "Empty histogram (no counts)");
+        result.addFlag(FlagTypeFactory::NoDetectorData(),
+                       "Empty histogram (no counts)");
       } else {
         mRawTimeMean = h->GetMean();
         static const int lowBinId = h->GetXaxis()->FindBin(mMinAllowedTime);
@@ -67,13 +68,13 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (mRawTimePeakIntegral / mRawTimeIntegral > mMinPeakRatioIntegral) {
             ILOG(Warning, Support) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean) << ENDM;
             result = Quality::Medium;
-            result.addReason(FlagReasonFactory::Unknown(),
-                             "Peak over total outside of allowed range");
+            result.addFlag(FlagTypeFactory::Unknown(),
+                           "Peak over total outside of allowed range");
           } else {
             ILOG(Warning, Support) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean) << ENDM;
             result = Quality::Bad;
-            result.addReason(FlagReasonFactory::Unknown(),
-                             "Time mean out of expected range");
+            result.addFlag(FlagTypeFactory::Unknown(),
+                           "Time mean out of expected range");
           }
         }
       }

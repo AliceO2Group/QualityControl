@@ -21,7 +21,8 @@
 // ROOT
 #include <TH1.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -51,15 +52,15 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       for (int i = 0; i < h->GetNbinsX(); i++) {
         if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
           result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because there is nothing in bin " + std::to_string(i));
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is bad because there is nothing in bin " + std::to_string(i));
           break;
         } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
           result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because bin " + std::to_string(i) + " is not empty");
-          result.addReason(FlagReasonFactory::BadTracking(),
-                           "This is to demonstrate that we can assign more than one Reason to a Quality");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is medium because bin " + std::to_string(i) + " is not empty");
+          result.addFlag(FlagTypeFactory::BadTracking(),
+                         "This is to demonstrate that we can assign more than one Flag to a Quality");
         }
       }
       result.addMetadata("mykey", "myvalue");

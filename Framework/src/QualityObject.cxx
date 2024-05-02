@@ -35,7 +35,7 @@ QualityObject::QualityObject(
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mActivity(runNumber, 0, "", "", "qc", gInvalidValidityInterval)
+    mActivity(runNumber, "NONE", "", "", "qc", gInvalidValidityInterval)
 {
   mQuality.addMetadata(std::move(metadata));
 }
@@ -119,15 +119,15 @@ std::string QualityObject::getPath() const
   return path;
 }
 
-QualityObject& QualityObject::addReason(const FlagReason& reason, std::string comment)
+QualityObject& QualityObject::addFlag(const FlagType& flag, std::string comment)
 {
-  mQuality.addReason(reason, std::move(comment));
+  mQuality.addFlag(flag, std::move(comment));
   return *this;
 }
 
-const CommentedFlagReasons& QualityObject::getReasons() const
+const CommentedFlagTypes& QualityObject::getFlags() const
 {
-  return mQuality.getReasons();
+  return mQuality.getFlags();
 }
 
 const std::string& QualityObject::getDetectorName() const

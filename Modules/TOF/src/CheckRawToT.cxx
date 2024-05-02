@@ -21,7 +21,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -60,8 +61,8 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       auto* h = static_cast<TH1F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
-        result.addReason(FlagReasonFactory::NoDetectorData(),
-                         "Empty histogram (no counts)");
+        result.addFlag(FlagTypeFactory::NoDetectorData(),
+                       "Empty histogram (no counts)");
       } else {
         // Set range to compute the average without the orphans
         h->GetXaxis()->SetRange(2, h->GetNbinsX());
@@ -83,8 +84,8 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         } else {
           ILOG(Warning, Support) << Form("ToT mean = %5.2f ns", ToTMean) << ENDM;
           result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "ToT mean out of expected range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "ToT mean out of expected range");
         }
       }
     }

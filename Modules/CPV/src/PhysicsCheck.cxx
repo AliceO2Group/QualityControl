@@ -23,8 +23,8 @@
 #include "PHOS/TH1Fraction.h"
 #include "PHOS/TH2Fraction.h"
 // O2
-#include <DataFormatsQualityControl/FlagReasons.h>
-#include <DataFormatsQualityControl/FlagReasonFactory.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 // ROOT
 #include <TF1.h>
 #include <TH1.h>
@@ -265,7 +265,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Null)) {
             result.set(Quality::Null);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("not enough statistics M%d", iMod + 2));
           msg->AddText("Not enough data to check");
           msg->SetFillColor(kOrange);
           isGoodMO = false;
@@ -276,7 +276,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
             if (result.isBetterThan(Quality::Medium)) {
               result.set(Quality::Medium);
             }
-            result.addReason(FlagReasonFactory::Unknown(), Form("too small mean M%d", iMod + 2));
+            result.addFlag(FlagTypeFactory::Unknown(), Form("too small mean M%d", iMod + 2));
             msg->AddText(Form("Mean is too small: %f", mean));
             msg->AddText(Form("Min allowed mean: %f", mMinAmplitudeMean[iMod]));
             msg->SetFillColor(kRed);
@@ -286,7 +286,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
             if (result.isBetterThan(Quality::Medium)) {
               result.set(Quality::Medium);
             }
-            result.addReason(FlagReasonFactory::Unknown(), Form("too big mean M%d", iMod + 2));
+            result.addFlag(FlagTypeFactory::Unknown(), Form("too big mean M%d", iMod + 2));
             msg->AddText(Form("Mean is too big: %f", mean));
             msg->AddText(Form("Max allowed mean: %f", mMaxAmplitudeMean[iMod]));
             msg->SetFillColor(kRed);
@@ -319,7 +319,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Null)) {
             result.set(Quality::Null);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("not enough statistics M%d", iMod + 2));
           msg->AddText("Not enough data to check");
           msg->SetFillColor(kOrange);
           isGoodMO = false;
@@ -330,7 +330,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
             if (result.isBetterThan(Quality::Medium)) {
               result.set(Quality::Medium);
             }
-            result.addReason(FlagReasonFactory::Unknown(), Form("too small mean energy M%d", iMod + 2));
+            result.addFlag(FlagTypeFactory::Unknown(), Form("too small mean energy M%d", iMod + 2));
             msg->AddText(Form("Mean is too small: %f", mean));
             msg->AddText(Form("Min allowed mean: %f", mMinCluEnergyMean[iMod]));
             msg->SetFillColor(kRed);
@@ -340,7 +340,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
             if (result.isBetterThan(Quality::Medium)) {
               result.set(Quality::Medium);
             }
-            result.addReason(FlagReasonFactory::Unknown(), Form("too big mean energy M%d", iMod + 2));
+            result.addFlag(FlagTypeFactory::Unknown(), Form("too big mean energy M%d", iMod + 2));
             msg->AddText(Form("Mean is too big: %f", mean));
             msg->AddText(Form("Max allowed mean: %f", mMaxCluEnergyMean[iMod]));
             msg->SetFillColor(kRed);
@@ -368,7 +368,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
         if (h->GetEntries() < mMinEventsToCheckClusters[iMod]) {
-          result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("not enough statistics M%d", iMod));
           msg->AddText("Not enough data to check");
           msg->SetFillColor(kOrange);
           break;
@@ -378,7 +378,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too small mean size M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too small mean size M%d", iMod + 2));
           msg->AddText(Form("Mean is too small: %f", meanClusterSize));
           msg->AddText(Form("Min allowed mean: %f", mMinClusterSize[iMod]));
           msg->SetFillColor(kRed);
@@ -387,7 +387,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too big mean size M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too big mean size M%d", iMod + 2));
           msg->AddText(Form("Mean is too big: %f", meanClusterSize));
           msg->AddText(Form("Max allowed mean: %f", mMaxClusterSize[iMod]));
           msg->SetFillColor(kRed);
@@ -436,7 +436,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("many hot cards M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("many hot cards M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.0, 0.0, 0.2, 0.1, "NDC");
           msg->SetName(Form("%s_msgHot3G", mo->GetName()));
           msg->Clear();
@@ -449,7 +449,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("many cold cards M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("many cold cards M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.0, 0.9, 0.2, 1.0, "NDC");
           msg->AddText(Form("cold 3G cards (%d/%d)", nCold3Gassiplexes, mNCold3GassiplexAllowed[iMod]));
           msg->SetFillColor(kRed);
@@ -502,7 +502,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("digit occurance: many hot cards M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("digit occurance: many hot cards M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.0, 0.0, 0.2, 0.1, "NDC");
           msg->SetName(Form("%s_msgHot3G", mo->GetName()));
           msg->Clear();
@@ -515,7 +515,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("digit occurance: many cold cards M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("digit occurance: many cold cards M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.0, 0.9, 0.2, 1.0, "NDC");
           msg->AddText(Form("cold 3G cards (%d/%d)", nCold3Gassiplexes, mNCold3GassiplexAllowed[iMod]));
           msg->SetFillColor(kRed);
@@ -548,7 +548,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too many digits per event M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too many digits per event M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.6, 0.6, 1.0, 0.8, "NDC");
           msg->AddText(Form("Mean is too big: %f", mean));
           msg->AddText(Form("Max allowed mean: %f", mMaxDigitsPerEvent[iMod]));
@@ -558,7 +558,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too few digits per event M%d", iMod + 2));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too few digits per event M%d", iMod + 2));
           TPaveText* msg = new TPaveText(0.6, 0.6, 1.0, 0.8, "NDC");
           msg->AddText(Form("Mean is too small: %f", mean));
           msg->AddText(Form("Min allowed mean: %f", mMinDigitsPerEvent[iMod]));
@@ -588,7 +588,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too many %s errors", mErrorLabel[i - 1]));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too many %s errors", mErrorLabel[i - 1]));
           TLatex* msg = new TLatex(0.12 + (0.2 * (i % 2)), 0.2 + (i / 2) * 0.06, Form("#color[2]{Too many %s errors}", mErrorLabel[i - 1]));
           msg->SetNDC();
           msg->SetTextSize(16);
