@@ -53,6 +53,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
   metadata["runNumber"] = run;
   mCTPconfig = mgr.getSpecific<CTPConfiguration>(CCDBPathCTPConfig, t.timestamp, metadata);
   if (mCTPconfig == nullptr) {
+    std::cout << "CTP config nt found" << std::endl;
     return;
   }
   // get the indeces of the classes we want to trend
@@ -84,6 +85,8 @@ void CTPTrendingTask::initCTP(Trigger& t)
     mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
   }
   getObjectsManager()->startPublishing(mTrend.get());
+  ILOG(Debug, Devel) << "Trending run : " << run << ENDM;
+  std::cout << "Trending run:" << run << std::endl;
 }
 void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
@@ -158,7 +161,7 @@ void CTPTrendingTask::generatePlots()
                  // 5 <= index < 10 - absolute class rates are trended
                  // 10 <= index < 15 - input rate ratios are trended
                  // 15 <= index < 19 - class rate ratios are trended
-
+  std::cout << "Trending" << std::endl;
   for (const auto& plot : mConfig.plots) {
 
     // Before we generate any new plots, we have to delete existing under the same names.

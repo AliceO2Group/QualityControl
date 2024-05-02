@@ -18,6 +18,8 @@
 #define QC_MODULE_CTP_CTPRAWDATAREADERCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "CommonConstants/LHCConstants.h"
+#include <bitset>
 class TH1F;
 
 namespace o2::quality_control_modules::ctp
@@ -39,13 +41,14 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
   void startOfActivity(const Activity& activity) override;
-
+  static constexpr double_t nofOrbitsPerTF = 32;
+  static constexpr double_t TimeTF = nofOrbitsPerTF*o2::constants::lhc::LHCOrbitMUS/1e6; // in seconds
   ClassDefOverride(RawDataReaderCheck, 5);
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
   int getNumberFilledBins(TH1F* hist);
-
+  int checkChange(TH1F* fHistDiference,TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium);
   int mRunNumber;
   long int mTimestamp;
   float mThreshold;
@@ -57,8 +60,8 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   int mIndexMBclass = -1;
   float mFraction;
   int mCycleDuration;
-  bool relativeRates = false;
-  bool inputRates = false;
+  bool flagRatio = false;
+  bool flagInput = false;
   TH1F* fHistInputPrevious = nullptr;
   TH1F* fHistClassesPrevious = nullptr;
   TH1F* fHistInputRatioPrevious = nullptr;
@@ -68,6 +71,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> vBadBC;
   std::vector<int> vIndexBad;
   std::vector<int> vIndexMedium;
+  std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs;
 };
 
 } // namespace o2::quality_control_modules::ctp
