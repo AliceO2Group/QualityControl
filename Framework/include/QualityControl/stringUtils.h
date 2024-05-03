@@ -40,11 +40,6 @@ bool decodeBool(const std::string& value);
 /// @throw std::runtime_error the value is not a bool
 bool parseBoolParam(const CustomParameters& customParameters, const std::string& name, const std::string& runType = "default", const std::string& beamType = "default");
 
-/**
- * Check if the string contains only digits.
- */
-bool isUnsignedInteger(const std::string& s);
-
 } // namespace o2::quality_control::core
 
 #endif // QC_STRING_UTILS_H

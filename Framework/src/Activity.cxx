@@ -46,7 +46,7 @@ bool Activity::matches(const Activity& other) const
   // is included in this validity. If checked for any overlaps, we would match with all past Activities, which is not
   // what we want e.g. in Post-processing triggers. Once we indicate the correct validity, we can change this behaviour.
   return (mId == 0 || mId == other.mId) &&
-         (mType == "NONE" || mType == other.mType) &&
+         (mType == 0 || mType == other.mType) &&
          (mPeriodName.empty() || mPeriodName == other.mPeriodName) &&
          (mPassName.empty() || mPassName == other.mPassName) &&
          (mProvenance == other.mProvenance) && // provenance has to match!

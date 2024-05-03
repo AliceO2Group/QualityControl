@@ -553,7 +553,7 @@ one can set it in the config file:
 ```yaml
       "Activity": {
         "number": "42",
-        "type": "NONE",
+        "type": "2",
         "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",             "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",         "": "Provenance - qc or qc_mc"

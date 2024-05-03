@@ -29,7 +29,7 @@ struct CommonSpec {
 
   std::unordered_map<std::string, std::string> database;
   int activityNumber{};
-  std::string activityType = "NONE";
+  int activityType{};
   std::string activityPeriodName;
   std::string activityPassName;
   std::string activityProvenance = "qc";

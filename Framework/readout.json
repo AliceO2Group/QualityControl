@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "NONE"
+        "type": "2"
       },
       "monitoring": {
 	    "url": "infologger:///debug?qc"
