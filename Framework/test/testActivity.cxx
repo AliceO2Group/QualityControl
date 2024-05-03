@@ -25,37 +25,37 @@ TEST_CASE("test_matching")
     // the default Activity has the widest match (provenance always has to match)
     Activity matcher{};
 
-    CHECK(matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
-    CHECK(matcher.matches({ 0, "NONE", "", "", "qc", { 1, 10 }, "" }));
-    CHECK(!matcher.matches({ 0, "NONE", "", "", "qc_mc", { 1, 10 }, "" }));
+    CHECK(matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
+    CHECK(matcher.matches({ 0, 0, "", "", "qc", { 1, 10 }, "" }));
+    CHECK(!matcher.matches({ 0, 0, "", "", "qc_mc", { 1, 10 }, "" }));
     CHECK(matcher.matches({}));
     CHECK(Activity().matches(matcher));
   }
   {
     // the most concrete matcher
     // it also should not match any less concrete Activity
-    Activity matcher{ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" };
+    Activity matcher{ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" };
 
     // should match only the same but with equal or contained validity
-    CHECK(matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
-    CHECK(matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 5, 7 }, "pp" }));
-    CHECK(matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 5, 15 }, "pp" })); // we support this until we indicate correct validity of our objects
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 15, 25 }, "pp" }));
+    CHECK(matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
+    CHECK(matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 5, 7 }, "pp" }));
+    CHECK(matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 5, 15 }, "pp" })); // we support this until we indicate correct validity of our objects
+    CHECK(!matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 15, 25 }, "pp" }));
 
     // should not match if any other parameter is different
-    CHECK(!matcher.matches({ 300001, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
-    CHECK(!matcher.matches({ 300000, "TECHNICAL", "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22b", "apass", "qc", { 1, 10 }, "pp" }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc_mc", { 1, 10 }, "pp" }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "PbPb" }));
+    CHECK(!matcher.matches({ 300001, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
+    CHECK(!matcher.matches({ 300000, 2, "LHC22a", "spass", "qc", { 1, 10 }, "pp" }));
+    CHECK(!matcher.matches({ 300000, 1, "LHC22b", "apass", "qc", { 1, 10 }, "pp" }));
+    CHECK(!matcher.matches({ 300000, 1, "LHC22a", "spass", "qc_mc", { 1, 10 }, "pp" }));
+    CHECK(!matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "PbPb" }));
 
     // should not match any less concrete field
-    CHECK(!matcher.matches({ 0, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 } }));
-    CHECK(!matcher.matches({ 300000, "NONE", "LHC22a", "spass", "qc", { 1, 10 } }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "", "spass", "qc", { 1, 10 } }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22a", "", "qc", { 1, 10 } }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 0, 1000000 } }));
-    CHECK(!matcher.matches({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "" }));
+    CHECK(!matcher.matches({ 0, 1, "LHC22a", "spass", "qc", { 1, 10 } }));
+    CHECK(!matcher.matches({ 300000, 0, "LHC22a", "spass", "qc", { 1, 10 } }));
+    CHECK(!matcher.matches({ 300000, 1, "", "spass", "qc", { 1, 10 } }));
+    CHECK(!matcher.matches({ 300000, 1, "LHC22a", "", "qc", { 1, 10 } }));
+    CHECK(!matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 0, 1000000 } }));
+    CHECK(!matcher.matches({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "" }));
   }
 }
 
@@ -63,16 +63,16 @@ TEST_CASE("test_same")
 {
   {
     // Activity::same should return true if the other one is has the same field, but the validity can be different
-    Activity activity{ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 } };
+    Activity activity{ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 } };
 
-    CHECK(activity.same({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 } }));
-    CHECK(activity.same({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 2, 5 } }));
-    CHECK(activity.same({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 432, 54334 } }));
+    CHECK(activity.same({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 } }));
+    CHECK(activity.same({ 300000, 1, "LHC22a", "spass", "qc", { 2, 5 } }));
+    CHECK(activity.same({ 300000, 1, "LHC22a", "spass", "qc", { 432, 54334 } }));
 
-    CHECK(!activity.same({ 300001, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 } }));
-    CHECK(!activity.same({ 300000, "TECHNICAL", "LHC22a", "spass", "qc", { 1, 10 } }));
-    CHECK(!activity.same({ 300000, "PHYSICS", "LHC22b", "spass", "qc", { 1, 10 } }));
-    CHECK(!activity.same({ 300000, "PHYSICS", "LHC22a", "apass", "qc", { 1, 10 } }));
-    CHECK(!activity.same({ 300000, "PHYSICS", "LHC22a", "spass", "qc_mc", { 1, 10 } }));
+    CHECK(!activity.same({ 300001, 1, "LHC22a", "spass", "qc", { 1, 10 } }));
+    CHECK(!activity.same({ 300000, 2, "LHC22a", "spass", "qc", { 1, 10 } }));
+    CHECK(!activity.same({ 300000, 1, "LHC22b", "spass", "qc", { 1, 10 } }));
+    CHECK(!activity.same({ 300000, 1, "LHC22a", "apass", "qc", { 1, 10 } }));
+    CHECK(!activity.same({ 300000, 1, "LHC22a", "spass", "qc_mc", { 1, 10 } }));
   }
 }

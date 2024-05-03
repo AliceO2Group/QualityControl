@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "NONE",
+        "type": "2",
         "start": "8000000",
         "end": "9000000",
         "periodName": "LHC9000x",

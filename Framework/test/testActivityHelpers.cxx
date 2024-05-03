@@ -33,7 +33,7 @@ TEST_CASE("activity_helpers_asDatabaseMetadata")
     Activity defaultActivity;
 
     auto metadata = activity_helpers::asDatabaseMetadata(defaultActivity, true);
-    REQUIRE(metadata[metadata_keys::runType] == "NONE");
+    REQUIRE(metadata[metadata_keys::runType] == "0");
     REQUIRE(metadata[metadata_keys::runNumber] == "0");
     REQUIRE(metadata[metadata_keys::passName].empty());
     REQUIRE(metadata[metadata_keys::periodName].empty());
@@ -42,13 +42,13 @@ TEST_CASE("activity_helpers_asDatabaseMetadata")
   SECTION("Non-default values")
   {
     Activity customActivity;
-    customActivity.mType = "TECHNICAL";
+    customActivity.mType = 2;
     customActivity.mId = 3;
     customActivity.mPassName = "pass";
     customActivity.mPeriodName = "period";
 
     auto metadata = activity_helpers::asDatabaseMetadata(customActivity, false);
-    CHECK(metadata[metadata_keys::runType] == "TECHNICAL");
+    CHECK(metadata[metadata_keys::runType] == "2");
     CHECK(metadata[metadata_keys::runNumber] == "3");
     CHECK(metadata[metadata_keys::passName] == "pass");
     CHECK(metadata[metadata_keys::periodName] == "period");
@@ -72,7 +72,7 @@ TEST_CASE("activity_helpers_asActivity")
 
     Activity activity = activity_helpers::asActivity(emptyMetadata, "test_provenance");
 
-    CHECK(activity.mType == "NONE");
+    CHECK(activity.mType == 0);
     CHECK(activity.mId == 0);
     CHECK(activity.mPassName.empty());
     CHECK(activity.mPeriodName.empty());
@@ -82,7 +82,7 @@ TEST_CASE("activity_helpers_asActivity")
   SECTION("Non-empty metadata map")
   {
     std::map<std::string, std::string> metadata = {
-      { metadata_keys::runType, "TECHNICAL" },
+      { metadata_keys::runType, "2" },
       { metadata_keys::runNumber, "3" },
       { metadata_keys::passName, "pass" },
       { metadata_keys::periodName, "period" },
@@ -92,7 +92,7 @@ TEST_CASE("activity_helpers_asActivity")
 
     Activity activity = activity_helpers::asActivity(metadata, "test_provenance");
 
-    CHECK(activity.mType == "TECHNICAL");
+    CHECK(activity.mType == 2);
     CHECK(activity.mId == 3);
     CHECK(activity.mPassName == "pass");
     CHECK(activity.mPeriodName == "period");
@@ -111,7 +111,7 @@ TEST_CASE("activity_helpers_asActivityPtree")
 
     Activity activity = activity_helpers::asActivity(emptyTree, "test_provenance");
 
-    CHECK(activity.mType == "NONE");
+    CHECK(activity.mType == 0);
     CHECK(activity.mId == 0);
     CHECK(activity.mPassName.empty());
     CHECK(activity.mPeriodName.empty());
@@ -121,7 +121,7 @@ TEST_CASE("activity_helpers_asActivityPtree")
   SECTION("Non-empty property tree")
   {
     boost::property_tree::ptree tree;
-    tree.put(metadata_keys::runType, "TECHNICAL");
+    tree.put(metadata_keys::runType, 2);
     tree.put(metadata_keys::runNumber, 3);
     tree.put(metadata_keys::passName, "pass");
     tree.put(metadata_keys::periodName, "period");
@@ -130,7 +130,7 @@ TEST_CASE("activity_helpers_asActivityPtree")
 
     Activity activity = activity_helpers::asActivity(tree, "test_provenance");
 
-    CHECK(activity.mType == "TECHNICAL");
+    CHECK(activity.mType == 2);
     CHECK(activity.mId == 3);
     CHECK(activity.mPassName == "pass");
     CHECK(activity.mPeriodName == "period");
@@ -145,33 +145,33 @@ TEST_CASE("test_strictestMatchingActivity")
   {
     // providing a map accessor + everything being the same except the validity
     std::map<int, Activity> m{
-      { 1, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" } },
-      { 2, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
-      { 4, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 20, 30 }, "pp" } },
-      { 3, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 30, 40 }, "pp" } }
+      { 1, { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" } },
+      { 2, { 300000, 1, "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
+      { 4, { 300000, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" } },
+      { 3, { 300000, 1, "LHC22a", "spass", "qc", { 30, 40 }, "pp" } }
     };
     auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
-    Activity expectation{ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 40 }, "pp" };
+    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 1, 40 }, "pp" };
     CHECK(result == expectation);
   }
   {
     // providing a vector (default accessor) + different run numbers and validities
     std::vector<Activity> m{
-      { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
-      { 300001, "PHYSICS", "LHC22a", "spass", "qc", { 20, 30 }, "pp" }
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 1, "LHC22a", "spass", "qc", { 20, 30 }, "pp" }
     };
     auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end());
-    Activity expectation{ 0, "PHYSICS", "LHC22a", "spass", "qc", { 1, 30 }, "pp" };
+    Activity expectation{ 0, 1, "LHC22a", "spass", "qc", { 1, 30 }, "pp" };
     CHECK(result == expectation);
   }
   {
     // providing a vector (custom accessor) + different everything
     std::vector<Activity> m{
-      { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
-      { 300001, "TECHNICAL", "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 2, "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
     };
     auto result = activity_helpers::strictestMatchingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
-    Activity expectation{ 0, "NONE", "", "", "qc", { 1, 30 }, "" };
+    Activity expectation{ 0, 0, "", "", "qc", { 1, 30 }, "" };
     CHECK(result == expectation);
   }
 }
@@ -182,58 +182,33 @@ TEST_CASE("test_overlappingActivity")
   {
     // providing a map accessor + everything being the same except the validity
     std::map<int, Activity> m{
-      { 1, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 40 }, "pp" } },
-      { 2, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
-      { 4, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 15, 30 }, "pp" } },
-      { 3, { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 17, 40 }, "pp" } }
+      { 1, { 300000, 1, "LHC22a", "spass", "qc", { 1, 40 }, "pp" } },
+      { 2, { 300000, 1, "LHC22a", "spass", "qc", { 10, 20 }, "pp" } },
+      { 4, { 300000, 1, "LHC22a", "spass", "qc", { 15, 30 }, "pp" } },
+      { 3, { 300000, 1, "LHC22a", "spass", "qc", { 17, 40 }, "pp" } }
     };
     auto result = activity_helpers::overlappingActivity(m.begin(), m.end(), [](const auto& item) { return item.second; });
-    Activity expectation{ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 17, 20 }, "pp" };
+    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 17, 20 }, "pp" };
     CHECK(result == expectation);
   }
   {
     // providing a vector (default accessor) + different run numbers and validities
     std::vector<Activity> m{
-      { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
-      { 300001, "PHYSICS", "LHC22a", "spass", "qc", { 10, 30 }, "pp" }
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 1, "LHC22a", "spass", "qc", { 10, 30 }, "pp" }
     };
     auto result = activity_helpers::overlappingActivity(m.begin(), m.end());
-    Activity expectation{ 0, "PHYSICS", "LHC22a", "spass", "qc", { 10, 10 }, "pp" };
+    Activity expectation{ 0, 1, "LHC22a", "spass", "qc", { 10, 10 }, "pp" };
     CHECK(result == expectation);
   }
   {
     // providing a vector (custom accessor) + different everything
     std::vector<Activity> m{
-      { 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
-      { 300001, "TECHNICAL", "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
+      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" },
+      { 300001, 2, "LHC22b", "apass2", "qc_mc", { 20, 30 }, "PbPb" }
     };
     auto result = activity_helpers::overlappingActivity(m.begin(), m.end(), [](const auto& a) { return a; });
-    Activity expectation{ 0, "NONE", "", "", "qc", { 20, 10 }, "" }; // invalid validity
+    Activity expectation{ 0, 0, "", "", "qc", { 20, 10 }, "" }; // invalid validity
     CHECK(result == expectation);
-  }
-}
-
-TEST_CASE("test_backward_compatible_activity_type")
-{
-  SECTION("metadata map")
-  {
-    std::map<std::string, std::string> metadata = {
-      { metadata_keys::runType, "2" }, // technical
-    };
-
-    Activity activity = activity_helpers::asActivity(metadata, "test_provenance");
-
-    CHECK(activity.mType == "TECHNICAL");
-    std::cout << "type " << activity << std::endl;
-  }
-
-  SECTION("property tree")
-  {
-    boost::property_tree::ptree tree;
-    tree.put(metadata_keys::runType, "2");
-
-    Activity activity = activity_helpers::asActivity(tree, "test_provenance");
-
-    CHECK(activity.mType == "TECHNICAL");
   }
 }

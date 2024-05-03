@@ -1,5 +1,5 @@
 # Produce the final Version.h using template Version.h.in and substituting
-# variables. We don't want to pollute our source tree with it, thus putting it in
+# variables. We don't want to polute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
@@ -280,9 +280,7 @@ set(TEST_SRCS
     test/testRepoPathUtils.cxx
     test/testQualitiesToFlagCollectionConverter.cxx
     test/testUserCodeInterface.cxx
-    test/testStringUtils.cxx
-    test/testRunnerUtils.cxx
-)
+  )
 
 set(TEST_ARGS
     ""
@@ -299,8 +297,6 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
-    ""
-    ""
     ""
     ""
     ""
