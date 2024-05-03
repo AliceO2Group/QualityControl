@@ -35,7 +35,7 @@ QualityObject::QualityObject(
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mActivity(runNumber, "NONE", "", "", "qc", gInvalidValidityInterval)
+    mActivity(runNumber, 0, "", "", "qc", gInvalidValidityInterval)
 {
   mQuality.addMetadata(std::move(metadata));
 }

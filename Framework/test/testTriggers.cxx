@@ -156,15 +156,15 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
   validity_time_t currentTimestamp = CcdbDatabase::getCurrentTimestamp();
-  mo->setActivity({ 100, "TECHNICAL", "FCC42x", "tpass1", "qc", { currentTimestamp, gInvalidValidityInterval.getMax() } });
+  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc", { currentTimestamp, gInvalidValidityInterval.getMax() } });
   repository->storeMO(mo);
-  mo->setActivity({ 101, "TECHNICAL", "FCC42x", "tpass1", "qc", { currentTimestamp + 1000, gInvalidValidityInterval.getMax() } });
+  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc", { currentTimestamp + 1000, gInvalidValidityInterval.getMax() } });
   repository->storeMO(mo);
-  mo->setActivity({ 100, "TECHNICAL", "FCC42x", "tpass2", "qc", { currentTimestamp + 2000, gInvalidValidityInterval.getMax() } });
+  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc", { currentTimestamp + 2000, gInvalidValidityInterval.getMax() } });
   repository->storeMO(mo);
 
   {
-    const Activity activityAllRunsPass1{ 0, "TECHNICAL", "FCC42x", "tpass1", "qc" };
+    const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   }
 
   {
-    const Activity activityRun100AllPasses{ 100, "TECHNICAL", "FCC42x", "", "qc" };
+    const Activity activityRun100AllPasses{ 100, 2, "FCC42x", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   }
 
   {
-    const Activity activityAll{ 0, "NONE", "", "", "qc" };
+    const Activity activityAll{ 0, 0, "", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   }
 
   {
-    const Activity activityTimeRestriction{ 0, "NONE", "", "", "qc", { static_cast<validity_time_t>(currentTimestamp), static_cast<validity_time_t>(currentTimestamp + 5) } };
+    const Activity activityTimeRestriction{ 0, 0, "", "", "qc", { static_cast<validity_time_t>(currentTimestamp), static_cast<validity_time_t>(currentTimestamp + 5) } };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityTimeRestriction);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
@@ -225,19 +225,19 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
   // Send three objects with different metadata
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
-  mo->setActivity({ 100, "TECHNICAL", "FCC42x", "tpass1", "qc", gInvalidValidityInterval });
+  mo->setActivity({ 100, 2, "FCC42x", "tpass1", "qc", gInvalidValidityInterval });
   repository->storeMO(mo);
   usleep(1000);
   repository->storeMO(mo);
-  mo->setActivity({ 101, "TECHNICAL", "FCC42x", "tpass1", "qc", gInvalidValidityInterval });
+  mo->setActivity({ 101, 2, "FCC42x", "tpass1", "qc", gInvalidValidityInterval });
   repository->storeMO(mo);
   usleep(1000);
   repository->storeMO(mo);
-  mo->setActivity({ 100, "TECHNICAL", "FCC42x", "tpass2", "qc", gInvalidValidityInterval });
+  mo->setActivity({ 100, 2, "FCC42x", "tpass2", "qc", gInvalidValidityInterval });
   repository->storeMO(mo);
 
   {
-    const Activity activityAllRunsPass1{ 0, "TECHNICAL", "FCC42x", "tpass1", "qc" };
+    const Activity activityAllRunsPass1{ 0, 2, "FCC42x", "tpass1", "qc" };
     auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
   }
 
   {
-    const Activity activityRun100AllPasses{ 100, "TECHNICAL", "FCC42x", "", "qc" };
+    const Activity activityRun100AllPasses{ 100, 2, "FCC42x", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
   }
 
   {
-    const Activity activityAll{ 0, "NONE", "", "", "qc" };
+    const Activity activityAll{ 0, 0, "", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);

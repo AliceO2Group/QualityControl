@@ -226,11 +226,11 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, "NONE", "", "", "qc_hello" });
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, 0, "", "", "qc_hello" });
   BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, "NONE", "", "", "qc_hello" });
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, 0, "", "", "qc_hello" });
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
 }
@@ -410,7 +410,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_latest)
   mo1->setValidity({ 10, 30 });
   f.backend->storeMO(mo1);
 
-  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, "NONE", "LHC66", "passName1", "qc" });
+  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, 0, "LHC66", "passName1", "qc" });
   BOOST_REQUIRE(moBack != nullptr);
   auto h1Back = dynamic_cast<TH1F*>(moBack->getObject());
   BOOST_REQUIRE(h1Back != nullptr);

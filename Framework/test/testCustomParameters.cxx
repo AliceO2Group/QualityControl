@@ -139,7 +139,7 @@ TEST_CASE("test_at_optional_activity")
 {
   Activity activity;
   activity.mBeamType = "PROTON-PROTON";
-  activity.mType = "PHYSICS";
+  activity.mType = 1;
 
   CustomParameters cp;
   cp.set("aaa", "AAA");
@@ -155,7 +155,7 @@ TEST_CASE("test_at_optional_activity")
 
   Activity activity2;
   activity.mBeamType = "Pb-Pb";
-  activity.mType = "PHYSICS";
+  activity.mType = 1;
   CHECK(cp.atOptional("aaa", activity).value() == "DDD");
 }
 
