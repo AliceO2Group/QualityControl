@@ -1,0 +1,129 @@
+#include "QualityControl/MonitorObject.h"
+#include "EMCAL/RawErrorCheckAll.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/Quality.h"
+
+// ROOT
+#include <TH1.h>
+#include <TH2.h>
+#include <TPaveText.h>
+#include <TLatex.h>
+#include <TList.h>
+#include <TRobustEstimator.h>
+#include <ROOT/TSeq.hxx>
+#include <iostream>
+#include <vector>
+#include <TCanvas.h>
+#include <string>
+#include <TGraph.h>
+#include <queue>
+
+using namespace std;
+
+namespace o2::quality_control_modules::emcal
+{
+void RawErrorCheckAll::configure()
+{
+    
+    // configure threshold-based checkers
+    auto nBadThreshold = mCustomParameters.find("BadThreshold");
+    if (nBadThreshold != mCustomParameters.end()) {
+        try {
+            mBadThreshold = std::stod(nBadThreshold->second);
+        } catch (std::exception& e) {
+            ILOG(Error, Support) << fmt::format("Value {} not a double", nBadThreshold->second.data()) << ENDM;
+        }
+    }
+    
+    auto nPeriodMovAvg = mCustomParameters.find("PeriodMovAvg");
+    if (nPeriodMovAvg != mCustomParameters.end()) {
+        try {
+            mPeriodMovAvg = std::stoi(nPeriodMovAvg->second);
+        } catch (std::exception& e) {
+            ILOG(Error, Support) << fmt::format("Value {} not an int", nPeriodMovAvg->second.data()) << ENDM;
+        }
+    }
+}
+
+
+
+Quality RawErrorCheckAll::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+{
+    Quality result = Quality::Good;
+    
+    for (auto& [moName, mo] : *moMap) {
+        if (mo->getName() == "TrendRawDataError") {
+            auto* c = dynamic_cast<TCanvas*>(mo->getObject());
+            TList* list_name = c->GetListOfPrimitives();
+            double counts = -1;
+            for (auto trendgraph : TRangeDynCast<TGraph>(list_name)) {
+                if (!trendgraph) {
+                    continue;
+                }
+                
+                // queue used to store list so that we get the average
+                queue<double> Dataset;
+                double sum;
+                double mean = -1;
+                
+                double *yValues = trendgraph->GetY();
+                double numPoints = trendgraph->GetN();
+                std::vector<double> meanArray(numPoints);
+                for (int i = 0; i < trendgraph->GetN(); ++i) {
+                    double y = yValues[i];
+                    sum += y;
+                    Dataset.push(y);
+                    if (Dataset.size() > mPeriodMovAvg) {
+                        sum -= Dataset.front();
+                        Dataset.pop();
+                    }
+                    double mean = sum/mPeriodMovAvg;
+                    if(sum==0){mean = 0;}
+                    meanArray[i] = mean;
+                }
+                
+                for (int i = 0; i < meanArray.size() - 1; ++i) {
+                    if (meanArray[i] > mBadThreshold && meanArray[i + 1] > mBadThreshold) {
+                        result = Quality::Good;
+                    }
+                }
+                meanArray.clear();
+            }
+        }
+    }
+    
+    return result;
+}
+
+std::string RawErrorCheckAll::getAcceptedType() { return "TGraph"; }
+
+void RawErrorCheckAll::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+{
+        if (mo->getName() == "TrendRawDataError")
+        {
+            auto* h = dynamic_cast<TH1*>(mo->getObject());
+            TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+            h->GetListOfFunctions()->Add(msg);
+            msg->SetName(Form("%s_msg", mo->GetName()));
+            if (checkResult == Quality::Good) {
+                //
+                msg->Clear();
+                msg->AddText("Average raw error rate within threshold: OK!!!");
+                msg->SetFillColor(kGreen);
+                //
+                h->SetFillColor(kGreen);
+            } else if (checkResult == Quality::Bad) {
+                ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+                msg->Clear();
+                msg->AddText("Average raw error rate above threshold");
+                msg->AddText("If NOT a technical run,");
+                msg->AddText("call EMCAL on-call.");
+                h->SetFillColor(kRed);
+            } else if (checkResult == Quality::Medium) {
+                ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+                h->SetFillColor(kOrange);
+            }
+            h->SetLineColor(kBlack);
+        }
+}
+} // namespace o2::quality_control_modules::emcal
