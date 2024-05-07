@@ -86,19 +86,17 @@ std::string_view translateIntegerRunType(const std::string& runType)
 
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
+  // for a complete list of the properties provided by ECS, see here: https://github.com/AliceO2Group/Control/blob/master/docs/handbook/configuration.md#variables-pushed-to-controlled-tasks
   auto runNumber = computeNumericalActivityField<int>(services, "runNumber", fallbackActivity.mId);
-  std::string runType = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runType", fallbackActivity.mType);
+  std::string runType = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("run_type", fallbackActivity.mType);
+  ILOG(Info, Devel) << "Got this property run_type from RawDeviceService (fallback was " << fallbackActivity.mType << ") : '" << runType << "'" << ENDM;
   runType = translateIntegerRunType(runType);
-  auto runStartTimeMs = computeNumericalActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
-  auto runEndTimeMs = computeNumericalActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
+  auto runStartTimeMs = computeNumericalActivityField<unsigned long>(services, "run_start_time_ms", fallbackActivity.mValidity.getMin());
+  auto runEndTimeMs = computeNumericalActivityField<unsigned long>(services, "run_end_time_ms", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
-  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "");
-  if (periodName.empty()) {
-    // this how one has to get it on EPNs.
-    periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", fallbackActivity.mPeriodName);
-  }
-  auto fillNumber = computeNumericalActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
-  auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
+  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", "");
+  auto fillNumber = computeNumericalActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
+  auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fill_info_beam_type", fallbackActivity.mBeamType);
 
   Activity activity(
     runNumber,
