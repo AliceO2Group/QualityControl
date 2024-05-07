@@ -94,7 +94,7 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
   auto runStartTimeMs = computeNumericalActivityField<unsigned long>(services, "run_start_time_ms", fallbackActivity.mValidity.getMin());
   auto runEndTimeMs = computeNumericalActivityField<unsigned long>(services, "run_end_time_ms", fallbackActivity.mValidity.getMax());
   auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
-  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", "");
+  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", fallbackActivity.mPeriodName);
   auto fillNumber = computeNumericalActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
   auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fill_info_beam_type", fallbackActivity.mBeamType);
 
