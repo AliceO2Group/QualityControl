@@ -1126,51 +1126,83 @@ void CellTask::CellHistograms::reset()
 
 void CellTask::CellHistograms::clean()
 {
-  auto cleanOptional = [](TObject* hist) {
-    delete hist;
-  };
+  delete mCellTime;
+  delete mCellTimeCalib;
+  delete mCellAmplitude;
+  delete mCellAmplitudeCalib;
+  delete mCellAmpSupermodule;
+  delete mCellAmpSupermoduleCalib;
+  delete mCellAmpSupermoduleBad;
+  delete mCellTimeSupermodule;
+  delete mCellTimeSupermodule_tot;
+  delete mCellTimeSupermoduleEMCAL;
+  delete mCellTimeSupermoduleDCAL;
+  delete mCellTimeSupermoduleCalib_tot;
+  delete mCellTimeSupermoduleCalib_EMCAL;
+  delete mCellTimeSupermoduleCalib_DCAL;
+  delete mCellTimeSupermoduleCalib;
+  delete mCellAmplitude_tot;
+  delete mCellAmplitudeEMCAL;
+  delete mCellAmplitudeDCAL;
+  delete mCellAmplitudeCalib_tot;
+  delete mCellAmplitudeCalib_EMCAL;
+  delete mCellAmplitudeCalib_DCAL;
+  delete mCellAmplitudeTime;
+  delete mCellAmplitudeTimeCalib;
+  delete mCellOccupancy;
+  delete mCellOccupancyThr;
+  delete mCellOccupancyThrBelow;
+  delete mCellOccupancyGood;
+  delete mCellOccupancyBad;
+  delete mIntegratedOccupancy;
+  delete mAverageCellEnergy;
+  delete mAverageCellTime;
+  delete mnumberEvents;
 
-  cleanOptional(mCellTime);
-  cleanOptional(mCellTimeCalib);
-  cleanOptional(mCellAmplitude);
-  cleanOptional(mCellAmplitudeCalib);
-  cleanOptional(mCellAmpSupermodule);
-  cleanOptional(mCellAmpSupermoduleCalib);
-  cleanOptional(mCellAmpSupermoduleBad);
-  cleanOptional(mCellTimeSupermodule);
-  cleanOptional(mCellTimeSupermodule_tot);
-  cleanOptional(mCellTimeSupermoduleEMCAL);
-  cleanOptional(mCellTimeSupermoduleDCAL);
-  cleanOptional(mCellTimeSupermoduleCalib_tot);
-  cleanOptional(mCellTimeSupermoduleCalib_EMCAL);
-  cleanOptional(mCellTimeSupermoduleCalib_DCAL);
-  cleanOptional(mCellTimeSupermoduleCalib);
-  cleanOptional(mCellAmplitude_tot);
-  cleanOptional(mCellAmplitudeEMCAL);
-  cleanOptional(mCellAmplitudeDCAL);
-  cleanOptional(mCellAmplitudeCalib_tot);
-  cleanOptional(mCellAmplitudeCalib_EMCAL);
-  cleanOptional(mCellAmplitudeCalib_DCAL);
-  cleanOptional(mCellAmplitudeTime);
-  cleanOptional(mCellAmplitudeTimeCalib);
-  cleanOptional(mCellOccupancy);
-  cleanOptional(mCellOccupancyThr);
-  cleanOptional(mCellOccupancyThrBelow);
-  cleanOptional(mCellOccupancyGood);
-  cleanOptional(mCellOccupancyBad);
-  cleanOptional(mIntegratedOccupancy);
-  cleanOptional(mAverageCellEnergy);
-  cleanOptional(mAverageCellTime);
-  cleanOptional(mnumberEvents);
+  mCellTime = nullptr;
+  mCellTimeCalib = nullptr;
+  mCellAmplitude = nullptr;
+  mCellAmplitudeCalib = nullptr;
+  mCellAmpSupermodule = nullptr;
+  mCellAmpSupermoduleCalib = nullptr;
+  mCellAmpSupermoduleBad = nullptr;
+  mCellTimeSupermodule = nullptr;
+  mCellTimeSupermodule_tot = nullptr;
+  mCellTimeSupermoduleEMCAL = nullptr;
+  mCellTimeSupermoduleDCAL = nullptr;
+  mCellTimeSupermoduleCalib_tot = nullptr;
+  mCellTimeSupermoduleCalib_EMCAL = nullptr;
+  mCellTimeSupermoduleCalib_DCAL = nullptr;
+  mCellTimeSupermoduleCalib = nullptr;
+  mCellAmplitude_tot = nullptr;
+  mCellAmplitudeEMCAL = nullptr;
+  mCellAmplitudeDCAL = nullptr;
+  mCellAmplitudeCalib_tot = nullptr;
+  mCellAmplitudeCalib_EMCAL = nullptr;
+  mCellAmplitudeCalib_DCAL = nullptr;
+  mCellAmplitudeTime = nullptr;
+  mCellAmplitudeTimeCalib = nullptr;
+  mCellOccupancy = nullptr;
+  mCellOccupancyThr = nullptr;
+  mCellOccupancyThrBelow = nullptr;
+  mCellOccupancyGood = nullptr;
+  mCellOccupancyBad = nullptr;
+  mIntegratedOccupancy = nullptr;
+  mAverageCellEnergy = nullptr;
+  mAverageCellTime = nullptr;
+  mnumberEvents = nullptr;
 
-  for (auto histos : mCellTimeSupermoduleEMCAL_Gain) {
-    cleanOptional(histos);
+  for (auto*& histos : mCellTimeSupermoduleEMCAL_Gain) {
+    delete histos;
+    histos = nullptr;
   }
-  for (auto histos : mCellTimeSupermoduleDCAL_Gain) {
-    cleanOptional(histos);
+  for (auto*& histos : mCellTimeSupermoduleDCAL_Gain) {
+    delete histos;
+    histos = nullptr;
   }
-  for (auto histos : mCellTimeBC) {
-    cleanOptional(histos);
+  for (auto*& histos : mCellTimeBC) {
+    delete histos;
+    histos = nullptr;
   }
 }
 
