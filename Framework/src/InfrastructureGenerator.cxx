@@ -478,7 +478,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
-  proxy.labels.emplace_back(DataProcessorLabel{"input-proxy"});
+  proxy.labels.emplace_back(DataProcessorLabel{ "input-proxy" });
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   workflow.emplace_back(std::move(proxy));
@@ -531,7 +531,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
-  proxy.labels.emplace_back(DataProcessorLabel{"input-proxy"});
+  proxy.labels.emplace_back(DataProcessorLabel{ "input-proxy" });
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
@@ -587,7 +587,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
-  proxy.labels.emplace_back(DataProcessorLabel{"input-proxy"});
+  proxy.labels.emplace_back(DataProcessorLabel{ "input-proxy" });
   if (!taskSpec.critical) {
     proxy.labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
   }
