@@ -17,7 +17,7 @@
 #define QC_CORE_BOOKKEEPING_H
 
 #include <string>
-#include "BookkeepingApi/BkpProtoClient.h"
+#include "BookkeepingApi/BkpClient.h"
 
 namespace o2::quality_control::core
 {
@@ -37,14 +37,14 @@ class Bookkeeping
   Bookkeeping(const Bookkeeping&) = delete;
 
   void init(const std::string& url);
-  void registerProcess(int runNumber, const std::string& name, const std::string& detector, bookkeeping::DplProcessType type, const std::string& args);
+  void registerProcess(int runNumber, const std::string& name, const std::string& detector, bkp::DplProcessType type, const std::string& args);
 
  private:
   Bookkeeping() = default;
 
   bool mInitialized = false;
   std::string mUrl;
-  std::unique_ptr<bkp::api::proto::BkpProtoClient> mClient;
+  std::unique_ptr<bkp::api::BkpClient> mClient;
 };
 
 } // namespace o2::quality_control::core
