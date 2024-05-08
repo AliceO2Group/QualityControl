@@ -73,7 +73,7 @@ int main(int argc, const char* argv[])
       totalNumberOfExecutions++;
       triggerTimer.reset(minDelay * 1000);
       timer.reset();
-      Bookkeeping::getInstance().registerProcess(123, "asdf", "ITS", o2::bookkeeping::DPL_PROCESS_TYPE_NULL, "");
+      Bookkeeping::getInstance().registerProcess(123, "asdf", "ITS", o2::bkp::DplProcessType::_NULL, "");
       auto duration = timer.getTime();
       totalDuration += duration;
       cycleDuration += duration;

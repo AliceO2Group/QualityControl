@@ -490,12 +490,12 @@ void TaskRunner::registerToBookkeeping()
   // register ourselves to the BK at the first cycle
   ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
   try {
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, o2::bkp::DplProcessType::QC_TASK, "");
     if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES")) {
       ILOG(Debug, Devel) << "O2_QC_REGISTER_IN_BK_X_TIMES set to " << gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES") << ENDM;
       int iterations = std::stoi(gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES"));
       for (int i = 1; i < iterations; i++) { // start at 1 because we already did it once
-        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, o2::bkp::DplProcessType::QC_TASK, "");
       }
     }
   } catch (std::runtime_error& error) {
