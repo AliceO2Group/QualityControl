@@ -337,7 +337,7 @@ namespace o2::quality_control_modules::muon
 
 MuonTrack::MuonTrack(const o2::mch::TrackMCH* track, int trackID, const o2::globaltracking::RecoContainer& recoCont, uint32_t firstTForbit)
 {
-  mTrackMCH = const_cast<o2::mch::TrackMCH*>(track);
+  mTrackMCH = track;
 
   mTrackIdMCH = trackID;
 
@@ -385,8 +385,8 @@ MuonTrack::MuonTrack(const TrackMCHMID* track, const o2::globaltracking::RecoCon
   mTrackIdMCH = iMCH;
   mTrackIdMID = iMID;
 
-  mTrackMCH = const_cast<o2::mch::TrackMCH*>(&(tracksMCH[iMCH]));
-  mTrackMID = const_cast<o2::mid::Track*>(&(tracksMID[iMID]));
+  mTrackMCH = &(tracksMCH[iMCH]);
+  mTrackMID = &(tracksMID[iMID]);
 
   mIR = track->getIR();
   auto trackTimeMUS = track->getTimeMUS(InteractionRecord{ 0, firstTForbit }, 128, true);
@@ -458,14 +458,14 @@ MuonTrack::MuonTrack(const GlobalFwdTrack* track, const o2::globaltracking::Reco
   mTrackIdMID = iMID;
 
   if (iMFT >= 0) {
-    mTrackMFT = const_cast<o2::mft::TrackMFT*>(&(tracksMFT[iMFT]));
+    mTrackMFT = &(tracksMFT[iMFT]);
     mIRMFT = getMFTTrackIR(iMFT, recoCont);
     mTimeMFT = getMFTTrackTime(iMFT, recoCont, firstTForbit);
     mTrackParametersMFT.setZ(tracksMFT[iMFT].getOutParam().getZ());
     mTrackParametersMFT.setParameters(forwardTrackToMCHTrack(tracksMFT[iMFT].getOutParam()).getParameters());
   }
   if (iMCH >= 0) {
-    mTrackMCH = const_cast<o2::mch::TrackMCH*>(&(tracksMCH[iMCH]));
+    mTrackMCH = &(tracksMCH[iMCH]);
     auto& trackMCH = tracksMCH[iMCH];
     mTrackParametersMCH.setZ(trackMCH.getZ());
     mTrackParametersMCH.setParameters(trackMCH.getParameters());
@@ -483,7 +483,7 @@ MuonTrack::MuonTrack(const GlobalFwdTrack* track, const o2::globaltracking::Reco
     mChi2OverNDFMCH = mTrackMCH->getChi2OverNDF();
   }
   if (iMID >= 0) {
-    mTrackMID = const_cast<o2::mid::Track*>(&(tracksMID[iMID]));
+    mTrackMID = &(tracksMID[iMID]);
     mIRMID = getMIDTrackIR(iMID, recoCont);
     mTimeMID = getMIDTrackTime(iMID, recoCont, firstTForbit);
 

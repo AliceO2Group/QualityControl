@@ -893,7 +893,8 @@ bool TOFMatchedTracks::selectTrack(o2::tpc::TrackTPC const& track)
 
   math_utils::Point3D<float> v{};
   std::array<float, 2> dca;
-  if (!(const_cast<o2::tpc::TrackTPC&>(track).propagateParamToDCA(v, mBz, &dca, mDCACut)) || std::abs(dca[0]) > mDCACutY) {
+  o2::track::TrackPar trTmp(track);
+  if (!trTmp.propagateParamToDCA(v, mBz, &dca, mDCACut) || std::abs(dca[0]) > mDCACutY) {
     return false;
   }
 
