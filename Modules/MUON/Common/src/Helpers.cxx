@@ -17,6 +17,8 @@
 #include <regex>
 #include "QualityControl/ObjectsManager.h"
 
+#include <cmath>
+
 namespace o2::quality_control_modules::muon
 {
 template <>
@@ -80,6 +82,20 @@ bool getConfigurationParameter<bool>(o2::quality_control::core::CustomParameters
 
 //_________________________________________________________________________________________
 
+std::vector<double> makeLogBinning(double min, double max, int nbins)
+{
+  auto logMin = std::log10(min);
+  auto logMax = std::log10(max);
+  auto binWidth = (logMax - logMin) / nbins;
+  std::vector<double> bins(nbins + 1);
+  for (int i = 0; i <= nbins; i++) {
+    bins[i] = std::pow(10, logMin + i * binWidth);
+  }
+  return bins;
+}
+
+//_________________________________________________________________________________________
+
 TLine* addHorizontalLine(TH1& histo, double y,
                          int lineColor, int lineStyle,
                          int lineWidth)
@@ -106,8 +122,9 @@ TLine* addVerticalLine(TH1& histo, double x,
                        int lineColor, int lineStyle,
                        int lineWidth)
 {
+  double max = histo.GetBinContent(histo.GetMaximumBin());
   TLine* line = new TLine(x, histo.GetMinimum(),
-                          x, histo.GetMaximum());
+                          x, max * 1.05);
   line->SetLineColor(lineColor);
   line->SetLineStyle(lineStyle);
   line->SetLineWidth(lineWidth);

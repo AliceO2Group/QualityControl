@@ -15,6 +15,7 @@
 ///
 
 #include "MCH/RatesPlotter.h"
+#include "MUONCommon/Helpers.h"
 #include "MCH/Helpers.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHGlobalMapping/DsIndex.h"
@@ -30,7 +31,7 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-RatesPlotter::RatesPlotter(std::string path, TH2F* hRef, float rateMin, float rateMax, bool fullPlots)
+RatesPlotter::RatesPlotter(std::string path, TH2F* hRef, float rateMin, float rateMax, bool perStationPlots, bool fullPlots)
 {
   // mappers used for filling the histograms in detector coordinates
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
@@ -77,6 +78,25 @@ RatesPlotter::RatesPlotter(std::string path, TH2F* hRef, float rateMin, float ra
       }
       mHistogramGoodChannelsFractionPerDERef->SetBinError(de + 1, 0);
     }
+  }
+
+  //----------------------------------
+  // Rate distribution histograms
+  //----------------------------------
+
+  int nbins = 100;
+  auto xbins = makeLogBinning(rateMin / 10, rateMax * 10, nbins);
+  std::vector<double> ybins{ 1, 2, 3, 4, 5, 6 };
+  mHistogramRatePerStation = std::make_unique<TH2F>(TString::Format("%sRatesDistribution", path.c_str()),
+                                                    "Rates distribution",
+                                                    nbins, xbins.data(),
+                                                    5, ybins.data());
+  for (int i = 1; i <= mHistogramRatePerStation->GetYaxis()->GetNbins(); i++) {
+    mHistogramRatePerStation->GetYaxis()->SetBinLabel(i, TString::Format("ST%d", i));
+  }
+
+  if (perStationPlots || fullPlots) {
+    addHisto(mHistogramRatePerStation.get(), false, "colz", "logx");
   }
 
   //----------------------------------
@@ -217,6 +237,10 @@ void RatesPlotter::fillGlobalHistos(TH2F* h)
     return;
   }
 
+  // the rates distribution is not a cumulative plot,
+  // clear it before updating it with the new values
+  mHistogramRatePerStation->Reset();
+
   // loop over bins in electronics coordinates, and map the channels to the corresponding cathode pads
   int nbinsx = h->GetXaxis()->GetNbins();
   int nbinsy = h->GetYaxis()->GetNbins();
@@ -225,6 +249,12 @@ void RatesPlotter::fillGlobalHistos(TH2F* h)
     auto dsDetId = getDsDetId(i - 1);
     auto deId = dsDetId.deId();
     auto dsId = dsDetId.dsId();
+    auto chamberId = deId / 100;
+    auto stationId = ((chamberId - 1) / 2) + 1;
+
+    if (stationId < 1 || stationId > 5) {
+      continue;
+    }
 
     for (int j = 1; j <= nbinsy; j++) {
       int channel = j - 1;
@@ -238,6 +268,15 @@ void RatesPlotter::fillGlobalHistos(TH2F* h)
       }
 
       double rate = h->GetBinContent(i, j);
+
+      if (rate <= mHistogramRatePerStation->GetXaxis()->GetXmin()) {
+        rate = mHistogramRatePerStation->GetXaxis()->GetBinCenter(1);
+      }
+      if (rate >= mHistogramRatePerStation->GetXaxis()->GetXmax()) {
+        auto nbins = mHistogramRatePerStation->GetXaxis()->GetNbins();
+        rate = mHistogramRatePerStation->GetXaxis()->GetBinCenter(nbins);
+      }
+      mHistogramRatePerStation->Fill(rate, stationId);
 
       double padX = segment.padPositionX(padId);
       double padY = segment.padPositionY(padId);

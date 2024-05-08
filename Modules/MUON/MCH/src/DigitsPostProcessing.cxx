@@ -75,19 +75,19 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   //----------------------------------
 
   mRatesPlotter.reset();
-  mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
+  mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotter->publish(getObjectsManager());
 
   mRatesPlotterOnCycle.reset();
-  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
+  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, false, mFullHistos);
   mRatesPlotterOnCycle->publish(getObjectsManager());
 
   mRatesPlotterSignal.reset();
-  mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
+  mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotterSignal->publish(getObjectsManager());
 
   mRatesPlotterSignalOnCycle.reset();
-  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
+  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, false, mFullHistos);
   mRatesPlotterSignalOnCycle->publish(getObjectsManager());
 
   //----------------------------------

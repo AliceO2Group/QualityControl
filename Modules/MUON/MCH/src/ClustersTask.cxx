@@ -60,24 +60,35 @@ ClustersTask::~ClustersTask() = default;
 
 void ClustersTask::createClusterHistos()
 {
-  mNofClustersPerTrack = std::make_unique<TH1F>("ClustersPerTrack", "Number of clusters per track;Mean number of clusters per track", 30, 0, 30);
-  mNofClustersPerDualSampa = std::make_unique<TH1F>("ClustersPerDualSampa", "Number of clusters per dual sampa;Number of clusters per DS", o2::mch::NumberOfDualSampas, 0, o2::mch::NumberOfDualSampas - 1);
-
-  mNofClustersPerChamber = std::make_unique<TProfile>("ClustersPerChamber", "Clusters per chamber;;Number of clusters", 10, 1, 11);
-  setXAxisLabels(mNofClustersPerChamber.get());
-  mClusterSizePerChamber = std::make_unique<TProfile>("ClusterSizePerChamber", "Cluster size per chamber;;Mean number of pads per cluster", 10, 1, 11);
-  setXAxisLabels(mClusterSizePerChamber.get());
-
   std::string drawOptions;
   std::string displayHints;
 
   using o2::quality_control_modules::muon::HistPlotter;
   auto& histograms = mHistPlotter.histograms();
 
+  mNofClustersPerTrack = std::make_unique<TH1F>("ClustersPerTrack", "Number of clusters per track;Mean number of clusters per track", 20, 0, 20);
+  mNofClustersPerTrack->SetStats(0);
+  mNofClustersPerDualSampa = std::make_unique<TH1F>("ClustersPerDualSampa", "Number of clusters per dual sampa;Number of clusters per DS", o2::mch::NumberOfDualSampas, 0, o2::mch::NumberOfDualSampas - 1);
+
   histograms.emplace_back(HistPlotter::HistInfo{ mNofClustersPerTrack.get(), drawOptions, displayHints });
-  histograms.emplace_back(HistPlotter::HistInfo{ mNofClustersPerChamber.get(), drawOptions, displayHints });
   histograms.emplace_back(HistPlotter::HistInfo{ mNofClustersPerDualSampa.get(), drawOptions, displayHints });
+
+  mNofClustersPerChamber = std::make_unique<TProfile>("ClustersPerChamber", "Clusters per chamber;;Number of clusters", 10, 1, 11);
+  mNofClustersPerChamber->SetStats(0);
+  setXAxisLabels(mNofClustersPerChamber.get());
+  mClusterSizePerChamber = std::make_unique<TProfile>("ClusterSizePerChamber", "Cluster size per chamber;;Mean number of pads per cluster", 10, 1, 11);
+  mClusterSizePerChamber->SetStats(0);
+  setXAxisLabels(mClusterSizePerChamber.get());
+
+  histograms.emplace_back(HistPlotter::HistInfo{ mNofClustersPerChamber.get(), drawOptions, displayHints });
   histograms.emplace_back(HistPlotter::HistInfo{ mClusterSizePerChamber.get(), drawOptions, displayHints });
+
+  for (int s = 0; s < 5; s++) {
+    mClusterSizeDistributionPerStation[s] = std::make_unique<TH1F>(TString::Format("ClusterSizeDistribution_ST%d", (s + 1)),
+                                                                   TString::Format("Cluster size distribution - ST%d", (s + 1)),
+                                                                   100, 0, 100);
+    histograms.emplace_back(HistPlotter::HistInfo{ mClusterSizeDistributionPerStation[s].get(), drawOptions, displayHints });
+  }
 
   mHistPlotter.publish(getObjectsManager());
 }
@@ -138,6 +149,10 @@ void ClustersTask::fillClusterHistos(gsl::span<const o2::mch::Cluster> clusters)
     int chamberId = cluster.getChamberId();
     mClusterSizePerChamber->Fill(chamberId + 1, cluster.nDigits);
     mNofClustersPerChamber->Fill(chamberId + 1, 1.0);
+    int stationId = chamberId / 2;
+    if (stationId >= 0 && stationId < 5) {
+      mClusterSizeDistributionPerStation[stationId]->Fill(cluster.nDigits);
+    }
   }
 }
 
