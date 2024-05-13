@@ -20,11 +20,13 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "CTPReconstruction/RawDataDecoder.h"
+#include "Common/TH1Ratio.h"
+#include <memory>
 
 class TH1F;
 
 using namespace o2::quality_control::core;
-
+using namespace o2::quality_control_modules::common;
 namespace o2::quality_control_modules::ctp
 {
 
@@ -48,12 +50,14 @@ class CTPRawDataReaderTask final : public TaskInterface
 
  private:
   o2::ctp::RawDataDecoder mDecoder;
-  TH1F* mHistoInputs = nullptr;
-  TH1F* mHistoClasses = nullptr;
-  TH1F* mHistoInputRatios = nullptr;
-  TH1F* mHistoClassRatios = nullptr;
-  TH1F* mHistoMTVXBC = nullptr;
-  int mNTF = 0;
+  std::unique_ptr<TH1FRatio> mHistoInputs = nullptr;
+  std::unique_ptr<TH1FRatio> mHistoClasses = nullptr;
+  std::unique_ptr<TH1FRatio> mHistoInputRatios = nullptr;
+  std::unique_ptr<TH1FRatio> mHistoClassRatios = nullptr;
+  std::unique_ptr<TH1F> mHistoMTVXBC = nullptr;
+  int mRunNumber;
+  long int mTimestamp;
+  int mIndexMBclass = -1;
   const char* ctpinputs[o2::ctp::CTP_NINPUTS + 1] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" };
 };
 

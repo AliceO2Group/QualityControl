@@ -18,13 +18,11 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "DataFormatsCTP/Configuration.h"
 #include "DataFormatsCTP/RunManager.h"
 #include <DataFormatsCTP/Configuration.h>
 // ROOT
 #include <TH1.h>
 #include <TLatex.h>
-#include <DataFormatsCTP/Configuration.h>
 #include <DataFormatsParameters/GRPLHCIFData.h>
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DetectorsBase/GRPGeomHelper.h>
@@ -101,7 +99,6 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   flagInput = false;
 
   for (auto& [moName, mo] : *moMap) {
-    // std::cout << moName << " names " << mo->getName() << std::endl;
     if (moName.find("Ratio") != std::string::npos) {
       flagRatio = true;
     }
@@ -118,12 +115,8 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       // mThreshold = mThreshold - sqrt(mThreshold);
       mThreshold = sqrt(mThreshold);
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
-        // if (mLHCBCs[i]) {
-        //   ILOG(Info, Support) << i << " ";
-        // }
         if (mLHCBCs[i] && h->GetBinContent(i + 1) <= mThreshold) {
           vMediumBC.push_back(i);
-          // std::cout << i << " madium " << h->GetBinContent(i + 1) << std::endl;
         } else if (!mLHCBCs[i] && h->GetBinContent(i + 1) > mThreshold) {
           vBadBC.push_back(i);
         } else if (mLHCBCs[i] && h->GetBinContent(i + 1) > mThreshold) {
@@ -131,35 +124,23 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         }
       }
     } else if (mo->getName() == "inputs") {
-      // std::cout << "bin 48:" << h->GetBinContent(o2::ctp::CTP_NINPUTS+1) << " 1 " << h->GetBinContent(1) << std::endl;
-      h->Scale(1. / h->GetBinContent(o2::ctp::CTP_NINPUTS + 1) / TimeTF);
-      TH1F* fHistDifference = (TH1F*)h->Clone();
       if (fHistInputPrevious) {
-        checkChange(fHistDifference, fHistInputPrevious, vIndexBad, vIndexMedium);
+        checkChange(h, fHistInputPrevious, vIndexBad, vIndexMedium);
         delete fHistInputPrevious;
       }
       fHistInputPrevious = (TH1F*)h->Clone();
     } else if (mo->getName() == "inputRatio") {
-      if (h->GetBinContent(3) != 0) {
-        h->Scale(1. / h->GetBinContent(3));
-      }
       if (fHistInputRatioPrevious) {
         delete fHistInputRatioPrevious;
       }
       fHistInputRatioPrevious = (TH1F*)h->Clone();
     } else if (mo->getName() == "classes") {
-      // std::cout << "bin 64:" << h->GetBinContent(o2::ctp::CTP_NCLASSES+1) << " 1 " << h->GetBinContent(1) << std::endl;
-      h->Scale(1. / h->GetBinContent(o2::ctp::CTP_NCLASSES + 1) / TimeTF);
-      TH1F* fHistDifference = (TH1F*)h->Clone();
       if (fHistClassesPrevious) {
-        checkChange(fHistDifference, fHistClassesPrevious, vIndexBad, vIndexMedium);
+        checkChange(h, fHistClassesPrevious, vIndexBad, vIndexMedium);
         delete fHistClassesPrevious;
       }
       fHistClassesPrevious = (TH1F*)h->Clone();
     } else if (mo->getName() == "classRatio") {
-      if (h->GetBinContent(mIndexMBclass) != 0) {
-        h->Scale(1. / h->GetBinContent(mIndexMBclass));
-      }
       if (fHistClassRatioPrevious) {
         delete fHistClassRatioPrevious;
       }
@@ -175,25 +156,23 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   } else {
     result = Quality::Good;
   }
-  cycleCounter++;
-  // LOG(info) << "Cycle ===================>" << cycleCounter;
   return result;
 }
-int RawDataReaderCheck::checkChange(TH1F* fHistDifference, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium)
+int RawDataReaderCheck::checkChange(TH1F* fHist, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium)
 {
-  fHistDifference->Add(fHistPrev, -1); // Calculate relative difference w.r.t. rate in previous cycle
-  fHistDifference->Divide(fHistPrev);
-
   float thrBad = mThresholdRateBad;
   float thrMedium = mThresholdRateMedium;
   if (flagRatio) {
     thrBad = mThresholdRateRatioBad;
     thrMedium = mThresholdRateRatioMedium;
   }
-  for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
-    if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrBad) {
+  for (size_t i = 1; i < fHist->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
+    double val = fHist->GetBinContent(i);
+    double valPrev = fHistPrev->GetBinContent(i);
+    double relDiff = (valPrev != 0) ? (val - valPrev) / valPrev : 0;
+    if (TMath::Abs(relDiff) > thrBad) {
       vIndexBad.push_back(i);
-    } else if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrMedium) {
+    } else if (TMath::Abs(relDiff) > thrMedium) {
       vIndexMedium.push_back(i);
     }
   }
@@ -250,7 +229,6 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     std::string relativeness = "relative";
     if (!flagInput) {
       groupName = "Class";
-      h->GetXaxis()->SetTitle("Index");
     }
     if (!flagRatio) {
       relativeness = "absolute";
@@ -297,7 +275,6 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->GetListOfFunctions()->Add(msg->Clone());
     }
     h->SetMarkerStyle(20);
-    // h->SetOption("HIST");
     if (flagInput) {
       h->LabelsOption("v");
       // h->LabelsOption("a");
@@ -322,37 +299,9 @@ int RawDataReaderCheck::getNumberFilledBins(TH1F* hist)
 void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
 {
   ILOG(Info, Support) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
-  mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
-  cycleCounter = 0;
-
-  std::string MBclassName = mCustomParameters["MBclassName"];
-  if (MBclassName.empty()) {
-    MBclassName = "CMTVX-B-NOPF";
-  }
-  std::string run = std::to_string(mRunNumber);
-  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  bool ok;
-  o2::ctp::CTPConfiguration CTPconfig = CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
-  if (ok) {
-    // get the index of the MB reference class
-    ILOG(Info, Support) << "CTP config found, run:" << run << ENDM;
-    std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
-    std::vector<int> clslist = CTPconfig.getTriggerClassList();
-    for (size_t i = 0; i < clslist.size(); i++) {
-      if (ctpcls[i].name.find(MBclassName) != std::string::npos) {
-        mIndexMBclass = ctpcls[i].descriptorIndex + 1;
-        break;
-      }
-    }
-  } else {
-    ILOG(Info, Support) << "CTP config not found, run:" << run << ENDM;
-  }
-  if (mIndexMBclass == -1) {
-    mIndexMBclass = 1;
-  }
   //
-  // mTimestamp = 1714315086649;
+  //mTimestamp = 1714315086649;
   map<string, string> metadata; // can be empty
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
   if (lhcifdata == nullptr) {

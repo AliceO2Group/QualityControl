@@ -53,7 +53,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
   metadata["runNumber"] = run;
   mCTPconfig = mgr.getSpecific<CTPConfiguration>(CCDBPathCTPConfig, t.timestamp, metadata);
   if (mCTPconfig == nullptr) {
-    ILOG(Info, Support) << "CTP Config not found for tun:" << run << " timesamp " << t.timestamp << ENDM;
+    ILOG(Warning, Support) << "CTP Config not found for run:" << run << " timesamp " << t.timestamp << ENDM;
     return;
   }
   // get the indeces of the classes we want to trend
@@ -199,7 +199,7 @@ void CTPTrendingTask::generatePlots()
       }
 
       if (index < 10) {
-        histo->GetYaxis()->SetTitle("rate [Hz]");
+        histo->GetYaxis()->SetTitle("rate [kHz]");
       } else {
         histo->GetYaxis()->SetTitle("rate ratio");
       }
