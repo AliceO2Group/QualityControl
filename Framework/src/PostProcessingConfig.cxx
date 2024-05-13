@@ -31,7 +31,7 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
     ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", "")),
     consulUrl(config.get<std::string>("qc.config.consul.url", "")),
     activity(config.get<int>("qc.config.Activity.number", 0),
-             config.get<int>("qc.config.Activity.type", 0),
+             config.get<std::string>("qc.config.Activity.type", "NONE"),
              config.get<std::string>("qc.config.Activity.periodName", ""),
              config.get<std::string>("qc.config.Activity.passName", ""),
              config.get<std::string>("qc.config.Activity.provenance", "qc"),

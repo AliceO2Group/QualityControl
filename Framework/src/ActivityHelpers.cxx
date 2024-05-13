@@ -20,6 +20,10 @@
 #include <CCDB/BasicCCDBManager.h>
 #include "QualityControl/ObjectMetadataKeys.h"
 
+#include <DataFormatsParameters/ECSDataAdapters.h>
+#include <QualityControl/stringUtils.h>
+#include <QualityControl/runnerUtils.h>
+
 using namespace o2::quality_control::repository;
 
 namespace o2::quality_control::core::activity_helpers
@@ -28,10 +32,8 @@ namespace o2::quality_control::core::activity_helpers
 std::map<std::string, std::string> asDatabaseMetadata(const core::Activity& activity, bool putDefault)
 {
   std::map<std::string, std::string> metadata;
-  if (putDefault || activity.mType != 0) {
-    // TODO should we really treat 0 as none?
-    //  we could consider making Activity use std::optional to be clear about this
-    metadata[metadata_keys::runType] = std::to_string(activity.mType);
+  if (putDefault || activity.mType != "NONE") {
+    metadata[metadata_keys::runType] = activity.mType;
   }
   if (putDefault || activity.mId != 0) {
     metadata[metadata_keys::runNumber] = std::to_string(activity.mId);
@@ -49,7 +51,12 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 {
   core::Activity activity;
   if (auto runType = metadata.find(metadata_keys::runType); runType != metadata.end()) {
-    activity.mType = std::strtol(runType->second.c_str(), nullptr, 10);
+    if (isUnsignedInteger(runType->second)) {
+      // we probably got the former representation of run types, i.e. an integer. We convert it as best as we can.
+      activity.mType = translateIntegerRunType(runType->second);
+    } else {
+      activity.mType = runType->second;
+    }
   }
   if (auto runNumber = metadata.find(metadata_keys::runNumber); runNumber != metadata.end()) {
     activity.mId = std::strtol(runNumber->second.c_str(), nullptr, 10);
@@ -73,8 +80,14 @@ core::Activity asActivity(const std::map<std::string, std::string>& metadata, co
 core::Activity asActivity(const boost::property_tree::ptree& tree, const std::string& provenance)
 {
   core::Activity activity;
-  if (auto runType = tree.get_optional<int>(metadata_keys::runType); runType.has_value()) {
-    activity.mType = runType.value();
+  if (auto runType = tree.get_optional<std::string>(metadata_keys::runType); runType.has_value()) {
+    if (isUnsignedInteger(runType.value())) {
+      // we probably got the former representation of run types, i.e. an integer. We convert it as best
+      // as we can using O2's ECSDataAdapter
+      activity.mType = parameters::GRPECS::RunTypeNames[std::stoi(runType.value())];
+    } else {
+      activity.mType = runType.value();
+    }
   }
   if (auto runNumber = tree.get_optional<int>(metadata_keys::runNumber); runNumber.has_value()) {
     activity.mId = runNumber.value();

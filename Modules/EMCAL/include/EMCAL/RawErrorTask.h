@@ -70,6 +70,8 @@ class RawErrorTask final : public TaskInterface
   TH2* mChannelGainLow = nullptr;       ///< Tower with LGnoHG error
   TH2* mChannelGainHigh = nullptr;      ///< Tower with HGnoLG error
   TH2* mFecIdMinorAltroError = nullptr; ///< Minor Altro Error  per DDL
+  TH2* mTRUErrorType = nullptr;         ///< TRU decoding error type
+  TH2* mTRUErrorPosition = nullptr;     ///< TRU decoding error position
 
   bool mExcludeGainErrorsFromOverview; ///< exclude gain error from global overview panel
 

@@ -1378,7 +1378,7 @@ should not be present in real configuration files.
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
                                                "change or the values might come from other source (e.g. ECS+Bookkeeping)." ],
         "number": "42",                   "": "Activity number.",
-        "type": "2",                      "": "Arbitrary activity type.",
+        "type": "PHYSICS",                "": "Activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data",

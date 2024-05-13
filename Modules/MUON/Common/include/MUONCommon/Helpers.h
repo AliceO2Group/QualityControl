@@ -45,6 +45,10 @@ T getConfigurationParameter(o2::quality_control::core::CustomParameters customPa
   return getConfigurationParameter<T>(customParameters, parName, defaultValue);
 }
 
+// create an array of bins in a given range with log10 spacing
+std::vector<double> makeLogBinning(double xmin, double xmax, int nbins);
+
+// add lines to an histogram with specified color, style and width, using ROOT's TAttLine conventions
 TLine* addHorizontalLine(TH1& histo, double y,
                          int lineColor = 1, int lineStyle = 10,
                          int lineWidth = 1);

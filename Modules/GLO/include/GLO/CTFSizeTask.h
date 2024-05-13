@@ -54,6 +54,7 @@ class CTFSize final : public TaskInterface
   std::array<TH1F*, o2::detectors::DetID::CTP + 1> mHistSizes{ nullptr };       // CTF size per TF for each detector with different binning per detector
   std::array<TH1F*, o2::detectors::DetID::CTP + 1> mHistSizesLog{ nullptr };    // CTF size per TF with same axis scale for all detectors
   std::array<std::string, o2::detectors::DetID::CTP + 1> mDefaultBinning{ "" }; // default number of bins and limits for mHistSizes (customizable)
+  std::array<bool, o2::detectors::DetID::CTP + 1> mIsDetEnabled{ false };       // flag which detector is included in the run
   bool mPublishingDone{ false };
 };
 

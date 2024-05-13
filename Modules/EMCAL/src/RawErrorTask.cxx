@@ -22,6 +22,7 @@
 #include "EMCAL/RawErrorTask.h"
 #include "EMCALBase/Geometry.h"
 #include "EMCALBase/Mapper.h"
+#include "EMCALBase/TriggerMappingV2.h"
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/CaloRawFitter.h"
 #include "EMCALReconstruction/RawDecodingError.h"
@@ -36,38 +37,18 @@ namespace o2::quality_control_modules::emcal
 RawErrorTask::~RawErrorTask()
 {
   // delete mHistogram;
-  if (mErrorTypeAltro)
-    delete mErrorTypeAltro;
-
-  if (mErrorTypePage)
-    delete mErrorTypePage;
-
-  if (mErrorTypeMinAltro)
-    delete mErrorTypeMinAltro;
-
-  if (mErrorTypeFit)
-    delete mErrorTypeFit;
-
-  if (mErrorTypeGeometry)
-    delete mErrorTypeGeometry;
-
-  if (mErrorTypeGain)
-    delete mErrorTypeGain;
-
-  if (mErrorTypeUnknown)
-    delete mErrorTypeUnknown;
-
-  if (mErrorGainLow)
-    delete mErrorGainLow;
-
-  if (mErrorGainHigh)
-    delete mErrorGainHigh;
-
-  if (mFecIdMinorAltroError)
-    delete mFecIdMinorAltroError;
-
-  // histo per categoty with details
-  // histo summary with error per category
+  delete mErrorTypeAltro;
+  delete mErrorTypePage;
+  delete mErrorTypeMinAltro;
+  delete mErrorTypeFit;
+  delete mErrorTypeGeometry;
+  delete mErrorTypeGain;
+  delete mErrorTypeUnknown;
+  delete mErrorGainLow;
+  delete mErrorGainHigh;
+  delete mFecIdMinorAltroError;
+  delete mTRUErrorType;
+  delete mTRUErrorPosition;
 }
 
 void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -152,13 +133,13 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (int ierror = 0; ierror < o2::emcal::reconstructionerrors::getNumberOfGainErrorCodes(); ierror++) {
     mErrorTypeGain->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::reconstructionerrors::getGainErrorTitle(ierror));
   }
-  mErrorTypeGain->SetStats(0);
+  mErrorTypeGain->SetStats(false);
   getObjectsManager()->startPublishing(mErrorTypeGain);
 
   mErrorGainLow = new TH2F("NoHGPerDDL", "High Gain bunch missing", NFEC, 0, NFEC, NDDL_FEE, 0, NDDL_FEE);
   mErrorGainLow->GetYaxis()->SetTitle("fecID");
   mErrorGainLow->GetXaxis()->SetTitle("Link");
-  mErrorGainLow->SetStats(0);
+  mErrorGainLow->SetStats(false);
   getObjectsManager()->startPublishing(mErrorGainLow);
 
   mErrorGainHigh = new TH2F("NoLGPerDDL", "Low Gain bunch missing for saturated High Gain", NFEC, 0, NFEC, NDDL_FEE, 0, NDDL_FEE);
@@ -176,14 +157,29 @@ void RawErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   mChannelGainLow = new TH2F("ChannelLGnoHG", "Channel with HG bunch missing", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mChannelGainLow->GetXaxis()->SetTitle("Column");
   mChannelGainLow->GetYaxis()->SetTitle("Row");
-  mChannelGainLow->SetStats(0);
+  mChannelGainLow->SetStats(false);
   getObjectsManager()->startPublishing(mChannelGainLow);
 
   mChannelGainHigh = new TH2F("ChannelHGnoLG", "Channel with LG bunch missing", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mChannelGainHigh->GetXaxis()->SetTitle("Column");
   mChannelGainHigh->GetYaxis()->SetTitle("Row");
-  mChannelGainHigh->SetStats(0);
+  mChannelGainHigh->SetStats(false);
   getObjectsManager()->startPublishing(mChannelGainHigh);
+
+  mTRUErrorType = new TH2F("TRUErrorType", "TRU decoding error (type)", NDDL_FEE, 0., NDDL_FEE, o2::emcal::reconstructionerrors::getNumberOfTRUErrorCodes(), 0, o2::emcal::reconstructionerrors::getNumberOfTRUErrorCodes());
+  mTRUErrorType->GetXaxis()->SetTitle("Link");
+  mTRUErrorType->GetYaxis()->SetTitle("Error type");
+  mTRUErrorType->SetStats(false);
+  for (int ierror = 0; ierror < o2::emcal::reconstructionerrors::getNumberOfTRUErrorCodes(); ierror++) {
+    mTRUErrorType->GetYaxis()->SetBinLabel(ierror + 1, o2::emcal::reconstructionerrors::getTRUDecodingErrorName(ierror));
+  }
+  getObjectsManager()->startPublishing(mTRUErrorType);
+
+  mTRUErrorPosition = new TH2F("TRUErrorPosition", "TRU decoding error (position)", NDDL_FEE, 0., NDDL_FEE, o2::emcal::TriggerMappingV2::ALLTRUS, binshift, o2::emcal::TriggerMappingV2::ALLTRUS + binshift);
+  mTRUErrorPosition->GetXaxis()->SetTitle("Link");
+  mTRUErrorPosition->GetYaxis()->SetTitle("TRU ID");
+  mTRUErrorPosition->SetStats(false);
+  getObjectsManager()->startPublishing(mTRUErrorPosition);
 
   mErrorTypeUnknown = new TH1F("UnknownErrorType", "Unknown error types", NDDL_ALL, 0., NDDL_ALL);
   mErrorTypeUnknown->GetXaxis()->SetTitle("Link");
@@ -292,6 +288,11 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
         auto fecID = error.getSubspecification(); // check: hardware address, or tower id (after markus implementation)
         mFecIdMinorAltroError->Fill(feeid, fecID);
       }
+      if (error.getErrorType() == o2::emcal::ErrorTypeFEE::ErrorSource_t::TRU_ERROR) {
+        auto truID = error.getSubspecification();
+        mTRUErrorType->Fill(feeid, errorCode);
+        mTRUErrorPosition->Fill(feeid, truID);
+      }
     } // end for error in errorcont
   }   // end of loop on raw error data
 } // end of monitorData
@@ -322,6 +323,8 @@ void RawErrorTask::reset()
   mErrorGainLow->Reset();
   mErrorGainHigh->Reset();
   mFecIdMinorAltroError->Reset();
+  mTRUErrorType->Reset();
+  mTRUErrorPosition->Reset();
 }
 std::string RawErrorTask::getConfigValue(const std::string_view key)
 {
