@@ -44,7 +44,7 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   int ninps = o2::ctp::CTP_NINPUTS + 1;
   int nclasses = o2::ctp::CTP_NCLASSES + 1;
   int norbits = o2::constants::lhc::LHCMaxBunches;
-  mHistoInputs = std::make_unique<TH1FRatio> ("inputs", "Input Rates; Index ; Rate [kHz]", ninps, 0, ninps, true);
+  mHistoInputs = std::make_unique<TH1FRatio>("inputs", "Input Rates; Index ; Rate [kHz]", ninps, 0, ninps, true);
   mHistoInputs->SetCanExtend(TH1::kAllAxes);
   mHistoClasses = std::make_unique<TH1FRatio>("classes", "Class Rates; Index; Rate [kHz]", nclasses, 0, nclasses, true);
   mHistoInputs->SetStats(0);
@@ -54,9 +54,9 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoInputRatios->SetCanExtend(TH1::kAllAxes);
   mHistoClassRatios = std::make_unique<TH1FRatio>("classRatio", "Class Ratio to MB; Index; Ratio", nclasses, 0, nclasses, true);
   getObjectsManager()->startPublishing(mHistoInputs.get());
-  getObjectsManager()->setDisplayHint(mHistoInputs.get(),"hist");
+  getObjectsManager()->setDisplayHint(mHistoInputs.get(), "hist");
   getObjectsManager()->startPublishing(mHistoClasses.get());
-  //getObjectsManager()->setDisplayHint(mHistoClasses.get(),"hist");
+  // getObjectsManager()->setDisplayHint(mHistoClasses.get(),"hist");
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
   getObjectsManager()->startPublishing(mHistoInputRatios.get());
   getObjectsManager()->startPublishing(mHistoMTVXBC.get());
@@ -77,7 +77,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
   //
-  //mTimestamp = 1714315086649;
+  // mTimestamp = 1714315086649;
   //
   std::string MBclassName = mCustomParameters["MBclassName"];
   if (MBclassName.empty()) {
@@ -113,7 +113,7 @@ void CTPRawDataReaderTask::startOfCycle()
 void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   static constexpr double sOrbitLengthInMS = o2::constants::lhc::LHCOrbitMUS / 1000;
-  //auto nOrbitsPerTF = o2::base::GRPGeomHelper::instance().(getNHBFPerTF); gives 128 ?
+  // auto nOrbitsPerTF = o2::base::GRPGeomHelper::instance().(getNHBFPerTF); gives 128 ?
   auto nOrbitsPerTF = 32.;
   // LOG(info) << "============  Starting monitoring ================== ";
   //   get the input
@@ -132,7 +132,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
           mHistoInputs->getNum()->Fill(ctpinputs[i], 1);
-          mHistoInputRatios->getNum()->Fill(ctpinputs[i],1);
+          mHistoInputRatios->getNum()->Fill(ctpinputs[i], 1);
           if (i == indexTvx - 1) {
             mHistoMTVXBC->Fill(bcid);
             mHistoInputRatios->getDen()->Fill(ctpinputs[i], 1);
@@ -145,8 +145,8 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (digit.CTPClassMask[i]) {
           mHistoClasses->getNum()->Fill(i);
           mHistoClassRatios->getNum()->Fill(i);
-          if(i == mIndexMBclass - 1) {
-            mHistoClassRatios->getDen()->Fill(0.,1);
+          if (i == mIndexMBclass - 1) {
+            mHistoClassRatios->getDen()->Fill(0., 1);
           }
         }
       }

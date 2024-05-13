@@ -301,7 +301,7 @@ void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
   ILOG(Info, Support) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
   mTimestamp = activity.mValidity.getMin();
   //
-  //mTimestamp = 1714315086649;
+  // mTimestamp = 1714315086649;
   map<string, string> metadata; // can be empty
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
   if (lhcifdata == nullptr) {
