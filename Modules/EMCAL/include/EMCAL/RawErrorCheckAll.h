@@ -38,12 +38,12 @@ class RawErrorCheckAll : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
-  
-  private:
+
+ private:
   /************************************************
    * threshold cuts                               *
    ************************************************/
-  int mPeriodMovAvg = 10000; ///< Period for moving average
+  int mPeriodMovAvg = 10000;    ///< Period for moving average
   double mBadThreshold = 10000; ///< Threshold to be considered bad
 
   ClassDefOverride(RawErrorCheckAll, 1);
