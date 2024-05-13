@@ -21,8 +21,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 // O2
-#include <DataFormatsQualityControl/FlagReasons.h>
-#include <DataFormatsQualityControl/FlagReasonFactory.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -176,7 +176,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result.isBetterThan(Quality::Bad)) {
             result = Quality::Bad;
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped values M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("bad ped values M%d", iMod));
           msg->AddText(Form("Too many bad ped values: %d", nOfBadPedestalValues));
           msg->AddText(Form("Tolerated bad ped values: %d", mToleratedBadPedestalValueChannelsM[iMod]));
           msg->SetFillColor(kRed);
@@ -189,7 +189,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("bad pedestals M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("bad pedestals M%d", iMod));
           msg->AddText(Form("Too many bad channels: %d", nOfBadPedestals));
           msg->AddText(Form("Tolerated bad channels: %d", mToleratedBadChannelsM[iMod]));
           msg->SetFillColor(kRed);
@@ -224,7 +224,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped sigmas M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("bad ped sigmas M%d", iMod));
           msg->AddText(Form("Too many bad ped sigmas: %d", nOfBadPedestalSigmas));
           msg->AddText(Form("Tolerated bad ped sigmas: %d", mToleratedBadPedestalSigmaChannelsM[iMod]));
 
@@ -260,7 +260,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result.isBetterThan(Quality::Bad)) {
             result.set(Quality::Bad);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("bad ped efficiencies M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("bad ped efficiencies M%d", iMod));
           msg->AddText(Form("Too many bad ped efficiencies: %d", nOfBadPedestalEfficiencies));
           msg->AddText(Form("Tolerated bad ped efficiencies: %d",
                             mToleratedBadPedestalEfficiencyChannelsM[iMod]));

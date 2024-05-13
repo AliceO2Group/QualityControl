@@ -164,9 +164,9 @@ class MuonTrack
   int mTrackIdMCH{ -1 };
   int mTrackIdMID{ -1 };
 
-  o2::mft::TrackMFT* mTrackMFT{ nullptr };
-  o2::mch::TrackMCH* mTrackMCH{ nullptr };
-  o2::mid::Track* mTrackMID{ nullptr };
+  const o2::mft::TrackMFT* mTrackMFT{ nullptr };
+  const o2::mch::TrackMCH* mTrackMCH{ nullptr };
+  const o2::mid::Track* mTrackMID{ nullptr };
 
   short mSign;
 };

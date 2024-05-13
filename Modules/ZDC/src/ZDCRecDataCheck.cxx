@@ -29,7 +29,8 @@
 #include <TList.h>
 #include <TLine.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <chrono>  // chrono::system_clock
 #include <ctime>   // localtime
@@ -135,22 +136,22 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       } else if (mQADC == 3 || mQTDC == 3) {
         result = Quality::Bad;
         if (mQADC == 3) {
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "Task quality is bad because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringEADC + "have a value in the bad range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "Task quality is bad because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringEADC + "have a value in the bad range");
         }
         if (mQTDC == 3) {
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringETDC + "have a value in the bad range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringETDC + "have a value in the bad range");
         }
       } else {
         result = Quality::Medium;
         if (mQADC == 2) {
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringWADC + "have a value in the medium range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is medium because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringWADC + "have a value in the medium range");
         }
         if (mQTDC == 2) {
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because in TDC Summary " + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the medium range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is medium because in TDC Summary " + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the medium range");
         }
       }
     }

@@ -35,7 +35,7 @@ constexpr auto qcTaskName = "qc_task_name";
 constexpr auto qcTaskClass = "qc_task_class";
 constexpr auto qcQuality = "qc_quality";
 constexpr auto qcCheckName = "qc_check_name";
-constexpr auto qcTRFCName = "qc_trfc_name";
+constexpr auto qcQCFCName = "qc_qcfc_name";
 constexpr auto qcAdjustableEOV = "adjustableEOV"; // this is a keyword for the CCDB
 // QC Activity
 constexpr auto runType = "RunType";

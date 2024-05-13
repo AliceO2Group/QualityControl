@@ -10,21 +10,21 @@
 // or submit itself to any jurisdiction.
 
 #include "QualityControl/RepoPathUtils.h"
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 
 namespace o2::quality_control::core
 {
 
-std::string RepoPathUtils::getTrfcPath(const std::string& detectorCode,
-                                       const std::string& trfcName,
+std::string RepoPathUtils::getQcfcPath(const std::string& detectorCode,
+                                       const std::string& qcfcName,
                                        const std::string& provenance)
 {
-  return provenance + "/" + detectorCode + "/TRFC/" + trfcName;
+  return provenance + "/" + detectorCode + "/QCFC/" + qcfcName;
 }
 
-std::string RepoPathUtils::getTrfcPath(const TimeRangeFlagCollection* trfc)
+std::string RepoPathUtils::getQcfcPath(const QualityControlFlagCollection* qcfc)
 {
-  return getTrfcPath(trfc->getDetector(), trfc->getName(), trfc->getProvenance());
+  return getQcfcPath(qcfc->getDetector(), qcfc->getName(), qcfc->getProvenance());
 }
 
 bool RepoPathUtils::isProvenanceAllowed(const std::string& provenance)

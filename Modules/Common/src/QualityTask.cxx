@@ -37,12 +37,13 @@ namespace o2::quality_control_modules::common
 QualityTask::QualityTrendGraph::QualityTrendGraph(std::string name, std::string title) : TCanvas(name.c_str(), title.c_str())
 {
   SetGridy(1);
-  mGraphHist = std::make_unique<TGraph>(0);
 
   mGraph = std::make_unique<TGraph>(0);
+  mGraph->SetTitle(title.c_str());
   mGraph->SetMarkerStyle(kCircle);
-  mGraph->SetTitle(fmt::format("{};time;quality", title).c_str());
+  mGraph->SetTitle(fmt::format("{};time;", title).c_str());
 
+  // add labels in the middle of the vertical axis bins
   mLabels[0] = std::make_unique<TText>(0.09, 0.1 + 0.8 / 8.0, "Null");
   mLabels[1] = std::make_unique<TText>(0.09, 0.1 + 3.0 * 0.8 / 8.0, "Bad");
   mLabels[2] = std::make_unique<TText>(0.09, 0.1 + 5.0 * 0.8 / 8.0, "Medium");
@@ -59,6 +60,10 @@ QualityTask::QualityTrendGraph::QualityTrendGraph(std::string name, std::string 
 
 void QualityTask::QualityTrendGraph::update(uint64_t time, Quality q)
 {
+  Clear();
+  cd();
+
+  // set the position of the point based on the value of the quality flag
   float val = 0.5;
   if (q == Quality::Bad) {
     val = 1.5;
@@ -69,33 +74,21 @@ void QualityTask::QualityTrendGraph::update(uint64_t time, Quality q)
   if (q == Quality::Good) {
     val = 3.5;
   }
-  // add new point both the the main graph and to the dummy one used for the axis
+
+  // add a new point to the graph
   mGraph->AddPoint(time, val);
-  mGraphHist->AddPoint(time, 0);
 
-  Clear();
-  cd();
-
-  // draw axis
-  mGraphHist->Draw("A");
-
-  // configure and beautify axis
-  auto hAxis = mGraphHist->GetHistogram();
-  hAxis->SetTitle(GetTitle());
-  hAxis->GetXaxis()->SetTimeDisplay(1);
-  hAxis->GetXaxis()->SetNdivisions(505);
-  hAxis->GetXaxis()->SetTimeOffset(0.0);
-  hAxis->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
-  hAxis->GetYaxis()->SetTitle("");
-  hAxis->GetYaxis()->SetTickLength(0.0);
-  hAxis->GetYaxis()->SetLabelSize(0.0);
-  hAxis->GetYaxis()->SetNdivisions(3, kFALSE);
-  hAxis->SetMinimum(0);
-  hAxis->SetMaximum(4);
-  hAxis->Draw("AXIS");
-
-  // draw main graph
-  mGraph->Draw("PL,SAME");
+  // draw the graph and format the axes
+  mGraph->Draw("APL");
+  mGraph->GetXaxis()->SetTimeDisplay(1);
+  mGraph->GetXaxis()->SetNdivisions(505);
+  mGraph->GetXaxis()->SetTimeOffset(0.0);
+  mGraph->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+  mGraph->GetYaxis()->SetTickLength(0.0);
+  mGraph->GetYaxis()->SetLabelSize(0.0);
+  mGraph->GetYaxis()->SetNdivisions(3, kFALSE);
+  mGraph->SetMinimum(0);
+  mGraph->SetMaximum(4);
 
   // draw labels for vertical axis
   for (auto& l : mLabels) {
@@ -272,7 +265,7 @@ void QualityTask::update(quality_control::postprocessing::Trigger t, framework::
       }
 
       if (std::find(qualityGroupConfig.ignoreQualitiesDetails.begin(), qualityGroupConfig.ignoreQualitiesDetails.end(), quality) == qualityGroupConfig.ignoreQualitiesDetails.end()) {
-        for (const auto& [flag, comment] : qo->getReasons()) {
+        for (const auto& [flag, comment] : qo->getFlags()) {
           if (comment.empty()) {
             lines.emplace_back(Message{ fmt::format("#color[{}]{{#rightarrow Flag: {}}}", kGray + 2, flag.getName()) });
           } else {

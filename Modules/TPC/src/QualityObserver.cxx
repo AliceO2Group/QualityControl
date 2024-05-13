@@ -72,7 +72,7 @@ void QualityObserver::initialize(Trigger, framework::ServiceRegistryRef)
 {
   for (const auto& config : mConfig) {
     mQualities[config.groupTitle] = std::vector<std::string>();
-    mReasons[config.groupTitle] = std::vector<std::string>();
+    mFlags[config.groupTitle] = std::vector<std::string>();
     mComments[config.groupTitle] = std::vector<std::string>();
   }
   mColors[Quality::Bad.getName()] = kRed;
@@ -110,7 +110,7 @@ void QualityObserver::finalize(Trigger t, framework::ServiceRegistryRef services
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
   getQualities(t, qcdb);
-  if (mQualities.size() > 0 && mReasons.size() > 0 && mComments.size() > 0) {
+  if (mQualities.size() > 0 && mFlags.size() > 0 && mComments.size() > 0) {
     generatePanel();
   }
 }
@@ -122,7 +122,7 @@ void QualityObserver::getQualities(const Trigger& t,
 
     if (mQualities[config.groupTitle].size() > 0) {
       mQualities[config.groupTitle].clear();
-      mReasons[config.groupTitle].clear();
+      mFlags[config.groupTitle].clear();
       mComments[config.groupTitle].clear();
     }
     for (const auto& qualityobject : config.qo) {
@@ -130,11 +130,11 @@ void QualityObserver::getQualities(const Trigger& t,
       if (qo) {
         const auto quality = qo->getQuality();
         mQualities[config.groupTitle].push_back(quality.getName());
-        mReasons[config.groupTitle].push_back(quality.getMetadata(quality.getName(), ""));
+        mFlags[config.groupTitle].push_back(quality.getMetadata(quality.getName(), ""));
         mComments[config.groupTitle].push_back(quality.getMetadata("Comment", ""));
       } else {
         mQualities[config.groupTitle].push_back(Quality::Null.getName());
-        mReasons[config.groupTitle].push_back("");
+        mFlags[config.groupTitle].push_back("");
         mComments[config.groupTitle].push_back("");
       }
     }
@@ -170,7 +170,7 @@ void QualityObserver::generatePanel()
       ((TText*)pt->GetListOfLines()->Last())->SetTextAlign(12);
 
       if (mViewDetails && mQualityDetails[mQualities[config.groupTitle].at(i).data()]) {
-        generateText(pt, true, mReasons[config.groupTitle].at(i));   // print reasons
+        generateText(pt, true, mFlags[config.groupTitle].at(i));     // print flags
         generateText(pt, false, mComments[config.groupTitle].at(i)); // print comments
       }
     }
@@ -186,10 +186,10 @@ void QualityObserver::generatePanel()
 
 } // void QualityObserver::generatePanel()
 
-void QualityObserver::generateText(TPaveText* pt, bool isReason, std::string qoMetaText)
+void QualityObserver::generateText(TPaveText* pt, bool isFlag, std::string qoMetaText)
 {
-  std::string infoType = "Reason";
-  if (!isReason) {
+  std::string infoType = "Flag";
+  if (!isFlag) {
     infoType = "Comment";
   }
   if (qoMetaText != "") {

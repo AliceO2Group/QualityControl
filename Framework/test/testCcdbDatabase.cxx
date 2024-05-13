@@ -28,7 +28,8 @@
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/ActivityHelpers.h"
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include <TROOT.h>
 #include <CCDB/CcdbApi.h>
 
@@ -99,7 +100,7 @@ struct MyGlobalFixture {
     // cannot use the test_fixture because we are tearing down
     backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
     backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
-    backend->truncate("qc/TST/TRFC/Test_pid" + std::to_string(getpid()), "*");
+    backend->truncate("qc/TST/QCFC/Test_pid" + std::to_string(getpid()), "*");
     backend->truncate("qc_hello/TST/MO/Test/pid" + std::to_string(getpid()), "*");
     backend->truncate("qc_hello/TST/QO/Test/pid" + std::to_string(getpid()), "*");
   }
@@ -225,11 +226,11 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, 0, "", "", "qc_hello" });
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, "NONE", "", "", "qc_hello" });
   BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, 0, "", "", "qc_hello" });
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, "NONE", "", "", "qc_hello" });
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
 }
@@ -409,34 +410,34 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_latest)
   mo1->setValidity({ 10, 30 });
   f.backend->storeMO(mo1);
 
-  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, 0, "LHC66", "passName1", "qc" });
+  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, "NONE", "LHC66", "passName1", "qc" });
   BOOST_REQUIRE(moBack != nullptr);
   auto h1Back = dynamic_cast<TH1F*>(moBack->getObject());
   BOOST_REQUIRE(h1Back != nullptr);
   BOOST_CHECK_EQUAL(h1Back->GetEntries(), 20000);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_trfc)
+BOOST_AUTO_TEST_CASE(ccdb_qcfc)
 {
   test_fixture f;
   const std::string pid = std::to_string(getpid());
-  const std::string trfcName = "Test_pid" + pid; // TODO we can use a 'Test' directory once https://github.com/AliceO2Group/AliceO2/pull/8195 is merged
+  const std::string qcfcName = "Test_pid" + pid; // TODO we can use a 'Test' directory once https://github.com/AliceO2Group/AliceO2/pull/8195 is merged
 
-  std::shared_ptr<TimeRangeFlagCollection> trfc1{ new TimeRangeFlagCollection{ trfcName, "TST", { 45, 500000 }, 42, "LHC42x", "spass", "qc" } };
-  trfc1->insert({ 50, 77, FlagReasonFactory::Invalid(), "a comment", "a source" });
-  trfc1->insert({ 51, 77, FlagReasonFactory::Invalid() });
-  trfc1->insert({ 1234, 3434, FlagReasonFactory::LimitedAcceptance() });
-  trfc1->insert({ 50, 77, FlagReasonFactory::LimitedAcceptance() });
-  trfc1->insert({ 43434, 63421, FlagReasonFactory::NotBadFlagExample() });
+  std::shared_ptr<QualityControlFlagCollection> qcfc1{ new QualityControlFlagCollection{ qcfcName, "TST", { 45, 500000 }, 42, "LHC42x", "spass", "qc" } };
+  qcfc1->insert({ 50, 77, FlagTypeFactory::Invalid(), "a comment", "a source" });
+  qcfc1->insert({ 51, 77, FlagTypeFactory::Invalid() });
+  qcfc1->insert({ 1234, 3434, FlagTypeFactory::BadPID() });
+  qcfc1->insert({ 50, 77, FlagTypeFactory::BadPID() });
+  qcfc1->insert({ 43434, 63421, FlagTypeFactory::NotBadFlagExample() });
 
-  f.backend->storeTRFC(trfc1);
+  f.backend->storeQCFC(qcfc1);
 
-  auto trfc2 = f.backend->retrieveTRFC(trfc1->getName(), trfc1->getDetector(), trfc1->getRunNumber(),
-                                       trfc1->getPassName(), trfc1->getPeriodName(), trfc1->getProvenance(), 400000);
-  BOOST_REQUIRE(trfc2 != nullptr);
+  auto qcfc2 = f.backend->retrieveQCFC(qcfc1->getName(), qcfc1->getDetector(), qcfc1->getRunNumber(),
+                                       qcfc1->getPassName(), qcfc1->getPeriodName(), qcfc1->getProvenance(), 400000);
+  BOOST_REQUIRE(qcfc2 != nullptr);
 
-  BOOST_REQUIRE_EQUAL(trfc1->size(), trfc2->size());
-  for (auto it1 = trfc1->begin(), it2 = trfc2->begin(); it1 != trfc1->end() && it2 != trfc2->end(); ++it1, ++it2) {
+  BOOST_REQUIRE_EQUAL(qcfc1->size(), qcfc2->size());
+  for (auto it1 = qcfc1->begin(), it2 = qcfc2->begin(); it1 != qcfc1->end() && it2 != qcfc2->end(); ++it1, ++it2) {
     BOOST_CHECK_EQUAL(*it1, *it2);
   }
 }

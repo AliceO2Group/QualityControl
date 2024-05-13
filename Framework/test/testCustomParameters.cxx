@@ -139,7 +139,7 @@ TEST_CASE("test_at_optional_activity")
 {
   Activity activity;
   activity.mBeamType = "PROTON-PROTON";
-  activity.mType = 1;
+  activity.mType = "PHYSICS";
 
   CustomParameters cp;
   cp.set("aaa", "AAA");
@@ -155,7 +155,7 @@ TEST_CASE("test_at_optional_activity")
 
   Activity activity2;
   activity.mBeamType = "Pb-Pb";
-  activity.mType = 1;
+  activity.mType = "PHYSICS";
   CHECK(cp.atOptional("aaa", activity).value() == "DDD");
 }
 
@@ -257,4 +257,11 @@ TEST_CASE("test_default_if_not_found_at")
   CHECK(cp.at("key", "PHYSICS", "PROTON-PROTON") == "valuePhysicsDefault");   // key is not defined for pp
   CHECK(cp.at("key", "TECHNICAL", "STRANGE") == "valueDefaultDefault");       // key is not defined for run nor beam
   CHECK(cp.at("key", "TECHNICAL", "PROTON-PROTON") == "valueCosmicsDefault"); // key is not defined for technical
+}
+
+TEST_CASE("test_getAllDefaults")
+{
+  CustomParameters cp;
+  auto result = cp.getAllDefaults();
+  CHECK(result.size() == 0);
 }

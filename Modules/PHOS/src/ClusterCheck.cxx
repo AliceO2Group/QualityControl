@@ -27,8 +27,8 @@
 #include <TList.h>
 #include <iostream>
 // O2
-#include <DataFormatsQualityControl/FlagReasons.h>
-#include <DataFormatsQualityControl/FlagReasonFactory.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -157,7 +157,7 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         if (result.isBetterThan(Quality::Bad)) {
           result.set(Quality::Bad);
         }
-        result.addReason(FlagReasonFactory::Unknown(), Form("too many dead channels M%d", m));
+        result.addFlag(FlagTypeFactory::Unknown(), Form("too many dead channels M%d", m));
         TLatex* msg = new TLatex(0.2, 0.2, Form("#color[2]{Too many new dead channels: %d}", nDead));
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -174,7 +174,7 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         if (result.isBetterThan(Quality::Medium)) {
           result.set(Quality::Medium);
         }
-        result.addReason(FlagReasonFactory::Unknown(), Form("too many noisy channels M%d", m));
+        result.addFlag(FlagTypeFactory::Unknown(), Form("too many noisy channels M%d", m));
         TLatex* msg = new TLatex(0.2, 0.2, Form("#color[2]{Too many noisy channels: %d}", nNoisy));
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -219,7 +219,7 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
         if (result.isBetterThan(Quality::Null)) {
           result.set(Quality::Null);
         }
-        result.addReason(FlagReasonFactory::Unknown(), Form("not enough statistics M%d", iMod));
+        result.addFlag(FlagTypeFactory::Unknown(), Form("not enough statistics M%d", iMod));
         msg->AddText("Not enough data to check");
         msg->SetFillColor(kOrange);
         isGoodMO = false;
@@ -230,7 +230,7 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too small mean energy M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too small mean energy M%d", iMod));
           msg->AddText(Form("Mean is too small: %f", mean));
           msg->AddText(Form("Min allowed mean: %f", mMinCluEnergyMean[iMod]));
           msg->SetFillColor(kRed);
@@ -240,7 +240,7 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
           if (result.isBetterThan(Quality::Medium)) {
             result.set(Quality::Medium);
           }
-          result.addReason(FlagReasonFactory::Unknown(), Form("too big mean energy M%d", iMod));
+          result.addFlag(FlagTypeFactory::Unknown(), Form("too big mean energy M%d", iMod));
           msg->AddText(Form("Mean is too big: %f", mean));
           msg->AddText(Form("Max allowed mean: %f", mMaxCluEnergyMean[iMod]));
           msg->SetFillColor(kRed);

@@ -30,6 +30,7 @@ set(SRCS
   src/DecodingCheck.cxx
   src/DigitsCheck.cxx
   src/PreclustersCheck.cxx
+  src/ClustersCheck.cxx
   src/TracksTask.cxx
   src/DecodingPostProcessing.cxx
   src/DigitsPostProcessing.cxx
@@ -70,6 +71,7 @@ set(HEADERS
   include/MCH/DecodingCheck.h
   include/MCH/DigitsCheck.h
   include/MCH/PreclustersCheck.h
+  include/MCH/ClustersCheck.h
   include/MCH/TracksTask.h
   include/MCH/DedodingPostProcessing.h
   include/MCH/DigitsPostProcessing.h
@@ -150,6 +152,7 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PreclustersTask.h
                             include/MCH/DigitsCheck.h
                             include/MCH/PreclustersCheck.h
+                            include/MCH/ClustersCheck.h
                             include/MCH/DecodingTask.h
                             include/MCH/DecodingCheck.h
                             include/MCH/ErrorTask.h

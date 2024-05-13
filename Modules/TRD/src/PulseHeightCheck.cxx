@@ -24,7 +24,8 @@
 #include <TMath.h>
 #include <TPaveText.h>
 #include <bitset>
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include "TRDQC/StatusHelper.h"
 #include "TRD/PulseHeightCheck.h"
@@ -108,8 +109,8 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
       if (maxbin < mPulseHeightPeakRegion.first || maxbin > mPulseHeightPeakRegion.second) {
         // is the peak in the peak region.
         result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Invalid(),
-                         "Peak is in the wrong position " + std::to_string(maxbin));
+        result.addFlag(FlagTypeFactory::Invalid(),
+                       "Peak is in the wrong position " + std::to_string(maxbin));
         return result;
       }
 
@@ -122,21 +123,21 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
         } else {
 
           result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Invalid(),
-                           "Peak is too low relative to the drift region max : " + std::to_string(max) + " average of drift:" + std::to_string(average));
+          result.addFlag(FlagTypeFactory::Invalid(),
+                         "Peak is too low relative to the drift region max : " + std::to_string(max) + " average of drift:" + std::to_string(average));
           return result;
         }
         if (max < average) {
           // if the peak maximum is below the average height of the drift region, we have a problem.
           result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Invalid(),
-                           "Peak is below the drift region average  peak : " + std::to_string(max) + " average of drift:" + std::to_string(average));
+          result.addFlag(FlagTypeFactory::Invalid(),
+                         "Peak is below the drift region average  peak : " + std::to_string(max) + " average of drift:" + std::to_string(average));
           return result;
         }
       } else {
         result = Quality::Medium;
-        result.addReason(FlagReasonFactory::Invalid(),
-                         "Drift region average is " + std::to_string(average));
+        result.addFlag(FlagTypeFactory::Invalid(),
+                       "Drift region average is " + std::to_string(average));
         return result;
       }
     }

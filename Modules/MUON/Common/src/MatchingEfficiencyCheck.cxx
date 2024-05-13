@@ -18,7 +18,8 @@
 #include "MUONCommon/Helpers.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include <CommonUtils/StringUtils.h>
 #include <TH1.h>
 #include <TLine.h>
@@ -148,7 +149,7 @@ Quality MatchingEfficiencyCheck::check(std::map<std::string, std::shared_ptr<Mon
       for (int bin = i.first; bin <= i.second; bin++) {
         if (hist->GetBinContent(bin) < range->first || hist->GetBinContent(bin) > range->second) {
           mQualities[moName] = Quality::Bad;
-          mQualities[moName].addReason(o2::quality_control::FlagReasonFactory::BadTracking(), "Matching efficiency not in the expected range");
+          mQualities[moName].addFlag(o2::quality_control::FlagTypeFactory::BadTracking(), "Matching efficiency not in the expected range");
           break;
         }
       }

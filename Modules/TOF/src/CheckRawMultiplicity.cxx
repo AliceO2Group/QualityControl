@@ -21,7 +21,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -75,8 +76,8 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
       const auto* h = static_cast<TH1I*>(mo->getObject());
       if (h->GetEntries() == 0) { // Histogram is empty
         result = Quality::Medium;
-        result.addReason(FlagReasonFactory::NoDetectorData(),
-                         "Empty histogram (no counts)");
+        result.addFlag(FlagTypeFactory::NoDetectorData(),
+                       "Empty histogram (no counts)");
         mShifterMessages.AddMessage("Empty histogram, no counts!");
       } else { // Histogram is non empty
 
@@ -100,8 +101,8 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
         if (hitsIntegral == 0) { // if only "0 hits per event" bin is filled -> error
           if (h->GetBinContent(1) > 0) {
             result = Quality::Bad;
-            result.addReason(FlagReasonFactory::Unknown(),
-                             "Only events with 0 multiplicity");
+            result.addFlag(FlagTypeFactory::Unknown(),
+                           "Only events with 0 multiplicity");
             mShifterMessages.AddMessage("Only events with 0 multiplicity!");
           }
         } else {

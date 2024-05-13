@@ -115,7 +115,23 @@ void RofsTask::startOfCycle()
 void RofsTask::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits)
 {
   const auto bcInOrbit = o2::constants::lhc::LHCMaxBunches;
+
+  if (rof.getNEntries() < 1) {
+    ILOG(Warning, Support) << "Current ROF is empty" << ENDM;
+    return;
+  }
+
+  if ((rof.getFirstIdx() + rof.getNEntries()) > digits.size()) {
+    ILOG(Warning, Support) << "Current ROF has invalid digits range: (rof.getFirstIdx() + rof.getNEntries())=" << (rof.getFirstIdx() + rof.getNEntries()) << " > digits.size()=" << digits.size() << ENDM;
+    return;
+  }
+
   auto rofDigits = digits.subspan(rof.getFirstIdx(), rof.getNEntries());
+  if (rofDigits.empty()) {
+    ILOG(Warning, Support) << "Current ROF has no associated digits" << ENDM;
+    return;
+  }
+
   auto start = rofDigits.front().getTime();
   auto end = rofDigits.back().getTime();
   mHistRofWidth->Fill(end - start + 1);

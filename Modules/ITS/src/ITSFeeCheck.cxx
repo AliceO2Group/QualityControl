@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <fairlogger/Logger.h>
 #include <TH2.h>
@@ -75,7 +76,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
                 countStave++;
                 TString text = "Medium:IB stave has many NOK chips;";
                 if (!checkReason(result, text))
-                  result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
+                  result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
               }
             } else if (ibin <= StaveBoundary[5]) {
               // Check if there are staves in the MLs with at least 4 lanes in Bad (bins are filled with %)
@@ -86,7 +87,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
                 countStave++;
                 TString text = "Medium:ML stave has many NOK chips;";
                 if (!checkReason(result, text))
-                  result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
+                  result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
               }
             } else if (ibin <= StaveBoundary[7]) {
               // Check if there are staves in the OLs with at least 7 lanes in Bad (bins are filled with %)
@@ -97,7 +98,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
                 countStave++;
                 TString text = "Medium:OL stave has many NOK chips;";
                 if (!checkReason(result, text))
-                  result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), text.Data());
+                  result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
               }
             }
           } // end loop bins (staves)
@@ -107,7 +108,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           if (countStave > 0.25 * NStaves[ilayer]) {
             badStaveCount = true;
             result.updateMetadata(Form("Layer%d", ilayer), "bad");
-            result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:Layer%d has many NOK staves;", ilayer));
+            result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD:Layer%d has many NOK staves;", ilayer));
           }
         } // end loop over layers
         if (badStaveIB || badStaveML || badStaveOL) {
@@ -131,7 +132,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) > maxfractionbadlanes) {
         result.updateMetadata("SummaryGlobal", "bad");
         result.set(Quality::Bad);
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are bad", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD:>%.0f %% of the lanes are bad", (h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3)) * 100));
       }
     } // end summary loop
     if (mo->getName() == Form("RDHSummary")) {
@@ -215,7 +216,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           result.updateMetadata(h->GetYaxis()->GetBinLabel(itrg + 1), "bad");
           result.set(Quality::Bad);
           std::string extraText = (!strcmp(h->GetYaxis()->GetBinLabel(itrg + 1), "PHYSICS")) ? "(OK if it's COSMICS/SYNTHETIC)" : "";
-          result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), Form("BAD:Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg + 1), extraText.c_str()));
+          result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD:Trigger flag %s of bad quality %s", h->GetYaxis()->GetBinLabel(itrg + 1), extraText.c_str()));
         }
       }
     }
@@ -262,7 +263,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if (h->Integral(1, 432, 1, h->GetYaxis()->FindBin(expectedROFperOrbit) - 1) > 0 || h->Integral(1, 432, h->GetYaxis()->FindBin(expectedROFperOrbit) + 1, h->GetYaxis()->GetLast()) > 0) {
         result.set(Quality::Bad);
         result.updateMetadata("expectedROFperOrbit", "bad");
-        result.addReason(o2::quality_control::FlagReasonFactory::Unknown(), "ITS seems to be misconfigured");
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), "ITS seems to be misconfigured");
       }
     }
   } // end loop on MOs
@@ -552,9 +553,9 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 
 bool ITSFeeCheck::checkReason(Quality checkResult, TString text)
 {
-  auto reasons = checkResult.getReasons();
-  for (int i = 0; i < int(reasons.size()); i++) {
-    if (text.Contains(reasons[i].second.c_str()))
+  auto flags = checkResult.getFlags();
+  for (int i = 0; i < int(flags.size()); i++) {
+    if (text.Contains(flags[i].second.c_str()))
       return true;
   }
   return false;

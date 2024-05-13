@@ -24,7 +24,8 @@
 #include <TLine.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -124,8 +125,8 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             // result = Quality::Bad; // setting quality like this clears reasons
             result.set(Quality::Bad);
           mNumErrors++;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));
           // no need to check medium threshold
           // but don't `break` because we want to add other reasons
           continue;
@@ -133,8 +134,8 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           if (result.isBetterThan(Quality::Medium))
             result.set(Quality::Medium);
           mNumWarnings++;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "CFD eff. < \"Warning\" threshold in channel " + std::to_string(chId));
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "CFD eff. < \"Warning\" threshold in channel " + std::to_string(chId));
         }
       }
     }
@@ -164,11 +165,11 @@ void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->AddText(">> Quality::Good <<");
       msg->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      auto reasons = checkResult.getReasons();
+      auto reasons = checkResult.getFlags();
       msg->SetFillColor(kRed);
       msg->AddText(">> Quality::Bad <<");
     } else if (checkResult == Quality::Medium) {
-      auto reasons = checkResult.getReasons();
+      auto reasons = checkResult.getFlags();
       msg->SetFillColor(kOrange);
       msg->AddText(">> Quality::Medium <<");
     } else if (checkResult == Quality::Null) {

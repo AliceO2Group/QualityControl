@@ -105,23 +105,23 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (pedestals) {
       mNumberObjectsFetched++;
       for (int ichan = 0; ichan < mPedestalChannelFECHG->GetXaxis()->GetNbins(); ichan++) {
-        auto pedestalLow = pedestals->getPedestalValue(ichan, false, false),
+        auto pedestalLow = pedestals->getPedestalValue(ichan, true, false),
              pedestalHigh = pedestals->getPedestalValue(ichan, false, false);
         mPedestalChannelFECHG->SetBinContent(ichan + 1, pedestalHigh);
         mPedestalChannelFECLG->SetBinContent(ichan + 1, pedestalLow);
         auto [row, col] = mGeometry->GlobalRowColFromIndex(ichan);
         mPedestalPositionFECHG->SetBinContent(col + 1, row + 1, pedestalHigh);
-        mPedestalPositionFECLG->SetBinContent(col + 1, row + 1, pedestalHigh);
+        mPedestalPositionFECLG->SetBinContent(col + 1, row + 1, pedestalLow);
       }
       for (auto ichan = 0; ichan < mPedestalChannelLEDMONHG->GetXaxis()->GetNbins(); ichan++) {
-        auto pedestalLow = pedestals->getPedestalValue(ichan, false, false),
-             pedestalHigh = pedestals->getPedestalValue(ichan, false, false);
+        auto pedestalLow = pedestals->getPedestalValue(ichan, true, true),
+             pedestalHigh = pedestals->getPedestalValue(ichan, false, true);
         mPedestalChannelLEDMONHG->SetBinContent(ichan + 1, pedestalHigh);
         mPedestalChannelLEDMONLG->SetBinContent(ichan + 1, pedestalLow);
         int col = ichan % 48,
             row = ichan / 48;
         mPedestalPositionLEDMONHG->SetBinContent(col + 1, row + 1, pedestalHigh);
-        mPedestalPositionLEDMONLG->SetBinContent(col + 1, row + 1, pedestalHigh);
+        mPedestalPositionLEDMONLG->SetBinContent(col + 1, row + 1, pedestalLow);
       }
     }
   }

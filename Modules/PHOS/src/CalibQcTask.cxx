@@ -24,6 +24,12 @@
 #include "Framework/InputRecord.h"
 #include "PHOSBase/Geometry.h"
 #include "PHOSBase/Mapping.h"
+#include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
+#include <Framework/DataRef.h>
+#include <Framework/DataRefUtils.h>
+#include <DataFormatsPHOS/Pedestals.h>
+#include <DataFormatsPHOS/CalibParams.h>
 
 // using namespace o2::phos;
 
@@ -82,6 +88,24 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (mMode == 1) { // Pedestals
     for (Int_t mod = 0; mod < 4; mod++) {
       if (!mHist2D[kChangeHGM1 + mod]) {
+        // pedestal values
+        mHist2D[kValueHGM1 + mod] = new TH2F(Form("HGPedestalValue%d", mod + 1), Form("Values of HG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kValueHGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kValueHGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kValueHGM1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kValueHGM1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kValueHGM1 + mod]->SetStats(0);
+        getObjectsManager()->startPublishing(mHist2D[kValueHGM1 + mod]);
+        // pedestal RMS
+        mHist2D[kRMSHGM1 + mod] = new TH2F(Form("HGPedestalRMS%d", mod + 1), Form("RMSs of HG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kRMSHGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kRMSHGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kRMSHGM1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kRMSHGM1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kRMSHGM1 + mod]->SetStats(0);
+        getObjectsManager()->startPublishing(mHist2D[kRMSHGM1 + mod]);
+
+        // pedestal change
         mHist2D[kChangeHGM1 + mod] = new TH2F(Form("HGPedestalChange%d", mod + 1), Form("Change of HG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
         mHist2D[kChangeHGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
         mHist2D[kChangeHGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
@@ -91,10 +115,31 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeHGM1 + mod]->SetMinimum(-5);
         mHist2D[kChangeHGM1 + mod]->SetMaximum(5);
         getObjectsManager()->startPublishing(mHist2D[kChangeHGM1 + mod]);
+
       } else {
+        mHist2D[kValueHGM1 + mod]->Reset();
+        mHist2D[kRMSHGM1 + mod]->Reset();
         mHist2D[kChangeHGM1 + mod]->Reset();
       }
       if (!mHist2D[kChangeLGM1 + mod]) {
+        // pedestal values
+        mHist2D[kValueLGM1 + mod] = new TH2F(Form("LGPedestalValue%d", mod + 1), Form("Values of LG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kValueLGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kValueLGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kValueLGM1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kValueLGM1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kValueLGM1 + mod]->SetStats(0);
+        getObjectsManager()->startPublishing(mHist2D[kValueLGM1 + mod]);
+        // pedestal RMS
+        mHist2D[kRMSLGM1 + mod] = new TH2F(Form("LGPedestalRMS%d", mod + 1), Form("RMSs of LG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kRMSLGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kRMSLGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kRMSLGM1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kRMSLGM1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kRMSLGM1 + mod]->SetStats(0);
+        getObjectsManager()->startPublishing(mHist2D[kRMSLGM1 + mod]);
+
+        // pedestal change
         mHist2D[kChangeLGM1 + mod] = new TH2F(Form("LGPedestalChange%d", mod + 1), Form("Change of LG pedestals in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
         mHist2D[kChangeLGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
         mHist2D[kChangeLGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
@@ -104,7 +149,10 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHist2D[kChangeLGM1 + mod]->SetMinimum(-5);
         mHist2D[kChangeLGM1 + mod]->SetMaximum(5);
         getObjectsManager()->startPublishing(mHist2D[kChangeLGM1 + mod]);
+
       } else {
+        mHist2D[kValueLGM1 + mod]->Reset();
+        mHist2D[kRMSLGM1 + mod]->Reset();
         mHist2D[kChangeLGM1 + mod]->Reset();
       }
     }
@@ -112,16 +160,25 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (mMode == 2) { // LED
     for (Int_t mod = 0; mod < 4; mod++) {
       if (!mHist2D[kChangeHGM1 + mod]) {
+        // HGLG ratio value
+        mHist2D[kValueHGM1 + mod] = new TH2F(Form("HGLGRatioValue%d", mod + 1), Form("Value of HG/LG ratio in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+        mHist2D[kValueHGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+        mHist2D[kValueHGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+        mHist2D[kValueHGM1 + mod]->GetXaxis()->SetTitle("x, cells");
+        mHist2D[kValueHGM1 + mod]->GetYaxis()->SetTitle("z, cells");
+        mHist2D[kValueHGM1 + mod]->SetStats(0);
+        getObjectsManager()->startPublishing(mHist2D[kValueHGM1 + mod]);
+        // HGLG ratio change
         mHist2D[kChangeHGM1 + mod] = new TH2F(Form("HGLGRatioChange%d", mod + 1), Form("Change of HG/LG ratio in mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
         mHist2D[kChangeHGM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
         mHist2D[kChangeHGM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
         mHist2D[kChangeHGM1 + mod]->GetXaxis()->SetTitle("x, cells");
         mHist2D[kChangeHGM1 + mod]->GetYaxis()->SetTitle("z, cells");
         mHist2D[kChangeHGM1 + mod]->SetStats(0);
-        mHist2D[kChangeHGM1 + mod]->SetMinimum(0);
-        mHist2D[kChangeHGM1 + mod]->SetMaximum(5);
         getObjectsManager()->startPublishing(mHist2D[kChangeHGM1 + mod]);
+
       } else {
+        mHist2D[kValueHGM1 + mod]->Reset();
         mHist2D[kChangeHGM1 + mod]->Reset();
       }
     }
@@ -173,38 +230,93 @@ void CalibQcTask::startOfCycle()
 
 void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  bool hasCalibDiff = false, hasCalibPars = false, hasPedestals = false, hasL1phase = false;
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
+    // get message header
+    if (input.header != nullptr && input.payload != nullptr) {
+      auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
+      // get payload of a specific input, which is a char array.
+      // const char* payload = input.payload;
+      const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
+      if (payloadSize) {
+        if ((strcmp(header->dataOrigin.str, "PHS") == 0) && (strcmp(header->dataDescription.str, "CALIBDIFF") == 0)) {
+          // LOG(info) << "monitorData() : I found calibdiff in inputs";
+          hasCalibDiff = true;
+        }
+        if ((strcmp(header->dataOrigin.str, "CLP") == 0) && (strcmp(header->dataDescription.str, "PHOS_HGLGratio") == 0)) {
+          // LOG(info) << "monitorData() : I found PHOS_HGLGratio in inputs";
+          hasCalibPars = true;
+        }
+        if ((strcmp(header->dataOrigin.str, "CLP") == 0) && (strcmp(header->dataDescription.str, "PHOS_Pedestal") == 0)) {
+          // LOG(info) << "monitorData() : I found PHOS_Pedestal in inputs";
+          hasPedestals = true;
+        }
+        if ((strcmp(header->dataOrigin.str, "CLP") == 0) && (strcmp(header->dataDescription.str, "PHOS_L1phase") == 0)) {
+          // LOG(info) << "monitorData() : I found PHOS_L1phase in inputs";
+          hasL1phase = true;
+        }
+      }
+    }
+  }
 
   // std::array<short, 2*o2::phos::Mapping::NCHANNELS>
-  if (mMode == 0 || mMode == 1) { // Bad map or pedestals
-    auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
-    char relid[3];
-    for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
-      o2::phos::Geometry::absToRelNumbering(absId, relid);
-      mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
-      if (mMode == 1) {
+  if (mMode == 0) { // Bad map
+    if (hasCalibDiff) {
+      auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
+      char relid[3];
+      for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
+        o2::phos::Geometry::absToRelNumbering(absId, relid);
+        mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
+      }
+    }
+  } else if (mMode == 1) { // Pedestal
+    if (hasCalibDiff) {
+      auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
+      char relid[3];
+      for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
+        o2::phos::Geometry::absToRelNumbering(absId, relid);
+        mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
         mHist2D[kChangeLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId + o2::phos::Mapping::NCHANNELS]);
       }
     }
-  } // Pedestals
-  else {
-    if (mMode == 2) { // LED
+    if (hasPedestals) {
+      auto peds = o2::framework::DataRefUtils::as<o2::framework::CCDBSerialized<o2::phos::Pedestals>>(ctx.inputs().get<o2::framework::DataRef>("peds"));
+      char relid[3];
+      for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
+        o2::phos::Geometry::absToRelNumbering(absId, relid);
+        mHist2D[kValueHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], peds->getHGPedestal(absId));
+        mHist2D[kValueLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], peds->getLGPedestal(absId));
+        mHist2D[kRMSHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], peds->getHGRMS(absId));
+        mHist2D[kRMSLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], peds->getLGRMS(absId));
+      }
+    }
+  } else if (mMode == 2) { // LED
+    if (hasCalibDiff) {
       auto diff = ctx.inputs().get<gsl::span<float>>("calibdiff");
       char relid[3];
       for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
         o2::phos::Geometry::absToRelNumbering(absId, relid);
         mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
       }
-    } // LED, bad map
-    else {
-      if (mMode == 3) { // L1phase
-        auto vec = ctx.inputs().get<gsl::span<unsigned int>>("l1phase");
-        for (short it = 0; it < vec.size(); it++) {
-          mHist2D[kL1phase]->SetBinContent(it / 100 + 1, it % 100 + 1, float(vec[it]));
-        }
+    }
+    if (hasCalibPars) {
+      auto calibParams = o2::framework::DataRefUtils::as<o2::framework::CCDBSerialized<o2::phos::CalibParams>>(ctx.inputs().get<o2::framework::DataRef>("calibpars"));
+      char relid[3];
+      for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
+        o2::phos::Geometry::absToRelNumbering(absId, relid);
+        mHist2D[kValueHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], calibParams->getHGLGRatio(absId));
+      }
+    }
+
+  } else if (mMode == 3) { // L1phase
+    if (hasL1phase) {
+      auto vec = ctx.inputs().get<gsl::span<unsigned int>>("l1phase");
+      for (short it = 0; it < vec.size(); it++) {
+        mHist2D[kL1phase]->SetBinContent(it / 100 + 1, it % 100 + 1, float(vec[it]));
       }
     }
   }
-} // function monitor data
+}
 
 void CalibQcTask::endOfCycle()
 {

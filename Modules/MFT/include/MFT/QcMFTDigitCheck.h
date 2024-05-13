@@ -55,6 +55,19 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
   void createMaskedChipsNames();
   void createOutsideAccNames();
 
+  // noise scan check
+
+  void readNoiseMap(std::shared_ptr<MonitorObject> mo, long timestamp);
+  int mNoiseScan;
+  int mNCycles;
+  int mNCyclesNoiseMap;
+  int mDissNoisy;
+  int mNewNoisy;
+  int mTotalNoisy;
+  std::vector<int> mNoisyPix;
+  std::vector<int> mOldNoisyPix;
+  std::vector<int> mNewNoisyPix;
+
   // to form the name of the masked chips histograms
   int mHalf[936] = { 0 };
   int mDisk[936] = { 0 };

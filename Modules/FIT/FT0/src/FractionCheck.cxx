@@ -24,7 +24,8 @@
 #include <TLine.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "Common/Utils.h"
 using namespace std;
 using namespace o2::quality_control;
@@ -93,20 +94,20 @@ Quality FractionCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         const bool isWarning = ((h->GetBinContent(chId + 1) < mThreshWarning && !mIsInversedThresholds) || (h->GetBinContent(chId + 1) > mThreshWarning && mIsInversedThresholds));
         if (isError) {
           if (result.isBetterThan(Quality::Bad))
-            // result = Quality::Bad; // setting quality like this clears reasons
+            // result = Quality::Bad; // setting quality like this clears flags
             result.set(Quality::Bad);
           mNumErrors++;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "CFD eff. < \"Error\" threshold in channel " + std::to_string(chId));
           // no need to check medium threshold
-          // but don't `break` because we want to add other reasons
+          // but don't `break` because we want to add other flags
           continue;
         } else if (isWarning) {
           if (result.isBetterThan(Quality::Medium))
             result.set(Quality::Medium);
           mNumWarnings++;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "CFD eff. < \"Warning\" threshold in channel " + std::to_string(chId));
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "CFD eff. < \"Warning\" threshold in channel " + std::to_string(chId));
         }
       }
     }
@@ -140,11 +141,11 @@ void FractionCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       msg->AddText(">> Quality::Good <<");
       msg->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      auto reasons = checkResult.getReasons();
+      auto flags = checkResult.getFlags();
       msg->SetFillColor(kRed);
       msg->AddText(">> Quality::Bad <<");
     } else if (checkResult == Quality::Medium) {
-      auto reasons = checkResult.getReasons();
+      auto flags = checkResult.getFlags();
       msg->SetFillColor(kOrange);
       msg->AddText(">> Quality::Medium <<");
     } else if (checkResult == Quality::Null) {

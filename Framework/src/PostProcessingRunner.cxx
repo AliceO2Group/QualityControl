@@ -183,7 +183,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
     ILOG(Debug, Devel) << "Registering pp task to BookKeeping" << ENDM;
     try {
-      Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_POSTPROCESSING, "");
+      Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bkp::DplProcessType::QC_POSTPROCESSING, "");
     } catch (std::runtime_error& error) {
       ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
     }

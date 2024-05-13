@@ -114,12 +114,12 @@ class QualityObject : public TObject
   /// \return A string containing the path.
   std::string getPath() const;
 
-  /// \brief Associate the Quality with a new reason and an optional comment
+  /// \brief Associate the Quality with a new flag and an optional comment
   /// \return reference to *this
-  QualityObject& addReason(const FlagReason& reason, std::string comment = "");
+  QualityObject& addFlag(const FlagType& flag, std::string comment = "");
   /// \brief Get the reasons with associated comments for the Quality
   /// \return reason, if exists
-  const CommentedFlagReasons& getReasons() const;
+  const CommentedFlagTypes& getFlags() const;
 
   const std::string& getDetectorName() const;
   void setDetectorName(const std::string& detectorName);

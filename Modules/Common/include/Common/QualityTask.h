@@ -71,7 +71,6 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
     static std::string trendName(const std::string& groupName, const std::string& qualityName);
 
     std::unique_ptr<TGraph> mGraph;
-    std::unique_ptr<TGraph> mGraphHist;
     std::array<std::unique_ptr<TText>, 4> mLabels;
   };
 

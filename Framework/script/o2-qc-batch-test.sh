@@ -69,7 +69,7 @@ o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_
 code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/example/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_obj${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the QC Task could not be found."
-  delete_data
+#  delete_data
   exit 3
 fi
 # try to check that we got a valid root object
@@ -94,14 +94,14 @@ code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/mw/exa
 if (( $code != 200 )); then
   echo "Error, monitor object of the QC Task could not be found."
   delete_data
-  exit 3
+  exit 6
 fi
 # try to check that we got a valid root object
 root -b -l -q -e 'TFile f("/tmp/batch_test_obj_mw${UNIQUE_ID}.root"); f.Print();'
 if (( $? != 0 )); then
   echo "Error, monitor object of the QC Task is invalid."
   delete_data
-  exit 4
+  exit 7
 fi
 # try if it is a non empty histogram
 entries=`root -b -l -q -e 'TFile f("/tmp/batch_test_obj_mw${UNIQUE_ID}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
@@ -109,7 +109,7 @@ if [ $entries -lt 225 ] 2>/dev/null
 then
   echo "The histogram of the QC Task has less than 225 (75%) of expected samples."
   delete_data
-  exit 5
+  exit 8
 fi
 
 # check QualityObject
@@ -118,7 +118,7 @@ code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/BatchTestCheck${UNIQUE_ID}/80000
 if (( $code != 200 )); then
   echo "Error, quality object of the QC Task could not be found."
   delete_data
-  exit 6
+  exit 9
 fi
 
 echo "Batch test passed."

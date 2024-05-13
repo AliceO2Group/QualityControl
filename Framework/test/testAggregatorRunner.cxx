@@ -181,7 +181,7 @@ TEST_CASE("test_aggregator_activity_propagation")
   REQUIRE(myAggregatorCConfig != aggregatorConfigs.end());
   auto aggregator = make_shared<Aggregator>(*myAggregatorCConfig);
   aggregator->init();
-  Activity defaultActivity{ 123, 1, "LHC34b", "apass4", "qc", { 34, 54 }, "proton - mouton" };
+  Activity defaultActivity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 34, 54 }, "proton - mouton" };
 
   // empty list -> Good
   QualityObjectsMapType qoMap;
@@ -192,14 +192,14 @@ TEST_CASE("test_aggregator_activity_propagation")
 
   // Add dataSizeCheck1/q1=good and dataSizeCheck1/q2=medium -> return medium
   auto qo1 = make_shared<QualityObject>(Quality::Good, "dataSizeCheck");
-  qo1->setActivity({ 123, 1, "LHC34b", "apass4", "qc", { 100, 200 }, "proton - mouton" });
+  qo1->setActivity({ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 100, 200 }, "proton - mouton" });
   auto qo2 = make_shared<QualityObject>(Quality::Medium, "someNumbersCheck");
-  qo2->setActivity({ 123, 1, "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+  qo2->setActivity({ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
   qoMap["dataSizeCheck"] = qo1;
   qoMap["someNumbersCheck"] = qo2;
 
   result = aggregator->aggregate(qoMap);
   REQUIRE(result.size() == 2);
-  CHECK(result[0]->getActivity() == Activity{ 123, 1, "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
-  CHECK(result[1]->getActivity() == Activity{ 123, 1, "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+  CHECK(result[0]->getActivity() == Activity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+  CHECK(result[1]->getActivity() == Activity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
 }

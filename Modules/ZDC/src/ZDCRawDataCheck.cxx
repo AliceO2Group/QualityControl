@@ -32,7 +32,8 @@
 #include <TList.h>
 #include <TLine.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <string>
 
@@ -167,14 +168,14 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
         if (mVectHistoCheck.at(ih).numW > 0) {
           result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringW + "have a value in the medium range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is medium because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringW + "have a value in the medium range");
           mVectHistoCheck.at(ih).quality = 2;
         }
         if (mVectHistoCheck.at(ih).numE > 0) {
           result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringE + "have a value in the bad range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is bad because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringE + "have a value in the bad range");
           mVectHistoCheck.at(ih).quality = 3;
         }
       }

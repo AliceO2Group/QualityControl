@@ -9,32 +9,47 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+///
+/// \file   TracksCheck.h
+/// \author Andrea Ferrero
+///
+
 #ifndef QC_MODULE_MUON_COMMON_TRACKS_CHECK_H
 #define QC_MODULE_MUON_COMMON_TRACKS_CHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include <vector>
+#include <unordered_map>
 
 namespace o2::quality_control_modules::muon
 {
 
+/// \brief  Check the number and kinematical distribution of tracks
+///
+/// \author Andrea Ferrero
 class TracksCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
-  TracksCheck();
-  ~TracksCheck() override;
+  /// Default constructor
+  TracksCheck() = default;
+  /// Destructor
+  ~TracksCheck() override = default;
 
   void configure() override;
-
-  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMa) override;
-
+  void startOfActivity(const Activity& activity) override;
+  void endOfActivity(const Activity& activity) override;
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
  private:
-  std::vector<int> mBunchCrossings;
+  std::unordered_map<std::string, Quality> mQualities;
+  int mMinTracksPerTF{ 50 };
+  int mMaxTracksPerTF{ 500 };
+  float mMaxDeltaPhi{ 0.1 };
+  float mMaxChargeAsymmetry{ 0.1 };
+  float mMarkerSize{ 1.5 };
 
-  ClassDefOverride(TracksCheck, 1);
+  ClassDefOverride(TracksCheck, 2);
 };
 } // namespace o2::quality_control_modules::muon
 
