@@ -133,12 +133,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
-      std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
-      if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
-        cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
-      } else { // new style
-        cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
-      }
+      auto cycleDurationsMultiplied = TaskRunnerFactory::getSanitizedCycleDurations(infrastructureSpec.common, taskSpec);
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
@@ -271,12 +266,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
-      std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
-      if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
-        cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
-      } else { // new style
-        cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
-      }
+      auto cycleDurationsMultiplied = TaskRunnerFactory::getSanitizedCycleDurations(infrastructureSpec.common, taskSpec);
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
