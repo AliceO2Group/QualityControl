@@ -109,7 +109,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   }
 
   // cycle duration
-  auto multipleCycleDurations = sanitizeCycleDurations(globalConfig, taskSpec);
+  auto multipleCycleDurations = getSanitizedCycleDurations(globalConfig, taskSpec);
   inputs.emplace_back(createTimerInputSpec(globalConfig, multipleCycleDurations, taskSpec.detectorName, taskSpec.taskName));
 
   static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
