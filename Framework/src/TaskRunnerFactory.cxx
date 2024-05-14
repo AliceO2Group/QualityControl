@@ -61,7 +61,7 @@ o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfi
   return newTask;
 }
 
-std::vector<std::pair<size_t, size_t>> TaskRunnerFactory::sanitizeCycleDurations(const CommonSpec& globalConfig, const TaskSpec& taskSpec)
+std::vector<std::pair<size_t, size_t>> TaskRunnerFactory::getSanitizedCycleDurations(const CommonSpec& globalConfig, const TaskSpec& taskSpec)
 {
   // Two ways of configuring, incompatible.
   // 1. simple, old, way: cycleDurationSeconds is the duration in seconds for all cycles
