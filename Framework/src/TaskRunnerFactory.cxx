@@ -61,6 +61,39 @@ o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfi
   return newTask;
 }
 
+std::vector<std::pair<size_t, size_t>> TaskRunnerFactory::sanitizeCycleDurations(const CommonSpec& globalConfig, const TaskSpec& taskSpec)
+{
+  // Two ways of configuring, incompatible.
+  // 1. simple, old, way: cycleDurationSeconds is the duration in seconds for all cycles
+  // 2. complex, new, way: cycleDurations: a list of tuples specifying different durations to be applied for a certain time
+
+  // First make sure that we have one and only one cycle duration definition
+  if (taskSpec.cycleDurationSeconds > 0 && taskSpec.multipleCycleDurations.size() > 0) {
+    throw std::runtime_error("Both cycleDurationSeconds and cycleDurations have been defined for task '" + taskSpec.taskName + "'. Pick one. Sheepishly bailing out.");
+  }
+  if (taskSpec.cycleDurationSeconds <= 0 && taskSpec.multipleCycleDurations.size() == 0) {
+    throw std::runtime_error("Neither cycleDurationSeconds nor cycleDurations have been defined for task '" + taskSpec.taskName + "'. Pick one. Sheepishly bailing out.");
+  }
+
+  // Convert old style into new style if needed
+  std::vector<std::pair<size_t, size_t>> multipleCycleDurations = taskSpec.multipleCycleDurations; // this is the new style
+  if (taskSpec.cycleDurationSeconds > 0) { // if it was actually the old style, then we convert it to the new style
+    multipleCycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
+  }
+
+  // Check that the durations are not below 10 seconds except when using a dummy database
+  auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
+  if (!dummyDatabaseUsed) {
+    for (auto& [cycleDuration, validity] : multipleCycleDurations) {
+      if (cycleDuration < 10) {
+        ILOG(Error, Support) << "Cycle duration is too short (" << cycleDuration << "), replaced by a duration of 10 seconds." << ENDM;
+        cycleDuration = 10;
+      }
+    }
+  }
+  return multipleCycleDurations;
+}
+
 TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig, const TaskSpec& taskSpec, std::optional<int> id, std::optional<int> resetAfterCycles)
 {
   std::string deviceName{ TaskRunner::createTaskRunnerIdString() + "-" + InfrastructureSpecReader::validateDetectorName(taskSpec.detectorName) + "-" + taskSpec.taskName };
@@ -76,19 +109,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   }
 
   // cycle duration
-  // Two ways of configuring, incompatible.
-  // 1. simple, old, way: cycleDurationSeconds is the duration in seconds for all cycles
-  // 2. complex, new, way: cycleDurations: a list of tuples specifying different durations to be applied for a certain time
-  if (taskSpec.cycleDurationSeconds > 0 && taskSpec.multipleCycleDurations.size() > 0) {
-    throw std::runtime_error("Both cycleDurationSeconds and cycleDurations have been defined for task '" + taskSpec.taskName + "'. Pick one. Sheepishly bailing out.");
-  }
-  if (taskSpec.cycleDurationSeconds <= 0 && taskSpec.multipleCycleDurations.size() == 0) {
-    throw std::runtime_error("Neither cycleDurationSeconds nor cycleDurations have been defined for task '" + taskSpec.taskName + "'. Pick one. Sheepishly bailing out.");
-  }
-  auto multipleCycleDurations = taskSpec.multipleCycleDurations; // this is the new style
-  if (taskSpec.cycleDurationSeconds > 0) {                       // if it was actually the old style, then we convert it to the new style
-    multipleCycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
-  }
+  auto multipleCycleDurations = sanitizeCycleDurations(globalConfig, taskSpec);
   inputs.emplace_back(createTimerInputSpec(globalConfig, multipleCycleDurations, taskSpec.detectorName, taskSpec.taskName));
 
   static std::unordered_map<std::string, o2::base::GRPGeomRequest::GeomRequest> const geomRequestFromString = {
@@ -179,17 +200,6 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 InputSpec TaskRunnerFactory::createTimerInputSpec(const CommonSpec& globalConfig, std::vector<std::pair<size_t, size_t>>& cycleDurations,
                                                   const std::string& detectorName, const std::string& taskName)
 {
-  // This is to check that the durations are not below 10 seconds except when using a dummy database
-  auto dummyDatabaseUsed = globalConfig.database.count("implementation") > 0 && globalConfig.database.at("implementation") == "Dummy";
-  if (!dummyDatabaseUsed) {
-    for (auto& [cycleDuration, validity] : cycleDurations) {
-      if (cycleDuration < 10) {
-        ILOG(Error, Support) << "Cycle duration is too short (" << cycleDuration << "), replaced by a duration of 10 seconds." << ENDM;
-        cycleDuration = 10;
-      }
-    }
-  }
-
   // Create the TimerSpec for cycleDurations
   std::vector<TimerSpec> timers;
   for (auto& [cycleDuration, period] : cycleDurations) {

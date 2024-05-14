@@ -58,6 +58,9 @@ class TaskRunnerFactory
   /// \param policies - completion policies vector
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
   static framework::InputSpec createTimerInputSpec(const CommonSpec& globalConfig, std::vector<std::pair<size_t, size_t>>& cycleDurations, const std::string& detectorName, const std::string& taskName);
+
+  /// \brief Extracts and sanitize the cycle duration of the task
+  static std::vector<std::pair<size_t, size_t>> sanitizeCycleDurations(const CommonSpec& globalConfig, const TaskSpec& taskSpec);
 };
 
 } // namespace o2::quality_control::core
