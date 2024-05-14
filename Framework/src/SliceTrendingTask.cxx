@@ -49,10 +49,11 @@ void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef servic
 {
   // removing leftovers from any previous runs
   mTrend.reset();
-  for (auto [name, object] : mPlots) {
-    getObjectsManager()->stopPublishing(object);
+  for (auto& [name, object] : mPlots) {
     delete object;
+    object = nullptr;
   }
+
   mPlots.clear();
   mReductors.clear();
   mSources.clear();
@@ -105,7 +106,7 @@ void SliceTrendingTask::initialize(Trigger, framework::ServiceRegistryRef servic
   }
 
   if (mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get());
+    getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
   }
 }
 
@@ -121,8 +122,9 @@ void SliceTrendingTask::update(Trigger t, framework::ServiceRegistryRef services
 void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   if (!mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get());
+    getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
   }
+
   generatePlots();
 
   for (const auto& source : mConfig.dataSources) {
@@ -180,8 +182,8 @@ void SliceTrendingTask::generatePlots()
   for (const auto& plot : mConfig.plots) {
     // Delete the existing plots before regenerating them.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(mPlots[plot.name]);
       delete mPlots[plot.name];
+      mPlots[plot.name] = nullptr;
     }
 
     // Postprocess each pad (titles, axes, flushing buffers).
@@ -251,7 +253,7 @@ void SliceTrendingTask::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 } // void SliceTrendingTask::generatePlots()
 

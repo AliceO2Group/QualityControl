@@ -63,7 +63,7 @@ void PulseHeightPostProcessing::initialize(Trigger, framework::ServiceRegistryRe
 
     cc[sm].get()->Divide(5, 6);
 
-    getObjectsManager()->startPublishing(cc[sm].get());
+    getObjectsManager()->startPublishing(cc[sm].get(), PublicationPolicy::ThroughStop);
   }
 }
 
@@ -75,8 +75,10 @@ void PulseHeightPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 
 void PulseHeightPostProcessing::finalize(Trigger, framework::ServiceRegistryRef services)
 {
-  for (Int_t sm = 0; sm < 18; sm++)
+  for (Int_t sm = 0; sm < 18; sm++) {
     getObjectsManager()->stopPublishing(cc[sm].get());
+    cc[sm].reset();
+  }
 }
 
 void PulseHeightPostProcessing::PlotPulseHeightPerChamber()

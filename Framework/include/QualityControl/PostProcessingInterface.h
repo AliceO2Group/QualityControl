@@ -48,7 +48,7 @@ class PostProcessingInterface : public core::UserCodeInterface
 
   /// \brief Configuration of a post-processing task.
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
-  /// \param config   ConfigurationInterface with prefix set to ""
+  /// \param config boost property with the full QC configuration file
   virtual void configure(const boost::property_tree::ptree& config);
 
   /// \brief Initialization of a post-processing task.

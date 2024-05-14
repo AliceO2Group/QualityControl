@@ -104,7 +104,7 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
     index += 1;
   }
 
-  getObjectsManager()->startPublishing(mCanvas.get());
+  getObjectsManager()->startPublishing(mCanvas.get(), PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________

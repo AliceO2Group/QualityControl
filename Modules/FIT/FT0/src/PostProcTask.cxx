@@ -132,10 +132,10 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mMapChTrgNames = helperFIT.mMapPMbits;
   mMapDigitTrgNames = HelperTrgFIT::sMapTrgBits;
   mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFT0;
-  mHistChDataNegBits = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames);
-  mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), "", "Triggers", "FT0 Triggers from TCM", mMapDigitTrgNames);
-  mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "OutOfBunchColl_BCvsTrg", "FT0 BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);
-  mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);
+  mHistChDataNegBits = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames);
+  mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers", "FT0 Triggers from TCM", mMapDigitTrgNames);
+  mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "OutOfBunchColl_BCvsTrg", "FT0 BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);
+  mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames);
 
   for (const auto& entry : mMapDigitTrgNames) {
     // depends on triggers set to bits 0-N
@@ -143,22 +143,22 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       continue;
     auto pairHistBC = mMapTrgHistBC.insert({ entry.first, new TH1D(Form("BC_%s", entry.second.c_str()), Form("BC for %s trigger;BC;counts;", entry.second.c_str()), sBCperOrbit, 0, sBCperOrbit) });
     if (pairHistBC.second) {
-      getObjectsManager()->startPublishing(pairHistBC.first->second);
+      getObjectsManager()->startPublishing(pairHistBC.first->second, quality_control::core::PublicationPolicy::ThroughStop);
     }
   }
   mHistTimeInWindow = std::make_unique<TH1F>("TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "FT0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "CFD_efficiency", "FT0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 
-  getObjectsManager()->startPublishing(mHistTimeInWindow.get());
+  getObjectsManager()->startPublishing(mHistTimeInWindow.get(), quality_control::core::PublicationPolicy::ThroughStop);
 
-  getObjectsManager()->startPublishing(mRateOrA.get());
-  getObjectsManager()->startPublishing(mRateOrC.get());
-  getObjectsManager()->startPublishing(mRateVertex.get());
-  getObjectsManager()->startPublishing(mRateCentral.get());
-  getObjectsManager()->startPublishing(mRateSemiCentral.get());
-  // getObjectsManager()->startPublishing(mRatesCanv.get());
-  getObjectsManager()->startPublishing(mAmpl);
-  getObjectsManager()->startPublishing(mTime);
+  getObjectsManager()->startPublishing(mRateOrA.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateOrC.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateVertex.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateCentral.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateSemiCentral.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  // getObjectsManager()->startPublishing(mRatesCanv.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mAmpl, quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mTime, quality_control::core::PublicationPolicy::ThroughStop);
   /*
     for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
       TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
@@ -168,8 +168,8 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   */
 
-  mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), "", "ChannelID_outOfBC", "FT0 ChannelID, out of bunch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FT0 SW + HW only to validated triggers fraction", mMapBasicTrgBits);
+  mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "ChannelID_outOfBC", "FT0 ChannelID, out of bunch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "FT0 SW + HW only to validated triggers fraction", mMapBasicTrgBits);
 }
 
 void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
