@@ -77,7 +77,7 @@ std::vector<std::pair<size_t, size_t>> TaskRunnerFactory::sanitizeCycleDurations
 
   // Convert old style into new style if needed
   std::vector<std::pair<size_t, size_t>> multipleCycleDurations = taskSpec.multipleCycleDurations; // this is the new style
-  if (taskSpec.cycleDurationSeconds > 0) { // if it was actually the old style, then we convert it to the new style
+  if (taskSpec.cycleDurationSeconds > 0) {                                                         // if it was actually the old style, then we convert it to the new style
     multipleCycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
   }
 
