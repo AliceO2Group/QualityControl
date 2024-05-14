@@ -82,6 +82,9 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   if (taskSpec.cycleDurationSeconds > 0 && taskSpec.multipleCycleDurations.size() > 0) {
     throw std::runtime_error("Both cycleDurationSeconds and cycleDurations have been defined for task '" + taskSpec.taskName + "'. Pick one. Sheepishly bailing out.");
   }
+  if (taskSpec.cycleDurationSeconds <= 0 && taskSpec.multipleCycleDurations.size() == 0) {
+    throw std::runtime_error("Neither cycleDurationSeconds nor cycleDurations have been defined for task '" + taskSpec.taskName + "'. Pick one. Sheepishly bailing out.");
+  }
   auto multipleCycleDurations = taskSpec.multipleCycleDurations; // this is the new style
   if (taskSpec.cycleDurationSeconds > 0) {                       // if it was actually the old style, then we convert it to the new style
     multipleCycleDurations = { { taskSpec.cycleDurationSeconds, 1 } };
