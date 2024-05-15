@@ -61,12 +61,7 @@ T computeNumericalActivityField(framework::ServiceRegistryRef services, const st
   return result;
 }
 
-std::string computeStringActivityField(framework::ServiceRegistryRef services, const std::string& name, const std::string& fallBack)
-{
-  auto property = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name, fallBack);
-  ILOG(Info, Devel) << "Got this property '" << name << "' from RawDeviceService (fallback was " << fallBack << ") : '" << property << "'" << ENDM;
-  return property;
-}
+std::string computeStringActivityField(framework::ServiceRegistryRef services, const std::string& name, const std::string& fallBack);
 
 std::string_view translateIntegerRunType(const std::string& runType);
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity);

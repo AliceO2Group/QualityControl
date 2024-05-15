@@ -84,6 +84,13 @@ std::string_view translateIntegerRunType(const std::string& runType)
   return runType;
 }
 
+std::string computeStringActivityField(framework::ServiceRegistryRef services, const std::string& name, const std::string& fallBack)
+{
+  auto property = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name, fallBack);
+  ILOG(Info, Devel) << "Got this property '" << name << "' from RawDeviceService (fallback was " << fallBack << ") : '" << property << "'" << ENDM;
+  return property;
+}
+
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
   // for a complete list of the properties provided by ECS, see here: https://github.com/AliceO2Group/Control/blob/master/docs/handbook/configuration.md#variables-pushed-to-controlled-tasks
