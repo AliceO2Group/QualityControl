@@ -47,7 +47,7 @@ T computeNumericalActivityField(framework::ServiceRegistryRef services, const st
 
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
-    ILOG(Info, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
+    ILOG(Info, Devel) << "Got this property '" << name << "' from RawDeviceService: '" << temp << "'" << ENDM;
     result = boost::lexical_cast<T>(temp);
   } catch (std::invalid_argument& ia) {
     ILOG(Info, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
@@ -60,6 +60,8 @@ T computeNumericalActivityField(framework::ServiceRegistryRef services, const st
   ILOG(Info, Devel) << name << " returned by computeActivityField (default) : " << result << ENDM;
   return result;
 }
+
+std::string computeStringActivityField(framework::ServiceRegistryRef services, const std::string& name, const std::string& fallBack);
 
 std::string_view translateIntegerRunType(const std::string& runType);
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity);
