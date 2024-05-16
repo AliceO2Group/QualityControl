@@ -121,6 +121,8 @@ class RawTask final : public TaskInterface
   std::unordered_map<EventType, TH1*> mMinBunchRawAmplFull;               ///< Min Raw amplitude in whole EMCAL and DCAL
   std::unordered_map<EventType, TH1*> mRawAmplMinEMCAL_tot;               ///< Min Raw amplitude in whole EMCAL
   std::unordered_map<EventType, TH1*> mRawAmplMinDCAL_tot;                ///< Min Raw amplitude in whole DCAL
+  std::unordered_map<EventType, TH2*> mRawAmpMinSM;                       ///< Min Raw amplitude per Supermodule
+  std::unordered_map<EventType, TH2*> mRawAmpMinFEC;                      ///< Min Raw amplitude per FEC
   std::array<TH1*, 20> mFECmaxCount;                                      ///< max number of hit channels
   std::array<TH1*, 20> mFECmaxID;                                         ///< FEC ID  max number of hit channels
   std::unordered_map<EventType, TProfile2D*> mRMSBunchADCRCFull;          ///< ADC rms for EMCAL+DCAL togheter

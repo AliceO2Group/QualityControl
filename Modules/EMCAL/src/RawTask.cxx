@@ -143,6 +143,13 @@ RawTask::~RawTask()
       delete h;
     }
   }
+
+  for (auto& histos : mRawAmpMinSM) {
+    delete histos.second;
+  }
+  for (auto& histos : mRawAmpMinFEC) {
+    delete histos.second;
+  }
 }
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -307,27 +314,35 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplMinRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplMinRC); // markus/martin full emcal not so big
 
-    TH1D* histosRawMinFull;
-    TH1D* histosRawMinEMCAL;
-    TH1D* histosRawMinDCAL;
-
-    histosRawMinFull = new TH1D(Form("BunchMinRawAmplitudeFull_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL+DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
+    TH1* histosRawMinFull = new TH1D(Form("BunchMinRawAmplitudeFull_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL+DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinFull->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinFull->GetYaxis()->SetTitle("Counts");
     histosRawMinFull->SetStats(0);
     getObjectsManager()->startPublishing(histosRawMinFull);
 
-    histosRawMinEMCAL = new TH1D(Form("BunchMinRawAmplitudeEMCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
+    TH1* histosRawMinEMCAL = new TH1D(Form("BunchMinRawAmplitudeEMCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinEMCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinEMCAL->GetYaxis()->SetTitle("Counts");
     histosRawMinEMCAL->SetStats(0);
     getObjectsManager()->startPublishing(histosRawMinEMCAL);
 
-    histosRawMinDCAL = new TH1D(Form("BunchMinRawAmplitudeDCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
+    TH1* histosRawMinDCAL = new TH1D(Form("BunchMinRawAmplitudeDCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinDCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinDCAL->GetYaxis()->SetTitle("Counts");
     histosRawMinDCAL->SetStats(0);
     getObjectsManager()->startPublishing(histosRawMinDCAL);
+
+    TH2* histosRawMinSM = new TH2D(Form("BunchMinRawAmplitudeSM_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude per supermodule (%s)", histoStr[trg].Data()), 100, 0., 100., 20, -0.5, 19.5);
+    histosRawMinSM->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
+    histosRawMinSM->GetYaxis()->SetTitle("Supermodule ID");
+    histosRawMinSM->SetStats(0);
+    getObjectsManager()->startPublishing(histosRawMinSM);
+
+    TH2* histosRawMinFEC = new TH2D(Form("BunchMinRawAmplitudeFEC_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude per FEC (%s)", histoStr[trg].Data()), 100, 0., 100., 800, -0.5, 799.5);
+    histosRawMinFEC->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
+    histosRawMinFEC->GetYaxis()->SetTitle("FEC ID");
+    histosRawMinFEC->SetStats(0);
+    getObjectsManager()->startPublishing(histosRawMinFEC);
 
     std::array<TH1*, 20> histosMinBunchAmpSM;
     std::array<TH1*, 20> histosMaxBunchAmpSM;
@@ -339,7 +354,6 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     std::array<TProfile2D*, 20> histosMinChannelRawAmpRC;
 
     for (auto ism = 0; ism < 20; ism++) {
-
       histosMaxSMAmpSM[ism] = new TH1F(Form("SMMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMaxSMAmpSM[ism]->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
       histosMaxSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
@@ -377,6 +391,9 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mMinBunchRawAmplFull[triggers[trg]] = histosRawMinFull;
     mRawAmplMinEMCAL_tot[triggers[trg]] = histosRawMinEMCAL;
     mRawAmplMinDCAL_tot[triggers[trg]] = histosRawMinDCAL;
+
+    mRawAmpMinSM[triggers[trg]] = histosRawMinSM;
+    mRawAmpMinFEC[triggers[trg]] = histosRawMinFEC;
 
   } // loop trigger case
 }
@@ -622,6 +639,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           fecIndex = chan.getFECIndex();
           branchIndex = chan.getBranchIndex();
           fecID = mMappings->getFEEForChannelInDDL(feeID, fecIndex, branchIndex);
+          auto globalFecID = supermoduleID * NFEESM + fecID;
           fecMaxChannelsEvent->second[supermoduleID][fecID]++;
 
           Short_t maxADC = 0;
@@ -652,6 +670,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
+            mRawAmpMinFEC[evtype]->Fill(minADCbunch, globalFecID);
+            mRawAmpMinSM[evtype]->Fill(minADCbunch, supermoduleID);       // min for each cell --> for for expert only
             mMinBunchRawAmplSM[evtype][supermoduleID]->Fill(minADCbunch); // min for each cell --> for for expert only
             mMinBunchRawAmplFull[evtype]->Fill(minADCbunch);              // shifter
             if (supermoduleID < 12)
@@ -678,8 +698,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (maxADC > thresholdMaxADCocc)
             mMaxChannelADCRCFull[evtype]->Fill(globCol, globRow, maxADC); // for shifter
 
-          if (minADC < minADCSMEvent->second[supermoduleID])
+          if (minADC < minADCSMEvent->second[supermoduleID]) {
             minADCSMEvent->second[supermoduleID] = minADC;
+          }
           // if (minADC > thresholdMinADCocc)
           // mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
           if (minADC > thresholdMinADCocc)
@@ -721,8 +742,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     bool isPhysTrigger = triggertype & o2::trigger::PhT;
     EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
     for (int ism = 0; ism < NUMBERSM; ism++) {
-      if (maxadc.second[ism] == 0)
+      if (maxadc.second[ism] == 0) {
         continue;
+      }
       mMaxSMRawAmplSM[evtype][ism]->Fill(maxadc.second[ism]); // max in the event for shifter
     }
   }
@@ -732,9 +754,11 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     bool isPhysTrigger = triggertype & o2::trigger::PhT;
     EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
     for (int ism = 0; ism < NUMBERSM; ism++) {
-      if (minadc.second[ism] == SHRT_MAX)
+      auto smminadc = minadc.second[ism];
+      if (smminadc == SHRT_MAX) {
         continue;
-      mMinSMRawAmplSM[evtype][ism]->Fill(minadc.second[ism]); // max in the event (not for shifter)
+      }
+      mMinSMRawAmplSM[evtype][ism]->Fill(smminadc);
     }
   }
   // Same for other cached values
@@ -767,6 +791,8 @@ void RawTask::reset()
     mMinBunchRawAmplFull[trg]->Reset();
     mRawAmplMinEMCAL_tot[trg]->Reset();
     mRawAmplMinDCAL_tot[trg]->Reset();
+    mRawAmpMinSM[trg]->Reset();
+    mRawAmpMinFEC[trg]->Reset();
     for (Int_t ism = 0; ism < 20; ism++) {
       mMaxSMRawAmplSM[trg][ism]->Reset();
       mMinSMRawAmplSM[trg][ism]->Reset();
