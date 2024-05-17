@@ -24,7 +24,7 @@
 #include <Framework/InputRecordWalker.h>
 #include <QualityControl/stringUtils.h>
 
-using matchType = o2::globaltracking::MatchITSTPCQC::matchType;
+using matchType = o2::gloqc::MatchITSTPCQC::matchType;
 
 namespace o2::quality_control_modules::glo
 {
@@ -98,6 +98,29 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     mMatchITSTPCQC.setEtaCut(atof(param->second.c_str()));
   }
 
+  ///////////////////////////////   Options for K0    ////////////////////////////////
+  if (auto param = mCustomParameters.find("doK0QC"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - doK0QC (= do K0 QC): " << param->second << ENDM;
+    mMatchITSTPCQC.setDoK0QC(o2::quality_control::core::decodeBool(param->second));
+  }
+
+  if (auto param = mCustomParameters.find("trackSourcesK0"); param != mCustomParameters.end()) {
+    mMatchITSTPCQC.setTrkSources(o2::dataformats::GlobalTrackID::getSourcesMask(param->second));
+  }
+
+  if (auto param = mCustomParameters.find("maxK0Eta"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - maxK0Eta (for K0 selection): " << param->second << ENDM;
+    mMatchITSTPCQC.setMaxK0Eta(atof(param->second.c_str()));
+  }
+  if (auto param = mCustomParameters.find("refitK0"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - refitK0 ( enable refit K0s): " << param->second << ENDM;
+    mMatchITSTPCQC.setRefitK0(o2::quality_control::core::decodeBool(param->second));
+  }
+  if (auto param = mCustomParameters.find("cutK0Mass"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - cutK0Mass (cut on the distance to the PDG mass): " << param->second << ENDM;
+    mMatchITSTPCQC.setCutK0Mass(atof(param->second.c_str()));
+  }
+
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
   mMatchITSTPCQC.publishHistograms(getObjectsManager());
@@ -116,6 +139,8 @@ void ITSTPCMatchingTask::startOfCycle()
 
 void ITSTPCMatchingTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+
+  ILOG(Debug) << "********** Starting monitoring" << ENDM;
   mMatchITSTPCQC.run(ctx);
 }
 
@@ -127,7 +152,7 @@ void ITSTPCMatchingTask::endOfCycle()
   // Sync Mode
   if (common::getFromConfig(mCustomParameters, "isSync", false)) {
     { // Pt
-      auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(globaltracking::MatchITSTPCQC::ITS);
+      auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS);
       mHEffPt.reset();
       mHEffPt.reset(dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist")));
       if (mHEffPt) {
@@ -141,7 +166,7 @@ void ITSTPCMatchingTask::endOfCycle()
     }
 
     { // Eta
-      auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(globaltracking::MatchITSTPCQC::ITS);
+      auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS);
       mHEffEta.reset();
       mHEffEta.reset(dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist")));
       if (mHEffEta) {
@@ -154,7 +179,7 @@ void ITSTPCMatchingTask::endOfCycle()
     }
 
     { // Phi
-      auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(globaltracking::MatchITSTPCQC::ITS);
+      auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(gloqc::MatchITSTPCQC::ITS);
       mHEffPhi.reset();
       mHEffPhi.reset(dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist")));
       if (mHEffPhi) {
