@@ -18,6 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
 
 #include <Rtypes.h>
 #include <TH1.h>
@@ -488,56 +489,23 @@ void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
 {
   mActivity = make_shared<Activity>(activity);
 
-  // Casting function with error handling
-  auto ccast = []<typename T>(T& p, const std::string& par) -> void {
-    try {
-      if constexpr (std::is_floating_point_v<T>) {
-        p = static_cast<T>(std::stof(par));
-      } else if constexpr (std::is_integral_v<T>) {
-        if (par != "true" && par != "false") {
-          p = static_cast<T>(std::stoi(par));
-        } else {
-          p = par == "true";
-        }
-      } else {
-        p = static_cast<T>(par);
-      }
-    } catch (std::exception& err) {
-      ILOG(Error) << "Cannot cast parameter in config file " << par << " " << err.what() << "'; using default..." << ENDM;
-    }
-  };
-
-  // Parse a generic parameter
-  auto parseParam = [&]<typename T>(T& p, const std::string& name, const std::string& def) -> void {
-    std::string parameter;
-    if (auto param = mCustomParameters.atOptional(name, activity)) {
-      parameter = param.value();
-    } else {
-      parameter = mCustomParameters.atOrDefaultValue(name, def);
-    }
-    ccast(p, parameter);
-  };
-
-  // Pt
-  parseParam(mShowPt, "showPt", "true");
+  mShowPt = common::getFromExtendedConfig(activity, mCustomParameters, "showPt", true);
   if (mShowPt) {
-    parseParam(mThresholdPt, "thresholdPt", "0.5");
-    parseParam(mMinPt, "minPt", "1.0");
-    parseParam(mMaxPt, "maxPt", "1.999");
+    mThresholdPt = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdPt", 0.5f);
+    mMinPt = common::getFromExtendedConfig(activity, mCustomParameters, "minPt", 1.0f);
+    mMaxPt = common::getFromExtendedConfig(activity, mCustomParameters, "maxPt", 1.999f);
   }
 
-  // Phi
-  parseParam(mShowPhi, "showPhi", "true");
-  if (mShowPhi) {
-    parseParam(mThresholdPhi, "thresholdPhi", "0.3");
+  mShowPhi = common::getFromExtendedConfig(activity, mCustomParameters, "showPhi", true);
+  if (mShowPt) {
+    mThresholdPhi = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdPhi", 0.3f);
   }
 
-  // Eta
-  parseParam(mShowEta, "showEta", "false");
+  mShowEta = common::getFromExtendedConfig(activity, mCustomParameters, "showEta", false);
   if (mShowEta) {
-    parseParam(mThresholdEta, "thresholdEta", "0.4");
-    parseParam(mMinEta, "minEta", "-0.8");
-    parseParam(mMaxEta, "maxEta", "0.8");
+    mThresholdEta = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdEta", 0.4f);
+    mMinEta = common::getFromExtendedConfig(activity, mCustomParameters, "minEta", -0.8f);
+    mMaxEta = common::getFromExtendedConfig(activity, mCustomParameters, "maxEta", 0.8f);
   }
 }
 
