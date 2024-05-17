@@ -56,11 +56,11 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
 
   mErrorsPlotter.reset();
   mErrorsPlotter = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/");
-  mErrorsPlotter->publish(getObjectsManager());
+  mErrorsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mErrorsPlotterOnCycle.reset();
   mErrorsPlotterOnCycle = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/LastCycle/");
-  mErrorsPlotterOnCycle->publish(getObjectsManager());
+  mErrorsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -83,11 +83,11 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
 
   mHBPacketsPlotter.reset();
   mHBPacketsPlotter = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/", mFullHistos);
-  mHBPacketsPlotter->publish(getObjectsManager());
+  mHBPacketsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mHBPacketsPlotterOnCycle.reset();
   mHBPacketsPlotterOnCycle = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/LastCycle/", mFullHistos);
-  mHBPacketsPlotterOnCycle->publish(getObjectsManager());
+  mHBPacketsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -110,11 +110,11 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
 
   mSyncStatusPlotter.reset();
   mSyncStatusPlotter = std::make_unique<FECSyncStatusPlotter>("SyncErrors/");
-  mSyncStatusPlotter->publish(getObjectsManager());
+  mSyncStatusPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mSyncStatusPlotterOnCycle.reset();
   mSyncStatusPlotterOnCycle = std::make_unique<FECSyncStatusPlotter>("SyncErrors/LastCycle/");
-  mSyncStatusPlotterOnCycle->publish(getObjectsManager());
+  mSyncStatusPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________

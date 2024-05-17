@@ -62,15 +62,15 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   // General plots, related mostly to the payload size (InputRecord, Inputs) and the numbers of RDHs and Inputs in an InputRecord.
   mInputRecordPayloadSize = new TH1F("inputRecordSize", "Total payload size per InputRecord;bytes", 128, 0, 2047);
   mInputRecordPayloadSize->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mInputRecordPayloadSize);
+  getObjectsManager()->startPublishing(mInputRecordPayloadSize, PublicationPolicy::Forever);
   mNumberInputs = new TH1F("numberInputs", "Number of inputs per InputRecords", 100, 1, 100);
-  getObjectsManager()->startPublishing(mNumberInputs);
+  getObjectsManager()->startPublishing(mNumberInputs, PublicationPolicy::Forever);
   mInputSize = new TH1F("payloadSizeInputs", "Payload size of the inputs;bytes", 128, 0, 2047);
   mInputSize->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mInputSize);
+  getObjectsManager()->startPublishing(mInputSize, PublicationPolicy::Forever);
   mNumberRDHs = new TH1F("numberRDHs", "Number of RDHs per InputRecord", 100, 1, 100);
   mNumberRDHs->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mNumberRDHs);
+  getObjectsManager()->startPublishing(mNumberRDHs, PublicationPolicy::Forever);
 
   // initialize a map for the subsystems (id, name)
   for (int i = DAQID::MINDAQ; i < DAQID::MAXDAQ + 1; i++) {
@@ -120,10 +120,10 @@ void DaqTask::endOfCycle()
   //      It might still be necessary in test runs without a proper run number.
   for (auto toBeAdded : mToBePublished) {
     if (!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[toBeAdded]->GetName())) {
-      getObjectsManager()->startPublishing(mSubSystemsTotalSizes[toBeAdded]);
+      getObjectsManager()->startPublishing(mSubSystemsTotalSizes[toBeAdded], PublicationPolicy::ThroughStop);
     }
     if (!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[toBeAdded]->GetName())) {
-      getObjectsManager()->startPublishing(mSubSystemsRdhSizes[toBeAdded]);
+      getObjectsManager()->startPublishing(mSubSystemsRdhSizes[toBeAdded], PublicationPolicy::ThroughStop);
     }
   }
 }

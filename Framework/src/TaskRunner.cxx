@@ -348,11 +348,7 @@ void TaskRunner::start(ServiceRegistryRef services)
   }
 
   try {
-    auto objectsPublishedBeforeStart = mObjectsManager->getNumberPublishedObjects();
     startOfActivity();
-    auto objectsPublishedAfterStart = mObjectsManager->getNumberPublishedObjects();
-    mNumberObjectsRegisteredAtStart = static_cast<int64_t>(objectsPublishedAfterStart) - objectsPublishedBeforeStart;
-
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
@@ -370,16 +366,7 @@ void TaskRunner::stop()
       mCycleNumber++;
       mCycleOn = false;
     }
-    auto objectsPublishedBeforeStop = mObjectsManager->getNumberPublishedObjects();
     endOfActivity();
-    auto objectsPublishedAfterStop = mObjectsManager->getNumberPublishedObjects();
-    auto numberObjectsDeregisteredAtStop = static_cast<int64_t>(objectsPublishedBeforeStop) - objectsPublishedAfterStop;
-    if (mNumberObjectsRegisteredAtStart != numberObjectsDeregisteredAtStop) {
-      ILOG(Error, Support) << "The number of objects registered at Start Of Run is not equal to the number deregistered at End Of Run "
-                           << "(" << mNumberObjectsRegisteredAtStart << " vs. " << numberObjectsDeregisteredAtStop << ")."
-                           << " This should be fixed, otherwise the QC task might crash at second Start Of Run!!!" << ENDM;
-    }
-
     mTask->reset();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
@@ -469,6 +456,7 @@ void TaskRunner::endOfActivity()
 
   mTask->endOfActivity(mObjectsManager->getActivity());
   mObjectsManager->removeAllFromServiceDiscovery();
+  mObjectsManager->stopPublishing(PublicationPolicy::ThroughStop);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send(Metric{ "qc_objects_published" }.addValue(rate, "per_second_whole_run"));
@@ -490,12 +478,12 @@ void TaskRunner::registerToBookkeeping()
   // register ourselves to the BK at the first cycle
   ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
   try {
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
     if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES")) {
       ILOG(Debug, Devel) << "O2_QC_REGISTER_IN_BK_X_TIMES set to " << gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES") << ENDM;
       int iterations = std::stoi(gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES"));
       for (int i = 1; i < iterations; i++) { // start at 1 because we already did it once
-        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
       }
     }
   } catch (std::runtime_error& error) {
@@ -597,6 +585,7 @@ int TaskRunner::publish(DataAllocator& outputs)
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
+  mObjectsManager->stopPublishing(PublicationPolicy::Once);
   return objectsPublished;
 }
 

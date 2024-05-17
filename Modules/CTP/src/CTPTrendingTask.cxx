@@ -165,8 +165,8 @@ void CTPTrendingTask::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
       delete mPlots[plot.name];
+      mPlots[plot.name] = nullptr;
     }
 
     if (index > 4 && index < 10 && mClassIndex[index - 5] == 65) { // if the class index == 65, this class is not defined in the config, so it won't be trended
@@ -222,7 +222,7 @@ void CTPTrendingTask::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
 
     index++;
   }

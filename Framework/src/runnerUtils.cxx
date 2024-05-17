@@ -16,6 +16,7 @@
 ///
 
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/stringUtils.h"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <CommonUtils/StringUtils.h>
@@ -27,6 +28,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <DataFormatsParameters/ECSDataAdapters.h>
 
 namespace o2::quality_control::core
 {
@@ -61,20 +63,46 @@ bool hasChecks(const std::string& configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
+/**
+ * If the runType is of legacy type, i.e. an integer, the corresponding string representation is returned.
+ * In case we cannot find a string representation we use "NONE".
+ * @param runType
+ */
+std::string_view translateIntegerRunType(const std::string& runType)
+{
+  // runType used to be an integer. If we find an integer in a config file, the risk is that it is translated directly to a string (2->"2").
+  // We must rather translate the integer into the corresponding run type string if at all possible.
+  if (isUnsignedInteger(runType)) {
+    try {
+      ILOG(Warning, Ops) << "Activity type was provided as an integer. A matching activity type could be found: " << parameters::GRPECS::RunTypeNames.at(std::stoi(runType)) << ". Consider using the string representation of the run type." << ENDM;
+      return parameters::GRPECS::RunTypeNames.at(std::stoi(runType));
+    } catch (std::out_of_range& exc) {
+      ILOG(Warning, Ops) << "Activity type was provided as an integer. No matching activity type could be find. Using 'NONE'." << ENDM;
+      return "NONE";
+    }
+  }
+  return runType;
+}
+
+std::string computeStringActivityField(framework::ServiceRegistryRef services, const std::string& name, const std::string& fallBack)
+{
+  auto property = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name, fallBack);
+  ILOG(Info, Devel) << "Got this property '" << name << "' from RawDeviceService (fallback was " << fallBack << ") : '" << property << "'" << ENDM;
+  return property;
+}
+
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
-  auto runNumber = computeActivityField<int>(services, "runNumber", fallbackActivity.mId);
-  auto runType = computeActivityField<int>(services, "runType", fallbackActivity.mType);
-  auto runStartTimeMs = computeActivityField<unsigned long>(services, "runStartTimeMs", fallbackActivity.mValidity.getMin());
-  auto runEndTimeMs = computeActivityField<unsigned long>(services, "runEndTimeMs", fallbackActivity.mValidity.getMax());
-  auto partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", fallbackActivity.mPartitionName);
-  auto periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhcPeriod", "");
-  if (periodName.empty()) {
-    // this how one has to get it on EPNs.
-    periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("lhc_period", fallbackActivity.mPeriodName);
-  }
-  auto fillNumber = computeActivityField<int>(services, "fillInfoFillNumber", fallbackActivity.mFillNumber);
-  auto beam_type = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("fillInfoBeamType", fallbackActivity.mBeamType);
+  // for a complete list of the properties provided by ECS, see here: https://github.com/AliceO2Group/Control/blob/master/docs/handbook/configuration.md#variables-pushed-to-controlled-tasks
+  auto runNumber = computeNumericalActivityField<int>(services, "runNumber", fallbackActivity.mId);
+  std::string runType = computeStringActivityField(services, "run_type", fallbackActivity.mType);
+  runType = translateIntegerRunType(runType);
+  auto runStartTimeMs = computeNumericalActivityField<unsigned long>(services, "run_start_time_ms", fallbackActivity.mValidity.getMin());
+  auto runEndTimeMs = computeNumericalActivityField<unsigned long>(services, "run_end_time_ms", fallbackActivity.mValidity.getMax());
+  auto partitionName = computeStringActivityField(services, "environment_id", fallbackActivity.mPartitionName);
+  auto periodName = computeStringActivityField(services, "lhc_period", fallbackActivity.mPeriodName);
+  auto fillNumber = computeNumericalActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
+  auto beam_type = computeStringActivityField(services, "fill_info_beam_type", fallbackActivity.mBeamType);
 
   Activity activity(
     runNumber,

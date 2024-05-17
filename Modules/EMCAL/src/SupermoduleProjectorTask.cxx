@@ -79,6 +79,8 @@ void SupermoduleProjectorTask::finalize(Trigger t, framework::ServiceRegistryRef
 {
   for (auto& [datasource, plot] : mCanvasHandler) {
     getObjectsManager()->stopPublishing(plot);
+    delete plot;
+    plot = nullptr;
   }
 }
 

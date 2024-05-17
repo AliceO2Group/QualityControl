@@ -51,7 +51,7 @@ void TH1FTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (int i = 0; i < histogramsNumber; i++) {
     std::string name = "histo-" + std::to_string(i);
     mHistograms.push_back(std::make_shared<TH1F>(name.c_str(), name.c_str(), binsNumber, 0, 30000));
-    getObjectsManager()->startPublishing(mHistograms.back().get());
+    getObjectsManager()->startPublishing(mHistograms.back().get(), PublicationPolicy::Forever);
   }
 }
 

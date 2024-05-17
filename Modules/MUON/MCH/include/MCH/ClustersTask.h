@@ -62,6 +62,8 @@ class ClustersTask /*final*/ : public TaskInterface
   std::unique_ptr<TH1F> mNofClustersPerTrack;       ///< number of clusters per track
   std::unique_ptr<TProfile> mClusterSizePerChamber; ///< mean cluster size per chamber
   std::unique_ptr<TProfile> mNofClustersPerChamber; ///< mean number of clusters per chamber
+  ///< distribution of the cluster size in each station separately
+  std::array<std::unique_ptr<TH1F>, 5> mClusterSizeDistributionPerStation;
 
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;

@@ -142,6 +142,7 @@ void IDCsVsSACs::update(Trigger, framework::ServiceRegistryRef)
 void IDCsVsSACs::finalize(Trigger, framework::ServiceRegistryRef)
 {
   getObjectsManager()->stopPublishing(mCompareIDC0andSAC0.get());
+  mCompareIDC0andSAC0.reset();
 }
 
 } // namespace o2::quality_control_modules::tpc

@@ -27,6 +27,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::glo
 {
@@ -88,13 +89,13 @@ void MeanVertexPostProcessing::configure(const boost::property_tree::ptree& conf
 void MeanVertexPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 {
   // publish the graphs
-  getObjectsManager()->startPublishing(mGraphX.get());
-  getObjectsManager()->startPublishing(mGraphY.get());
-  getObjectsManager()->startPublishing(mGraphZ.get());
+  getObjectsManager()->startPublishing(mGraphX.get(), PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mGraphY.get(), PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mGraphZ.get(), PublicationPolicy::ThroughStop);
 
-  getObjectsManager()->startPublishing(mGraphSigmaX.get());
-  getObjectsManager()->startPublishing(mGraphSigmaY.get());
-  getObjectsManager()->startPublishing(mGraphSigmaZ.get());
+  getObjectsManager()->startPublishing(mGraphSigmaX.get(), PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mGraphSigmaY.get(), PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mGraphSigmaZ.get(), PublicationPolicy::ThroughStop);
 
   ILOG(Info, Support) << "MeanVertexCalib post-processing: Initialization done";
 }

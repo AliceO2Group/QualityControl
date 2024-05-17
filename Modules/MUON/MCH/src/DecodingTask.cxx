@@ -176,7 +176,7 @@ void DecodingTask::decodeBuffer(gsl::span<const std::byte> buf)
   size_t bufSize = buf.size();
   size_t pageStart = 0;
   while (bufSize > pageStart) {
-    RDH* rdh = reinterpret_cast<RDH*>(const_cast<std::byte*>(&(buf[pageStart])));
+    const RDH* rdh = reinterpret_cast<const RDH*>(&(buf[pageStart]));
     auto rdhHeaderSize = o2::raw::RDHUtils::getHeaderSize(rdh);
     if (rdhHeaderSize != 64) {
       break;

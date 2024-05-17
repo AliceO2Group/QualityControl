@@ -82,9 +82,9 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // removing leftovers from any previous runs
   mTrend.reset();
-  for (auto [name, object] : mPlots) {
-    getObjectsManager()->stopPublishing(object);
+  for (auto& [name, object] : mPlots) {
     delete object;
+    object = nullptr;
   }
   mPlots.clear();
   mReductors.clear();
@@ -127,7 +127,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
   if (mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get());
+    getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
   }
 }
 
@@ -217,8 +217,8 @@ void TrendingTask::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(mPlots[plot.name]);
       delete mPlots[plot.name];
+      mPlots[plot.name] = nullptr;
     }
 
     // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
@@ -298,6 +298,6 @@ void TrendingTask::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 }

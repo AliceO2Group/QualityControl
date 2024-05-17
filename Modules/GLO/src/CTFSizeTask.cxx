@@ -14,13 +14,16 @@
 /// \author Ole Schmidt
 ///
 
+#include <fmt/core.h>
 #include <TH1F.h>
 #include <TMath.h>
 #include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
 #include "GLO/CTFSizeTask.h"
 #include <Framework/InputRecord.h>
 
 using namespace o2::detectors;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::glo
 {
@@ -63,6 +66,9 @@ void CTFSize::initialize(o2::framework::InitContext& /*ctx*/)
   mDefaultBinning[DetID::CTP] = "100, 1, 100";
   mDefaultBinning[DetID::TST] = "1, 0, 1";
 
+  std::string detList = getFromConfig<string>(mCustomParameters, "detectors", "all");
+  auto detMask = DetID::getMask(detList);
+
   constexpr int nLogBins = 100;
   float xBins[nLogBins + 1];
   float xBinLogMin = 0.f;
@@ -72,9 +78,12 @@ void CTFSize::initialize(o2::framework::InitContext& /*ctx*/)
     xBins[iBin] = TMath::Power(10, xBinLogMin + iBin * logBinWidth);
   }
   for (int iDet = 0; iDet < DetID::CTP + 1; ++iDet) {
-    mHistSizesLog[iDet] = new TH1F(Form("hSizeLog_%s", DetID::getName(iDet)), Form("%s CTF size per TF;Byte;counts", DetID::getName(iDet)), nLogBins, xBins);
-    getObjectsManager()->startPublishing(mHistSizesLog[iDet]);
-    getObjectsManager()->setDefaultDrawOptions(mHistSizesLog[iDet]->GetName(), "logx");
+    if (detMask[iDet]) {
+      mIsDetEnabled[iDet] = true;
+      mHistSizesLog[iDet] = new TH1F(Form("hSizeLog_%s", DetID::getName(iDet)), Form("%s CTF size per TF;Byte;counts", DetID::getName(iDet)), nLogBins, xBins);
+      getObjectsManager()->startPublishing(mHistSizesLog[iDet]);
+      getObjectsManager()->setDefaultDrawOptions(mHistSizesLog[iDet]->GetName(), "logx");
+    }
   }
 }
 
@@ -82,6 +91,9 @@ void CTFSize::startOfActivity(const Activity& activity)
 {
   if (!mPublishingDone) {
     for (int iDet = 0; iDet < DetID::CTP + 1; ++iDet) {
+      if (!mIsDetEnabled[iDet]) {
+        continue;
+      }
       auto binning = getBinningFromConfig(iDet, activity);
       std::string unit = (iDet == DetID::EMC || iDet == DetID::CPV) ? "B" : "kB";
       mHistSizes[iDet] = new TH1F(Form("hSize_%s", DetID::getName(iDet)), Form("%s CTF size per TF;%s;counts", DetID::getName(iDet), unit.c_str()), std::get<0>(binning), std::get<1>(binning), std::get<2>(binning));
@@ -94,14 +106,16 @@ void CTFSize::startOfActivity(const Activity& activity)
 
 void CTFSize::startOfCycle()
 {
-  // reset();
 }
 
 void CTFSize::monitorData(o2::framework::ProcessingContext& ctx)
 {
   const auto sizes = ctx.inputs().get<std::array<size_t, DetID::CTP + 1>>("ctfSizes");
   for (int iDet = 0; iDet <= DetID::CTP; ++iDet) {
-    std::cout << DetID::getName(iDet) << ": " << sizes[iDet] << std::endl;
+    ILOG(Debug, Devel) << fmt::format("Det {} : is enabled {}, data size {}", DetID::getName(iDet), mIsDetEnabled[iDet], sizes[iDet]) << ENDM;
+    if (!mIsDetEnabled[iDet]) {
+      continue;
+    }
     float conversion = (iDet == DetID::EMC || iDet == DetID::CPV) ? 1.f : 1024.f; // EMC and CPV can sent <1kB per CTF
     mHistSizes[iDet]->Fill(sizes[iDet] / conversion);
     mHistSizesLog[iDet]->Fill(sizes[iDet]);

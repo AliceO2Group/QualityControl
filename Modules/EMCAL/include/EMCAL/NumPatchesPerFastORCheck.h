@@ -20,6 +20,7 @@
 #include "QualityControl/CheckInterface.h"
 #include "EMCALBase/TriggerMappingV2.h"
 #include "EMCALBase/Geometry.h"
+#include <set>
 
 namespace o2::quality_control_modules::emcal
 {
@@ -41,19 +42,43 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
+  struct FastORNoiseInfo {
+    int mTRUIndex;
+    int mFastORIndex;
+    int mPosPhi;
+    int mPosEta;
+
+    bool operator==(const FastORNoiseInfo& other) const
+    {
+      return mTRUIndex == other.mTRUIndex && mFastORIndex == other.mFastORIndex;
+    }
+    bool operator<(const FastORNoiseInfo& other) const
+    {
+      if (mTRUIndex < other.mTRUIndex) {
+        return true;
+      }
+      if (mTRUIndex == other.mTRUIndex) {
+        return mFastORIndex < other.mFastORIndex;
+      }
+      return false;
+    }
+  };
+
  private:
   /************************************************
    * threshold cuts                               *
    ************************************************/
 
-  float mBadThresholdNumPatchesPerFastOR = 4.; ///< Bad Threshold used in the Number of Patches Per FastOR check
-  float mSigmaTSpectrum = 0.1;                 ///< TSpectrum parameter sigma
-  float mThreshTSpectrum = 0.01;               ///< TSpectrum parameter threshold
+  float mBadThresholdNumPatchesPerFastOR = 4.;    ///< Bad Threshold used in the Number of Patches Per FastOR check
+  float mMediumThresholdNumPatchesPerFastOR = 2.; ///< Bad Threshold used in the Number of Patches Per FastOR check
+  float mSigmaTSpectrum = 0.1;                    ///< TSpectrum parameter sigma
+  float mThreshTSpectrum = 0.01;                  ///< TSpectrum parameter threshold
+  int mLogLevelIL = 0;                            ///< Log level on InfoLogger
 
   o2::emcal::Geometry* mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);                                  ///< Geometry for mapping position between SM and full EMCAL
   std::unique_ptr<o2::emcal::TriggerMappingV2> mTriggerMapping = std::make_unique<o2::emcal::TriggerMappingV2>(mGeometry); ///!<! Trigger mapping
-  std::stringstream mErrorMessage;                                                                                         ///< Message to send to log for all found noisy TRUs
-  std::vector<std::pair<double, double>> mNoisyTRUPositions;                                                               ///< Positions of all found noisy TRUs
+  std::set<FastORNoiseInfo> mNoisyTRUPositions;                                                                            ///< Positions of all found noisy TRUs (bad quality)
+  std::set<FastORNoiseInfo> mHighCountTRUPositions;                                                                        ///< Positions of all FastORs with high count rate (medium Quality)
 
   ClassDefOverride(NumPatchesPerFastORCheck, 1);
 };

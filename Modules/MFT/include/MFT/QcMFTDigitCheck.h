@@ -57,7 +57,7 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
 
   // noise scan check
 
-  void readNoiseMap(std::shared_ptr<MonitorObject> mo);
+  void readNoiseMap(std::shared_ptr<MonitorObject> mo, long timestamp);
   int mNoiseScan;
   int mNCycles;
   int mNCyclesNoiseMap;

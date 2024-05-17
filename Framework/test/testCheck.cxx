@@ -158,8 +158,8 @@ TEST_CASE("test_check_activity")
     { "abcTask/test2", dummyMO("test2") }
   };
 
-  moMap["abcTask/test1"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" });
-  moMap["abcTask/test2"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 5, 15 }, "pp" });
+  moMap["abcTask/test1"]->setActivity({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" });
+  moMap["abcTask/test2"]->setActivity({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 5, 15 }, "pp" });
 
   check.init();
   check.startOfActivity(Activity());

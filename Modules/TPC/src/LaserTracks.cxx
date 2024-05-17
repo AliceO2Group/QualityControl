@@ -60,6 +60,7 @@ void LaserTracks::finalize(Trigger t, framework::ServiceRegistryRef)
   for (const auto& canvas : mLaserTracksCanvasVec) {
     getObjectsManager()->stopPublishing(canvas.get());
   }
+  mLaserTracksCanvasVec.clear();
 }
 
 } // namespace o2::quality_control_modules::tpc

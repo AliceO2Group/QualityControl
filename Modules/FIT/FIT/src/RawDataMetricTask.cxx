@@ -81,7 +81,7 @@ void RawDataMetricTask::initialize(o2::framework::InitContext& ctx)
     mBinPosUnknown = mMapFEE2binPos.size();
     mapBinPos2FeeLabel.insert({ mBinPosUnknown, "Unknown" });
     const std::string titleAxisX = useModuleNamesForBins ? "FEE module" : "EPID/LinkID";
-    mHistRawDataMetrics = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "RawDataMetric", Form("%s raw data metric statistics;%s;Raw data metric bits", mDetName.c_str(), titleAxisX.c_str()), mapBinPos2FeeLabel, o2::fit::RawDataMetric::sMapBitsToNames);
+    mHistRawDataMetrics = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "RawDataMetric", Form("%s raw data metric statistics;%s;Raw data metric bits", mDetName.c_str(), titleAxisX.c_str()), mapBinPos2FeeLabel, o2::fit::RawDataMetric::sMapBitsToNames);
   }
   //
 }

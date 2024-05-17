@@ -151,9 +151,8 @@ void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
   }
 }
 
-void QcMFTDigitCheck::readNoiseMap(std::shared_ptr<MonitorObject> mo)
+void QcMFTDigitCheck::readNoiseMap(std::shared_ptr<MonitorObject> mo, long timestamp)
 {
-  long timestamp = mo->getValidity().getMin();
   map<string, string> headers;
   map<std::string, std::string> filter;
   auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::NoiseMap>("MFT/Calib/NoiseMap/", filter, timestamp);
@@ -266,12 +265,14 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
   if (mNoiseScan == 1) {
     if (mNCycles == 1) {
-      readNoiseMap(mo);
+      long timestamp = mo->getValidity().getMin();
+      readNoiseMap(mo, timestamp);
       mOldNoisyPix = mNoisyPix;
     }
 
     if (mNCycles == mNCyclesNoiseMap) {
-      readNoiseMap(mo);
+      long timestamp = o2::ccdb::getCurrentTimestamp();
+      readNoiseMap(mo, timestamp);
       mNewNoisyPix = mNoisyPix;
 
       for (int i = 0; i < mNewNoisyPix.size(); i++) {

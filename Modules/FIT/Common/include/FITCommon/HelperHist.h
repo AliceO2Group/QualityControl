@@ -119,11 +119,11 @@ inline auto makeHist(const std::string& name, const std::string& title, BinArgs&
   return std::move(ptr);
 }
 
-template <typename HistType, typename ManagerType, typename... BinArgs>
-inline auto registerHist(ManagerType manager, const std::string& defaultDrawOption, const std::string& name, const std::string& title, BinArgs&&... binArgs)
+template <typename HistType, typename ManagerType, typename PublicationPolicyType, typename... BinArgs>
+inline auto registerHist(ManagerType manager, PublicationPolicyType publicationPolicy, const std::string& defaultDrawOption, const std::string& name, const std::string& title, BinArgs&&... binArgs)
 {
   auto ptrHist = makeHist<HistType>(name, title, std::forward<BinArgs>(binArgs)...);
-  manager->startPublishing(ptrHist.get());
+  manager->startPublishing(ptrHist.get(), publicationPolicy);
   if (defaultDrawOption.size() > 0) {
     manager->setDefaultDrawOptions(ptrHist.get(), defaultDrawOption);
   }

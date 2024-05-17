@@ -36,7 +36,7 @@ void AnalysisTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize AnalysisTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
-  getObjectsManager()->startPublishing(mHistogram);
+  getObjectsManager()->startPublishing(mHistogram, PublicationPolicy::Forever);
 }
 
 void AnalysisTask::startOfActivity(const Activity& activity)

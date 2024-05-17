@@ -35,7 +35,7 @@ namespace muonchambers
 class RatesPlotter : public HistPlotter
 {
  public:
-  RatesPlotter(std::string path, TH2F* hRef, float rateMin, float rateMax, bool fullPlots = false);
+  RatesPlotter(std::string path, TH2F* hRef, float rateMin, float rateMax, bool perStationPlots = false, bool fullPlots = false);
 
   void update(TH2F* hRates);
 
@@ -65,6 +65,8 @@ class RatesPlotter : public HistPlotter
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
 
   std::unique_ptr<TH2ElecMapReductor> mElecMapReductor;
+
+  std::unique_ptr<TH2F> mHistogramRatePerStation;
 
   std::unique_ptr<TH1F> mHistogramMeanRatePerDE;
   std::unique_ptr<TH1F> mHistogramMeanRatePerDERef;

@@ -183,7 +183,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
     ILOG(Debug, Devel) << "Registering pp task to BookKeeping" << ENDM;
     try {
-      Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_POSTPROCESSING, "");
+      Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bkp::DplProcessType::QC_POSTPROCESSING, "");
     } catch (std::runtime_error& error) {
       ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
     }
@@ -293,6 +293,7 @@ void PostProcessingRunner::doUpdate(const Trigger& trigger)
 
   if (mActivity.mValidity.isValid()) {
     mPublicationCallback(mObjectManager->getNonOwningArray());
+    mObjectManager->stopPublishing(PublicationPolicy::Once);
   } else {
     ILOG(Warning, Support) << "Objects will not be published because their validity is invalid. This should not happen." << ENDM;
   }
@@ -315,7 +316,8 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
     ILOG(Warning, Devel) << "Objects will not be published because their validity is invalid. Most likely the task's update() method was never triggered." << ENDM;
   }
   mTaskState = TaskState::Finished;
-  mObjectManager->stopPublishingAll();
+  mObjectManager->stopPublishing(PublicationPolicy::Once);
+  mObjectManager->stopPublishing(PublicationPolicy::ThroughStop);
 }
 
 const std::string& PostProcessingRunner::getID() const

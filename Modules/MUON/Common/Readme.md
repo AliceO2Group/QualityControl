@@ -156,6 +156,53 @@ Each data source in the task configuration specifies the path of the plots from 
 }
 ```
 
+## Tracks Checker
+
+The tracks checker verifies the following distributions:
+* `TracksPerTF`: it checks that the average is within configurable limits
+* `TrackPhi`: it verifies that the mean number of tracks in each quadrant of the spectrometer does not differ by more than a configurable threshold
+* `TrackQOverPt`: it verifies that the relative difference between the total number of positive and negative tracks (charge asymmetry) is below a configurable threshold
+
+#### Confguration
+
+```json
+{
+  "qc": {
+    "checks": {
+      "TracksCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muon::TracksCheck",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "minTracksPerTF": "100",
+              "maxTracksPerTF": "500",
+              "maxDeltaPhi": "0.2",
+              "maxChargeAsymmetry": "0.2",
+              "markerSize": "0.8"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "MCHTracks",
+            "MOs" : [
+              "WithCuts/TracksPerTF",
+              "WithCuts/TrackPhi",
+              "WithCuts/TrackQOverPt"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
 ## Matching Efficiency Checker
 
 The matching efficiency checker takes the output of the tracks post-processing and verifies that the efficiency values in each plot are within configurable limits. The limits are defined separately for each histogram, or group of histograms, whose name matches a given string.

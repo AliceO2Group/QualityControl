@@ -59,11 +59,11 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
 
   mEfficiencyPlotter.reset();
   mEfficiencyPlotter = std::make_unique<EfficiencyPlotter>("Efficiency/", hElecHistoRef, mFullHistos);
-  mEfficiencyPlotter->publish(getObjectsManager());
+  mEfficiencyPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mEfficiencyPlotterOnCycle.reset();
   mEfficiencyPlotterOnCycle = std::make_unique<EfficiencyPlotter>("Efficiency/LastCycle/", hElecHistoRef, mFullHistos);
-  mEfficiencyPlotterOnCycle->publish(getObjectsManager());
+  mEfficiencyPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Efficiency trends
@@ -71,7 +71,7 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
 
   mEfficiencyTrendsPlotter.reset();
   mEfficiencyTrendsPlotter = std::make_unique<EfficiencyTrendsPlotter>("Trends/", hElecHistoRef, mFullHistos);
-  mEfficiencyTrendsPlotter->publish(getObjectsManager());
+  mEfficiencyTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -104,11 +104,11 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
 
   mClusterChargePlotter.reset();
   mClusterChargePlotter = std::make_unique<ClusterChargePlotter>("ClusterCharge/", histoRef, mFullHistos);
-  mClusterChargePlotter->publish(getObjectsManager());
+  mClusterChargePlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mClusterChargePlotterOnCycle.reset();
   mClusterChargePlotterOnCycle = std::make_unique<ClusterChargePlotter>("ClusterCharge/LastCycle/", histoRef, mFullHistos);
-  mClusterChargePlotterOnCycle->publish(getObjectsManager());
+  mClusterChargePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Cluster charge trends
@@ -116,7 +116,7 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
 
   mClusterChargeTrendsPlotter.reset();
   mClusterChargeTrendsPlotter = std::make_unique<ClusterChargeTrendsPlotter>("Trends/", histoRef, mFullHistos);
-  mClusterChargeTrendsPlotter->publish(getObjectsManager());
+  mClusterChargeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -149,11 +149,11 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
 
   mClusterSizePlotter.reset();
   mClusterSizePlotter = std::make_unique<ClusterSizePlotter>("ClusterSize/", histoRef, mFullHistos);
-  mClusterSizePlotter->publish(getObjectsManager());
+  mClusterSizePlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mClusterSizePlotterOnCycle.reset();
   mClusterSizePlotterOnCycle = std::make_unique<ClusterSizePlotter>("ClusterSize/LastCycle/", histoRef, mFullHistos);
-  mClusterSizePlotterOnCycle->publish(getObjectsManager());
+  mClusterSizePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Cluster size trends
@@ -161,7 +161,7 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
 
   mClusterSizeTrendsPlotter.reset();
   mClusterSizeTrendsPlotter = std::make_unique<ClusterSizeTrendsPlotter>("Trends/", histoRef, mFullHistos);
-  mClusterSizeTrendsPlotter->publish(getObjectsManager());
+  mClusterSizeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -225,7 +225,7 @@ void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistry
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
   mHistogramQualityPerDE->SetOption("colz");
   mHistogramQualityPerDE->SetStats(0);
-  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get());
+  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
 }

@@ -27,6 +27,7 @@
 #pragma link C++ class o2::quality_control_modules::tof::TrendingHits + ;
 #pragma link C++ class o2::quality_control_modules::tof::TrendingRate + ;
 #pragma link C++ class o2::quality_control_modules::tof::TrendingCalibLHCphase + ;
+#pragma link C++ class o2::quality_control_modules::tof::TrendingCalibDiagnostics + ;
 // Reductors
 #pragma link C++ class o2::quality_control_modules::tof::TH1ReductorTOF + ;
 // Utilities
