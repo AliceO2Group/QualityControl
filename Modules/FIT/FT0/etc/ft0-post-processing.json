@@ -32,7 +32,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsTrg"
             ]
@@ -52,7 +52,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "TimeInWindowFraction"
             ]
@@ -77,7 +77,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "CFD_efficiency"
             ]
@@ -102,7 +102,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "ChannelID_outOfBC"
             ]
@@ -127,7 +127,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "TrgValidation"
             ]
@@ -144,8 +144,105 @@
         }
       }
     },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "OutOfBunchCollCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinTimeGateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinADCgateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ChannelOutOfBunchCheck"
+          },
+          {
+            "type": "Check",
+            "name": "TrgValidationCheck"
+          }
+        ]
+      }
+    },
     "postprocessing": {
-      "PostProcTask": {
+      "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "FT0",
+        "qualityGroups": [
+          {
+            "name": "Global",
+            "title": "GLOBAL FT0 QUALITY",
+            "path": "FT0/QO/GlobalQuality",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality",
+                "title": "Global FT0 Quality",
+                "messageBad": "Inform the FIT on-call immediately",
+                "messageMedium": "Follow individual check instructions",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty, inform the FIT on-call immediately"
+              }
+            ]
+          },
+          {
+            "name": "Details",
+            "title": "FT0 DETAILS",
+            "path": "FT0/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "OutOfBunchCollCheck",
+                "title": "Out of bunch collisions"
+              },
+              {
+                "name": "CFDinTimeGateCheck",
+                "title": "CFD in time gate"
+              },
+              {
+                "name": "CFDinADCgateCheck",
+                "title": "CDF in ADC gate"
+              },
+              {
+                "name": "ChannelOutOfBunchCheck",
+                "title": "Channels out of bunch collisions"
+              },
+              {
+                "name": "TrgValidationCheck",
+                "title": "Trigger validation"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FT0/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PostProc": {
         "active": "true",
         "className": "o2::quality_control_modules::ft0::PostProcTask",
         "moduleName": "QcFT0",
@@ -153,19 +250,20 @@
         "custom": {
           "numOrbitsInTF": "32",
           "cycleDurationMoName": "CycleDurationNTF",
-          "timestampSourceLhcIf": "metadata"
+          "timestampSourceLhcIf": "metadata",
+          "pathDigitQcTask": "FT0/MO/Digits"
         },
         "initTrigger": [
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:FT0/MO/DigitQcTask/TriggersCorrelation"
+          "newobject:qcdb:FT0/MO/Digits/TriggersCorrelation"
         ],
         "stopTrigger": [
           "userorcontrol"
         ]
       },
-      "TrendingTask": {
+      "Trending": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcFT0",
@@ -173,7 +271,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "FT0/MO/DigitQcTask",
+            "path": "FT0/MO/Digits",
             "names": [
               "CycleDuration",
               "CycleDurationNTF",
@@ -225,7 +323,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:FT0/MO/DigitQcTask/TriggersCorrelation"
+          "newobject:qcdb:FT0/MO/Digits/TriggersCorrelation"
         ],
         "stopTrigger": [
           "userorcontrol"

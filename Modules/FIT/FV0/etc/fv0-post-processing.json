@@ -32,7 +32,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsTrg"
             ]
@@ -53,7 +53,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModules"
             ]
@@ -73,7 +73,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModulesForChargeTrg"
             ]
@@ -93,7 +93,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModulesForNChanTrg"
             ]
@@ -113,7 +113,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModulesForOrATrg"
             ]
@@ -133,7 +133,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModulesForOrAInTrg"
             ]
@@ -153,7 +153,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModulesForOrAOutTrg"
             ]
@@ -173,7 +173,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "TimeInWindowFraction"
             ]
@@ -198,7 +198,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "CFD_efficiency"
             ]
@@ -223,7 +223,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "TrgValidation"
             ]
@@ -240,8 +240,97 @@
         }
       }
     },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "OutOfBunchCollCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinTimeGateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinADCgateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "TrgValidationCheck"
+          }
+        ]
+      }
+    },
     "postprocessing": {
-      "PostProcTask": {
+      "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "FV0",
+        "qualityGroups": [
+          {
+            "name": "Global",
+            "title": "GLOBAL FV0 QUALITY",
+            "path": "FV0/QO/GlobalQuality",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality",
+                "title": "Global FV0 Quality",
+                "messageBad": "Inform the FIT on-call immediately",
+                "messageMedium": "Follow individual check instructions",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty, inform the FIT on-call immediately"
+              }
+            ]
+          },
+          {
+            "name": "Details",
+            "title": "FV0 DETAILS",
+            "path": "FV0/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "OutOfBunchCollCheck",
+                "title": "Out of bunch collisions"
+              },
+              {
+                "name": "CFDinTimeGateCheck",
+                "title": "CFD in time gate"
+              },
+              {
+                "name": "CFDinADCgateCheck",
+                "title": "CDF in ADC gate"
+              },
+              {
+                "name": "TrgValidationCheck",
+                "title": "Trigger validation"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FV0/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PostProc": {
         "active": "true",
         "className": "o2::quality_control_modules::fv0::PostProcTask",
         "moduleName": "QcFV0",
@@ -249,19 +338,20 @@
         "custom": {
           "numOrbitsInTF": "32",
           "cycleDurationMoName": "CycleDurationNTF",
-          "timestampSourceLhcIf": "metadata"
+          "timestampSourceLhcIf": "metadata",
+          "pathDigitQcTask": "FV0/MO/Digits"
         },
         "initTrigger": [
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:FV0/MO/DigitQcTask/TriggersCorrelation"
+          "newobject:qcdb:FV0/MO/Digits/TriggersCorrelation"
         ],
         "stopTrigger": [
           "userorcontrol"
         ]
       },
-      "TrendingTask": {
+      "Trending": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcFV0",
@@ -269,7 +359,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "FV0/MO/DigitQcTask",
+            "path": "FV0/MO/Digits",
             "names": [
               "CycleDuration",
               "CycleDurationNTF",
@@ -327,7 +417,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:FV0/MO/DigitQcTask/TriggersCorrelation"
+          "newobject:qcdb:FV0/MO/Digits/TriggersCorrelation"
         ],
         "stopTrigger": [
           "userorcontrol"

@@ -23,13 +23,12 @@
       }
     },
     "tasks": {
-      "DigitQcTask": {
+      "Digits": {
         "active": "true",
         "className": "o2::quality_control_modules::ft0::DigitQcTask",
         "moduleName": "QcFT0",
         "detectorName": "FT0",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",
@@ -42,8 +41,8 @@
           "trgThresholdTimeHigh": "100",
           "trgModeSide": "A+C",
           "trgModeThresholdVar": "Ampl",
-          "trgThresholdSCenA": "35",
-          "trgThresholdCenA": "1433",
+          "trgThresholdSCenA": "20",
+          "trgThresholdCenA": "40",
           "trgOrGate": "153",
           "trgChargeLevelLow": "0",
           "trgChargeLevelHigh": "4095"

@@ -48,6 +48,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
 
 install(FILES etc/ft0-digits.json
               etc/ft0-post-processing.json
+              etc/ft0-recpoints.json
         DESTINATION Modules/FIT/FT0/etc)
 
 # ---- Executables ----

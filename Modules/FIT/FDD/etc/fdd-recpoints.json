@@ -23,31 +23,16 @@
       }
     },
     "tasks": {
-      "Digits": {
+      "RecPoints": {
         "active": "true",
-        "className": "o2::quality_control_modules::fdd::DigitQcTask",
+        "className": "o2::quality_control_modules::fdd::RecPointsQcTask",
         "moduleName": "QcFDD",
         "detectorName": "FDD",
         "cycleDurationSeconds": "60",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",
-          "query": "digits:FDD/DIGITSBC/0;channels:FDD/DIGITSCH/0"
-        },
-        "taskParameters": {
-          "ChannelIDs": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
-          "ChannelIDsAmpVsTime": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
-          "trgThresholdTimeLow": "-250",
-          "trgThresholdTimeHigh": "250",
-          "trgModeSide": "A&C",
-          "trgModeThresholdVar": "Ampl",
-          "trgThresholdCenA": "40",
-          "trgThresholdSCenA": "20",
-          "trgThresholdCenC": "20",
-          "trgThresholdSCenC": "10",
-          "trgOrGate": "153",
-          "trgChargeLevelLow": "0",
-          "trgChargeLevelHigh": "4095"
+          "query": "recpoints:FDD/RECPOINTS/0;channels:FDD/RECCHDATA/0"
         }
       }
     }

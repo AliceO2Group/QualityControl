@@ -32,7 +32,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsTrg"
             ]
@@ -52,7 +52,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "OutOfBunchColl_BCvsFeeModulesForVtxTrg"
             ]
@@ -72,7 +72,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "TimeInWindowFraction"
             ]
@@ -97,7 +97,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "CFD_efficiency"
             ]
@@ -122,7 +122,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "TrgValidation"
             ]
@@ -147,7 +147,7 @@
         "dataSource": [
           {
             "type": "PostProcessing",
-            "name": "PostProcTask",
+            "name": "PostProc",
             "MOs": [
               "AmpSaturation"
             ]
@@ -164,8 +164,105 @@
         }
       }
     },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "FDD",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "OutOfBunchCollCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinTimeGateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinADCgateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "TrgValidationCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ChargeSaturationCheck"
+          }
+        ]
+      }
+    },
     "postprocessing": {
-      "PostProcTask": {
+      "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QcCommon",
+        "detectorName": "FDD",
+        "qualityGroups": [
+          {
+            "name": "Global",
+            "title": "GLOBAL FDD QUALITY",
+            "path": "FDD/QO",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality/GlobalQuality",
+                "title": "FDD Quality",
+                "messageBad": "Inform the FIT on-call immediately",
+                "messageMedium": "Follow individual check instructions",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty, inform the FIT on-call immediately"
+              }
+            ]
+          },
+          {
+            "name": "Details",
+            "title": "FDD DETAILS",
+            "path": "FDD/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "OutOfBunchCollCheck",
+                "title": "Out of bunch collisions"
+              },
+              {
+                "name": "CFDinTimeGateCheck",
+                "title": "CFD in time gate"
+              },
+              {
+                "name": "CFDinADCgateCheck",
+                "title": "CFD in ADC gate"
+              },
+              {
+                "name": "TrgValidationCheck",
+                "title": "Trigger validation"
+              },
+              {
+                "name": "ChargeSaturationCheck",
+                "title": "Charge saturation"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FDD/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PostProc": {
         "active": "true",
         "className": "o2::quality_control_modules::fdd::PostProcTask",
         "moduleName": "QcFDD",
@@ -173,19 +270,20 @@
         "custom": {
           "numOrbitsInTF": "32",
           "cycleDurationMoName": "CycleDurationNTF",
-          "timestampSourceLhcIf": "metadata"
+          "timestampSourceLhcIf": "metadata",
+          "pathDigitQcTask": "FDD/MO/Digits"
         },
         "initTrigger": [
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:FDD/MO/DigitQcTask/TriggersCorrelation"
+          "newobject:qcdb:FDD/MO/Digits/TriggersCorrelation"
         ],
         "stopTrigger": [
           "userorcontrol"
         ]
       },
-      "TrendingTask": {
+      "Trending": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcFDD",
@@ -193,7 +291,7 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "FDD/MO/DigitQcTask",
+            "path": "FDD/MO/Digits",
             "names": [
               "Amp_channel0",
               "Time_channel0",
@@ -268,7 +366,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "newobject:qcdb:FDD/MO/DigitQcTask/TriggersCorrelation"
+          "newobject:qcdb:FDD/MO/Digits/TriggersCorrelation"
         ],
         "stopTrigger": [
           "userorcontrol"
