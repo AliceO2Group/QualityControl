@@ -12,8 +12,7 @@
 ///
 /// \file    CcdbInspectorTaskConfig.cxx
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   File for the configuration of MCH post-processing tasks
-/// \since   05/10/2021
+/// \brief   File for the configuration of CCDB inspector post-processing task
 ///
 
 #include "Common/CcdbInspectorTaskConfig.h"
@@ -38,13 +37,13 @@ CcdbInspectorTaskConfig::CcdbInspectorTaskConfig(std::string name, const boost::
     auto updatePolicyString = dataSourceConfig.second.get("updatePolicy", std::string("periodic"));
     ObjectUpdatePolicy updatePolicy;
     if (updatePolicyString == "periodic") {
-      updatePolicy = updatePolicyPeriodic;
+      updatePolicy = ObjectUpdatePolicy::updatePolicyPeriodic;
     }
     if (updatePolicyString == "atSOR") {
-      updatePolicy = updatePolicyAtSOR;
+      updatePolicy = ObjectUpdatePolicy::updatePolicyAtSOR;
     }
     if (updatePolicyString == "atEOR") {
-      updatePolicy = updatePolicyAtEOR;
+      updatePolicy = ObjectUpdatePolicy::updatePolicyAtEOR;
     }
 
     auto cycleDuration = dataSourceConfig.second.get<int>("cycleDuration", 0);

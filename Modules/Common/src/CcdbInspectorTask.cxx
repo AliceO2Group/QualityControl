@@ -16,6 +16,7 @@
 ///
 
 #include "Common/CcdbInspectorTask.h"
+#include "Common/CcdbValidatorInterface.h"
 #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -23,15 +24,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#define STATUS_UNKNOWN -1
-#define STATUS_OK 0
-#define STATUS_INVALID 1
-#define STATUS_OLD 2
-#define STATUS_MISSING 3
-
-#define ILDEBUG(a, b) \
-  if (mVerbose)       \
-  ILOG(a, b)
+#include <thread>
+#include <chrono>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
@@ -39,6 +33,29 @@ using namespace o2::quality_control::postprocessing;
 
 namespace o2::quality_control_modules::common
 {
+
+static std::string toString(CcdbInspectorTask::ObjectStatus status)
+{
+  switch (status) {
+    case CcdbInspectorTask::ObjectStatus::objectStatusNotChecked:
+      return "NotChecked";
+      break;
+    case CcdbInspectorTask::ObjectStatus::objectStatusMissing:
+      return "Missing";
+      break;
+    case CcdbInspectorTask::ObjectStatus::objectStatusOld:
+      return "Old";
+      break;
+    case CcdbInspectorTask::ObjectStatus::objectStatusInvalid:
+      return "Invalid";
+      break;
+    case CcdbInspectorTask::ObjectStatus::objectStatusValid:
+      return "Valid";
+      break;
+  }
+
+  return "";
+}
 
 void CcdbInspectorTask::configure(const boost::property_tree::ptree& config)
 {
@@ -48,8 +65,8 @@ void CcdbInspectorTask::configure(const boost::property_tree::ptree& config)
     if (dataSource.validatorName.empty() || dataSource.moduleName.empty()) {
       continue;
     }
-    mValidators.emplace(dataSource.name, root_class_factory::create<CcdbValidatorInterface>(dataSource.moduleName, dataSource.validatorName));
-    ILDEBUG(Info, Devel) << "Loaded CCDB validator module '" << dataSource.validatorName << " from '" << dataSource.moduleName << "'" << ENDM;
+    mValidators[dataSource.name].reset(root_class_factory::create<CcdbValidatorInterface>(dataSource.moduleName, dataSource.validatorName));
+    ILOG(Info, Devel) << "Loaded CCDB validator module '" << dataSource.validatorName << " from '" << dataSource.moduleName << "'" << ENDM;
   }
 
   mDatabaseType = mCustomParameters.atOptional("databaseType").value_or(mDatabaseType);
@@ -58,8 +75,6 @@ void CcdbInspectorTask::configure(const boost::property_tree::ptree& config)
   mTimeStampTolerance = std::stoi(mCustomParameters.atOptional("timeStampTolerance").value_or("60")) * 1000; // from seconds to milliseconds
   mRetryTimeout = std::stoi(mCustomParameters.atOptional("retryTimeout").value_or("60"));
   mRetryDelay = std::stoi(mCustomParameters.atOptional("retryDelay").value_or("10"));
-
-  mVerbose = std::stoi(mCustomParameters.atOptional("verbose").value_or("0")) == 1;
 
   mDatabase = std::make_unique<CcdbDatabase>();
   mDatabase->connect(mDatabaseUrl, "", "", "");
@@ -82,16 +97,16 @@ void CcdbInspectorTask::configure(const boost::property_tree::ptree& config)
 
 //_________________________________________________________________________________________
 
-void CcdbInspectorTask::initialize(Trigger t, framework::ServiceRegistryRef)
+void CcdbInspectorTask::initialize(Trigger trigger, framework::ServiceRegistryRef)
 {
   for (auto& dataSource : mConfig->dataSources) {
-    bool isPeriodic = dataSource.updatePolicy == CcdbInspectorTaskConfig::updatePolicyPeriodic;
+    bool isPeriodic = dataSource.updatePolicy == CcdbInspectorTaskConfig::ObjectUpdatePolicy::updatePolicyPeriodic;
     // for each periodic data source, initialize the last know timestamp to the beginning of the processing,
     // such that the existance of the CCDB objects is not checked too early
     // for objects that are only created once, the last known time stamp is initialized to zero
     // such that the object is unconditionally searched
     if (isPeriodic) {
-      dataSource.lastCreationTimestamp = t.timestamp;
+      dataSource.lastCreationTimestamp = trigger.timestamp;
     } else {
       dataSource.lastCreationTimestamp = 0;
     }
@@ -100,14 +115,13 @@ void CcdbInspectorTask::initialize(Trigger t, framework::ServiceRegistryRef)
 
   mHistObjectsStatus->Reset();
 
-  // return;
   getObjectsManager()->startPublishing(mHistObjectsStatus.get());
   getObjectsManager()->setDefaultDrawOptions(mHistObjectsStatus.get(), "col");
 }
 
 //_________________________________________________________________________________________
 
-std::tuple<uint64_t, uint64_t, uint64_t, int> CcdbInspectorTask::getObjectTimestamps(const std::string& path, const std::map<std::string, std::string>& metadata)
+std::tuple<uint64_t, uint64_t, uint64_t, int> CcdbInspectorTask::getObjectInfo(const std::string& path, const std::map<std::string, std::string>& metadata)
 {
   // find the time-stamp of the most recent object matching the current activity
   // if ignoreActivity is true the activity matching criteria are not applied
@@ -142,12 +156,12 @@ void* CcdbInspectorTask::getObject(const std::string& path, std::type_info const
 {
   map<string, string> headers;
   void* obj = mDatabase->retrieveAny(tinfo, path, metadata, timestamp, &headers);
-  ILDEBUG(Info, Devel) << "Retrieved '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp << ENDM;
+  ILOG(Debug, Devel) << "Retrieved '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp << ENDM;
 
   return obj;
 }
 
-int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSource, Trigger t, bool atFinalize)
+CcdbInspectorTask::ObjectStatus CcdbInspectorTask::inspectObject(CcdbInspectorTaskConfig::DataSource& dataSource, Trigger trigger, bool atFinalize)
 {
   auto path = dataSource.path;
   auto validatorName = dataSource.validatorName;
@@ -155,63 +169,63 @@ int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSo
   auto updatePolicy = dataSource.updatePolicy;
   auto cycleDuration = dataSource.cycleDuration * 1000; // in milliseconds
   auto lastCreationTimestamp = dataSource.lastCreationTimestamp;
-  bool isPeriodic = updatePolicy == CcdbInspectorTaskConfig::updatePolicyPeriodic;
+  bool isPeriodic = updatePolicy == CcdbInspectorTaskConfig::ObjectUpdatePolicy::updatePolicyPeriodic;
 
   // skip check of periodic objects in the finalize() method, only check those that have EoR update policy
-  if (atFinalize && updatePolicy != CcdbInspectorTaskConfig::updatePolicyAtEOR) {
-    ILDEBUG(Info, Devel) << "Not checking file '" << path << "' at finalize because policy is not 'At EoR'" << ENDM;
-    return STATUS_UNKNOWN;
+  if (atFinalize && updatePolicy != CcdbInspectorTaskConfig::ObjectUpdatePolicy::updatePolicyAtEOR) {
+    ILOG(Debug, Devel) << "Not checking file '" << path << "' at finalize because policy is not 'At EoR'" << ENDM;
+    return ObjectStatus::objectStatusNotChecked;
   }
 
   // skip objects that are expected only at the start or end of run, if they have been already found once
   if (dataSource.validObjectsCount > 0 && !isPeriodic) {
-    ILDEBUG(Info, Devel) << "Skipping non-periodic file '" << path << "' because it was already found" << ENDM;
-    return STATUS_UNKNOWN;
+    ILOG(Debug, Devel) << "Skipping non-periodic file '" << path << "' because it was already found" << ENDM;
+    return ObjectStatus::objectStatusNotChecked;
   }
 
   // skip objects that are expected only at the end of run if we are not in the finalize() method
-  if (!atFinalize && updatePolicy == CcdbInspectorTaskConfig::updatePolicyAtEOR) {
-    ILDEBUG(Info, Devel) << "Not checking file '" << path << "' with policy 'At EoR'" << ENDM;
-    return STATUS_UNKNOWN;
+  if (!atFinalize && updatePolicy == CcdbInspectorTaskConfig::ObjectUpdatePolicy::updatePolicyAtEOR) {
+    ILOG(Debug, Devel) << "Not checking file '" << path << "' with policy 'At EoR'" << ENDM;
+    return ObjectStatus::objectStatusNotChecked;
   }
 
   // don't check the object if we don't expect it to have been updated yet
-  if (t.timestamp < (lastCreationTimestamp + cycleDuration)) {
-    ILDEBUG(Info, Devel) << "Not checking file '" << path << "' with policy 'periodic' because elapsed "
-                         << (t.timestamp - lastCreationTimestamp) / 1000 << " seconds is less than cycle duraction (" << dataSource.cycleDuration
-                         << " seconds)" << ENDM;
-    return STATUS_UNKNOWN;
+  if (trigger.timestamp < (lastCreationTimestamp + cycleDuration)) {
+    ILOG(Debug, Devel) << "Not checking file '" << path << "' with policy 'periodic' because elapsed "
+                       << (trigger.timestamp - lastCreationTimestamp) / 1000 << " seconds is less than cycle duraction (" << dataSource.cycleDuration
+                       << " seconds)" << ENDM;
+    return ObjectStatus::objectStatusNotChecked;
   }
 
   // verbose messages, only for debugging
   if (isPeriodic) {
-    ILDEBUG(Info, Devel) << "Checking file '" << path << "' with policy 'periodic' and cycle " << dataSource.cycleDuration
-                         << " seconds, elapsed " << (t.timestamp - lastCreationTimestamp) / 1000 << " seconds" << ENDM;
-  } else if (updatePolicy == CcdbInspectorTaskConfig::updatePolicyAtSOR) {
-    ILDEBUG(Info, Devel) << "Checking file '" << path << "' with policy 'At SoR',"
-                         << " elapsed " << (t.timestamp - lastCreationTimestamp) / 1000 << " seconds" << ENDM;
-  } else if (updatePolicy == CcdbInspectorTaskConfig::updatePolicyAtEOR) {
-    ILDEBUG(Info, Devel) << "Checking file '" << path << "' with policy 'At EoR',"
-                         << " elapsed " << (t.timestamp - lastCreationTimestamp) / 1000 << " seconds" << ENDM;
+    ILOG(Debug, Devel) << "Checking file '" << path << "' with policy 'periodic' and cycle " << dataSource.cycleDuration
+                       << " seconds, elapsed " << (trigger.timestamp - lastCreationTimestamp) / 1000 << " seconds" << ENDM;
+  } else if (updatePolicy == CcdbInspectorTaskConfig::ObjectUpdatePolicy::updatePolicyAtSOR) {
+    ILOG(Debug, Devel) << "Checking file '" << path << "' with policy 'At SoR',"
+                       << " elapsed " << (trigger.timestamp - lastCreationTimestamp) / 1000 << " seconds" << ENDM;
+  } else if (updatePolicy == CcdbInspectorTaskConfig::ObjectUpdatePolicy::updatePolicyAtEOR) {
+    ILOG(Debug, Devel) << "Checking file '" << path << "' with policy 'At EoR',"
+                       << " elapsed " << (trigger.timestamp - lastCreationTimestamp) / 1000 << " seconds" << ENDM;
   }
 
   // get timestamps and run numberof the last available object
-  auto fullObjectPath = (mDatabaseType == "qcdb" ? t.activity.mProvenance + "/" : "") + path;
-  auto metadata = mDatabaseType == "qcdb" ? activity_helpers::asDatabaseMetadata(t.activity, false) : std::map<std::string, std::string>();
-  auto timestamps = getObjectTimestamps(path, metadata);
+  auto fullObjectPath = (mDatabaseType == "qcdb" ? trigger.activity.mProvenance + "/" : "") + path;
+  auto metadata = mDatabaseType == "qcdb" ? activity_helpers::asDatabaseMetadata(trigger.activity, false) : std::map<std::string, std::string>();
+  auto timestamps = getObjectInfo(path, metadata);
   auto creationTime = std::get<2>(timestamps);
   auto runNumber = std::get<3>(timestamps);
 
   // the object is considered found if the associated run number (if valid) matches the current one,
   // and if the creation time is newer that the last known timestamp
-  bool isFound = (runNumber <= 0 || t.activity.mId == runNumber) && (creationTime > lastCreationTimestamp);
+  bool isFound = (runNumber <= 0 || trigger.activity.mId == runNumber) && (creationTime > lastCreationTimestamp);
   if (!isFound) {
-    ILOG(Warning, Support) << "File '" << path << "' for run " << t.activity.mId << " from db '" << mDatabaseUrl << "' not found" << ENDM;
+    ILOG(Warning, Support) << "File '" << path << "' for run " << trigger.activity.mId << " from db '" << mDatabaseUrl << "' not found" << ENDM;
 
     // run numbers do not match
-    if (runNumber > 0 && t.activity.mId != runNumber) {
+    if (runNumber > 0 && trigger.activity.mId != runNumber) {
       ILOG(Warning, Support) << "Mismatching run numbers for file '" << path << ": "
-                             << runNumber << " != " << t.activity.mId << ENDM;
+                             << runNumber << " != " << trigger.activity.mId << ENDM;
     }
 
     // object was created in the past
@@ -219,8 +233,8 @@ int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSo
       ILOG(Warning, Support) << "File '" << path << "' is older than " << lastCreationTimestamp << ENDM;
     }
   } else {
-    ILDEBUG(Info, Devel) << "File '" << path << "' found in the db '" << mDatabaseUrl << "' with creationTime=" << creationTime << " and runNumber=" << runNumber
-                         << " for activity " << t.activity << ENDM;
+    ILOG(Info, Devel) << "File '" << path << "' found in the db '" << mDatabaseUrl << "' with creationTime=" << creationTime << " and runNumber=" << runNumber
+                      << " for activity " << trigger.activity << ENDM;
   }
 
   // The object is considered old if the timestamp is more than one  cycle duration in the past.
@@ -230,7 +244,7 @@ int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSo
   bool isOld = isPeriodic ? (creationTime < (lastCreationTimestamp + cycleDuration - mTimeStampTolerance)) && (isFound) : false;
 
   if (isOld) {
-    ILOG(Warning, Support) << "File '" << path << "' for run " << t.activity.mId << " from db '" << mDatabaseUrl << "' is too old" << ENDM;
+    ILOG(Warning, Support) << "File '" << path << "' for run " << trigger.activity.mId << " from db '" << mDatabaseUrl << "' is too old" << ENDM;
   }
 
   bool isValid = true;
@@ -238,8 +252,8 @@ int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSo
     // creation time is valid, update the last known timestamp of this data source
     dataSource.lastCreationTimestamp = creationTime;
     dataSource.validObjectsCount += 1;
-    ILDEBUG(Info, Devel) << "Found file '" << path << "' from db '" << mDatabaseUrl << "' for run " << t.activity.mId
-                         << " creationTime=" << creationTime << ENDM;
+    ILOG(Debug, Devel) << "Found file '" << path << "' from db '" << mDatabaseUrl << "' for run " << trigger.activity.mId
+                       << " creationTime=" << creationTime << ENDM;
 
     // run the validator on the object, skip if no validator is associated to this data source
     // only executed if the time stamp of the object is valid
@@ -247,32 +261,32 @@ int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSo
     if (validatorIter != mValidators.end() && validatorIter->second) {
       auto timestamp = std::get<1>(timestamps) - 1;
       void* obj = getObject(fullObjectPath, validatorIter->second->getTinfo(), timestamp, metadata);
-      ILDEBUG(Info, Devel) << "Retrieved object for file '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp
-                           << " obj=" << obj << ENDM;
+      ILOG(Debug, Devel) << "Retrieved object for file '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp
+                         << " obj=" << obj << ENDM;
       isValid = validatorIter->second->validate(obj);
-      ILDEBUG(Info, Devel) << "Validated object for file '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp
-                           << " isValid=" << isValid << ENDM;
+      ILOG(Debug, Devel) << "Validated object for file '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp
+                         << " isValid=" << isValid << ENDM;
     }
   }
 
-  int objectStatus = STATUS_UNKNOWN;
+  ObjectStatus objectStatus = ObjectStatus::objectStatusNotChecked;
 
   if (!isFound) {
-    objectStatus = STATUS_MISSING;
+    objectStatus = ObjectStatus::objectStatusMissing;
   } else if (isOld) {
-    objectStatus = STATUS_OLD;
+    objectStatus = ObjectStatus::objectStatusOld;
   } else if (!isValid) {
-    objectStatus = STATUS_INVALID;
+    objectStatus = ObjectStatus::objectStatusInvalid;
   } else {
-    objectStatus = STATUS_OK;
+    objectStatus = ObjectStatus::objectStatusValid;
   }
-  ILDEBUG(Info, Devel) << "File '" << path << "' from db '" << mDatabaseUrl << "': status is " << objectStatus << ENDM;
+  ILOG(Info, Devel) << "File '" << path << "' from db '" << mDatabaseUrl << "': status is " << toString(objectStatus) << ENDM;
 
   // update contents of bin associated to current data source
   for (int biny = 1; biny <= mHistObjectsStatus->GetYaxis()->GetNbins(); biny++) {
     mHistObjectsStatus->SetBinContent(dataSource.binNumber, biny, 0);
   }
-  mHistObjectsStatus->SetBinContent(dataSource.binNumber, objectStatus + 1, 1);
+  mHistObjectsStatus->SetBinContent(dataSource.binNumber, static_cast<int>(objectStatus) + 1, 1);
 
   return objectStatus;
 }
@@ -280,7 +294,7 @@ int CcdbInspectorTask::inspectSource(CcdbInspectorTaskConfig::DataSource& dataSo
 void CcdbInspectorTask::update(Trigger t, framework::ServiceRegistryRef)
 {
   for (auto& dataSource : mConfig->dataSources) {
-    inspectSource(dataSource, t, false);
+    inspectObject(dataSource, t, false);
   }
 }
 
@@ -288,13 +302,13 @@ void CcdbInspectorTask::update(Trigger t, framework::ServiceRegistryRef)
 
 void CcdbInspectorTask::finalize(Trigger t, framework::ServiceRegistryRef)
 {
-  ILDEBUG(Info, Devel) << "Checking objects at finalize() " << ENDM;
+  ILOG(Info, Devel) << "Checking objects at finalize() " << ENDM;
   int elapsed = 0;
-  while (true) {
+  while (elapsed < mRetryTimeout) {
     bool allFound = true;
     for (auto& dataSource : mConfig->dataSources) {
-      auto status = inspectSource(dataSource, t, true);
-      if (status > 0) {
+      auto status = inspectObject(dataSource, t, true);
+      if (static_cast<int>(status) > 0) {
         allFound = false;
       }
     }
@@ -303,11 +317,7 @@ void CcdbInspectorTask::finalize(Trigger t, framework::ServiceRegistryRef)
       break;
     }
 
-    if (elapsed >= mRetryTimeout) {
-      break;
-    }
-
-    sleep(mRetryDelay);
+    std::this_thread::sleep_for(std::chrono::seconds(mRetryDelay));
     elapsed += mRetryDelay;
   }
 }

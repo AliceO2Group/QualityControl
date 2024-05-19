@@ -18,7 +18,7 @@
 
 #include <typeinfo>
 
-namespace o2::quality_control::postprocessing
+namespace o2::quality_control_modules::common
 {
 
 /// \brief An interface for validating the content of CCDB objects
@@ -33,10 +33,10 @@ class CcdbValidatorInterface
   /// \brief return the type_info of the CCDB object to be inspected
   virtual const std::type_info& getTinfo() const = 0;
 
-  /// \brief Inspect and validate the contants of a given CCDB object
+  /// \brief Inspect and validate the content of a given CCDB object
   /// \param An object to be inspected
   virtual bool validate(void* obj) = 0;
 };
 
-} // namespace o2::quality_control::postprocessing
+} // namespace o2::quality_control_modules::common
 #endif // QUALITYCONTROL_CCDB_VALIDATOR_INTERFACE_H

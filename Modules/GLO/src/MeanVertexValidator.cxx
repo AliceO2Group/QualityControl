@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::glo
 {

@@ -12,8 +12,7 @@
 ///
 /// \file    CcdbInspectorTaskConfig.h
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Header file for the configuration of MCH post-processing tasks
-/// \since   16/06/2022
+/// \brief   Header file for the configuration of CCDB inspector post-processing task
 ///
 
 #ifndef QC_MODULE_COMMON_CCDB_INSPECTOR_PP_CONF_H
@@ -27,28 +26,30 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::common
 {
 
-/// \brief  MCH trending configuration structure
+/// \brief configuration structure for the CcdbInspectorTask
 struct CcdbInspectorTaskConfig : PostProcessingConfig {
   CcdbInspectorTaskConfig() = default;
   CcdbInspectorTaskConfig(std::string name, const boost::property_tree::ptree& config);
   ~CcdbInspectorTaskConfig() = default;
 
-  enum ObjectUpdatePolicy {
-    updatePolicyPeriodic,
-    updatePolicyAtSOR,
-    updatePolicyAtEOR
+  /// update policy associated to each data source
+  enum class ObjectUpdatePolicy {
+    updatePolicyPeriodic, ///< the object is updated periodically at fixed time intervals
+    updatePolicyAtSOR,    ///< the object is updated only once at start-of-run
+    updatePolicyAtEOR     ///< the object is updated only once at end-of-run
   };
 
+  /// CCDB object description and associated variables
   struct DataSource {
-    std::string name;
-    std::string path;
-    std::string validatorName;
-    std::string moduleName;
-    ObjectUpdatePolicy updatePolicy;
-    int cycleDuration;
-    uint64_t lastCreationTimestamp;
-    int validObjectsCount;
-    int binNumber;
+    std::string name;                ///< mnemonic name of the object
+    std::string path;                ///< object path in the database
+    std::string validatorName;       ///< name of the optional validator class (can be empty)
+    std::string moduleName;          ///< module containing the validator class (mandatory if validatorName is not empty)
+    ObjectUpdatePolicy updatePolicy; ///< object's update policy
+    int cycleDuration;               ///< time interval between updates for periodic objects
+    uint64_t lastCreationTimestamp;  ///< creation time-stamp of the last valid object that was found
+    int validObjectsCount;           ///< number of valid objects that have been found
+    int binNumber;                   ///< bin number associated to this object in the output 2-D plot
   };
 
   std::vector<DataSource> dataSources;

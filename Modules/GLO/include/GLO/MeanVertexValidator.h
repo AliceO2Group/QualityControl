@@ -16,13 +16,13 @@
 #ifndef QUALITYCONTROL_MEANVERTEX_VALIDATOR_H
 #define QUALITYCONTROL_MEANVERTEX_VALIDATOR_H
 
-#include "QualityControl/CcdbValidatorInterface.h"
+#include "Common/CcdbValidatorInterface.h"
 
 namespace o2::quality_control_modules::glo
 {
 
 /// \brief Inspect and validate the contents of MeanVertex calibration objects
-class MeanVertexValidator : public o2::quality_control::postprocessing::CcdbValidatorInterface
+class MeanVertexValidator : public o2::quality_control_modules::common::CcdbValidatorInterface
 {
  public:
   /// \brief Constructor
