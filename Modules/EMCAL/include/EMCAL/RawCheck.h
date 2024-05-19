@@ -18,8 +18,12 @@
 #define QC_MODULE_EMCAL_EMCALRAWCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include <array>
+#include <tuple>
+#include <vector>
 
-class TH1F;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 
@@ -43,6 +47,17 @@ class RawCheck final : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
+ private:
+  Quality runPedestalCheck1D(TH1* adcdist, double minentries, double signalfraction) const;
+  std::vector<Quality> runPedestalCheck2D(TH2* adchist, double minentries, double signalfraction) const;
+  std::array<std::vector<int>, 20> reduceBadFECs(std::vector<int> fecids) const;
+  int getExepctedFECs(int smID) const;
+  std::tuple<int, double> getCutsBunchMinAmpHist(bool perSM, bool perFEC);
+
+  void loadConfigValueInt(const std::string_view configvalue, int& target);
+  void loadConfigValueDouble(const std::string_view configvalue, double& target);
+  void loadConfigValueBool(const std::string_view configvalue, bool& target);
+
   /************************************************
    * Switches for InfoLogger Messages             *
    ************************************************/
@@ -63,8 +78,12 @@ class RawCheck final : public o2::quality_control::checker::CheckInterface
    * Settings for bunch min. amp checker          *
    ************************************************/
 
-  int mBunchMinCheckMinEntries = 0;          ///< Min. number of entries for bunch min. amplitude in evaluation region
-  double mBunchMinCheckFractionSignal = 0.5; ///< Fraction of entries in signal region for bunch min. amp checker
+  int mBunchMinCheckMinEntries = 0;            ///< Min. number of entries for bunch min. amplitude in evaluation region
+  double mBunchMinCheckFractionSignal = 0.5;   ///< Fraction of entries in signal region for bunch min. amp checker
+  int mBunchMinCheckMinEntriesSM = 0;          ///< Min. number of entries for bunch min. amplitude in evaluation region (SM-based histograms, optional)
+  double mBunchMinCheckFractionSignalSM = 0.;  ///< Fraction of entries in signal region for bunch min. amp checker (SM-based histograms, optional)
+  int mBunchMinCheckMinEntriesFEC = 0;         ///< Min. number of entries for bunch min. amplitude in evaluation region (FEC-based histograms, optional)
+  double mBunchMinCheckFractionSignalFEC = 0.; ///< Fraction of entries in signal region for bunch min. amp checker (FEC-based histograms, optional)
 
   ClassDefOverride(RawCheck, 2);
 };

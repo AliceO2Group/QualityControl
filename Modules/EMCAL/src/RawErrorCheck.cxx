@@ -35,7 +35,6 @@
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
 
-using namespace std;
 using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::emcal
