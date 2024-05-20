@@ -25,45 +25,72 @@ class Geometry;
 namespace o2::quality_control_modules::emcal
 {
 
+/// \class BadChannelMapReductor
 /// \brief Dedicated reductor for EMCAL bad channel map
+/// \ingroup EMCALQCCReductors
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+/// \since November 1st, 2022
 ///
 /// Produces entries:
-/// - Bad/Dead channels for Full acceptance/Subdetector/Supermodule
-/// - Fraction Bad/Dead channels for Full acceptance/Subdetector/Supermodule
+/// - Bad/Dead/Non-good channels for Full acceptance/Subdetector/Supermodule
+/// - Fraction Bad/Dead/Non-good channels for Full acceptance/Subdetector/Supermodule
+/// - Index of the Supermodule with the highest number of Bad/Dead/Non-good channels
 class BadChannelMapReductor : public quality_control::postprocessing::ReductorTObject
 {
  public:
+  /// \brief Constructor
   BadChannelMapReductor();
+  /// \brief Destructor
   virtual ~BadChannelMapReductor() = default;
 
+  /// \brief Get branch address of structure with data
+  /// \return Branch address
   void* getBranchAddress() override;
+
+  /// \brief Get list of variables providede by reductor
+  /// \return List of variables (leaflist)
   const char* getBranchLeafList() override;
+
+  /// \brief Extract information from bad channel histogram and fill observables
+  /// \param obj Input object to get the data from
   void update(TObject* obj) override;
 
  private:
+  /// \brief Check whether a certain position is within the PHOS region
+  /// \param column Column number of the position
+  /// \param row Row number of the position
   bool isPHOSRegion(int column, int row) const;
 
-  o2::emcal::Geometry* mGeometry;
+  o2::emcal::Geometry* mGeometry; ///< EMCAL geometry
   struct {
-    Int_t mBadChannelsTotal;
-    Int_t mDeadChannelsTotal;
-    Int_t mBadChannelsEMCAL;
-    Int_t mBadChannelsDCAL;
-    Int_t mDeadChannelsEMCAL;
-    Int_t mDeadChannelsDCAL;
-    Int_t mBadChannelsSM[20];
-    Int_t mDeadChannelsSM[20];
-    Int_t mSupermoduleMaxBad;
-    Int_t mSupermoduleMaxDead;
-    Double_t mFractionBadTotal;
-    Double_t mFractionDeadTotal;
-    Double_t mFractionBadEMCAL;
-    Double_t mFractionBadDCAL;
-    Double_t mFractionDeadEMCAL;
-    Double_t mFractionDeadDCAL;
-    Double_t mFractionBadSM[20];
-    Double_t mFractionDeadSM[20];
-  } mStats;
+    Int_t mBadChannelsTotal;         ///< Total number of bad channels
+    Int_t mDeadChannelsTotal;        ///< Total number of dead channels
+    Int_t mNonGoodChannelsTotal;     ///< Total number of channels which are dead or bad
+    Int_t mBadChannelsEMCAL;         ///< Number of bad channels in EMCAL
+    Int_t mBadChannelsDCAL;          ///< Number of bad channels in DCAL
+    Int_t mDeadChannelsEMCAL;        ///< Number of dead channels in EMCAL
+    Int_t mDeadChannelsDCAL;         ///< Number of dead channels in DCAL
+    Int_t mNonGoodChannelsEMCAL;     ///< Number of channels which are dead or bad in EMCAL
+    Int_t mNonGoodChannelsDCAL;      ///< Number of channels which are dead or bad in DCAL
+    Int_t mBadChannelsSM[20];        ///< Number of bad channels per Supermodule
+    Int_t mDeadChannelsSM[20];       ///< Number of dead channels per Supermodule
+    Int_t mNonGoodChannelsSM[20];    ///< Number of channels which are dead or bad per Supermodule
+    Int_t mSupermoduleMaxBad;        ///< Index of the supermodule with the highest number of bad channels
+    Int_t mSupermoduleMaxDead;       ///< Index of the supermodule with the highest number of dead channels
+    Int_t mSupermoduleMaxNonGood;    ///< Index of the supermodule with the highest number of channels which are dead or bad
+    Double_t mFractionBadTotal;      ///< Total fraction of bad channels
+    Double_t mFractionDeadTotal;     ///< Total fraction of dead channels
+    Double_t mFractionNonGoodTotal;  ///< Total fraction of channels which are dead or bad
+    Double_t mFractionBadEMCAL;      ///< Fraction of bad channels in EMCAL
+    Double_t mFractionBadDCAL;       ///< Fraction of bad channels in DCAL
+    Double_t mFractionDeadEMCAL;     ///< Fraction of dead channels in EMCAL
+    Double_t mFractionDeadDCAL;      ///< Fraction of dead channels in DCAL
+    Double_t mFractionNonGoodEMCAL;  ///< Fraction of channels in EMCAL which are dead or bad
+    Double_t mFractionNonGoodDCAL;   ///< Fraction of channels in EMCAL which are dead or bad
+    Double_t mFractionBadSM[20];     ///< Fraction of bad channels per Supermodule
+    Double_t mFractionDeadSM[20];    ///< Fraction of dead channels per Supermodule
+    Double_t mFractionNonGoodSM[20]; ///< Fraction of channels which are dead or bad per Supermodule
+  } mStats;                          ///< Trending data point
 };
 
 } // namespace o2::quality_control_modules::emcal
