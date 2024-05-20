@@ -28,7 +28,7 @@ void* BadChannelMapReductor::getBranchAddress()
 
 const char* BadChannelMapReductor::getBranchLeafList()
 {
-  return "BadChannelsTotal/I:DeadChannelsTotal:BadChannelsEMCAL:BadChannelsDCAL:DeadChannelsEMCAL:DeadChannelsDCAL:BadChannelsSM[20]:DeadChannelsSM[20]:SupermoduleMaxBad:SupermoduleMaxDead:FractionBadTotal/D:FractionDeadTotal:FractionBadEMCAL:FractionBadDCAL:FractionDeadEMCAL:FractionDeadDCAL:FractionBadSupermodule[20]:FractionDeadSupermodule[20]";
+  return "BadChannelsTotal/I:DeadChannelsTotal:NonGoodChannelsTotal:BadChannelsEMCAL:BadChannelsDCAL:DeadChannelsEMCAL:DeadChannelsDCAL:NonGoodChannelsEMCAL:NonGoodChannelsDCAL:BadChannelsSM[20]:DeadChannelsSM[20]:NonGoodChannelsSM[20]:SupermoduleMaxBad:SupermoduleMaxDead:SupermoduleMaxNonGood:FractionBadTotal/D:FractionDeadTotal:FractionNonGoodTotal:FractionBadEMCAL:FractionBadDCAL:FractionDeadEMCAL:FractionDeadDCAL:FractionNonGoodEMCAL:FractionNonGoodDCAL:FractionBadSupermodule[20]:FractionDeadSupermodule[20]:FractionDeadSupermodule[20]";
 }
 
 void BadChannelMapReductor::update(TObject* obj)
@@ -45,19 +45,27 @@ void BadChannelMapReductor::update(TObject* obj)
       auto status = badChannelMap->GetBinContent(icolumn + 1, irow + 1);
       auto [sm, mod, modrow, modcol] = mGeometry->GetCellIndexFromGlobalRowCol(irow, icolumn);
       if (status == 1) { // bad channel
+        mStats.mNonGoodChannelsTotal++;
+        mStats.mNonGoodChannelsSM[sm]++;
         mStats.mBadChannelsTotal++;
         mStats.mBadChannelsSM[sm]++;
         if (sm < 12) {
+          mStats.mNonGoodChannelsEMCAL++;
           mStats.mBadChannelsEMCAL++;
         } else {
+          mStats.mNonGoodChannelsDCAL++;
           mStats.mBadChannelsDCAL++;
         }
       } else if (status == 2) {
+        mStats.mNonGoodChannelsTotal++;
+        mStats.mNonGoodChannelsSM[sm]++;
         mStats.mDeadChannelsTotal++;
         mStats.mDeadChannelsSM[sm]++;
         if (sm < 12) {
+          mStats.mNonGoodChannelsEMCAL++;
           mStats.mDeadChannelsEMCAL++;
         } else {
+          mStats.mNonGoodChannelsDCAL++;
           mStats.mDeadChannelsDCAL++;
         }
       }
@@ -65,11 +73,14 @@ void BadChannelMapReductor::update(TObject* obj)
   }
   mStats.mFractionBadTotal = static_cast<double>(mStats.mBadChannelsTotal) / static_cast<double>(CHANNELS_TOTAL);
   mStats.mFractionDeadTotal = static_cast<double>(mStats.mDeadChannelsTotal) / static_cast<double>(CHANNELS_TOTAL);
+  mStats.mFractionNonGoodTotal = static_cast<double>(mStats.mNonGoodChannelsTotal) / static_cast<double>(CHANNELS_TOTAL);
   mStats.mFractionBadEMCAL = static_cast<double>(mStats.mBadChannelsEMCAL) / static_cast<double>(CHANNELS_EMC);
   mStats.mFractionDeadEMCAL = static_cast<double>(mStats.mDeadChannelsEMCAL) / static_cast<double>(CHANNELS_EMC);
   mStats.mFractionBadDCAL = static_cast<double>(mStats.mBadChannelsDCAL) / static_cast<double>(CHANNELS_DCAL);
-  mStats.mFractionDeadDCAL = mStats.mDeadChannelsDCAL / CHANNELS_DCAL;
-  int currentbad = -1, currentdead = -1;
+  mStats.mFractionDeadDCAL = static_cast<double>(mStats.mDeadChannelsDCAL) / static_cast<double>(CHANNELS_DCAL);
+  mStats.mFractionNonGoodEMCAL = static_cast<double>(mStats.mNonGoodChannelsEMCAL) / static_cast<double>(CHANNELS_EMC);
+  mStats.mFractionNonGoodDCAL = static_cast<double>(mStats.mNonGoodChannelsDCAL) / static_cast<double>(CHANNELS_DCAL);
+  int currentbad = -1, currentdead = -1, currentnongood = -1;
   for (int ism = 0; ism < 20; ism++) {
     auto smtype = mGeometry->GetSMType(ism);
     auto nchannels = channelsSMTYPE.find(smtype);
@@ -79,6 +90,7 @@ void BadChannelMapReductor::update(TObject* obj)
     }
     mStats.mFractionDeadSM[ism] = static_cast<double>(mStats.mDeadChannelsSM[ism]) / nchannels->second;
     mStats.mFractionBadSM[ism] = static_cast<double>(mStats.mBadChannelsSM[ism]) / static_cast<double>(nchannels->second);
+    mStats.mFractionNonGoodSM[ism] = static_cast<double>(mStats.mNonGoodChannelsSM[ism]) / static_cast<double>(nchannels->second);
     if (mStats.mBadChannelsSM[ism] > currentbad) {
       currentbad = mStats.mBadChannelsSM[ism];
       mStats.mSupermoduleMaxBad = ism;
@@ -86,6 +98,10 @@ void BadChannelMapReductor::update(TObject* obj)
     if (mStats.mDeadChannelsSM[ism] > currentdead) {
       currentdead = mStats.mDeadChannelsSM[ism];
       mStats.mSupermoduleMaxDead = ism;
+    }
+    if (mStats.mNonGoodChannelsSM[ism] > currentnongood) {
+      currentnongood = mStats.mNonGoodChannelsSM[ism];
+      mStats.mSupermoduleMaxNonGood = ism;
     }
   }
 }
