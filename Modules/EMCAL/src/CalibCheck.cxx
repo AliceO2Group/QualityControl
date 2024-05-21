@@ -93,6 +93,15 @@ void CalibCheck::configure()
     }
   }
 
+  auto nBadThresholdChannelsFEC = mCustomParameters.find("BadThresholdChannelsFEC");
+  if (nBadThresholdChannelsFEC != mCustomParameters.end()) {
+    try {
+      mBadThresholdChannelsFEC = std::stof(nBadThresholdChannelsFEC->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << fmt::format("Value {} not a float", nBadThresholdChannelsFEC->second.data()) << ENDM;
+    }
+  }
+
   // configure threshold-based checkers for medium quality
   auto nMedThresholdMaskStatsAll = mCustomParameters.find("MedThresholdMaskStatsAll");
   if (nMedThresholdMaskStatsAll != mCustomParameters.end()) {
@@ -148,6 +157,15 @@ void CalibCheck::configure()
     }
   }
 
+  auto nMedThresholdChannelsFEC = mCustomParameters.find("MedThresholdChannelsFEC");
+  if (nMedThresholdChannelsFEC != mCustomParameters.end()) {
+    try {
+      mMedThresholdChannelsFEC = std::stof(nMedThresholdChannelsFEC->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << fmt::format("Value {} not a float", nMedThresholdChannelsFEC->second.data()) << ENDM;
+    }
+  }
+
   // configure nsigma-based checkers
   auto nSigmaTimeCalibCoeff = mCustomParameters.find("SigmaTimeCalibCoeff");
   if (nSigmaTimeCalibCoeff != mCustomParameters.end()) {
@@ -164,7 +182,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
 
-  if (mo->getName() == "MaskStatsAllHisto") {
+  if (mo->getName() == "MaskStatsAllHisto" || mo->getName() == "MaskStatsEMCALHisto" || mo->getName() == "MaskStatsDCALHisto") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
@@ -225,7 +243,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       result = Quality::Medium;
     } else {
       for (int j = 1; j <= h->GetNbinsX(); j++) {
-        auto* h_det = h->ProjectionY(Form("h_det_%d", j), j, j);
+        std::unique_ptr<TH1> h_det(h->ProjectionY(Form("h_det_%d", j), j, j));
         if (h_det->GetEntries() == 0) {
           continue;
         }
@@ -252,7 +270,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       result = Quality::Medium;
     } else {
       for (int j = 1; j <= h->GetNbinsX(); j++) {
-        auto* h_supermod = h->ProjectionY(Form("h_supermod_%d", j), j, j);
+        std::unique_ptr<TH1> h_supermod(h->ProjectionY(Form("h_supermod_%d", j), j, j));
         if (h_supermod->GetEntries() == 0) {
           continue;
         }
@@ -278,16 +296,16 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
     } else {
-      auto* h_allsupermod_proj = h->ProjectionX("h_allsupermod_proj");
+      std::unique_ptr<TH1> h_allsupermod_proj(h->ProjectionX("h_allsupermod_proj"));
       h_allsupermod_proj->Scale(1.0 / h_allsupermod_proj->Integral());
       for (int i = 1; i <= h->GetNbinsY(); i++) {
-        auto* h_supermod = h->ProjectionX(Form("h_supermod_%d", i), i, i);
+        std::unique_ptr<TH1> h_supermod(h->ProjectionX(Form("h_supermod_%d", i), i, i));
         if (h_supermod->GetEntries() == 0) {
           result = Quality::Medium;
         } else {
           h_supermod->Scale(1.0 / h_supermod->Integral());
 
-          Double_t chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj, "UU NORM CHI2/NDF");
+          Double_t chi2_SM = h_supermod->Chi2Test(h_allsupermod_proj.get(), "UU NORM CHI2/NDF");
           if (chi2_SM > mBadThresholdCellAmplitudeSupermoduleCalibPHYS) {
             result = Quality::Bad;
             break;
@@ -304,7 +322,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
     } else {
-      auto* h_allsupermod_proj = h->ProjectionX("h_supermod_proj");
+      std::unique_ptr<TH1> h_allsupermod_proj(h->ProjectionX("h_supermod_proj"));
       if (h_allsupermod_proj->GetEntries() == 0) {
         result = Quality::Medium;
       } else {
@@ -316,7 +334,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         }
 
         for (int j = 1; j <= h->GetNbinsY(); j++) {
-          auto* h_supermod = h->ProjectionY(Form("h_supermod_%d", j), j, j);
+          std::unique_ptr<TH1> h_supermod(h->ProjectionY(Form("h_supermod_%d", j), j, j));
           if (h_supermod->GetEntries() == 0) {
             result = Quality::Medium;
           } else {
@@ -332,6 +350,25 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       }
     }
   }
+
+  if (mo->getName() == "NumberNonGoodChannelsFEC" || mo->getName() == "NumberDeadChannelsFEC" || mo->getName() == "NumberBadChannelsFEC") {
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
+    if (h->GetEntries() == 0) {
+      result = Quality::Medium;
+    } else {
+      std::unique_ptr<TH1> h_allsupermod_proj(h->ProjectionX("h_allsupermod_proj"));
+      for (int iFECId = 1; iFECId <= h->GetNbinsX(); iFECId++) {
+        Float_t numChannelsAllSMs = h_allsupermod_proj->GetBinContent(iFECId);
+        if (numChannelsAllSMs > mBadThresholdChannelsFEC) {
+          result = Quality::Bad;
+          break;
+        } else if (numChannelsAllSMs > mMedThresholdChannelsFEC) {
+          result = Quality::Medium;
+        }
+      }
+    }
+  }
+
   return result;
 }
 
@@ -339,6 +376,216 @@ std::string CalibCheck::getAcceptedType() { return "TH1"; }
 
 void CalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // To do
+  if (mo->getName() == "MaskStatsAllHisto" || mo->getName() == "MaskStatsEMCALHisto" || mo->getName() == "MaskStatsDCALHisto") {
+    auto* h = dynamic_cast<TH1*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Fraction of Bad+Dead Channels Low");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: Fraction of Bad+Dead Channels Above " << mBadThresholdMaskStatsAll << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: Plot Empty or Fraction of Bad+Dead Channels Above " << mMedThresholdMaskStatsAll << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
+
+  if (mo->getName() == "timeCalibCoeff") {
+    auto* h = dynamic_cast<TH1*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Fraction of Times Outside Mean Low");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: Fraction of Times Outside Mean Above " << mBadThresholdTimeCalibCoeff << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: Plot Empty or Fraction of Times Outside Mean Above " << mMedThresholdTimeCalibCoeff << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
+
+  if (mo->getName() == "fractionGoodCellsEvent") {
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Fraction of Good Cells High for All Detectors");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: 1+ Detectors Have Fraction of Good Cells Below " << mBadThresholdFractionGoodCellsEvent << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: Plot Empty or 1+ Detectors Have Fraction of Good Cells Below " << mMedThresholdFractionGoodCellsEvent << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
+
+  if (mo->getName() == "fractionGoodCellsSupermodule") {
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Fraction of Good Cells High for All Supermodules");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: 1+ Supermodules Have Fraction of Good Cells Below " << mBadThresholdFractionGoodCellsSupermodule << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: Plot Empty or 1+ Supermodules Have Fraction of Good Cells Below " << mMedThresholdFractionGoodCellsSupermodule << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
+
+  if (mo->getName() == "cellAmplitudeSupermoduleCalib_PHYS") {
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Cell Amplitude Distributions Similar for All Supermodules");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: 1+ Supermodules Have Anomalous Cell Amplitude Distributions With Chi2/NDF Above " << mBadThresholdCellAmplitudeSupermoduleCalibPHYS << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: 1+ Supermodules Empty or 1+ Supermodules Have Anomalous Cell Amplitude Distributions With Chi2/NDF Above " << mMedThresholdCellAmplitudeSupermoduleCalibPHYS << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
+
+  if (mo->getName() == "cellTimeSupermoduleCalib_PHYS") {
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Mean Cell Time Within Limits");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: 1+ Supermodules Have |Mean Cell Time| Above " << mBadThresholdCellTimeSupermoduleCalibPHYS << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: 1+ Supermodules Empty or 1+ Supermodules Have |Mean Cell Time| Above " << mMedThresholdCellTimeSupermoduleCalibPHYS << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
+
+  if (mo->getName() == "NumberNonGoodChannelsFEC" || mo->getName() == "NumberDeadChannelsFEC" || mo->getName() == "NumberBadChannelsFEC") {
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
+    TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+    h->GetListOfFunctions()->Add(msg);
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Data OK: Number of Dead/Bad/Dead+Bad Channels Within Limit");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      stringstream msg_bad;
+      msg_bad << "Error: 1+ FECs Have Number of Dead/Bad/Dead+Bad Channels Above " << mBadThresholdChannelsFEC << std::endl;
+      msg->Clear();
+      msg->AddText(msg_bad.str().c_str());
+      msg->AddText("Call EMCAL oncall");
+      msg->SetFillColor(kRed);
+      msg->Draw();
+    } else if (checkResult == Quality::Medium) {
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      stringstream msg_med;
+      msg_med << "Warning: Plot Empty or 1+ FECs Have Number of Dead/Bad/Dead+Bad Channels Above " << mMedThresholdChannelsFEC << std::endl;
+      msg->Clear();
+      msg->AddText(msg_med.str().c_str());
+      msg->SetFillColor(kOrange);
+      msg->Draw();
+    }
+  }
 }
+
 } // namespace o2::quality_control_modules::emcal
