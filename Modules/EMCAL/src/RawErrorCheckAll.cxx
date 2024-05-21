@@ -50,7 +50,7 @@ Quality RawErrorCheckAll::check(std::map<std::string, std::shared_ptr<MonitorObj
   for (auto& [moName, mo] : *moMap) {
     if (mo->getName() == "TrendRawDataError") {
       auto* canvas_obj = dynamic_cast<TCanvas*>(mo->getObject());
-      TList* list_name = canvas_obj->GetListOfPrimitives();
+      auto* list_name = canvas_obj->GetListOfPrimitives();
       for (auto trendgraph : TRangeDynCast<TGraph>(list_name)) {
         if (!trendgraph) {
           continue;
@@ -58,8 +58,8 @@ Quality RawErrorCheckAll::check(std::map<std::string, std::shared_ptr<MonitorObj
 
         // queue used to store list so that we get the average
         std::queue<double> Dataset;
-        double sum = -1;
-        double mean = -1;
+        double sum = 0;
+        double mean = 0;
 
         auto* yValues = trendgraph->GetY();
         auto numPoints = trendgraph->GetN();
@@ -73,15 +73,13 @@ Quality RawErrorCheckAll::check(std::map<std::string, std::shared_ptr<MonitorObj
             Dataset.pop();
           }
           double mean = sum / mPeriodMovAvg;
-          if (sum == 0) {
-            mean = 0;
-          }
           meanArray[i] = mean;
         }
 
-        for (int i = 0; i < meanArray.size() - 1; ++i) {
+        for (decltype(meanArray.size()) i = 0; i < meanArray.size() - 1; ++i) {
           if (meanArray[i] > mBadThreshold && meanArray[i + 1] > mBadThreshold) {
-            result = Quality::Good;
+            result = Quality::Bad;
+            break;
           }
         }
         meanArray.clear();
