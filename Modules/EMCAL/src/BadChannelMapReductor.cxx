@@ -28,7 +28,7 @@ void* BadChannelMapReductor::getBranchAddress()
 
 const char* BadChannelMapReductor::getBranchLeafList()
 {
-  return "BadChannelsTotal/I:DeadChannelsTotal:NonGoodChannelsTotal:BadChannelsEMCAL:BadChannelsDCAL:DeadChannelsEMCAL:DeadChannelsDCAL:NonGoodChannelsEMCAL:NonGoodChannelsDCAL:BadChannelsSM[20]:DeadChannelsSM[20]:NonGoodChannelsSM[20]:SupermoduleMaxBad:SupermoduleMaxDead:SupermoduleMaxNonGood:FractionBadTotal/D:FractionDeadTotal:FractionNonGoodTotal:FractionBadEMCAL:FractionBadDCAL:FractionDeadEMCAL:FractionDeadDCAL:FractionNonGoodEMCAL:FractionNonGoodDCAL:FractionBadSupermodule[20]:FractionDeadSupermodule[20]:FractionDeadSupermodule[20]";
+  return "BadChannelsTotal/I:DeadChannelsTotal:NonGoodChannelsTotal:BadChannelsEMCAL:BadChannelsDCAL:DeadChannelsEMCAL:DeadChannelsDCAL:NonGoodChannelsEMCAL:NonGoodChannelsDCAL:BadChannelsSM[20]:DeadChannelsSM[20]:NonGoodChannelsSM[20]:SupermoduleMaxBad:SupermoduleMaxDead:SupermoduleMaxNonGood:FractionBadTotal/D:FractionDeadTotal:FractionNonGoodTotal:FractionBadEMCAL:FractionBadDCAL:FractionDeadEMCAL:FractionDeadDCAL:FractionNonGoodEMCAL:FractionNonGoodDCAL:FractionBadSupermodule[20]:FractionDeadSupermodule[20]:FractionNonGoodSupermodule[20]";
 }
 
 void BadChannelMapReductor::update(TObject* obj)
