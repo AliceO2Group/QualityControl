@@ -20,6 +20,9 @@
 #include <Framework/InputRecord.h>
 #include "Common/TH1Ratio.h"
 #include "Common/Utils.h"
+#include "DataFormatsITSMFT/CompCluster.h"
+#include "DataFormatsITSMFT/ROFRecord.h"
+//#include "ITS/ITSHelpers.h"
 
 using namespace o2::framework;
 using namespace o2::itsmft;
@@ -50,6 +53,17 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   createDecodingPlots();
   setPlotsFormat();
+   for (int i=0;i<3;i++) {
+ 
+      ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i+1]- ChipsBoundaryBarrels[i]);
+  
+       DeadChips[i] = new TH2D(Form("DeadChips%s",BarrelNames[i].Data()), Form("Dead Chips in %s", BarrelNames[i].Data()), nQCCycleToMonitor, 0,nQCCycleToMonitor, ChipsBoundaryBarrels[i+1]- ChipsBoundaryBarrels[i],0,ChipsBoundaryBarrels[i+1]-ChipsBoundaryBarrels[i]);
+       getObjectsManager()->startPublishing(DeadChips[i]);
+}
+ 
+
+
+    
 }
 
 void ITSDecodingErrorTask::createDecodingPlots()
@@ -121,17 +135,63 @@ void ITSDecodingErrorTask::setPlotsFormat()
 }
 
 void ITSDecodingErrorTask::startOfActivity(const Activity& activity)
-{
-  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
+{ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;}
+
+
+void ITSDecodingErrorTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
+
+std::cout<<"############## new cycle, creating DeadChip Plots with size: "<< nQCCycle << std::endl;
+
+for (int i = 0; i<3;i++){
+CurrentDeadChips[i].clear();
+CurrentDeadChips[i].resize(ChipsBoundaryBarrels[i+1]- ChipsBoundaryBarrels[i], 0);
 }
 
-void ITSDecodingErrorTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
+}
 
 void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  std::cout<<"!!!!!!!!!!!!!!!!!!! at the monitor data"<<std::endl;
 
   auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
   auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
+  auto aliveChips = ctx.inputs().get< gsl::span<char>>("chipstatus");
+  std::cout<<"############# aliveChips.size(): "<< aliveChips.size()<<std::endl;
+  
+  
+/*
+ std::vector<char> aliveChips(24120); 
+ for (int i=0;i<24120;i++) aliveChips[i]=0;
+
+ const auto elements = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("clusters");
+ const auto ROFs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
+ for (const auto& rof : ROFs) {
+      auto elementsInTF = rof.getROFData(elements);
+      for (const auto& el : elementsInTF) {
+        aliveChips[(int)el.getSensorID()]=1;
+   }
+}
+*/
+//  std::vector<int> CurrentDeadChips[3];
+  int id=0;
+  for (auto chipID: aliveChips){
+    int iBarrel = id < ChipsBoundaryBarrels[1]? 0  : id < ChipsBoundaryBarrels[2]? 1 : 2;
+    if ((int)chipID != 1) {
+             // if (iBarrel == 0)  std::cout<<"!!! chipID: "<<(int)chipID << " id= "<<id<<std::endl;
+            //  std::cout<<"!!!  CurrentDeadChips[0].size() "<<  CurrentDeadChips[0].size() <<" chipID: "<<(int)chipID << " id= "<<id<< " fill to: "<< id - ChipsBoundaryBarrels[iBarrel] <<std::endl; 
+              CurrentDeadChips[iBarrel][ id - ChipsBoundaryBarrels[iBarrel]]++;   
+    };
+    id++;
+  }
+  std::cout<<"alive size: "<< aliveChips.size() <<" IB: "<< CurrentDeadChips[0].size() << " ML: "<< CurrentDeadChips[1].size() << " OL: "<< CurrentDeadChips[2].size()<<std::endl; 
+  
+/*
+    ChipsStack[0]->push(CurrentDeadChips[0]); 
+
+    for (int ix = 1; ix<= DeadChips[0]->GetNbinsX();ix++)
+        for (int iy=1; iy<= DeadChips[0]->GetNbinsY();iy++)
+            DeadChips[0]->SetBinContent(ix,iy, ChipsStack[0]->stack[ix-1][iy-1]);
+*/
 
   // multiply Error distributions before re-filling
   for (const auto& le : linkErrors) {
@@ -181,6 +241,16 @@ void ITSDecodingErrorTask::getParameters()
 
 void ITSDecodingErrorTask::endOfCycle()
 {
+
+  for (int iBarrel=0; iBarrel<3;iBarrel++){
+  ChipsStack[iBarrel]->push(CurrentDeadChips[iBarrel]);
+
+    for (int ix = 1; ix<= DeadChips[iBarrel]->GetNbinsX();ix++)
+        for (int iy=1; iy<= DeadChips[iBarrel]->GetNbinsY();iy++)
+            DeadChips[iBarrel]->SetBinContent(ix,iy, ChipsStack[iBarrel]->stack[ix-1][iy-1]);
+  }
+
+  nQCCycle++;
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   hBusyFraction->Reset();
   hAlwaysBusy->Reset();
@@ -211,6 +281,7 @@ void ITSDecodingErrorTask::endOfCycle()
 void ITSDecodingErrorTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
+  nQCCycle = 0;
 }
 
 void ITSDecodingErrorTask::resetGeneralPlots()

@@ -31,7 +31,7 @@
                 "cycleDurationSeconds": "30",
                 "dataSource": {
                     "type": "direct",
-                    "query": "linkerrors:ITS/LinkErrors/0;decerrors:ITS/ChipErrors/0"
+                    "query": "linkerrors:ITS/LinkErrors/0;decerrors:ITS/ChipErrors/0;chipstatus:ITS/CHIPSSTATUS/0"
                 },
                 "location": "local",
                 "taskParameters": {
@@ -61,21 +61,5 @@
             }
        }
 
-    },
-    "dataSamplingPolicies": [
-        {
-            "id": "linkerrors",
-            "active": "true",
-            "machines": [],
-            "query": "linkerrors:ITS/LinkErrors/0;decerrors:ITS/ChipErrors/0",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "1",
-                    "seed": "1441"
-                }
-            ],
-            "blocking": "false"
-        }
-    ]
-}
+    }
+   }
