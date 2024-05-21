@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+
+import logging
+import argparse
+import dryable
+from qcrepocleaner.Ccdb import Ccdb
+from qcrepocleaner.binUtils import prepare_main_logger
+import csv
+
+
+def parse_args():
+    """Parse the arguments passed to the script."""
+    logging.info("Parsing arguments")
+    parser = argparse.ArgumentParser(description='Update the run type of all versions in a path. The run types for each run are '
+                                                 'provided in a csv file whose format is the one from the bookkeeping, with headers.')
+    parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
+    parser.add_argument('--log-level', dest='log_level', action='store', default="20",
+                        help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Dry run, no actual deletion nor modification to the CCDB.')
+    parser.add_argument('--path', dest='path', action='store', default="",
+                        help='Update this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob)', required=True)
+    parser.add_argument('--runs-csv-file', dest='runs_file', action='store', help='A csv file with a header and the '
+                                                                                  'columns `runNumber` and `runType`',
+                        required=True)
+    parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be updated')
+    parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should be really careful with that.')
+    parser.add_argument('--path-no-subdir', action='store_true', default=False, help='Set to true if the '
+                          'path points to an object rather than a folder or if subdirectories must be ignored.')
+    args = parser.parse_args()
+    dryable.set(args.dry_run)
+    logging.info(args)
+    return args
+
+
+def run(args):
+    ccdb = Ccdb(args.url)
+
+    total_updated = 0
+    total_planned = 0
+    mapping_run_types = dict()
+
+    # build the mapping
+    file = open(args.runs_file)
+    csvreader = csv.DictReader(file)
+    for row in csvreader:
+        try:
+            run_number = row["runNumber"]
+            run_type = row["runType"]
+        except KeyError:  # pragma: no coverage
+            logging.fatal(f"Could not find columns `runNumber` and `runType` in {args.runs_file}, make sure the column headers are correct.")
+            exit(1)
+
+        if run_type == "null":
+            logging.debug(f"Skipping run {run_number} because its type is `null`")
+            continue
+        logging.debug(f"Run : {run_number} -> {run_type}")
+        mapping_run_types[run_number] = run_type
+
+    # go through the versions and update them if possible
+    path = args.path
+    if args.path_no_subdir is False:
+        path += "/.*"
+    versions = ccdb.getVersionsList(path, "", "")
+    logging.info(f"Number of versions found: {len(versions)}")
+    total_planned += len(versions)
+    for version in versions:
+        run_number = version.metadata["RunNumber"]
+        if version.metadata["RunNumber"] not in mapping_run_types:
+            logging.debug(f"No mapping run {version.metadata['RunNumber']}")
+            continue
+
+        run_type = mapping_run_types[run_number]
+        logging.info(f"Ready to update {version} : \"{version.metadata['RunType']}\" -> \"{run_type}\"")
+
+        if args.print_list:
+            continue
+
+        if args.yes is True:
+            ccdb.updateMetadata(version, {"RunType": run_type})
+            total_updated += 1
+        else:
+            answer = input("  Continue? y/n\n  ")
+            if answer.lower() in ["y", "yes"]:
+                ccdb.updateMetadata(version, {"RunType": run_type})
+                total_updated += 1
+            elif answer.lower() in ["n", "no"]:
+                logging.info("   skipping")
+            else:
+                logging.error("   wrong input, skipping")
+
+    logging.info(f"Total planned to be updated: {total_planned}")
+    logging.info(f"Total updated items: {total_updated}")
+
+
+# ****************
+# We start here !
+# ****************
+
+def main():
+
+    prepare_main_logger()
+
+    # Parse arguments
+    args = parse_args()
+    logging.getLogger().setLevel(int(args.log_level))
+
+    run(args)
+
+
+if __name__ == "__main__":
+    main()

@@ -63,12 +63,6 @@ RawTask::~RawTask()
   if (mNumberOfPagesPerMessage) {
     delete mNumberOfPagesPerMessage;
   }
-  for (auto h : mFECmaxCount) {
-    delete h;
-  }
-  for (auto h : mFECmaxID) {
-    delete h;
-  }
   if (mNumberOfSuperpagesPerMessage) {
     delete mNumberOfSuperpagesPerMessage;
   }
@@ -112,38 +106,27 @@ RawTask::~RawTask()
   for (auto& histos : mMinChannelADCRCFull) {
     delete histos.second;
   }
-  for (auto& histos : mMinBunchRawAmplFull) {
-    delete histos.second;
-  }
-  for (auto& histos : mRawAmplMinEMCAL_tot) {
-    delete histos.second;
-  }
-  for (auto& histos : mRawAmplMinDCAL_tot) {
-    delete histos.second;
-  }
-  for (auto& histos : mMaxSMRawAmplSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
-  }
-  for (auto& histos : mMinSMRawAmplSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
-  }
 
-  for (auto& histos : mMaxBunchRawAmplSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
+  for (auto& histos : mBunchMinRawAmpSM) {
+    delete histos.second;
   }
-
-  for (auto& histos : mMinBunchRawAmplSM) {
-    for (auto h : histos.second) {
-      delete h;
-    }
+  for (auto& histos : mBunchMinRawAmpFEC) {
+    delete histos.second;
+  }
+  for (auto& histos : mBunchMaxRawAmpSM) {
+    delete histos.second;
+  }
+  for (auto& histos : mBunchMaxRawAmpFEC) {
+    delete histos.second;
+  }
+  for (auto& histos : mSMMinRawAmpSM) {
+    delete histos.second;
+  }
+  for (auto& histos : mSMMaxRawAmpSM) {
+    delete histos.second;
   }
 }
+
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   using infoCONTEXT = AliceO2::InfoLogger::InfoLoggerContext;
@@ -259,21 +242,6 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mFECmaxIDperSM->SetStats(0);
   getObjectsManager()->startPublishing(mFECmaxIDperSM); // work on it, keep them
 
-  // histos per SM
-  for (auto ism = 0; ism < 20; ism++) {
-    mFECmaxCount[ism] = new TH1F(Form("NumberOfChWithInputSM_%d", ism), Form("Number of Channels in max FEC for SM %d", ism), 40, -0.5, 39.5);
-    mFECmaxCount[ism]->GetXaxis()->SetTitle("max FEC count");
-    mFECmaxCount[ism]->GetYaxis()->SetTitle("maximum occupancy");
-    mFECmaxCount[ism]->SetStats(0);
-    getObjectsManager()->startPublishing(mFECmaxCount[ism]); // do we need them? martin has them in his gui. they are the projections of the previous two
-
-    mFECmaxID[ism] = new TH1F(Form("IDFECMaxChWithInputSM_%d", ism), Form("ID FEC Max Number of Channels with input %d", ism), 40, -0.5, 39.5);
-    mFECmaxID[ism]->GetXaxis()->SetTitle("FEC id");
-    mFECmaxID[ism]->GetYaxis()->SetTitle("maximum occupancy");
-    mFECmaxID[ism]->SetStats(0);
-    getObjectsManager()->startPublishing(mFECmaxID[ism]); // martin has them in his gui. they are the projections of the previous two
-  }
-
   // histos per SM and Trigger
   EventType triggers[2] = { EventType::CAL_EVENT, EventType::PHYS_EVENT };
   TString histoStr[2] = { "CAL", "PHYS" };
@@ -307,76 +275,54 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplMinRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplMinRC); // markus/martin full emcal not so big
 
-    TH1D* histosRawMinFull;
-    TH1D* histosRawMinEMCAL;
-    TH1D* histosRawMinDCAL;
+    TH2* histosBunchMinRawAmpSM = new TH2D(Form("BunchMinRawAmplitudeSM_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude per supermodule (%s)", histoStr[trg].Data()), 100, 0., 100., 20, -0.5, 19.5);
+    histosBunchMinRawAmpSM->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
+    histosBunchMinRawAmpSM->GetYaxis()->SetTitle("Supermodule ID");
+    histosBunchMinRawAmpSM->SetStats(0);
+    getObjectsManager()->startPublishing(histosBunchMinRawAmpSM);
 
-    histosRawMinFull = new TH1D(Form("BunchMinRawAmplitudeFull_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL+DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
-    histosRawMinFull->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
-    histosRawMinFull->GetYaxis()->SetTitle("Counts");
-    histosRawMinFull->SetStats(0);
-    getObjectsManager()->startPublishing(histosRawMinFull);
+    TH2* histosBunchMinRawAmpFEC = new TH2D(Form("BunchMinRawAmplitudeFEC_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude per FEC (%s)", histoStr[trg].Data()), 100, 0., 100., 800, -0.5, 799.5);
+    histosBunchMinRawAmpFEC->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
+    histosBunchMinRawAmpFEC->GetYaxis()->SetTitle("FEC ID");
+    histosBunchMinRawAmpFEC->SetStats(0);
+    getObjectsManager()->startPublishing(histosBunchMinRawAmpFEC);
 
-    histosRawMinEMCAL = new TH1D(Form("BunchMinRawAmplitudeEMCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
-    histosRawMinEMCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
-    histosRawMinEMCAL->GetYaxis()->SetTitle("Counts");
-    histosRawMinEMCAL->SetStats(0);
-    getObjectsManager()->startPublishing(histosRawMinEMCAL);
+    TH2* histosBunchMaxRawAmpSM = new TH2D(Form("BunchMaxRawAmplitudeSM_%s", histoStr[trg].Data()), Form("Bunch max raw amplitude per supermodule (%s)", histoStr[trg].Data()), 500, 0., 500., 20, -0.5, 19.5);
+    histosBunchMaxRawAmpSM->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
+    histosBunchMaxRawAmpSM->GetYaxis()->SetTitle("Supermodule ID");
+    histosBunchMaxRawAmpSM->SetStats(0);
+    getObjectsManager()->startPublishing(histosBunchMaxRawAmpSM);
 
-    histosRawMinDCAL = new TH1D(Form("BunchMinRawAmplitudeDCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
-    histosRawMinDCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
-    histosRawMinDCAL->GetYaxis()->SetTitle("Counts");
-    histosRawMinDCAL->SetStats(0);
-    getObjectsManager()->startPublishing(histosRawMinDCAL);
+    TH2* histosBunchMaxRawAmpFEC = new TH2D(Form("BunchMaxRawAmplitudeFEC_%s", histoStr[trg].Data()), Form("Bunch max raw amplitude per FEC (%s)", histoStr[trg].Data()), 500, 0., 500., 800, -0.5, 799.5);
+    histosBunchMaxRawAmpFEC->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
+    histosBunchMaxRawAmpFEC->GetYaxis()->SetTitle("FEC ID");
+    histosBunchMaxRawAmpFEC->SetStats(0);
+    getObjectsManager()->startPublishing(histosBunchMaxRawAmpFEC);
 
-    std::array<TH1*, 20> histosMinBunchAmpSM;
-    std::array<TH1*, 20> histosMaxBunchAmpSM;
-    std::array<TH1*, 20> histosMinSMAmpSM;
-    std::array<TH1*, 20> histosMaxSMAmpSM;
-    std::array<TProfile2D*, 20> histosBunchRawAmplRmsRC;
-    std::array<TProfile2D*, 20> histosBunchRawAmplMeanRC;
-    std::array<TProfile2D*, 20> histosMaxChannelRawAmplRC;
-    std::array<TProfile2D*, 20> histosMinChannelRawAmpRC;
+    TH2* histosSMMinRawAmpSM = new TH2D(Form("SMMinRawAmplitudeSM_%s", histoStr[trg].Data()), Form("Min SM raw amplitude per supermodule (%s)", histoStr[trg].Data()), 100, 0., 100., 20, -0.5, 19.5);
+    histosSMMinRawAmpSM->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
+    histosSMMinRawAmpSM->GetYaxis()->SetTitle("Supermodule ID");
+    histosSMMinRawAmpSM->SetStats(0);
+    getObjectsManager()->startPublishing(histosSMMinRawAmpSM);
 
-    for (auto ism = 0; ism < 20; ism++) {
-
-      histosMaxSMAmpSM[ism] = new TH1F(Form("SMMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
-      histosMaxSMAmpSM[ism]->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
-      histosMaxSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      histosMaxSMAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMaxSMAmpSM[ism]); // do we need it for two triggers? not needed for calibration
-
-      histosMinSMAmpSM[ism] = new TH1F(Form("SMMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
-      histosMinSMAmpSM[ism]->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
-      histosMinSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      histosMinSMAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]); // do we need it for two triggers? not needed for calibration
-
-      histosMaxBunchAmpSM[ism] = new TH1F(Form("BunchMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 500, 0., 500.);
-      histosMaxBunchAmpSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude (ADC)");
-      histosMaxBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      histosMaxBunchAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]); // do we need it for two triggers? not needed for calibration
-
-      histosMinBunchAmpSM[ism] = new TH1F(Form("BunchMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
-      histosMinBunchAmpSM[ism]->GetXaxis()->SetTitle("Min Raw Amplitude (ADC)");
-      histosMinBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      histosMinBunchAmpSM[ism]->SetStats(0);
-      getObjectsManager()->startPublishing(histosMinBunchAmpSM[ism]); // do we need it for two triggers? not needed for calibration
-    }                                                                 // loop SM
-    mMaxSMRawAmplSM[triggers[trg]] = histosMaxSMAmpSM;
-    mMinSMRawAmplSM[triggers[trg]] = histosMinSMAmpSM;
-    mMaxBunchRawAmplSM[triggers[trg]] = histosMaxBunchAmpSM;
-    mMinBunchRawAmplSM[triggers[trg]] = histosMinBunchAmpSM;
+    TH2* histosSMMaxRawAmpSM = new TH2D(Form("SMMaxRawAmplitudeSM_%s", histoStr[trg].Data()), Form("Max SM raw amplitude per supermodule (%s)", histoStr[trg].Data()), 500, 0., 500., 20, -0.5, 19.5);
+    histosSMMaxRawAmpSM->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
+    histosSMMaxRawAmpSM->GetYaxis()->SetTitle("Supermodule ID");
+    histosSMMaxRawAmpSM->SetStats(0);
+    getObjectsManager()->startPublishing(histosSMMaxRawAmpSM);
 
     mRMSBunchADCRCFull[triggers[trg]] = histosRawAmplRmsRC;
     mMeanBunchADCRCFull[triggers[trg]] = histosRawAmplMeanRC;
     mMaxChannelADCRCFull[triggers[trg]] = histosRawAmplMaxRC;
     mMinChannelADCRCFull[triggers[trg]] = histosRawAmplMinRC;
 
-    mMinBunchRawAmplFull[triggers[trg]] = histosRawMinFull;
-    mRawAmplMinEMCAL_tot[triggers[trg]] = histosRawMinEMCAL;
-    mRawAmplMinDCAL_tot[triggers[trg]] = histosRawMinDCAL;
+    mBunchMinRawAmpSM[triggers[trg]] = histosBunchMinRawAmpSM;
+    mBunchMinRawAmpFEC[triggers[trg]] = histosBunchMinRawAmpFEC;
+    mBunchMaxRawAmpSM[triggers[trg]] = histosBunchMaxRawAmpSM;
+    mBunchMaxRawAmpFEC[triggers[trg]] = histosBunchMaxRawAmpFEC;
+
+    mSMMinRawAmpSM[triggers[trg]] = histosSMMinRawAmpSM;
+    mSMMaxRawAmpSM[triggers[trg]] = histosSMMaxRawAmpSM;
 
   } // loop trigger case
 }
@@ -622,6 +568,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           fecIndex = chan.getFECIndex();
           branchIndex = chan.getBranchIndex();
           fecID = mMappings->getFEEForChannelInDDL(feeID, fecIndex, branchIndex);
+          auto globalFecID = supermoduleID * NFEESM + fecID;
           fecMaxChannelsEvent->second[supermoduleID][fecID]++;
 
           Short_t maxADC = 0;
@@ -647,17 +594,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
-            mMaxBunchRawAmplSM[evtype][supermoduleID]->Fill(maxADCbunch); // max for each cell --> for for expert only
+            mBunchMaxRawAmpFEC[evtype]->Fill(maxADCbunch, globalFecID);
+            mBunchMaxRawAmpSM[evtype]->Fill(maxADCbunch, supermoduleID); // max for each cell --> for for expert only
 
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
-            mMinBunchRawAmplSM[evtype][supermoduleID]->Fill(minADCbunch); // min for each cell --> for for expert only
-            mMinBunchRawAmplFull[evtype]->Fill(minADCbunch);              // shifter
-            if (supermoduleID < 12)
-              mRawAmplMinEMCAL_tot[evtype]->Fill(minADCbunch); // shifter (not for pilot beam)
-            else
-              mRawAmplMinDCAL_tot[evtype]->Fill(minADCbunch); // shifter (not for pilot beam)
+            mBunchMinRawAmpFEC[evtype]->Fill(minADCbunch, globalFecID);
+            mBunchMinRawAmpSM[evtype]->Fill(minADCbunch, supermoduleID); // min for each cell --> for for expert only
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
@@ -678,8 +622,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (maxADC > thresholdMaxADCocc)
             mMaxChannelADCRCFull[evtype]->Fill(globCol, globRow, maxADC); // for shifter
 
-          if (minADC < minADCSMEvent->second[supermoduleID])
+          if (minADC < minADCSMEvent->second[supermoduleID]) {
             minADCSMEvent->second[supermoduleID] = minADC;
+          }
           // if (minADC > thresholdMinADCocc)
           // mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
           if (minADC > thresholdMinADCocc)
@@ -708,9 +653,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
       if (maxfecCount <= 0)
-        continue;                           // Reject links on different FLP
-      mFECmaxID[ism]->Fill(maxfecID);       // histo to monitor the ID of FEC with max count for shifter
-      mFECmaxCount[ism]->Fill(maxfecCount); // histo to monitor the count //for shifter
+        continue; // Reject links on different FLP
 
       mFECmaxIDperSM->Fill(ism, maxfecID);       // filled as a funcion of SM (shifter)
       mFECmaxCountperSM->Fill(ism, maxfecCount); // filled as a function of SM (shifter)
@@ -721,9 +664,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     bool isPhysTrigger = triggertype & o2::trigger::PhT;
     EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
     for (int ism = 0; ism < NUMBERSM; ism++) {
-      if (maxadc.second[ism] == 0)
+      if (maxadc.second[ism] == 0) {
         continue;
-      mMaxSMRawAmplSM[evtype][ism]->Fill(maxadc.second[ism]); // max in the event for shifter
+      }
+      mSMMaxRawAmpSM[evtype]->Fill(maxadc.second[ism], ism);
     }
   }
 
@@ -732,9 +676,11 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     bool isPhysTrigger = triggertype & o2::trigger::PhT;
     EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
     for (int ism = 0; ism < NUMBERSM; ism++) {
-      if (minadc.second[ism] == SHRT_MAX)
+      auto smminadc = minadc.second[ism];
+      if (smminadc == SHRT_MAX) {
         continue;
-      mMinSMRawAmplSM[evtype][ism]->Fill(minadc.second[ism]); // max in the event (not for shifter)
+      }
+      mSMMinRawAmpSM[evtype]->Fill(smminadc, ism);
     }
   }
   // Same for other cached values
@@ -764,19 +710,12 @@ void RawTask::reset()
     mMeanBunchADCRCFull[trg]->Reset();
     mMaxChannelADCRCFull[trg]->Reset();
     mMinChannelADCRCFull[trg]->Reset();
-    mMinBunchRawAmplFull[trg]->Reset();
-    mRawAmplMinEMCAL_tot[trg]->Reset();
-    mRawAmplMinDCAL_tot[trg]->Reset();
-    for (Int_t ism = 0; ism < 20; ism++) {
-      mMaxSMRawAmplSM[trg][ism]->Reset();
-      mMinSMRawAmplSM[trg][ism]->Reset();
-      mMaxBunchRawAmplSM[trg][ism]->Reset();
-      mMinBunchRawAmplSM[trg][ism]->Reset();
-    }
-  }
-  for (int ism = 0; ism < 20; ism++) {
-    mFECmaxCount[ism]->Reset();
-    mFECmaxID[ism]->Reset();
+    mBunchMinRawAmpSM[trg]->Reset();
+    mBunchMinRawAmpFEC[trg]->Reset();
+    mBunchMaxRawAmpSM[trg]->Reset();
+    mBunchMaxRawAmpFEC[trg]->Reset();
+    mSMMinRawAmpSM[trg]->Reset();
+    mSMMaxRawAmpSM[trg]->Reset();
   }
   mMessageCounter->Reset();
   mNumberOfSuperpagesPerMessage->Reset();

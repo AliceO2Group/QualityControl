@@ -145,6 +145,8 @@ void BCVisualization::update(Trigger t, framework::ServiceRegistryRef services)
 void BCVisualization::finalize(Trigger t, framework::ServiceRegistryRef)
 {
   getObjectsManager()->stopPublishing(mOutputCanvas);
+  delete mOutputCanvas;
+  mOutputCanvas = nullptr;
 }
 
 void BCVisualization::reset()

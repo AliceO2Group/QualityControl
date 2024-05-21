@@ -52,6 +52,7 @@ void TrendingTracks::initialize(Trigger, framework::ServiceRegistryRef)
   // Setting parameters
 
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
@@ -66,7 +67,7 @@ void TrendingTracks::initialize(Trigger, framework::ServiceRegistryRef)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
 }
 
 void TrendingTracks::computeClustersPerChamber(TProfile* p)
@@ -159,7 +160,6 @@ void TrendingTracks::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
       delete mPlots[plot.name];
     }
 
@@ -230,6 +230,6 @@ void TrendingTracks::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 }

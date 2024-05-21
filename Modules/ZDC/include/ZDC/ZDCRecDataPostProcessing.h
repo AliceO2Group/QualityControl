@@ -110,7 +110,7 @@ void ZDCRecDataPostProcessing::publishHisto(T* h, bool statBox,
   if (!statBox) {
     h->SetStats(0);
   }
-  getObjectsManager()->startPublishing(h);
+  getObjectsManager()->startPublishing(h, quality_control::core::PublicationPolicy::ThroughStop);
   if (drawOptions) {
     getObjectsManager()->setDefaultDrawOptions(h, drawOptions);
   }

@@ -54,6 +54,7 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
 {
   int counter = 0;
   for (auto& i : mCrates) {
+    i.reset();
     i.reset(new TH2F(Form("hCrate%02i", counter),
                      Form("Crate%02i;Word;Slot", counter),
                      mNWords, 0, mNWords, mNSlots, 0, mNSlots));

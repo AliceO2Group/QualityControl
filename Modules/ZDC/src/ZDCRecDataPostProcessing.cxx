@@ -158,6 +158,7 @@ void ZDCRecDataPostProcessing::configure(const boost::property_tree::ptree& conf
 
 void ZDCRecDataPostProcessing::createSummaryADCHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
+  mSummaryADCHisto.reset();
   mSummaryADCHisto = std::make_unique<TH1F>("h_summary_ADC", "Summary ADC", mBinLabelsADC.size(), 0, mBinLabelsADC.size());
   for (size_t bin = 0; bin < mBinLabelsADC.size(); bin++) {
     mSummaryADCHisto->GetXaxis()->SetBinLabel(bin + 1, mBinLabelsADC[bin].c_str());
@@ -169,6 +170,7 @@ void ZDCRecDataPostProcessing::createSummaryADCHistos(Trigger t, repository::Dat
 
 void ZDCRecDataPostProcessing::createSummaryTDCHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
+  mSummaryTDCHisto.reset();
   mSummaryTDCHisto = std::make_unique<TH1F>("h_summary_TDC", "Summary TDC", mBinLabelsTDC.size(), 0, mBinLabelsTDC.size());
   for (size_t bin = 0; bin < mBinLabelsTDC.size(); bin++) {
     mSummaryTDCHisto->GetXaxis()->SetBinLabel(bin + 1, mBinLabelsTDC[bin].c_str());

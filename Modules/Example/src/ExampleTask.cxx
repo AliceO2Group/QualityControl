@@ -54,7 +54,7 @@ void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistos[0]->SetCanExtend(TH1::kXaxis);
 
   mCustomTH2F = new CustomTH2F("customTH2F");
-  getObjectsManager()->startPublishing(mCustomTH2F);
+  getObjectsManager()->startPublishing(mCustomTH2F, PublicationPolicy::Forever);
 }
 
 void ExampleTask::publishHisto(int i)
@@ -62,7 +62,7 @@ void ExampleTask::publishHisto(int i)
   stringstream name;
   name << "array-" << i;
   mHistos[i] = new TH1F(name.str().c_str(), name.str().c_str(), 100, 0, 99);
-  getObjectsManager()->startPublishing(mHistos[i]);
+  getObjectsManager()->startPublishing(mHistos[i], PublicationPolicy::Forever);
 }
 
 void ExampleTask::startOfActivity(const Activity& activity)
