@@ -16,6 +16,7 @@
 #pragma link C++ class o2::quality_control_modules::emcal::RawCheck + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::OccupancyReductor + ;
+#pragma link C++ class o2::quality_control_modules::emcal::OccupancyToFECReductor + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::ClusterTask + ;
 
