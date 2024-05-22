@@ -19,6 +19,9 @@ target_sources(O2QcCommon
                        src/BigScreenCanvas.cxx
                        src/BigScreen.cxx
                        src/BigScreenConfig.cxx
+                       src/CcdbInspectorTask.cxx
+                       src/CcdbInspectorTaskConfig.cxx
+                       src/CcdbInspectorCheck.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -49,6 +52,8 @@ add_root_dictionary(O2QcCommon
                             include/Common/FlagCollectionTask.h
                             include/Common/QualityTask.h
                             include/Common/BigScreen.h
+                            include/Common/CcdbInspectorTask.h
+                            include/Common/CcdbInspectorCheck.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Ratio.h
                             include/Common/TH2Ratio.h
