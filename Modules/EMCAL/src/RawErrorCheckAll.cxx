@@ -29,7 +29,7 @@ void RawErrorCheckAll::configure()
     try {
       mBadThreshold = std::stod(nBadThreshold->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << ("Value {} not a double", nBadThreshold->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " <<  nBadThreshold->second << " not a double" << ENDM;
     }
   }
 
@@ -38,7 +38,7 @@ void RawErrorCheckAll::configure()
     try {
       mPeriodMovAvg = std::stoi(nPeriodMovAvg->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << ("Value {} not an int", nPeriodMovAvg->second.data()) << ENDM;
+      ILOG(Error, Support) << "Value " <<  nPeriodMovAvg->second << " not an int" << ENDM;
     }
   }
 }
