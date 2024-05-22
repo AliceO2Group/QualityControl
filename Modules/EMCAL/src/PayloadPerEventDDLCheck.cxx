@@ -20,24 +20,27 @@ using namespace std;
 
 namespace o2::quality_control_modules::emcal
 {
-// configure threshold-based checkers
-auto nChiSqMedPayloadThresh = mCustomParameters.find("ChiSqMedPayloadThresh");
-if (nChiSqMedPayloadThresh != mCustomParameters.end()) {
-  try {
-    mChiSqMedPayloadThresh = std::stod(nChiSqMedPayloadThresh->second);
-  } catch (std::exception& e) {
-    ILOG(Error, Support) << ("Value {} not a double", nChiSqMedPayloadThresh->second.data()) << ENDM;
-  }
-}
 
-auto nBadChiSqLowPayloadThresh = mCustomParameters.find("BadChiSqLowPayloadThresh");
-if (nBadChiSqLowPayloadThresh != mCustomParameters.end()) {
-  try {
-    mChiSqBadLowPayloadThresh = std::stod(nBadChiSqLowPayloadThresh->second);
-  } catch (std::exception& e) {
-    ILOG(Error, Support) << ("Value {} not a double", nBadChiSqLowPayloadThresh->second.data()) << ENDM;
+// configure threshold-based checkers
+void PayloadPerEventDDLCheck::configure()
+{
+  auto nChiSqMedPayloadThresh = mCustomParameters.find("ChiSqMedPayloadThresh");
+  if (nChiSqMedPayloadThresh != mCustomParameters.end()) {
+    try {
+      mChiSqMedPayloadThresh = std::stod(nChiSqMedPayloadThresh->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << "Value " << nChiSqMedPayloadThresh->second << " not a double" << ENDM;
+    }
   }
-}
+
+  auto nBadChiSqLowPayloadThresh = mCustomParameters.find("BadChiSqLowPayloadThresh");
+  if (nBadChiSqLowPayloadThresh != mCustomParameters.end()) {
+    try {
+      mChiSqBadLowPayloadThresh = std::stod(nBadChiSqLowPayloadThresh->second);
+    } catch (std::exception& e) {
+      ILOG(Error, Support) << "Value " << nBadChiSqLowPayloadThresh->second << " not a double" << ENDM;
+    }
+  }
 }
 
 Quality PayloadPerEventDDLCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -55,9 +58,9 @@ Quality PayloadPerEventDDLCheck::check(std::map<std::string, std::shared_ptr<Mon
     auto* h = dynamic_cast<TH2*>(mo->getObject());
 
     for (int i = 1; i <= h->GetNbinsX(); i++) {
-      std::unique_ptr<TH1> h_y = (TH1*)h->ProjectionY(Form("h_y_%d", i), i, i);
+      std::unique_ptr<TH1> h_y(h->ProjectionY(Form("h_y_%d", i), i, i));
       h_y->Scale(1. / h_y->Integral());
-      std::unique_ptr<TH1> h_y_ref = (TH1*)mCalibReference->ProjectionY(Form("h_y_ref_%d", i), i, i);
+      std::unique_ptr<TH1> h_y_ref(mCalibReference->ProjectionY(Form("h_y_ref_%d", i), i, i));
       h_y_ref->Scale(1. / h_y_ref->Integral());
       Double_t chisq_val = h_y->Chi2Test(h_y_ref.get(), "UU NORM CHI2/NDF");
 
@@ -86,20 +89,20 @@ void PayloadPerEventDDLCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
     if (checkResult == Quality::Good) {
       //
       msg->Clear();
-      msg->AddText("Agrees with reference histogram: OK!!!");
+      msg->AddText("DATA OK!");
       msg->SetFillColor(kGreen);
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
       ILOG(Debug, Devel) << "Quality::Bad, setting to red";
       msg->Clear();
-      msg->AddText("ERROR: Disagrees with reference histogram, high Chi-Sq");
+      msg->AddText("Suspicious payload size detected.");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
       msg->Clear();
-      msg->AddText("WARNING: Chi-Sq greater than medium threshold");
+      msg->AddText("WARNING: Deviation from expectations. Keep monitoring");
       ILOG(Debug, Devel) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
