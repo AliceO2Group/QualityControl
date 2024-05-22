@@ -31,7 +31,7 @@ namespace internal
 /// \param params String to be cast
 /// \return Returns requested type from param
 template <typename T>
-T string_to_type(const std::string& param)
+T stringToType(const std::string& param)
 {
   T retVal{};
   if constexpr (std::is_same<int, T>::value) {
@@ -70,7 +70,7 @@ T getFromConfig(const quality_control::core::CustomParameters& params, const std
     LOGP(warning, "Missing parameter. Please add '{}': '<value>' to the 'taskParameters'. Using default value {}.", name.data(), retVal);
   } else {
     const auto& param = itParam->second;
-    return internal::string_to_type<T>(param);
+    return internal::stringToType<T>(param);
   }
   return retVal;
 }
@@ -91,7 +91,7 @@ T getFromExtendedConfig(const quality_control::core::Activity& activity, const q
   } else {
     parameter = params.atOrDefaultValue(name, std::to_string(retVal));
   }
-  return internal::string_to_type<T>(parameter);
+  return internal::stringToType<T>(parameter);
 }
 
 } // namespace o2::quality_control_modules::common
