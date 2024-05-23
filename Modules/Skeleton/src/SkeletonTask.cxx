@@ -92,10 +92,10 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // In this function you can access data inputs specified in the JSON config file.
   // Typically, you should have asked for data inputs as a direct data source or as a data sampling policy.
   // In both cases you probably used a query such as:
-  //   "query": "random:TST/RAWDATA/0"
+  //   "query": "data:TST/RAWDATA/0"
   // which follows the format <binding>:<dataOrigin>/<dataDescription>[/<subSpecification]
   // Usually inputs should be accessed by their bindings:
-  auto randomData = ctx.inputs().get("random");
+  auto randomData = ctx.inputs().get("data");
   // If you know what type the data is, you can specify it as such:
   // auto channels = ctx.inputs().get<gsl::span<o2::fdd::ChannelData>>("channels");
   // auto digits = ctx.inputs().get<gsl::span<o2::fdd::Digit>>("digits");

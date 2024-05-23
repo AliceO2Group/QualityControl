@@ -62,7 +62,7 @@
       "id": "test-policy",
       "active": "true",
       "machines": [],
-      "query": "tst-data:TST/DATA/0",
+      "query": "data:TST/DATA/0",
       "samplingConditions": [],
       "blocking": "false"
     }
