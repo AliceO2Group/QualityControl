@@ -50,12 +50,13 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
 
   // This is an example of accessing the histogram 'example' created by SkeletonTask
-  if (moMap->contains("QcTask/example")) {
-    auto exampleMO = moMap->at("QcTask/example");
-    auto* h = dynamic_cast<TH1*>(exampleMO->getObject());
-    if (h == nullptr) {
-      ILOG(Error, Support) << "Could not cast `example` to TH1*, skipping" << ENDM;
-    } else {
+  for (auto& [moName, mo] : *moMap) {
+    if (mo->getName() == "example") {
+      auto* h = dynamic_cast<TH1*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "Could not cast `example` to TH1*, skipping" << ENDM;
+        continue;
+      }
       // unless we find issues, we assume the quality is good
       result = Quality::Good;
 
