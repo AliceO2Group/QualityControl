@@ -78,6 +78,7 @@ TEST_CASE("test_aggregator_runner")
 
   // check the reordering
   const std::vector<std::shared_ptr<Aggregator>> aggregators = aggregatorRunner.getAggregators();
+  REQUIRE(aggregators.size() == 4);
   CHECK((aggregators.at(0)->getName() == "MyAggregatorC" || aggregators.at(0)->getName() == "MyAggregatorB"));
   CHECK((aggregators.at(1)->getName() == "MyAggregatorC" || aggregators.at(1)->getName() == "MyAggregatorB"));
   CHECK(aggregators.at(2)->getName() == "MyAggregatorA");
