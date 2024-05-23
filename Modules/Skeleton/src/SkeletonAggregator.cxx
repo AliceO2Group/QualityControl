@@ -29,7 +29,7 @@ void SkeletonAggregator::configure()
   // This method is called whenever CustomParameters are set.
 
   // Example of retrieving a custom parameter
-  std::string parameter = mCustomParameters.at("myOwnKey");
+  std::string parameter = mCustomParameters.at("myOwnKey", "fallback value");
 }
 
 std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
