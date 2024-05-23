@@ -82,7 +82,7 @@
       "id": "tst1",
       "active": "true",
       "machines": [],
-      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
+      "query" : "data:TST/SUM/2;param:TST/PARAM/2",
       "samplingConditions": [
         {
           "condition": "random",

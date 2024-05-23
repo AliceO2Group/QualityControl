@@ -94,7 +94,7 @@
         "localnode1",
         "localnode2"
       ],
-      "query": "random:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
@@ -111,7 +111,7 @@
         "localnode2"
       ],
       "port": "30333",
-      "query": "random:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

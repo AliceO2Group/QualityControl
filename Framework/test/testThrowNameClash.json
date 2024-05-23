@@ -18,7 +18,7 @@
         "cycleDurationSeconds": "10",
         "dataSource": {
           "type": "direct",
-          "query" : "raw:TST/RAWDATA/0"
+          "query" : "data:TST/RAWDATA/0"
         },
         "location": "remote"
       }

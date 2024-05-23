@@ -82,7 +82,7 @@
       "id": "tst-raw",
       "active": "true",
       "machines": [],
-      "query": "random:TST/RAWDATA/0",
+      "query": "data:TST/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",
