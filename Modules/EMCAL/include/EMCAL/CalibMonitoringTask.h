@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   CalibMonitoringTask.h
-/// \author Cristina Terrevoli, Markus Fasel
-///
-
 #ifndef QUALITYCONTROL_CALIBMONITORINGTASK_H
 #define QUALITYCONTROL_CALIBMONITORINGTASK_H
 
@@ -38,7 +33,11 @@ class MappingHandler;
 namespace o2::quality_control_modules::emcal
 {
 
+/// \class CalibMonitoringTask
 /// \brief Quality Control task for the calibration data of the EMCAL
+/// \ingroup EMCALQCCPostprocessing
+/// \author Cristina Terrevoli
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Rige National Laboratory
 class CalibMonitoringTask final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:

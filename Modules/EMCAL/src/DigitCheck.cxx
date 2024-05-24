@@ -8,12 +8,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   DigitCheck.cxx
-/// \author Cristina Terrevoli
-///
-
 #include "EMCAL/DigitCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -39,8 +33,8 @@ Quality DigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
-  //digitAmplidute_PHYS
-  //digitTime_PHYS
+  // digitAmplidute_PHYS
+  // digitTime_PHYS
   std::vector<std::string> amplitudeHist = { "digitAmplitudeEMCAL", "digitAmplitudeDCAL", "digitAmplitude_PHYS" };
   if (std::find(amplitudeHist.begin(), amplitudeHist.end(), mo->getName()) != amplitudeHist.end()) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
@@ -169,7 +163,7 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
     } else if (checkResult == Quality::Bad) {
       ILOG(Debug, Devel) << "Quality::Bad, setting to red";
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Noisy supermodule detected}");
-      //Large payload in several DDLs
+      // Large payload in several DDLs
       msg->SetNDC();
       msg->SetTextSize(16);
       msg->SetTextFont(43);

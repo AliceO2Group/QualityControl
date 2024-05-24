@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   PedestalTask.h
-/// \author Markus Fasel
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALPEDESTALTASK_H
 #define QC_MODULE_EMCAL_EMCALPEDESTALTASK_H
 
@@ -34,7 +29,9 @@ namespace o2::quality_control_modules::emcal
 
 /// \class PedestalTask
 /// \brief Monitoring of the Pedestals extracted by the pedestal calibration
-/// \author Markus Fasel
+/// \ingroup EMCALQCTasks
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+/// \since March 27th, 2024
 class PedestalTask final : public TaskInterface
 {
  public:

@@ -20,7 +20,6 @@
 #include <array>
 #include <climits>
 #include <iosfwd>
-#include <unordered_map>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -50,7 +49,9 @@ namespace o2::quality_control_modules::emcal
 
 /// \class ClusterTask
 /// \brief QC task analysing EMCAL clusters
+/// \ingroup EMCALQCTasks
 /// \author Vivek Kumar Singh
+/// \since December 3rd, 2021
 class ClusterTask final : public TaskInterface
 {
  public:

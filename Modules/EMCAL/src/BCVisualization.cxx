@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file
-/// \author Markus Fasel
-///
-
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/BCVisualization.h"
@@ -87,6 +82,10 @@ void BCVisualization::update(Trigger t, framework::ServiceRegistryRef services)
   mOutputCanvas->cd();
   auto histBCEMC = static_cast<TH1*>(moBCEMC->getObject()->Clone()),
        histBCCTP = static_cast<TH1*>(moBCCTP->getObject()->Clone());
+  if (histBCEMC == nullptr || histBCCTP == nullptr) {
+    ILOG(Error, Support) << "could not cast BCEMC or BCCTP to TH1, will not update the visualization" << ENDM;
+    return;
+  }
   histBCEMC->SetDirectory(nullptr);
   histBCCTP->SetDirectory(nullptr);
   double yrange = 1.5 * std::max(histBCCTP->GetBinContent(histBCCTP->GetMaximumBin()), histBCEMC->GetBinContent(histBCEMC->GetMaximumBin()));
