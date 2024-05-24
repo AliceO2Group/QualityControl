@@ -35,43 +35,5 @@ std::vector<T> convertToArray(std::string input)
   return result;
 }
 
-
 } // namespace o2::quality_control_modules::its
-
-class Stack {
-private:
-    std::vector<std::vector<int>> stack;
-    int size_max;
-    int current_element_id;
-
-public:
-    Stack() : size_max(0), current_element_id(0) {}
-
-    Stack(int nSizeY, int nSizeX) : size_max(nSizeY), current_element_id(0) {
-        stack.resize(nSizeY, std::vector<int>(nSizeX, 0));
-    }
-
-    void push(const std::vector<int>& element) {
-        if (current_element_id < size_max) {
-            stack[current_element_id] = element;
-            current_element_id++;
-        } else {
-            std::rotate(stack.begin(), stack.begin() + 1, stack.end());
-            stack.back() = element;
-        }
-        print();
-    }
-
-    void print() const {
-        std::cout << "Printing stack:\n";
-        for (const auto& vec_row : stack) {
-            std::cout << "row: ";
-            for (int item : vec_row) {
-                std::cout << item << " ";
-            }
-            std::cout << "\n";
-        }
-    }
-};
-
 #endif

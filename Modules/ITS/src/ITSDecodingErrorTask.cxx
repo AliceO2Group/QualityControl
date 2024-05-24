@@ -22,7 +22,8 @@
 #include "Common/Utils.h"
 #include "DataFormatsITSMFT/CompCluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
-//#include "ITS/ITSHelpers.h"
+#include "TLine.h"
+#include "TLatex.h"
 
 using namespace o2::framework;
 using namespace o2::itsmft;
@@ -45,6 +46,12 @@ ITSDecodingErrorTask::~ITSDecodingErrorTask()
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     delete mChipErrorVsChipid[ilayer];
   }
+  if (doDeadChip) {
+    for (int i = 0; i < 3; i++) {
+      delete ChipsStack[i];
+      delete DeadChips[i];
+    }
+  }
 }
 
 void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -53,17 +60,66 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   createDecodingPlots();
   setPlotsFormat();
-   for (int i=0;i<3;i++) {
- 
-      ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i+1]- ChipsBoundaryBarrels[i]);
-  
-       DeadChips[i] = new TH2D(Form("DeadChips%s",BarrelNames[i].Data()), Form("Dead Chips in %s", BarrelNames[i].Data()), nQCCycleToMonitor, 0,nQCCycleToMonitor, ChipsBoundaryBarrels[i+1]- ChipsBoundaryBarrels[i],0,ChipsBoundaryBarrels[i+1]-ChipsBoundaryBarrels[i]);
-       getObjectsManager()->startPublishing(DeadChips[i]);
-}
- 
 
+  if (doDeadChip) {
+    int Layer_Draw = 0;
+    for (int i = 0; i < 3; i++) {
 
-    
+      ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i]);
+
+      DeadChips[i] = new TH2D(Form("DeadChips%s", BarrelNames[i].Data()), Form("Dead Chips in %s", BarrelNames[i].Data()), nQCCycleToMonitor, 0, nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], 0, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i]);
+      setAxisTitle(DeadChips[i], "QC Cycle ID", "");
+
+      int iLayerBegin, iLayerEnd;
+      if (i == 0) {
+        iLayerBegin = 0;
+        iLayerEnd = 2;
+      } else if (i == 1) {
+        iLayerBegin = 3;
+        iLayerEnd = 4;
+      } else {
+        iLayerBegin = 5;
+        iLayerEnd = 6;
+      }
+      const int ChipBoundary[8] = { 0, 108, 252, 432, 3120 - 432, 6480 - 432, 14712 - 6480, 24120 - 6480 }; // needed for drawing labels and lines for histogram
+      const int StaveBoundary[NLayer] = { 0, 12, 28, 0, 24, 0, 42 };
+      for (Int_t iLayer = iLayerBegin; iLayer <= iLayerEnd; iLayer++) {
+
+        TLatex* msg = new TLatex(5, ChipBoundary[iLayer + 1] - 15 * (1 + i * 30), Form("#bf{L%d}", iLayer));
+        msg->SetTextSize(20);
+        msg->SetTextFont(43);
+        DeadChips[i]->GetListOfFunctions()->Add(msg);
+        if (iLayer < iLayerEnd) {
+          auto l = new TLine(0, ChipBoundary[iLayer + 1] - 0.5, nQCCycleToMonitor, ChipBoundary[iLayer + 1] - 0.5);
+          DeadChips[i]->GetListOfFunctions()->Add(l);
+        }
+      }
+      int nChipsPerStave = i == 0 ? 9 : i == 1 ? 112
+                                               : 196;
+      for (int iy = 0; iy < DeadChips[i]->GetNbinsY(); iy++) {
+        if (iy % nChipsPerStave == 0) {
+          auto l = new TLine(0, iy - 0.5, nQCCycleToMonitor, iy - 0.5);
+          l->SetLineColor(40);
+          l->SetLineWidth(1);
+
+          DeadChips[i]->GetListOfFunctions()->Add(l);
+
+          if (iy >= ChipBoundary[Layer_Draw + 1]) {
+            Layer_Draw++;
+          }
+          TLatex* msg = new TLatex(-3, iy, Form("%d", (int)(iy) / nChipsPerStave - StaveBoundary[Layer_Draw]));
+          msg->SetTextSize(12);
+          msg->SetTextFont(43);
+          DeadChips[i]->GetListOfFunctions()->Add(msg);
+        }
+      }
+      Layer_Draw++;
+
+      DeadChips[i]->GetYaxis()->SetLabelSize(0);
+      DeadChips[i]->GetYaxis()->SetAxisColor(0);
+      getObjectsManager()->startPublishing(DeadChips[i]);
+    }
+  }
 }
 
 void ITSDecodingErrorTask::createDecodingPlots()
@@ -135,64 +191,44 @@ void ITSDecodingErrorTask::setPlotsFormat()
 }
 
 void ITSDecodingErrorTask::startOfActivity(const Activity& activity)
-{ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;}
-
-
-void ITSDecodingErrorTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
-
-std::cout<<"############## new cycle, creating DeadChip Plots with size: "<< nQCCycle << std::endl;
-
-for (int i = 0; i<3;i++){
-CurrentDeadChips[i].clear();
-CurrentDeadChips[i].resize(ChipsBoundaryBarrels[i+1]- ChipsBoundaryBarrels[i], 0);
+{
+  ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
+void ITSDecodingErrorTask::startOfCycle()
+{
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+
+  if (doDeadChip) {
+    for (int i = 0; i < 3; i++) {
+      CurrentDeadChips[i].clear();
+      CurrentDeadChips[i].resize(ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], 0);
+    }
+  }
 }
 
 void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  std::cout<<"!!!!!!!!!!!!!!!!!!! at the monitor data"<<std::endl;
-
   auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
   auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
-  auto aliveChips = ctx.inputs().get< gsl::span<char>>("chipstatus");
-  std::cout<<"############# aliveChips.size(): "<< aliveChips.size()<<std::endl;
-  
-  
-/*
- std::vector<char> aliveChips(24120); 
- for (int i=0;i<24120;i++) aliveChips[i]=0;
+  auto aliveChips = ctx.inputs().get<gsl::span<char>>("chipstatus");
 
- const auto elements = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("clusters");
- const auto ROFs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
- for (const auto& rof : ROFs) {
-      auto elementsInTF = rof.getROFData(elements);
-      for (const auto& el : elementsInTF) {
-        aliveChips[(int)el.getSensorID()]=1;
-   }
-}
-*/
-//  std::vector<int> CurrentDeadChips[3];
-  int id=0;
-  for (auto chipID: aliveChips){
-    int iBarrel = id < ChipsBoundaryBarrels[1]? 0  : id < ChipsBoundaryBarrels[2]? 1 : 2;
-    if ((int)chipID != 1) {
-             // if (iBarrel == 0)  std::cout<<"!!! chipID: "<<(int)chipID << " id= "<<id<<std::endl;
-            //  std::cout<<"!!!  CurrentDeadChips[0].size() "<<  CurrentDeadChips[0].size() <<" chipID: "<<(int)chipID << " id= "<<id<< " fill to: "<< id - ChipsBoundaryBarrels[iBarrel] <<std::endl; 
-              CurrentDeadChips[iBarrel][ id - ChipsBoundaryBarrels[iBarrel]]++;   
-    };
-    id++;
+  if (doDeadChip) {
+    int id = 0;
+    for (auto chipID : aliveChips) {
+      int iBarrel = id < ChipsBoundaryBarrels[1] ? 0 : id < ChipsBoundaryBarrels[2] ? 1
+                                                                                    : 2;
+      if ((int)chipID != 1) {
+        int ChipID_fill = id - ChipsBoundaryBarrels[iBarrel];
+        if ((ChipID_fill < 0) || (ChipID_fill >= CurrentDeadChips[iBarrel].size())) {
+          ILOG(Warning, Devel) << " prolematic ID for chip: " << ChipID_fill << ENDM;
+        } else {
+          CurrentDeadChips[iBarrel][ChipID_fill]++;
+        }
+      }
+      id++;
+    }
   }
-  std::cout<<"alive size: "<< aliveChips.size() <<" IB: "<< CurrentDeadChips[0].size() << " ML: "<< CurrentDeadChips[1].size() << " OL: "<< CurrentDeadChips[2].size()<<std::endl; 
-  
-/*
-    ChipsStack[0]->push(CurrentDeadChips[0]); 
-
-    for (int ix = 1; ix<= DeadChips[0]->GetNbinsX();ix++)
-        for (int iy=1; iy<= DeadChips[0]->GetNbinsY();iy++)
-            DeadChips[0]->SetBinContent(ix,iy, ChipsStack[0]->stack[ix-1][iy-1]);
-*/
-
   // multiply Error distributions before re-filling
   for (const auto& le : linkErrors) {
     int istave = (int)(le.feeID & 0x00ff);
@@ -237,17 +273,21 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSDecodingErrorTask::getParameters()
 {
   mBusyViolationLimit = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "mBusyViolationLimit", mBusyViolationLimit);
+
+  nQCCycleToMonitor = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nQCCycleToMonitor", nQCCycleToMonitor);
+  doDeadChip = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "doDeadChip", doDeadChip);
 }
 
 void ITSDecodingErrorTask::endOfCycle()
 {
+  if (doDeadChip) {
+    for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
+      ChipsStack[iBarrel]->push(CurrentDeadChips[iBarrel]);
 
-  for (int iBarrel=0; iBarrel<3;iBarrel++){
-  ChipsStack[iBarrel]->push(CurrentDeadChips[iBarrel]);
-
-    for (int ix = 1; ix<= DeadChips[iBarrel]->GetNbinsX();ix++)
-        for (int iy=1; iy<= DeadChips[iBarrel]->GetNbinsY();iy++)
-            DeadChips[iBarrel]->SetBinContent(ix,iy, ChipsStack[iBarrel]->stack[ix-1][iy-1]);
+      for (int ix = 1; ix <= DeadChips[iBarrel]->GetNbinsX(); ix++)
+        for (int iy = 1; iy <= DeadChips[iBarrel]->GetNbinsY(); iy++)
+          DeadChips[iBarrel]->SetBinContent(ix, iy, ChipsStack[iBarrel]->stack[ix - 1][iy - 1]);
+    }
   }
 
   nQCCycle++;

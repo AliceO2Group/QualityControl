@@ -35,7 +35,9 @@
                 },
                 "location": "local",
                 "taskParameters": {
-                    "mBusyViolationLimit": "0.75"
+                    "mBusyViolationLimit": "0.75",
+                    "nQCCycleToMonitor": "10",
+                    "doDeadChip": "false"
                 }
             }
     },

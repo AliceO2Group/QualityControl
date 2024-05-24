@@ -22,7 +22,6 @@
 
 #include <TH1D.h>
 #include <TH2D.h>
-//#include "ITS/ITSHelpers.h"
 
 // class TH2D;
 // class TH1D;
@@ -33,39 +32,30 @@ using namespace o2::quality_control_modules::common;
 namespace o2::quality_control_modules::its
 {
 
-class Stack {
-private:
-    int size_max;
-    int current_element_id;
-public:
-    std::vector<std::vector<int>> stack;
-    Stack() : size_max(0), current_element_id(0) {}
-    Stack(int nSizeY, int nSizeX) : size_max(nSizeY), current_element_id(0) {
-        stack.resize(nSizeY, std::vector<int>(nSizeX, 0));
+class Stack
+{
+ private:
+  int size_max;
+  int current_element_id;
+
+ public:
+  std::vector<std::vector<int>> stack;
+  Stack() : size_max(0), current_element_id(0) {}
+  Stack(int nSizeY, int nSizeX) : size_max(nSizeY), current_element_id(0)
+  {
+    stack.resize(nSizeY, std::vector<int>(nSizeX, 0));
+  }
+  void push(const std::vector<int>& element)
+  {
+    if (current_element_id < size_max) {
+      stack[current_element_id] = element;
+      current_element_id++;
+    } else {
+      std::rotate(stack.begin(), stack.begin() + 1, stack.end());
+      stack.back() = element;
     }
-    void push(const std::vector<int>& element) {
-        if (current_element_id < size_max) {
-            stack[current_element_id] = element;
-            current_element_id++;
-        } else {
-            std::rotate(stack.begin(), stack.begin() + 1, stack.end());
-            stack.back() = element;
-        }
-     //   print();
-    }
-    void print() const {
-        std::cout << "Printing stack:\n";
-        for (const auto& vec_row : stack) {
-            std::cout << "row: ";
-            for (int item : vec_row) {
-                std::cout << item << " ";
-            }
-            std::cout << "\n";
-        }
-    }
+  }
 };
-
-
 
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSDecodingErrorTask final : public TaskInterface
@@ -84,6 +74,7 @@ class ITSDecodingErrorTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   TH2D* CreateDeadChipHisto(TH2* histo, int nBarrel);
+
  private:
   int mTFCount = 0;
   float mBusyViolationLimit = 0.75;
@@ -98,7 +89,7 @@ class ITSDecodingErrorTask final : public TaskInterface
   const int nChipsPerLayer[NLayer] = { 108, 144, 180, 2688, 3360, 8232, 9408 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
-  const int ChipsBoundaryBarrels[4] = {0, 432, 6480, 24120 };
+  const int ChipsBoundaryBarrels[4] = { 0, 432, 6480, 24120 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
   TString LayerBinLabels[11] = { "L0", "L1", "L2", "L3B", "L3T", "L4B", "L4T", "L5B", "L5T", "L6B", "L6T" };
   std::unique_ptr<TH1FRatio> hBusyFraction;
@@ -111,9 +102,10 @@ class ITSDecodingErrorTask final : public TaskInterface
   int nQCCycle = 0;
   TH2D* DeadChips[3];
   Stack* ChipsStack[3];
-  int nQCCycleToMonitor = 100;
-  TString BarrelNames[3] = {"IB", "ML", "OB"};
-  std::vector<int> CurrentDeadChips[3];
+  int nQCCycleToMonitor = 50;
+  bool doDeadChip = true;
+  TString BarrelNames[3] = { "IB", "ML", "OB" };
+  std::vector<int> CurrentDeadChips[3]; // Vectors of Dead Chips in current QC cycle
 };
 
 } // namespace o2::quality_control_modules::its
