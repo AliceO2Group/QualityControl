@@ -8,12 +8,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file
-/// \author Cristina Terrevoli, Markus Fasel
-///
-
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/SupermoduleProjectorTask.h"
@@ -41,7 +35,6 @@ void SupermoduleProjectorTask::configure(const boost::property_tree::ptree& conf
 
 void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
-  QcInfoLogger::setDetector("EMC");
   ILOG(Debug, Devel) << "initialize SuperModuleProjectorTask" << ENDM;
   // create canvas objects for each plot
   for (const auto& datasource : mDataSources) {

@@ -9,12 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   RawTask.h
-/// \author Cristina Terrevoli
-/// \author Markus Fasel
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALRAWTASK_H
 #define QC_MODULE_EMCAL_EMCALRAWTASK_H
 
@@ -45,10 +39,12 @@ class Geometry;
 namespace o2::quality_control_modules::emcal
 {
 
-/// \brief Example Quality Control DPL Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \class RawTask
+/// \brief Monitoring task for observables directly obtained from EMCAL FEC raw data
+/// \author Cristina Terrevoli
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+/// \ingroup EMCALQCTasks
+/// \since December 17th, 2019
 class RawTask final : public TaskInterface
 {
  public:

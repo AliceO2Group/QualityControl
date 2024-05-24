@@ -8,17 +8,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   RawErrorTask.h
-/// \author Cristina Terrevoli
-//  \author Markus Fasel
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALRAWERRORTASK_H
 #define QC_MODULE_EMCAL_EMCALRAWERRORTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include <array>
 #include <memory>
 #include <string_view>
 
@@ -34,8 +27,12 @@ class MappingHandler;
 namespace o2::quality_control_modules::emcal
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \class RawErrorTask
+/// \brief Monitoring task for raw decoding errors from the EMCAL reconstruction
+/// \author Cristina Terrevoli
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+/// \ingroup EMCALQCTasks
+/// \since June 14th, 2022
 class RawErrorTask final : public TaskInterface
 {
  public:

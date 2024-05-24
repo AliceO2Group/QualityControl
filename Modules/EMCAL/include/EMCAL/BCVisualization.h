@@ -19,8 +19,6 @@
 
 // QC includes
 #include "QualityControl/PostProcessingInterface.h"
-#include <map>
-#include <memory>
 #include <vector>
 #include <string>
 #include <tuple>

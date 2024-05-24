@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   BCTask.h
-/// \author Markus Fasel
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALBCTASK_H
 #define QC_MODULE_EMCAL_EMCALBCTASK_H
 
@@ -35,8 +30,10 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::emcal
 {
 
+/// \class BCTask
 /// \brief Task monitoring the BC distribution of EMCAL objects and triggers in CTP
-/// \author Markus Fasel
+/// \ingroup EMCALQCTasks
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
 ///
 /// Monitoring the BCs from EMCAL readout and the various EMCAL triggers from CTP
 /// readout.

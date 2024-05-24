@@ -8,13 +8,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   RawTask.cxx
-/// \author Cristina Terrevoli
-/// \author Markus Fasel
-///
-
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TProfile2D.h>
@@ -340,15 +333,6 @@ void RawTask::startOfCycle()
 
 void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
-
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
-
   using CHTYP = o2::emcal::ChannelType_t;
 
   // The type DataOrigin allows only conversion of char arrays with size 4, not char *, therefore
