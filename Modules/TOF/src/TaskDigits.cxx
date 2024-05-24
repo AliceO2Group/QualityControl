@@ -100,7 +100,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mHistoHitMap.get(), "colz logz");
   getObjectsManager()->setDisplayHint(mHistoHitMap.get(), "colz logz");
 
-  mHistoHitMapNoiseFiltered = std::make_shared<TH2F>("HitMapNoiseFiltered", "TOF hit map (noise filtered);Sector;Strip", RawDataDecoder::ncrates, 0., RawDataDecoder::nsectors, RawDataDecoder::nstrips, 0., RawDataDecoder::nstrips);
+  mHistoHitMapNoiseFiltered = std::make_shared<TH2F>("HitMapNoiseFiltered", "#splitline{TOF hit map}{(noise filtered)};Sector;Strip", RawDataDecoder::ncrates, 0., RawDataDecoder::nsectors, RawDataDecoder::nstrips, 0., RawDataDecoder::nstrips);
   mHistoHitMapNoiseFiltered->SetBit(TH1::kNoStats);
   getObjectsManager()->startPublishing(mHistoHitMapNoiseFiltered.get());
   getObjectsManager()->setDefaultDrawOptions(mHistoHitMapNoiseFiltered.get(), "colz logz");
@@ -385,11 +385,11 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       o2::tof::Geo::getPos(det, pos);
       float length = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
-      if (mCalChannel) {                                                              // calibration
-        float timeTDCcorr = digit.getTDC() * o2::tof::Geo::TDCBIN;                    // in ps
+      if (mCalChannel) {                                           // calibration
+        float timeTDCcorr = digit.getTDC() * o2::tof::Geo::TDCBIN; // in ps
         timeTDCcorr -= mCalChannel->evalTimeSlewing(digit.getChannel(), 0.0);
         timeTDCcorr -= mLHCphase->getLHCphase(0);
-        timeTDCcorr -= length * 33.356410 - 1000; // subract path (1ns margin)
+        timeTDCcorr -= length * 33.356410 - 1000;                                                                                                 // subract path (1ns margin)
         bcCorrCable += int(o2::constants::lhc::LHCMaxBunches + timeTDCcorr * o2::tof::Geo::BC_TIME_INPS_INV) - o2::constants::lhc::LHCMaxBunches; // to truncate in the proper way
       } else {
         bcCorrCable -= (o2::tof::Geo::getCableTimeShiftBin(crateECH, slotECH, chainECH, tdcECH) - digit.getTDC()) / 1024; // just cable length

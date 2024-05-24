@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       }
     },
     "tasks": {
@@ -20,7 +20,6 @@
         "moduleName": "QcMuonChambers",
         "detectorName": "MCH",
         "cycleDurationSeconds": "300",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS"

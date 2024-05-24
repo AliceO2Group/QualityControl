@@ -15,6 +15,7 @@
 /// \author Guillermo Contreras
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
+/// \author David Grund
 ///
 
 #ifndef QC_MFT_DIGIT_TASK_H
@@ -29,8 +30,11 @@
 #include <CommonConstants/LHCConstants.h>
 // Quality Control
 #include "QualityControl/TaskInterface.h"
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
 
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::mft
 {
@@ -90,15 +94,15 @@ class QcMFTDigitTask final : public TaskInterface
   float mY[936] = { 0 };
 
   std::unique_ptr<TH1F> mMergerTest = nullptr;
-  std::unique_ptr<TH1F> mDigitChipOccupancy = nullptr;
+  std::unique_ptr<TH1FRatio> mDigitChipOccupancy = nullptr;
   std::unique_ptr<TH1F> mDigitChipStdDev = nullptr;
-  std::unique_ptr<TH2F> mDigitOccupancySummary = nullptr;
-  std::unique_ptr<TH2F> mDigitDoubleColumnSensorIndices = nullptr;
+  std::unique_ptr<TH2FRatio> mDigitOccupancySummary = nullptr;
+  std::unique_ptr<TH2FRatio> mDigitDoubleColumnSensorIndices = nullptr;
 
-  std::unique_ptr<TH1F> mDigitsROFSize = nullptr;
-  std::unique_ptr<TH1F> mDigitsBC = nullptr;
+  std::unique_ptr<TH1FRatio> mDigitsROFSize = nullptr;
+  std::unique_ptr<TH1FRatio> mDigitsBC = nullptr;
 
-  std::vector<std::unique_ptr<TH2F>> mDigitChipOccupancyMap;
+  std::vector<std::unique_ptr<TH2FRatio>> mDigitChipOccupancyMap;
   std::vector<std::unique_ptr<TH2F>> mDigitPixelOccupancyMap;
 
   // reference orbit used in relative time calculation

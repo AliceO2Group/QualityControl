@@ -30,6 +30,7 @@
 // external includes
 #include <Framework/Logger.h>
 #include <bitset>
+#include <algorithm>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -210,25 +211,82 @@ void calculateStatistics(const double* yValues, const double* yErrors, bool useE
     return;
   }
 
+  if (useErrors && !yErrors) {
+    ILOG(Error, Support) << "In calculateStatistics(): requested to use errors of data but TGraph does not contain errors." << ENDM;
+    useErrors = false;
+  }
+
+  std::vector<double> v(yValues + firstPoint, yValues + lastPoint);
+  std::vector<double> vErr;
+
+  if (useErrors) {
+    const std::vector<double> vErr_temp(yErrors + firstPoint, yErrors + lastPoint);
+    for (int i = 0; i < vErr_temp.size(); i++) {
+      vErr.push_back(vErr_temp[i]);
+    }
+  }
+
+  retrieveStatistics(v, vErr, useErrors, mean, stddevOfMean);
+}
+
+void calculateStatistics(const double* yValues, const double* yErrors, bool useErrors, const int firstPoint, const int lastPoint, double& mean, double& stddevOfMean, std::vector<int>& maskPoints)
+{
+  // yErrors returns nullptr for TGraph (no errors)
+  if (lastPoint - firstPoint <= 0) {
+    ILOG(Error, Support) << "In calculateStatistics(), the first and last point of the range have to differ!" << ENDM;
+    return;
+  }
+
+  if (useErrors && !yErrors) {
+    ILOG(Error, Support) << "In calculateStatistics(): requested to use errors of data but TGraph does not contain errors." << ENDM;
+    useErrors = false;
+  }
+
+  std::vector<double> v;
+  const std::vector<double> v_temp(yValues + firstPoint, yValues + lastPoint);
+  for (int i = 0; i < v_temp.size(); i++) {
+    if (std::find(maskPoints.begin(), maskPoints.end(), i) == maskPoints.end()) { // i is not in the masked points
+      v.push_back(v_temp[i]);
+    }
+  }
+
+  std::vector<double> vErr;
+  if (useErrors) {
+    const std::vector<double> vErr_temp(yErrors + firstPoint, yErrors + lastPoint);
+    for (int i = 0; i < vErr_temp.size(); i++) {
+      if (std::find(maskPoints.begin(), maskPoints.end(), i) == maskPoints.end()) { // i is not in the masked points
+        vErr.push_back(vErr_temp[i]);
+      }
+    }
+  }
+
+  retrieveStatistics(v, vErr, useErrors, mean, stddevOfMean);
+}
+
+void retrieveStatistics(std::vector<double>& values, std::vector<double>& errors, bool useErrors, double& mean, double& stddevOfMean)
+{
+  if ((errors.size() != values.size()) && useErrors) {
+    ILOG(Error, Support) << "In retrieveStatistics(): errors do not match data points, omitting errors" << ENDM;
+    useErrors = false;
+  }
+
   double sum = 0.;
   double sumSquare = 0.;
   double sumOfWeights = 0.;        // sum w_i
   double sumOfSquaredWeights = 0.; // sum (w_i)^2
   double weight = 0.;
 
-  const std::vector<double> v(yValues + firstPoint, yValues + lastPoint);
   if (!useErrors) {
     // In case of no errors, we set our weights equal to 1
-    sum = std::accumulate(v.begin(), v.end(), 0.0);
-    sumOfWeights = v.size();
-    sumOfSquaredWeights = v.size();
+    sum = std::accumulate(values.begin(), values.end(), 0.0);
+    sumOfWeights = values.size();
+    sumOfSquaredWeights = values.size();
   } else {
     // In case of errors, we set our weights equal to 1/sigma_i^2
-    const std::vector<double> vErr(yErrors + firstPoint, yErrors + lastPoint);
-    for (size_t i = 0; i < v.size(); i++) {
-      weight = 1. / std::pow(vErr[i], 2.);
-      sum += v[i] * weight;
-      sumSquare += v[i] * v[i] * weight;
+    for (size_t i = 0; i < values.size(); i++) {
+      weight = 1. / std::pow(errors[i], 2.);
+      sum += values[i] * weight;
+      sumSquare += values[i] * values[i] * weight;
       sumOfWeights += weight;
       sumOfSquaredWeights += weight * weight;
     }
@@ -236,7 +294,7 @@ void calculateStatistics(const double* yValues, const double* yErrors, bool useE
 
   mean = sum / sumOfWeights;
 
-  if (v.size() == 1) { // we only have one point, we keep it's uncertainty
+  if (values.size() == 1) { // we only have one point, we keep it's uncertainty
     if (!useErrors) {
       stddevOfMean = 0.;
     } else {
@@ -244,10 +302,10 @@ void calculateStatistics(const double* yValues, const double* yErrors, bool useE
     }
   } else { // for >= 2 points, we calculate the spread
     if (!useErrors) {
-      std::vector<double> diff(v.size());
-      std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
+      std::vector<double> diff(values.size());
+      std::transform(values.begin(), values.end(), diff.begin(), [mean](double x) { return x - mean; });
       double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-      stddevOfMean = std::sqrt(sq_sum / (v.size() * (v.size() - 1.)));
+      stddevOfMean = std::sqrt(sq_sum / (values.size() * (values.size() - 1.)));
     } else {
       double ratioSumWeight = sumOfSquaredWeights / (sumOfWeights * sumOfWeights);
       stddevOfMean = sqrt((sumSquare / sumOfWeights - mean * mean) * (1. / (1. - ratioSumWeight)) * ratioSumWeight);

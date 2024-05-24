@@ -79,6 +79,8 @@ void SupermoduleProjectorTask::finalize(Trigger t, framework::ServiceRegistryRef
 {
   for (auto& [datasource, plot] : mCanvasHandler) {
     getObjectsManager()->stopPublishing(plot);
+    delete plot;
+    plot = nullptr;
   }
 }
 
@@ -137,6 +139,7 @@ std::map<std::string, SupermoduleProjectorTask::PlotAttributes> SupermoduleProje
 void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObject& mo, TCanvas& plot, PlotAttributes* customizations)
 {
   auto inputhist = dynamic_cast<TH2*>(mo.getObject());
+  bool xAxisSM = inputhist->GetXaxis()->GetNbins() == 20; // for the moment assume that the axis with 20 bins is the SM axis, very unlikely that we have an observable with exactly 20 bins
   if (!inputhist) {
     ILOG(Error, Support) << "Monitoring object to be projected not of type TH2" << ENDM;
     return;
@@ -146,7 +149,12 @@ void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObj
   for (int supermoduleID = 0; supermoduleID < 20; supermoduleID++) {
     std::string histname = std::string(inputhist->GetName()) + "_SM" + std::to_string(supermoduleID),
                 histtitle = "Supermodule " + std::to_string(supermoduleID);
-    auto projection = inputhist->ProjectionX(histname.data(), supermoduleID + 1, supermoduleID + 1);
+    TH1* projection = nullptr;
+    if (xAxisSM) {
+      projection = inputhist->ProjectionY(histname.data(), supermoduleID + 1, supermoduleID + 1);
+    } else {
+      projection = inputhist->ProjectionX(histname.data(), supermoduleID + 1, supermoduleID + 1);
+    }
     projection->SetStats(false);
     projection->SetTitle(histtitle.data());
     bool logx = false;

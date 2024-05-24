@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       }
     },
     "tasks": {
@@ -21,7 +21,6 @@
         "moduleName": "QcSkeleton",
         "detectorName" : "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"
@@ -36,7 +35,6 @@
         "moduleName": "QcSkeleton",
         "detectorName" : "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"
@@ -51,7 +49,6 @@
         "moduleName": "QcSkeleton",
         "detectorName" : "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "test-policy"
@@ -137,7 +134,7 @@
       "id": "test-policy",
       "active": "true",
       "machines": [],
-      "query": "tst-data:TST/DATA/0",
+      "query": "data:TST/DATA/0",
       "samplingConditions": [],
       "blocking": "false"
     }

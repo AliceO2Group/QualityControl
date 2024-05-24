@@ -17,42 +17,162 @@
 ///
 
 #include "MCH/DigitsPostProcessing.h"
-#include "MCH/PostProcessingConfigMCH.h"
+#include "MUONCommon/Helpers.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include <TDatime.h>
 
 using namespace o2::quality_control_modules::muonchambers;
+using namespace o2::quality_control_modules::muon;
 
 void DigitsPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(getID(), config);
+  mConfig = PostProcessingConfigMCH(getID(), config);
+}
 
-  mRefTimeStamp = mchConfig.getParameter<int64_t>("ReferenceTimeStamp", -1);
-  auto refDate = mchConfig.getParameter<std::string>("ReferenceDate");
-  if (!refDate.empty()) {
-    TDatime date(refDate.c_str());
-    mRefTimeStamp = date.Convert();
+//_________________________________________________________________________________________
+
+void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInterface* qcdb)
+{
+  //------------------------------------------
+  // Helpers to extract plots from last cycle
+  //------------------------------------------
+
+  auto obj = mCcdbObjects.find(rateSourceName());
+  if (obj != mCcdbObjects.end()) {
+    mElecMapOnCycle.reset();
+    mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
   }
-  ILOG(Info, Devel) << "reference time stamp: " << mRefTimeStamp << "  (" << refDate << ")"
-                    << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mFullHistos = mchConfig.getParameter<bool>("FullHistos", false);
+  obj = mCcdbObjects.find(rateSignalSourceName());
+  if (obj != mCcdbObjects.end()) {
+    mElecMapSignalOnCycle.reset();
+    mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+  }
 
-  mChannelRateMin = mchConfig.getParameter<float>("ChannelRateMin", 0);
-  mChannelRateMax = mchConfig.getParameter<float>("ChannelRateMax", 100);
+  //----------------------------------
+  // Reference mean rates histogram
+  //----------------------------------
 
+  TH2F* hElecHistoRef{ nullptr };
+  obj = mCcdbObjectsRef.find(rateSourceName());
+  if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
+    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
+                      << AliceO2::InfoLogger::InfoLogger::endm;
+    hElecHistoRef = obj->second.get<TH2F>();
+  }
+
+  TH2F* hElecSignalHistoRef{ nullptr };
+  obj = mCcdbObjectsRef.find(rateSignalSourceName());
+  if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
+    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
+                      << AliceO2::InfoLogger::InfoLogger::endm;
+    hElecSignalHistoRef = obj->second.get<TH2F>();
+  }
+
+  //----------------------------------
+  // Rate plotters
+  //----------------------------------
+
+  mRatesPlotter.reset();
+  mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, true, mFullHistos);
+  mRatesPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mRatesPlotterOnCycle.reset();
+  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, false, mFullHistos);
+  mRatesPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mRatesPlotterSignal.reset();
+  mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, true, mFullHistos);
+  mRatesPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mRatesPlotterSignalOnCycle.reset();
+  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, false, mFullHistos);
+  mRatesPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  //----------------------------------
+  // Rate trends
+  //----------------------------------
+
+  mRatesTrendsPlotter.reset();
+  mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", hElecHistoRef, mFullHistos);
+  mRatesTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mRatesTrendsPlotterSignal.reset();
+  mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", hElecSignalHistoRef, mFullHistos);
+  mRatesTrendsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+}
+
+//_________________________________________________________________________________________
+
+void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInterface* qcdb)
+{
+  //------------------------------------------
+  // Helpers to extract plots from last cycle
+  //------------------------------------------
+
+  auto obj = mCcdbObjects.find(orbitsSourceName());
+  if (obj != mCcdbObjects.end()) {
+    mDigitsOrbitsOnCycle.reset();
+    mDigitsOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
+  }
+
+  obj = mCcdbObjects.find(orbitsSignalSourceName());
+  if (obj != mCcdbObjects.end()) {
+    mDigitsSignalOrbitsOnCycle.reset();
+    mDigitsSignalOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
+  }
+
+  //----------------------------------
+  // Orbit plotters
+  //----------------------------------
+
+  mOrbitsPlotter.reset();
+  mOrbitsPlotter = std::make_unique<OrbitsPlotter>("Orbits/");
+  mOrbitsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mOrbitsPlotterOnCycle.reset();
+  mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
+  mOrbitsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mOrbitsPlotterSignal.reset();
+  mOrbitsPlotterSignal = std::make_unique<OrbitsPlotter>("OrbitsSignal/");
+  mOrbitsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  mOrbitsPlotterSignalOnCycle.reset();
+  mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
+  mOrbitsPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+}
+
+//_________________________________________________________________________________________
+
+void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
+{
+  auto& qcdb = services.get<repository::DatabaseInterface>();
+  const auto& activity = t.activity;
+
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+
+  mRefTimeStamp = getConfigurationParameter<int64_t>(mCustomParameters, "ReferenceTimeStamp", mRefTimeStamp, activity);
+  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp << ENDM;
+
+  mChannelRateMin = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMin", mChannelRateMin, activity);
+  mChannelRateMax = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMax", mChannelRateMax, activity);
+
+  mCcdbObjects.clear();
   mCcdbObjects.emplace(rateSourceName(), CcdbObjectHelper());
   mCcdbObjects.emplace(rateSignalSourceName(), CcdbObjectHelper());
   mCcdbObjects.emplace(orbitsSourceName(), CcdbObjectHelper());
   mCcdbObjects.emplace(orbitsSignalSourceName(), CcdbObjectHelper());
 
+  mCcdbObjectsRef.clear();
   if (mRefTimeStamp > 0) {
     mCcdbObjectsRef.emplace(rateSourceName(), CcdbObjectHelper());
     mCcdbObjectsRef.emplace(rateSignalSourceName(), CcdbObjectHelper());
   }
 
-  for (auto source : mchConfig.dataSources) {
+  // set objects path from configuration
+  for (auto source : mConfig.dataSources) {
     std::string sourceType, sourceName;
     splitDataSourceName(source.name, sourceType, sourceName);
     if (sourceType.empty()) {
@@ -71,117 +191,8 @@ void DigitsPostProcessing::configure(const boost::property_tree::ptree& config)
       objRef->second.mName = sourceName;
     }
   }
-}
 
-//_________________________________________________________________________________________
-
-void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInterface* qcdb)
-{
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(rateSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
-  obj = mCcdbObjects.find(rateSignalSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
-  //----------------------------------
-  // Reference mean rates histogram
-  //----------------------------------
-
-  TH2F* hElecHistoRef{ nullptr };
-  obj = mCcdbObjectsRef.find(rateSourceName());
-  if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
-    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
-    hElecHistoRef = obj->second.get<TH2F>();
-  } else {
-    ILOG(Info, Devel) << "Could not load reference plot \"" << obj->second.mPath << "/" << obj->second.mName << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
-  }
-
-  TH2F* hElecSignalHistoRef{ nullptr };
-  obj = mCcdbObjectsRef.find(rateSignalSourceName());
-  if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
-    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
-    hElecSignalHistoRef = obj->second.get<TH2F>();
-  }
-
-  //----------------------------------
-  // Rate plotters
-  //----------------------------------
-
-  mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotter->publish(getObjectsManager());
-
-  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotterOnCycle->publish(getObjectsManager());
-
-  mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotterSignal->publish(getObjectsManager());
-
-  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, mFullHistos);
-  mRatesPlotterSignalOnCycle->publish(getObjectsManager());
-
-  //----------------------------------
-  // Rate trends
-  //----------------------------------
-
-  mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", hElecHistoRef, mFullHistos);
-  mRatesTrendsPlotter->publish(getObjectsManager());
-
-  mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", hElecSignalHistoRef, mFullHistos);
-  mRatesTrendsPlotterSignal->publish(getObjectsManager());
-}
-
-//_________________________________________________________________________________________
-
-void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInterface* qcdb)
-{
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(orbitsSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mDigitsOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
-  }
-
-  obj = mCcdbObjects.find(orbitsSignalSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mDigitsSignalOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
-  }
-
-  //----------------------------------
-  // Orbit plotters
-  //----------------------------------
-
-  mOrbitsPlotter = std::make_unique<OrbitsPlotter>("Orbits/");
-  mOrbitsPlotter->publish(getObjectsManager());
-
-  mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
-  mOrbitsPlotterOnCycle->publish(getObjectsManager());
-
-  mOrbitsPlotterSignal = std::make_unique<OrbitsPlotter>("OrbitsSignal/");
-  mOrbitsPlotterSignal->publish(getObjectsManager());
-
-  mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
-  mOrbitsPlotterSignalOnCycle->publish(getObjectsManager());
-}
-
-//_________________________________________________________________________________________
-
-void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
-{
-  auto& qcdb = services.get<repository::DatabaseInterface>();
-
+  // instantiate and publish the histograms
   createRatesHistos(t, &qcdb);
   createOrbitHistos(t, &qcdb);
 
@@ -189,13 +200,14 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
   // Detector quality histogram
   //--------------------------------------------------
 
+  mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
   mHistogramQualityPerDE->SetOption("colz");
   mHistogramQualityPerDE->SetStats(0);
-  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get());
+  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
 }

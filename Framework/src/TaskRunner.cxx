@@ -48,6 +48,7 @@
 #include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/WorkflowType.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <string>
 #include <TFile.h>
@@ -296,12 +297,8 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
-  o2::header::DataDescription description;
-  if (taskName.length() > header::DataDescription::size) {
-    ILOG(Warning, Devel) << "Task name \"" << taskName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
-  }
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
-  return description;
+
+  return quality_control::core::createDataDescription(taskName, TaskRunner::taskDescriptionHashLength);
 }
 
 header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)
@@ -459,6 +456,7 @@ void TaskRunner::endOfActivity()
 
   mTask->endOfActivity(mObjectsManager->getActivity());
   mObjectsManager->removeAllFromServiceDiscovery();
+  mObjectsManager->stopPublishing(PublicationPolicy::ThroughStop);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send(Metric{ "qc_objects_published" }.addValue(rate, "per_second_whole_run"));
@@ -480,12 +478,12 @@ void TaskRunner::registerToBookkeeping()
   // register ourselves to the BK at the first cycle
   ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
   try {
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
     if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES")) {
       ILOG(Debug, Devel) << "O2_QC_REGISTER_IN_BK_X_TIMES set to " << gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES") << ENDM;
       int iterations = std::stoi(gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES"));
       for (int i = 1; i < iterations; i++) { // start at 1 because we already did it once
-        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_TASK, "");
+        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
       }
     }
   } catch (std::runtime_error& error) {
@@ -587,6 +585,7 @@ int TaskRunner::publish(DataAllocator& outputs)
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
+  mObjectsManager->stopPublishing(PublicationPolicy::Once);
   return objectsPublished;
 }
 

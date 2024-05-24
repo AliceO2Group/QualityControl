@@ -60,6 +60,7 @@ void TrendingCalibLHCphase::initialize(Trigger, framework::ServiceRegistryRef)
   mCdbApi.init(mHost);
 
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
@@ -73,7 +74,7 @@ void TrendingCalibLHCphase::initialize(Trigger, framework::ServiceRegistryRef)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-  getObjectsManager()->startPublishing(mTrend.get());
+  getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
 }
 
 void TrendingCalibLHCphase::update(Trigger t, framework::ServiceRegistryRef services)
@@ -91,9 +92,7 @@ void TrendingCalibLHCphase::finalize(Trigger t, framework::ServiceRegistryRef)
 
 void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseInterface& ccdb)
 {
-  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
-            ? t.timestamp / 1000
-            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
+  mTime = t.timestamp / 1000;
   mMetaData.runNumber = t.activity.mId;
 
   mPhase = 0.;
@@ -106,7 +105,7 @@ void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseIn
 
     if (dataSource.type == "ccdb") {
 
-      auto calib_object = UserCodeInterface::retrieveConditionAny<LHCphase>(dataSource.path, metadata, -1);
+      auto calib_object = UserCodeInterface::retrieveConditionAny<LHCphase>(dataSource.path, metadata, t.timestamp);
 
       if (!calib_object) {
         ILOG(Error, Support) << "Could not retrieve calibration file '" << dataSource.path << "'." << ENDM;
@@ -141,7 +140,7 @@ void TrendingCalibLHCphase::generatePlots()
     if (!mPlots.count(plot.name)) {
       c = new TCanvas(plot.name.c_str(), plot.title.c_str());
       mPlots[plot.name] = c;
-      getObjectsManager()->startPublishing(c);
+      getObjectsManager()->startPublishing(c, PublicationPolicy::Forever);
     } else {
       c = (TCanvas*)mPlots[plot.name];
       c->cd();

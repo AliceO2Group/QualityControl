@@ -29,6 +29,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <QualityControl/AggregatorRunner.h>
 
@@ -48,9 +49,16 @@ o2::header::DataDescription Check::createCheckDataDescription(const std::string&
   if (checkName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
-  o2::header::DataDescription description;
-  description.runtimeInit(std::string(checkName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
-  return description;
+
+  return quality_control::core::createDataDescription(checkName, Check::descriptionHashLength);
+}
+
+o2::header::DataOrigin Check::createCheckDataOrigin(const std::string& detector)
+{
+  using Origin = o2::header::DataOrigin;
+  Origin header;
+  header.runtimeInit(std::string{ "C" }.append(detector.substr(0, Origin::size - 1)).c_str());
+  return header;
 }
 
 /// Members
@@ -260,14 +268,14 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     checkAllObjects,
     allowBeautify,
     std::move(inputs),
-    createOutputSpec(checkSpec.checkName),
+    createOutputSpec(checkSpec.detectorName, checkSpec.checkName),
     commonSpec.conditionDBUrl
   };
 }
 
-framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
+framework::OutputSpec Check::createOutputSpec(const std::string& detector, const std::string& checkName)
 {
-  return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
+  return { createCheckDataOrigin(detector), createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
 }
 
 void Check::startOfActivity(const core::Activity& activity)

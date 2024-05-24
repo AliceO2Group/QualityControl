@@ -23,7 +23,6 @@
 #include "MCHGlobalMapping/DsIndex.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
-// #include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include <Framework/InputRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 
@@ -39,14 +38,23 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
+template <typename T>
+void PreclustersTask::publishObject(T* histo, std::string drawOption, bool statBox)
+{
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  getObjectsManager()->startPublishing(histo);
+  getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+}
+
 void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Devel) << "initialize PreclustersTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
-
-  mDet2ElecMapper = createDet2ElecMapper<ElectronicMapperGenerated>();
-  mSolar2FeeLinkMapper = createSolar2FeeLinkMapper<ElectronicMapperGenerated>();
 
   mHistogramPreclustersPerDE = std::make_unique<TH1DRatio>("PreclustersPerDE", "Number of pre-clusters for each DE", getNumDE(), 0, getNumDE());
   publishObject(mHistogramPreclustersPerDE.get(), "hist", false);
@@ -59,12 +67,58 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogramPseudoeffElec = std::make_unique<TH2FRatio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64);
   publishObject(mHistogramPseudoeffElec.get(), "colz", false);
 
+  //----------------------------------
+  // Charge distribution histograms
+  //----------------------------------
+
   // 256 bins, 50 ADC / bin
   mHistogramClusterCharge = std::make_unique<TH2F>("ClusterChargeHist", "Cluster Charge", getNumDE(), 0, getNumDE(), 256, 0, 256 * 50);
   publishObject(mHistogramClusterCharge.get(), "colz", false);
 
+  mHistogramClusterChargePerStation[0] = std::make_unique<TH2F>("ClusterCharge/ClusterChargeDistributionB",
+                                                                "Cluster charge distribution (B)",
+                                                                256, 0, 256 * 50, 5, 1, 6);
+  publishObject(mHistogramClusterChargePerStation[0].get(), "colz", false);
+
+  mHistogramClusterChargePerStation[1] = std::make_unique<TH2F>("ClusterCharge/ClusterChargeDistributionNB",
+                                                                "Cluster charge distribution (NB)",
+                                                                256, 0, 256 * 50, 5, 1, 6);
+  publishObject(mHistogramClusterChargePerStation[1].get(), "colz", false);
+
+  mHistogramClusterChargePerStation[2] = std::make_unique<TH2F>("ClusterCharge/ClusterChargeDistribution",
+                                                                "Cluster charge distribution",
+                                                                256, 0, 256 * 50, 5, 1, 6);
+  publishObject(mHistogramClusterChargePerStation[2].get(), "colz", false);
+
+  for (int c = 0; c < 3; c++) {
+    for (int i = 1; i <= mHistogramClusterChargePerStation[c]->GetYaxis()->GetNbins(); i++) {
+      mHistogramClusterChargePerStation[c]->GetYaxis()->SetBinLabel(i, TString::Format("ST%d", i));
+    }
+  }
+
   mHistogramClusterSize = std::make_unique<TH2F>("ClusterSizeHist", "Cluster Size", getNumDE() * 3, 0, getNumDE() * 3, 100, 0, 100);
   publishObject(mHistogramClusterSize.get(), "colz", false);
+
+  mHistogramClusterSizePerStation[0] = std::make_unique<TH2F>("ClusterSize/ClusterSizeDistributionB",
+                                                              "Cluster size distribution (B)",
+                                                              50, 0, 50, 5, 1, 6);
+  publishObject(mHistogramClusterSizePerStation[0].get(), "colz", false);
+
+  mHistogramClusterSizePerStation[1] = std::make_unique<TH2F>("ClusterSize/ClusterSizeDistributionNB",
+                                                              "Cluster size distribution (NB)",
+                                                              50, 0, 50, 5, 1, 6);
+  publishObject(mHistogramClusterSizePerStation[1].get(), "colz", false);
+
+  mHistogramClusterSizePerStation[2] = std::make_unique<TH2F>("ClusterSize/ClusterSizeDistribution",
+                                                              "Cluster size distribution",
+                                                              50, 0, 50, 5, 1, 6);
+  publishObject(mHistogramClusterSizePerStation[2].get(), "colz", false);
+
+  for (int c = 0; c < 3; c++) {
+    for (int i = 1; i <= mHistogramClusterSizePerStation[c]->GetYaxis()->GetNbins(); i++) {
+      mHistogramClusterSizePerStation[c]->GetYaxis()->SetBinLabel(i, TString::Format("ST%d", i));
+    }
+  }
 }
 
 //_________________________________________________________________________________________________
@@ -226,6 +280,12 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
   int multiplicity[2] = { 0, 0 };
 
   int deId = preClusterDigits[0].getDetID();
+  auto chamberId = deId / 100;
+  auto stationId = ((chamberId - 1) / 2) + 1;
+
+  if (stationId < 1 || stationId > 5) {
+    return;
+  }
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(deId);
 
   // loop over digits and collect information on charge and multiplicity
@@ -316,9 +376,17 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
     mHistogramClusterSize->Fill(deIndex * 3 + 1, multiplicity[1]);
     mHistogramClusterSize->Fill(deIndex * 3 + 2, multiplicity[0] + multiplicity[1]);
 
+    mHistogramClusterSizePerStation[0]->Fill(multiplicity[0], stationId);
+    mHistogramClusterSizePerStation[1]->Fill(multiplicity[1], stationId);
+    mHistogramClusterSizePerStation[2]->Fill(multiplicity[0] + multiplicity[1], stationId);
+
     // total cluster charge
     float chargeTot = chargeSum[0] + chargeSum[1];
     mHistogramClusterCharge->Fill(deIndex, chargeTot);
+
+    mHistogramClusterChargePerStation[0]->Fill(chargeSum[0], stationId);
+    mHistogramClusterChargePerStation[1]->Fill(chargeSum[1], stationId);
+    mHistogramClusterChargePerStation[2]->Fill(chargeTot, stationId);
   }
 }
 

@@ -23,10 +23,18 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::skeleton
 {
 
-void SkeletonAggregator::configure() {}
+void SkeletonAggregator::configure()
+{
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // This method is called whenever CustomParameters are set.
+
+  // Example of retrieving a custom parameter
+  std::string parameter = mCustomParameters.atOrDefaultValue("myOwnKey", "fallback value");
+}
 
 std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   std::map<std::string, Quality> result;
 
   ILOG(Info, Devel) << "Entered SkeletonAggregator::aggregate" << ENDM;
@@ -37,7 +45,7 @@ std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapTy
 
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
-  for (auto qo : qoMap) {
+  for (const auto& qo : qoMap) {
     if (qo.second->getQuality().isWorseThan(current)) {
       current = qo.second->getQuality();
     }

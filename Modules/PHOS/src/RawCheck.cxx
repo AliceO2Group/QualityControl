@@ -28,8 +28,8 @@
 #include "PHOS/RawCheck.h"
 #include "PHOS/TH1Fraction.h"
 
-#include <DataFormatsQualityControl/FlagReasons.h>
-#include <DataFormatsQualityControl/FlagReasonFactory.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -190,7 +190,7 @@ bool RawCheck::checkErrHistograms(MonitorObject* mo)
           if (mCheckResult.isBetterThan(Quality::Medium)) {
             mCheckResult.set(Quality::Medium);
           }
-          mCheckResult.addReason(FlagReasonFactory::Unknown(), Form("too many %s errors", mErrorLabel[i - 1]));
+          mCheckResult.addFlag(FlagTypeFactory::Unknown(), Form("too many %s errors", mErrorLabel[i - 1]));
           TLatex* msg = new TLatex(0.2, 0.2 + i * 0.125, Form("#color[2]{Too many %s errors}", mErrorLabel[i - 1]));
           msg->SetNDC();
           msg->SetTextSize(16);
@@ -287,7 +287,7 @@ bool RawCheck::checkPhysicsHistograms(MonitorObject* mo)
       if (mCheckResult.isBetterThan(Quality::Bad)) {
         mCheckResult.set(Quality::Bad);
       }
-      mCheckResult.addReason(FlagReasonFactory::Unknown(), Form("too many dead channels M%d", mod));
+      mCheckResult.addFlag(FlagTypeFactory::Unknown(), Form("too many dead channels M%d", mod));
       TLatex* msg = new TLatex(0.2, 0.2, Form("#color[2]{Too many dead channels: %d; but bad map has %d channels}", nDead, mToleratedBadChannelsM[mod]));
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -304,7 +304,7 @@ bool RawCheck::checkPhysicsHistograms(MonitorObject* mo)
       if (mCheckResult.isBetterThan(Quality::Medium)) {
         mCheckResult.set(Quality::Medium);
       }
-      mCheckResult.addReason(FlagReasonFactory::Unknown(), Form("Branch oocupancy deviated M%d", mod));
+      mCheckResult.addFlag(FlagTypeFactory::Unknown(), Form("Branch oocupancy deviated M%d", mod));
       TLatex* msg = new TLatex(0.2, 0.4, Form("#color[2]{%d deviated branches; but %d allowed}", nDeviatedBranches, mToleratedDeviatedBranches[mod]));
       msg->SetNDC();
       msg->SetTextSize(16);

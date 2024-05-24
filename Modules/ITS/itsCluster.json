@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -29,7 +29,6 @@
         "moduleName": "QcITS",
         "detectorName": "ITS",
         "cycleDurationSeconds": "180",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -44,16 +43,6 @@
           "geomPath": "./",
           "publishSummary1D": "0",
           "publishDetailedSummary": "1"
-        },
-	"grpGeomRequest" : {
-          "geomRequest": "Aligned",
-          "askGRPECS": "false",
-          "askGRPLHCIF": "false",
-          "askGRPMagField": "false",
-          "askMatLUT": "false",
-          "askTime": "false",
-          "askOnceAllButField": "false",
-          "needPropagatorD":  "false"
         }
       }
     },

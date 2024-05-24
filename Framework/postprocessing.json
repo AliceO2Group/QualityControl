@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -139,6 +139,7 @@
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1SliceReductor",
             "axisDivision": [ [ "0", "4500", "10500" ] ],
+            "sliceLabels": [ [ "Slice 1", "Slice 2" ] ],
             "moduleName": "QcCommon"
           }
         ],
@@ -185,7 +186,8 @@
             "graphErrors": "errMeanY:0.5",
             "graphYRange": "",
             "graphXRange": "",
-            "graphAxisLabel": "Mean Y:time"
+            "graphAxisLabel": "Mean Y:time",
+            "legendTextSize": "10.0"
           },
           {
             "name": "ExtendedTrending_NEntries_of_histogram",

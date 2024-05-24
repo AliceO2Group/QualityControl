@@ -15,6 +15,8 @@
 /// \author Guillermo Contreras
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
+/// \author David Grund
+///
 
 // C++
 #include <string>
@@ -40,6 +42,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTUtilTables.h"
 #include "QualityControl/UserCodeInterface.h"
+#include "QualityControl/CustomParameters.h"
 
 using namespace std;
 
@@ -72,68 +75,55 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     (void)moName;
 
     if (mo->getName() == "mClusterOccupancy") {
-      auto* hChipOccupancy = dynamic_cast<TH1F*>(mo->getObject());
+      auto* hClusterOccupancy = dynamic_cast<TH1F*>(mo->getObject());
+      if (hClusterOccupancy == nullptr) {
+        ILOG(Error, Support) << "Could not cast mClusterOccupancy to TH1F." << ENDM;
+        return Quality::Null;
+      }
 
-      float den = hChipOccupancy->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hChipOccupancy->GetNbinsX(); iBin++) {
-        if (hChipOccupancy->GetBinContent(iBin + 1) == 0) {
-          hChipOccupancy->Fill(937); // number of chips with zero clusters stored in the overflow bin
+      for (int iBin = 0; iBin < hClusterOccupancy->GetNbinsX(); iBin++) {
+        if (hClusterOccupancy->GetBinContent(iBin + 1) == 0) {
+          hClusterOccupancy->Fill(937); // number of chips with zero clusters stored in the overflow bin
         }
-        float num = hChipOccupancy->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hChipOccupancy->SetBinContent(iBin + 1, ratio);
       }
     }
 
     if (mo->getName() == "mClusterPatternIndex") {
-      auto* hChipPattern = dynamic_cast<TH1F*>(mo->getObject());
-
-      float den = hChipPattern->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hChipPattern->GetNbinsX(); iBin++) {
-        float num = hChipPattern->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hChipPattern->SetBinContent(iBin + 1, ratio);
+      auto* hClusterPatternIndex = dynamic_cast<TH1F*>(mo->getObject());
+      if (hClusterPatternIndex == nullptr) {
+        ILOG(Error, Support) << "Could not cast mClusterPatternIndex to TH1F." << ENDM;
+        return Quality::Null;
       }
     }
 
     if (mo->getName() == "mClusterSizeSummary") {
-      auto* hClusterSizePixels = dynamic_cast<TH1F*>(mo->getObject());
-
-      float den = hClusterSizePixels->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hClusterSizePixels->GetNbinsX(); iBin++) {
-        float num = hClusterSizePixels->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hClusterSizePixels->SetBinContent(iBin + 1, ratio);
+      auto* hClusterSizeSummary = dynamic_cast<TH1F*>(mo->getObject());
+      if (hClusterSizeSummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast hClusterSizeSummary to TH1F." << ENDM;
+        return Quality::Null;
       }
     }
 
     if (mo->getName() == "mGroupedClusterSizeSummary") {
-      auto* hGroupedClusterSizePixels = dynamic_cast<TH1F*>(mo->getObject());
-
-      float den = hGroupedClusterSizePixels->GetBinContent(0); // normalisation stored in the uderflow bin
-
-      for (int iBin = 0; iBin < hGroupedClusterSizePixels->GetNbinsX(); iBin++) {
-        float num = hGroupedClusterSizePixels->GetBinContent(iBin + 1);
-        float ratio = (den > 0) ? (num / den) : 0.0;
-        hGroupedClusterSizePixels->SetBinContent(iBin + 1, ratio);
+      auto* hGroupedClusterSizeSummary = dynamic_cast<TH1F*>(mo->getObject());
+      if (hGroupedClusterSizeSummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast hGroupedClusterSizeSummary to TH1F." << ENDM;
+        return Quality::Null;
       }
     }
 
     if (mo->getName() == "mClusterOccupancySummary") {
-      auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
+      auto* hClusterOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
+      if (hClusterOccupancySummary == nullptr) {
+        ILOG(Error, Support) << "Could not cast hClusterOccupancySummary to TH2F." << ENDM;
+        return Quality::Null;
+      }
 
-      float den = histogram->GetBinContent(0, 0); // normalisation stored in the uderflow bin
-      float nEmptyBins = 0;                       // number of empty zones stored here
+      float nEmptyBins = 0; // number of empty zones
 
-      for (int iBinX = 0; iBinX < histogram->GetNbinsX(); iBinX++) {
-        for (int iBinY = 0; iBinY < histogram->GetNbinsY(); iBinY++) {
-          float num = histogram->GetBinContent(iBinX + 1, iBinY + 1);
-          float ratio = (den > 0) ? (num / den) : 0.0;
-          histogram->SetBinContent(iBinX + 1, iBinY + 1, ratio);
-          if ((histogram->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
+      for (int iBinX = 0; iBinX < hClusterOccupancySummary->GetNbinsX(); iBinX++) {
+        for (int iBinY = 0; iBinY < hClusterOccupancySummary->GetNbinsY(); iBinY++) {
+          if ((hClusterOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
             nEmptyBins = nEmptyBins + 1;
           }
         }
@@ -161,6 +151,10 @@ void QcMFTClusterCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
   map<string, string> headers;
   map<std::string, std::string> filter;
   auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::NoiseMap>("MFT/Calib/DeadMap/", filter, timestamp);
+  if (calib == nullptr) {
+    ILOG(Error, Support) << "Could not retrieve deadmap from CCDB." << ENDM;
+    return;
+  }
   for (int i = 0; i < calib->size(); i++) {
     if (calib->isFullChipMasked(i)) {
       mMaskedChips.push_back(i);
@@ -240,14 +234,13 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       for (int iFace = 0; iFace < 2; iFace++) {
         int idx = (iDisk * 2 + iFace) + (10 * iHalf);
         if (mo->getName().find(mOutsideAccName[idx]) != std::string::npos) {
-          // LOGF(info, "Name: %s", mo->getName());
           auto* h = dynamic_cast<TH2F*>(mo->getObject());
-          // TBox *b = new TBox();
           for (int i = 0; i < 21; i++) {
             int binX = MFTTable.mBinX[idx][i];
             int binY = MFTTable.mBinY[idx][i];
-            if (binX == -1 || binY == -1)
+            if (binX == -1 || binY == -1) {
               continue;
+            }
             TBox* b = new TBox(h->GetXaxis()->GetBinLowEdge(binX), h->GetYaxis()->GetBinLowEdge(binY), h->GetXaxis()->GetBinWidth(binX) + h->GetXaxis()->GetBinLowEdge(binX), h->GetYaxis()->GetBinWidth(binY) + h->GetYaxis()->GetBinLowEdge(binY));
             b->SetFillStyle(4055);
             b->SetFillColor(15);

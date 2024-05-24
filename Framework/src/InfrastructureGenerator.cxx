@@ -133,12 +133,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
-      std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
-      if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
-        cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
-      } else { // new style
-        cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
-      }
+      auto cycleDurationsMultiplied = TaskRunnerFactory::getSanitizedCycleDurations(infrastructureSpec.common, taskSpec);
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
@@ -212,8 +207,8 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
           samplingPoliciesForRemoteTasks.insert({ dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
         } else {
           throw std::runtime_error(
-            "Configuration error: unsupported dataSource '" + dataSource.name + "' for a remote QC Task '" +
-            taskSpec.taskName + "'");
+            "Configuration error: dataSource '" + dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + //
+            "' does not have a supported type. Remote QC tasks can subscribe only to data sampling policies outputs.");
         }
       }
     }
@@ -271,12 +266,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       // In "delta" mode Mergers should implement moving window, in "entire" - QC Tasks.
       size_t resetAfterCycles = taskSpec.mergingMode == "delta" ? taskSpec.resetAfterCycles : 0;
-      std::vector<std::pair<size_t, size_t>> cycleDurationsMultiplied;
-      if (taskSpec.cycleDurationSeconds > 0) { // old, simple, style
-        cycleDurationsMultiplied = { { taskSpec.cycleDurationSeconds, 1 } };
-      } else { // new style
-        cycleDurationsMultiplied = taskSpec.multipleCycleDurations;
-      }
+      auto cycleDurationsMultiplied = TaskRunnerFactory::getSanitizedCycleDurations(infrastructureSpec.common, taskSpec);
       std::for_each(cycleDurationsMultiplied.begin(), cycleDurationsMultiplied.end(),
                     [taskSpec](std::pair<size_t, size_t>& p) { p.first *= taskSpec.mergerCycleMultiplier; });
       bool enableMovingWindows = !taskSpec.movingWindows.empty();
@@ -294,8 +284,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
           samplingPoliciesForRemoteTasks.insert({ dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
         } else {
           throw std::runtime_error(
-            "Configuration error: unsupported dataSource '" + dataSource.name + "' for a remote QC Task '" +
-            taskSpec.taskName + "'");
+            "Configuration error: dataSource '" + dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + //
+            "' does not have a supported type. Remote QC tasks can subscribe only to data sampling policies outputs.");
         }
       }
 
@@ -478,6 +468,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(frame
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  proxy.labels.emplace_back(DataProcessorLabel{ "input-proxy" });
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   workflow.emplace_back(std::move(proxy));
@@ -530,6 +521,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framewor
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  proxy.labels.emplace_back(DataProcessorLabel{ "input-proxy" });
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
@@ -585,6 +577,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     channelConfig.c_str(),
     dplModelAdaptor());
   proxy.labels.emplace_back(taskSpec.localControl == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+  proxy.labels.emplace_back(DataProcessorLabel{ "input-proxy" });
   if (!taskSpec.critical) {
     proxy.labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
   }

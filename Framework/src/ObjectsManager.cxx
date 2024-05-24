@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <algorithm>
+#include <ranges>
 
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
@@ -59,8 +60,12 @@ ObjectsManager::~ObjectsManager()
   ILOG(Debug, Devel) << "ObjectsManager destructor" << ENDM;
 }
 
-void ObjectsManager::startPublishing(TObject* object)
+void ObjectsManager::startPublishing(TObject* object, PublicationPolicy publicationPolicy)
 {
+  if (!object) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::startPublishing" << ENDM;
+    return;
+  }
   if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << "), will remove it and add the new one" << ENDM;
     stopPublishing(object->GetName());
@@ -71,6 +76,7 @@ void ObjectsManager::startPublishing(TObject* object)
   newObject->setCreateMovingWindow(std::find(mMovingWindowsList.begin(), mMovingWindowsList.end(), object->GetName()) != mMovingWindowsList.end());
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;
+  mPublicationPoliciesForMOs[newObject] = publicationPolicy;
 }
 
 void ObjectsManager::updateServiceDiscovery()
@@ -104,13 +110,54 @@ void ObjectsManager::removeAllFromServiceDiscovery()
 
 void ObjectsManager::stopPublishing(TObject* object)
 {
-  stopPublishing(object->GetName());
+  if (!object) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::stopPublishing" << ENDM;
+    return;
+  }
+  // We look for the MonitorObject which observes the provided object by comparing its address
+  // This way, we avoid invoking any methods of the provided object, thus we can stop publishing it even after it is deleted
+  MonitorObject* moToRemove = nullptr;
+  for (auto moAsTObject : *mMonitorObjects) {
+    auto mo = dynamic_cast<MonitorObject*>(moAsTObject);
+    if (mo && mo->getObject() == object) {
+      moToRemove = mo;
+      continue;
+    }
+  }
+  if (moToRemove) {
+    mPublicationPoliciesForMOs.erase(moToRemove);
+    mMonitorObjects->Remove(moToRemove);
+    mMonitorObjects->Compress();
+  }
 }
 
 void ObjectsManager::stopPublishing(const string& objectName)
 {
   auto* mo = dynamic_cast<MonitorObject*>(getMonitorObject(objectName));
+  mPublicationPoliciesForMOs.erase(mo);
   mMonitorObjects->Remove(mo);
+  mMonitorObjects->Compress();
+}
+
+void ObjectsManager::stopPublishing(PublicationPolicy policy)
+{
+  // we do not use directly the view, because deletions in the policy map would invalidate the iterators in the view
+  // c++23 will allow us to do std::ranges::to instead.
+  std::vector<MonitorObject*> allObjectsMatchingPolicy;
+  for (auto* mo : mPublicationPoliciesForMOs | std::views::filter([policy](const auto& kv) { return kv.second == policy; }) | std::views::keys) {
+    allObjectsMatchingPolicy.push_back(mo);
+  }
+
+  for (const auto mo : allObjectsMatchingPolicy) {
+    stopPublishing(mo->getObject());
+  }
+}
+
+void ObjectsManager::stopPublishingAll()
+{
+  removeAllFromServiceDiscovery();
+  mMonitorObjects->Clear();
+  mPublicationPoliciesForMOs.clear();
 }
 
 bool ObjectsManager::isBeingPublished(const string& name)
@@ -171,6 +218,10 @@ void ObjectsManager::setDefaultDrawOptions(const std::string& objectName, const 
 
 void ObjectsManager::setDefaultDrawOptions(TObject* obj, const std::string& options)
 {
+  if (!obj) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::setDefaultDrawOptions" << ENDM;
+    return;
+  }
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDrawOptionsKey, options);
 }
@@ -183,6 +234,10 @@ void ObjectsManager::setDisplayHint(const std::string& objectName, const std::st
 
 void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
+  if (!obj) {
+    ILOG(Warning, Support) << "A nullptr provided to ObjectManager::setDisplayHint" << ENDM;
+    return;
+  }
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }
@@ -194,7 +249,7 @@ void ObjectsManager::setValidity(ValidityInterval validityInterval)
     if (mo) {
       mo->setValidity(validityInterval);
     } else {
-      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+      ILOG(Error, Devel) << "ObjectsManager::setValidity : dynamic_cast returned nullptr." << ENDM;
     }
   }
 }
@@ -206,7 +261,7 @@ void ObjectsManager::updateValidity(validity_time_t validityTime)
     if (mo) {
       mo->updateValidity(validityTime);
     } else {
-      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+      ILOG(Error, Devel) << "ObjectsManager::updateValidity : dynamic_cast returned nullptr." << ENDM;
     }
   }
 }

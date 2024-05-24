@@ -1,8 +1,9 @@
 # ---- Library ----
 
+# add_compile_options(-O0 -g -fPIC)
 add_library(O2QcGLO)
 
-target_sources(O2QcGLO PRIVATE src/MeanVertexPostProcessing.cxx  src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx)
+target_sources(O2QcGLO PRIVATE src/ITSTPCmatchingCheck.cxx  src/MeanVertexValidator.cxx src/MeanVertexPostProcessing.cxx src/MeanVertexCheck.cxx src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx src/DataCompressionQcTask.cxx src/CTFSizeTask.cxx)
 
 target_include_directories(
   O2QcGLO
@@ -40,11 +41,15 @@ install(FILES ITSTPCmatchedTracks_external.json
 
 add_root_dictionary(O2QcGLO
                     HEADERS
+  include/GLO/MeanVertexValidator.h
   include/GLO/MeanVertexPostProcessing.h
+  include/GLO/MeanVertexCheck.h
   include/GLO/VertexingQcTask.h
   include/GLO/ITSTPCMatchingTask.h
   include/GLO/DataCompressionQcTask.h
-                    LINKDEF include/GLO/LinkDef.h)
+  include/GLO/CTFSizeTask.h
+  include/GLO/ITSTPCmatchingCheck.h
+                  LINKDEF include/GLO/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GLO
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
@@ -65,4 +70,3 @@ foreach(test ${TEST_SRCS})
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
-

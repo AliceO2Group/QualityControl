@@ -28,7 +28,8 @@
 #include <TMath.h>
 #include <TLine.h>
 #include <TList.h>
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -315,9 +316,9 @@ void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 
   msg->SetName(Form("%s_msg", mo->GetName()));
   msg->Clear();
-  auto reasons = checkResult.getReasons();
-  for (int i = 0; i < int(reasons.size()); i++) {
-    msg->AddText(reasons[i].second.c_str());
+  auto flags = checkResult.getFlags();
+  for (int i = 0; i < int(flags.size()); i++) {
+    msg->AddText(flags[i].second.c_str());
     if (i > 4) {
       msg->AddText("et al ... ");
       break;

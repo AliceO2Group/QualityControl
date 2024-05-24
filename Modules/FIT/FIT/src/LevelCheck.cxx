@@ -26,7 +26,8 @@
 #include <TLine.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "Common/Utils.h"
 using namespace std;
 using namespace o2::quality_control;
@@ -115,7 +116,7 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       if (h == nullptr) {
         ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1* => Quality::Bad" << ENDM;
         result = Quality::Bad;
-        result.addReason(FlagReasonFactory::Unknown(), "Cannot get TH1 object from DB");
+        result.addFlag(FlagTypeFactory::Unknown(), "Cannot get TH1 object from DB");
         continue;
       }
       if (mIsFirstIter) {
@@ -156,7 +157,7 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         }
         const std::string strErrors = vecToStr(vecErrors);
         const std::string message = mMessagePrefixError + strErrors;
-        result.addReason(FlagReasonFactory::Unknown(), message);
+        result.addFlag(FlagTypeFactory::Unknown(), message);
       }
       if (mNumWarnings > 0) {
         if (result.isBetterThan(Quality::Medium)) {
@@ -164,7 +165,7 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         }
         const std::string strWarnings = vecToStr(vecErrors);
         const std::string message = mMessagePrefixWarning + strWarnings;
-        result.addReason(FlagReasonFactory::Unknown(), message);
+        result.addFlag(FlagTypeFactory::Unknown(), message);
       }
     }
   }
@@ -191,11 +192,11 @@ void LevelCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       msg->AddText(">> Quality::Good <<");
       msg->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      auto reasons = checkResult.getReasons();
+      auto flags = checkResult.getFlags();
       msg->SetFillColor(kRed);
       msg->AddText(">> Quality::Bad <<");
     } else if (checkResult == Quality::Medium) {
-      auto reasons = checkResult.getReasons();
+      auto flags = checkResult.getFlags();
       msg->SetFillColor(kOrange);
       msg->AddText(">> Quality::Medium <<");
     } else if (checkResult == Quality::Null) {

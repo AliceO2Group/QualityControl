@@ -30,7 +30,6 @@
         "moduleName": "QcFT0",
         "detectorName": "FT0",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",

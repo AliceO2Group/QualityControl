@@ -141,8 +141,10 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTrackPT->GetXaxis()->SetTitle("Track pT");
   mTrackPT->GetYaxis()->SetTitle("Entry");
 
-  mTrackRatio44 = std::make_shared<TProfile>("TrackRatio44", "Track 44/all ", 9, 0., 9.);
-  // mTrackRatio44 = std::make_shared<TH1F>("TrackRatio44", "Track 44/all ", 9, 0., 9.);
+  mGTrackRatio44 = std::make_shared<TH1F>("GTrackRatio44", "Track 44/all ", 2, -0.5, 1.5);
+  getObjectsManager()->startPublishing(mGTrackRatio44.get());
+
+  mTrackRatio44 = std::make_shared<TProfile>("TrackRatio44", "Track 44/all", 9, 0., 9.);
   getObjectsManager()->startPublishing(mTrackRatio44.get());
   mTrackRatio44->GetXaxis()->SetBinLabel(1, "Global");
   mTrackRatio44->GetXaxis()->SetBinLabel(2, "MT11 Bend");
@@ -266,23 +268,16 @@ void TracksQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 }
 void TracksQcTask::startOfActivity(const Activity& activity)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Info, Devel) << "startOfActivity " << activity.mId << ENDM;
-  // printf(" =================== > test startOfActivity Tracks \n");
+  reset();
 }
 
 void TracksQcTask::startOfCycle()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  // ILOG(Info, Devel) << "startOfCycle" << ENDM;
-  // printf(" =================== > test startOfCycle Tracks \n");
 }
 
 void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // ILOG(Info, Devel) << "monitorData" << ENDM;
-  // printf(" =================== > test monitorData Tracks\n");
-
   auto tracks = ctx.inputs().get<gsl::span<o2::mid::Track>>("tracks");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("trackrofs");
 
@@ -367,10 +362,13 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       float DetEff = 0.;
       if (EffFlag > 0) {
         multTracksTot++;
-        if (HitMap == 0xFF)
+        if (HitMap == 0xFF) {
           mTrackRatio44->Fill(0.5, 1.); // multTracks44Tot++;
-        else
+          mGTrackRatio44->Fill(1.);
+        } else {
           mTrackRatio44->Fill(0.5, 0.);
+          mGTrackRatio44->Fill(0.);
+        }
 
         // track.isFiredChamber(i,j) :: i=0->3 (MT11->MT22) ; j=0->1 (BP->NBP)
         uint8_t HitMapB = HitMap & 0xF;
@@ -498,6 +496,7 @@ void TracksQcTask::endOfCycle()
 void TracksQcTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Info, Devel) << "endOfActivity" << ENDM;
+  reset();
 }
 
 void TracksQcTask::reset()
@@ -519,6 +518,7 @@ void TracksQcTask::reset()
   mTrackThetaD->Reset();
   mTrackPT->Reset();
   mTrackRatio44->Reset();
+  mGTrackRatio44->Reset();
   mTrackBDetRatio44->Reset();
   mTrackNBDetRatio44->Reset();
   mTrackLocRatio44->Reset();

@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -33,7 +33,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -98,7 +97,7 @@
       "id": "tst-raw",
       "active": "true",
       "machines": [],
-      "query": "random:TST/RAWDATA/0",
+      "query": "data:TST/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",

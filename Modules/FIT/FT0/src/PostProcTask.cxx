@@ -41,8 +41,6 @@ namespace o2::quality_control_modules::ft0
 
 PostProcTask::~PostProcTask()
 {
-  delete mAmpl;
-  delete mTime;
 }
 
 void PostProcTask::configure(const boost::property_tree::ptree& config)
@@ -71,27 +69,41 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   }
 }
 
+void PostProcTask::reset()
+{
+  mHistChDataNOTbits.reset();
+  mHistTriggers.reset();
+  mHistTriggerRates.reset();
+  mHistTimeInWindow.reset();
+  mHistCFDEff.reset();
+  mHistChannelID_outOfBC.reset();
+  mHistTrg_outOfBC.reset();
+  mHistTrgValidation.reset();
+  mHistBcPattern.reset();
+  mHistBcTrgOutOfBunchColl.reset();
+  mAmpl.reset();
+  mTime.reset();
+  mMapHistsToDecompose.clear();
+}
+
 void PostProcTask::initialize(Trigger trg, framework::ServiceRegistryRef services)
 {
+  reset(); // for SSS procedure
   mPostProcHelper.initialize(trg, services);
   mIsFirstIter = true; // to be sure
-  mHistChDataNOTbits = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelDataNegBits", "ChannelData NOT PM bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits);
-  mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), "", "Triggers", "Triggers from TCM", mMapTechTrgBits);
-  mHistTriggerRates = helper::registerHist<TH1F>(getObjectsManager(), "", "TriggerRates", "Trigger rates; Triggers; Rate [kHz]", mMapTechTrgBits);
 
-  mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
-  mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
-  mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), "", "TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), "", "ChannelID_outOfBC", "ChannelID, out of bunch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistTrg_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), "", "Triggers_outOfBC", "Trigger fraction, out of bunch", mMapTechTrgBits);
-  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "SW + HW only to validated triggers fraction", mMapTrgBits);
-
-  mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
-  mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
-
-  getObjectsManager()->startPublishing(mAmpl);
-  getObjectsManager()->startPublishing(mTime);
+  mHistChDataNOTbits = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "ChannelDataNegBits", "ChannelData NOT PM bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits);
+  mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers", "Triggers from TCM", mMapTechTrgBits);
+  mHistTriggerRates = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TriggerRates", "Trigger rates; Triggers; Rate [kHz]", mMapTechTrgBits);
+  mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
+  mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
+  mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "ChannelID_outOfBC", "ChannelID, out of bunch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistTrg_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers_outOfBC", "Trigger fraction, out of bunch", mMapTechTrgBits);
+  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "SW + HW only to validated triggers fraction", mMapTrgBits);
+  mAmpl = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mTime = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
 }
 
 void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
@@ -160,8 +172,8 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
   }
 
   if (hAmpPerChannel && hTimePerChannel) {
-    mAmpl = hAmpPerChannel->ProfileX("MeanAmplPerChannel");
-    mTime = hTimePerChannel->ProfileX("MeanTimePerChannel");
+    hAmpPerChannel->ProfileX("MeanAmplPerChannel");
+    hTimePerChannel->ProfileX("MeanTimePerChannel");
     mAmpl->SetErrorOption("s");
     mTime->SetErrorOption("s");
     // for some reason the styling is not preserved after assigning result of ProfileX/Y() to already existing object

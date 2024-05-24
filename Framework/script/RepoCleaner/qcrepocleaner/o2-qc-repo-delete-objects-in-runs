@@ -94,17 +94,17 @@ def main():
     prepare_main_logger()
 
     # prepare test data
-    url = "http://ccdb-test.cern.ch:8080"
-    data = {'part': 'part'}
-    path = "qc/TST/MO/repo/test_delete_runs"
-    current_timestamp = int(time.time() * 1000)
-    ccdb = Ccdb(url)
-    for x in range(30):
-        metadata = {'RunNumber': str(x)}
-        from_ts = current_timestamp - 60 * 1000
-        to_ts = current_timestamp
-        version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-        ccdb.putVersion(version=version_info, data=data)
+    # url = "http://ccdb-test.cern.ch:8080"
+    # data = {'part': 'part'}
+    # path = "qc/TST/MO/repo/test_delete_runs"
+    # current_timestamp = int(time.time() * 1000)
+    # ccdb = Ccdb(url)
+    # for x in range(30):
+    #     metadata = {'RunNumber': str(x)}
+    #     from_ts = current_timestamp - 60 * 1000
+    #     to_ts = current_timestamp
+    #     version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
+    #     ccdb.putVersion(version=version_info, data=data)
 
     # Parse arguments
     args = parseArgs()

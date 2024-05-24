@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2",
+        "type": "NONE",
         "start": "8000000",
         "end": "9000000",
         "periodName": "LHC9000x",
@@ -33,7 +33,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "100",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
@@ -67,7 +66,7 @@
       "id": "tst-raw",
       "active": "true",
       "machines": [],
-      "query": "random:TST/RAWDATA/0",
+      "query": "data:TST/RAWDATA/0",
       "samplingConditions": [],
       "blocking": "false"
     }

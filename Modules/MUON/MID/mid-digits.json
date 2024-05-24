@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       }
     },
     "tasks": {
@@ -20,7 +20,6 @@
         "moduleName": "QcMID",
         "detectorName": "MID",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "digits"

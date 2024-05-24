@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2",
+        "type": "NONE",
         "start": "8000000",
         "end": "9000000"
       },
@@ -32,7 +32,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -54,7 +53,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -99,7 +97,7 @@
       "machines": [
         "localhost"
       ],
-      "query": "random:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
@@ -116,7 +114,7 @@
         "localhost"
       ],
       "port": "@UNIQUE_PORT_2@",
-      "query": "random0:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

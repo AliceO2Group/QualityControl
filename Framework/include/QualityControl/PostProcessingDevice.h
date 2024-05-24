@@ -36,6 +36,10 @@ struct PostProcessingRunnerConfig;
 /// \author Piotr Konopka
 class PostProcessingDevice : public framework::Task
 {
+  /// \brief Number of bytes in data description used for hashing DataDescription. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// \brief Constructor
   ///
@@ -66,7 +70,7 @@ class PostProcessingDevice : public framework::Task
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
   void start(framework::ServiceRegistryRef services);
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
-  void stop() override;
+  void stop(framework::ServiceRegistryRef services);
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
@@ -78,4 +82,4 @@ class PostProcessingDevice : public framework::Task
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_POSTPROCESSINGDEVICE_H
+#endif // QUALITYCONTROL_POSTPROCESSINGDEVICE_H

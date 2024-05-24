@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -29,7 +29,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -51,7 +50,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -96,7 +94,7 @@
         "localnode1",
         "localnode2"
       ],
-      "query": "random:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
@@ -113,7 +111,7 @@
         "localnode2"
       ],
       "port": "30333",
-      "query": "random:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

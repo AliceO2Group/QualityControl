@@ -43,6 +43,10 @@ struct CheckSpec;
 /// \author Rafal Pacholek
 class Check
 {
+  /// \brief Number of bytes in data description used for hashing of Check descrition names. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// Constructor
   /**
@@ -72,8 +76,13 @@ class Check
   void startOfActivity(const core::Activity& activity);
   void endOfActivity(const core::Activity& activity);
 
-  //TODO: Unique Input string
+  // TODO: Unique Input string
   static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
+
+  /// \brief creates DataOrigin for Check task in form CDET
+  ///
+  /// \param detector Name of the detector to be used. If longer than 3B it will be truncated
+  static o2::header::DataOrigin createCheckDataOrigin(const std::string& detector);
 
   UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
@@ -81,7 +90,7 @@ class Check
 
   // todo: probably make CheckFactory
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
-  static framework::OutputSpec createOutputSpec(const std::string& checkName);
+  static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
 
  private:
   void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);

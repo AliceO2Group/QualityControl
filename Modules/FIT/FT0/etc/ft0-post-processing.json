@@ -1,0 +1,334 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "#host": "http://localhost:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "checks": {
+      "OutOfBunchCollCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::OutOfBunchCollCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "5.0e-3",
+          "thresholdError": "1.0e-2"
+        }
+      },
+      "CFDinTimeGateCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "TimeInWindowFraction"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.75",
+          "thresholdError": "0.5",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "TimeInWindowFraction",
+          "isInversedThresholds": "false",
+          "pathDeadChannelMap": "FT0/Calib/DeadChannelMap",
+          "binsToIgnore": "208,209,210,211,212,213,214,215"
+        }
+      },
+      "CFDinADCgateCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "CFD_efficiency"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.75",
+          "thresholdError": "0.5",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "CFD_efficiency",
+          "isInversedThresholds": "false",
+          "pathDeadChannelMap": "FT0/Calib/DeadChannelMap",
+          "binsToIgnore": "208,209,210,211,212,213,214,215"
+        }
+      },
+      "ChannelOutOfBunchCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "ChannelID_outOfBC"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.4",
+          "thresholdError": "1.0",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "ChannelID_outOfBC",
+          "isInversedThresholds": "true",
+          "pathDeadChannelMap": "FT0/Calib/DeadChannelMap",
+          "binsToIgnore": "208,209,210,211,212,213,214,215"
+        }
+      },
+      "TrgValidationCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "TrgValidation"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.0005",
+          "thresholdError": "0.0015",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "TrgValidation",
+          "isInversedThresholds": "true",
+          "pathDeadChannelMap": "",
+          "binsToIgnore": ""
+        }
+      }
+    },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "OutOfBunchCollCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinTimeGateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinADCgateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "ChannelOutOfBunchCheck"
+          },
+          {
+            "type": "Check",
+            "name": "TrgValidationCheck"
+          }
+        ]
+      }
+    },
+    "postprocessing": {
+      "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "FT0",
+        "qualityGroups": [
+          {
+            "name": "Global",
+            "title": "GLOBAL FT0 QUALITY",
+            "path": "FT0/QO/GlobalQuality",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality",
+                "title": "Global FT0 Quality",
+                "messageBad": "Inform the FIT on-call immediately",
+                "messageMedium": "Follow individual check instructions",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty, inform the FIT on-call immediately"
+              }
+            ]
+          },
+          {
+            "name": "Details",
+            "title": "FT0 DETAILS",
+            "path": "FT0/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "OutOfBunchCollCheck",
+                "title": "Out of bunch collisions"
+              },
+              {
+                "name": "CFDinTimeGateCheck",
+                "title": "CFD in time gate"
+              },
+              {
+                "name": "CFDinADCgateCheck",
+                "title": "CDF in ADC gate"
+              },
+              {
+                "name": "ChannelOutOfBunchCheck",
+                "title": "Channels out of bunch collisions"
+              },
+              {
+                "name": "TrgValidationCheck",
+                "title": "Trigger validation"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FT0/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PostProc": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::PostProcTask",
+        "moduleName": "QcFT0",
+        "detectorName": "FT0",
+        "custom": {
+          "numOrbitsInTF": "32",
+          "cycleDurationMoName": "CycleDurationNTF",
+          "timestampSourceLhcIf": "metadata",
+          "pathDigitQcTask": "FT0/MO/Digits"
+        },
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FT0/MO/Digits/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "Trending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcFT0",
+        "detectorName": "FT0",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "FT0/MO/Digits",
+            "names": [
+              "CycleDuration",
+              "CycleDurationNTF",
+              "AverageTimeA",
+              "AverageTimeC"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "trend_cycle_duration",
+            "title": "cycle duration [ns]",
+            "varexp": "CycleDuration.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_cycle_duration_ntf",
+            "title": "cycle duration [TimeFrames]",
+            "varexp": "CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_corr",
+            "title": "cycle duration: ns/TF;time;cycle duration [ns/TimeFrames]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_ntf_corr",
+            "title": "TF duration [ns];#TF;TF duration [ns]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:CycleDurationNTF.entries",
+            "selection": "",
+            "option": "colz"
+          },
+          {
+            "name": "trend_time",
+            "title": "(TOA+TOC)/2 from TCM [ps]",
+            "varexp": "(AverageTimeA.mean+AverageTimeC.mean)/2 * 13.02:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FT0/MO/Digits/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

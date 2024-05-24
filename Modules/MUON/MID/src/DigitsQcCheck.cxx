@@ -15,7 +15,8 @@
 ///
 
 #include "MID/DigitsQcCheck.h"
-#include "DataFormatsQualityControl/FlagReasons.h"
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 // ROOT
@@ -62,14 +63,14 @@ void DigitsQcCheck::configure()
 
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Null;
+  Quality result = Quality::Good;
   // This info must be available from the beginning
   TH1* meanMultiHits = nullptr;
   for (auto& item : *moMap) {
     if (item.second->getName() == "NbDigitTF") {
-      mHistoHelper.setNTFs(static_cast<TH1F*>(item.second->getObject())->GetBinContent(1));
+      mHistoHelper.setNTFs(dynamic_cast<TH1F*>(item.second->getObject())->GetBinContent(1));
     } else if (item.second->getName() == "MeanMultiHits") {
-      meanMultiHits = static_cast<TH1*>(item.second->getObject());
+      meanMultiHits = dynamic_cast<TH1*>(item.second->getObject());
     }
   }
 
@@ -88,7 +89,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     for (auto& item : *moMap) {
       if (item.second->getName().find("MultHitMT") != std::string::npos) {
         std::string hName = item.second->getName();
-        auto mean = static_cast<TH1*>(item.second->getObject())->GetMean();
+        auto mean = dynamic_cast<TH1*>(item.second->getObject())->GetMean();
         meanMultiHits->SetBinContent(ref[hName], mean);
         auto qual = Quality::Good;
         if (mean == 0.) {
@@ -120,23 +121,35 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   for (auto& item : *moMap) {
     if (item.second->getName() == "LocalBoardsMap") {
       if (mHistoHelper.getNTFs() > 0) {
-        int nEmptyLB = 0;
-        int nBadLB = 0;
-        auto histo = static_cast<TH2F*>(item.second->getObject());
-        mHistoHelper.normalizeHistoTokHz(histo);
-        for (int bx = 1; bx < 15; bx++) {
-          for (int by = 1; by < 37; by++) {
-            if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
-              double val = histo->GetBinContent(bx, by);
-              if (val == 0) {
-                nEmptyLB++;
-              } else if (val > mLocalBoardThreshold) {
-                nBadLB++;
+        nEmptyLB = 0;
+        nBadLB = 0;
+        maxVal = 0;
+        minVal = 1000;
+        auto histo = dynamic_cast<TH2F*>(item.second->getObject());
+        if (histo) {
+          mHistoHelper.normalizeHistoTokHz(histo);
+          for (int bx = 1; bx < 15; bx++) {
+            for (int by = 1; by < 37; by++) {
+              if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
+                double val = histo->GetBinContent(bx, by);
+                if (val > maxVal) {
+                  maxVal = val;
+                }
+                if (val < minVal) {
+                  minVal = val;
+                }
+                if (val == 0) {
+                  nEmptyLB++;
+                } else if (val > mLocalBoardThreshold) {
+                  nBadLB++;
+                }
+                if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) {
+                  by += 3;
+                } // zones 1 board
+                else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
+                  by += 1;
+                } // zones 2 boards
               }
-              if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33))
-                by += 3; // zones 1 board
-              else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25)))
-                by += 1; // zones 2 boards
             }
           }
         }
@@ -146,20 +159,43 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (nBadLB > mNbBadLocalBoard) {
             qual = Quality::Bad;
           }
-          auto flag = o2::quality_control::FlagReason();
-          qual.addReason(flag, fmt::format("{} boards > {} kHz", nBadLB, mLocalBoardThreshold));
+          auto flag = o2::quality_control::FlagType();
+          qual.addFlag(flag, fmt::format("{} boards > {} kHz", nBadLB, mLocalBoardThreshold));
         } else if (nEmptyLB > 0) {
           qual = Quality::Medium;
           if (nEmptyLB > mNbEmptyLocalBoard) {
             qual = Quality::Bad;
           }
-          auto flag = o2::quality_control::FlagReason();
-          qual.addReason(flag, fmt::format("{} boards empty", nEmptyLB));
+          auto flag = o2::quality_control::FlagType();
+          qual.addFlag(flag, fmt::format("{} boards empty", nEmptyLB));
         }
         mQualityMap[item.second->getName()] = qual;
+        result = qual;
       } // if mNTFInSeconds > 0.
     }
+    if (item.second->getName() == "NbLBEmpty") {
+      auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+      if (histo) {
+        histo->SetBins(1, nEmptyLB - 0.5, nEmptyLB + 0.5);
+        histo->Fill(nEmptyLB);
+      }
+    }
+    if (item.second->getName() == "NbLBHighRate") {
+      auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+      if (histo) {
+        histo->SetBins(1, nBadLB - 0.5, nBadLB + 0.5);
+        histo->Fill(nBadLB);
+      }
+    }
+    if (item.second->getName() == "LBHighRate") {
+      auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+      if (histo) {
+        histo->SetBins(1, maxVal - 0.5, maxVal + 0.5);
+        histo->Fill(maxVal);
+      }
+    }
   }
+
   return result;
 }
 
@@ -180,19 +216,23 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (mo->getName().find("MultHitMT") != std::string::npos) {
     // This matches "MultHitMT*"
     if (mHistoHelper.getNTFs() > 0) {
-      auto histo = static_cast<TH1F*>(mo->getObject());
-      histo->SetFillColor(color);
-      mHistoHelper.addLatex(histo, 0.15, 0.82, color, Form("Limit : [%g;%g]", mMinMultThreshold, mMeanMultThreshold));
-      mHistoHelper.addLatex(histo, 0.3, 0.62, color, Form("Mean=%g ", histo->GetMean()));
-      mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
-      histo->SetTitleSize(0.04);
-      histo->SetLineColor(kBlack);
+      auto histo = dynamic_cast<TH1F*>(mo->getObject());
+      if (histo) {
+        histo->SetFillColor(color);
+        mHistoHelper.addLatex(histo, 0.15, 0.82, color, Form("Limit : [%g;%g]", mMinMultThreshold, mMeanMultThreshold));
+        mHistoHelper.addLatex(histo, 0.3, 0.62, color, Form("Mean=%g ", histo->GetMean()));
+        mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
+        histo->SetTitleSize(0.04);
+        histo->SetLineColor(kBlack);
+      }
     }
   } else if (mo->getName() == "MeanMultiHits") {
-    auto histo = static_cast<TH1F*>(mo->getObject());
-    mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
-    mHistoHelper.updateTitleWithNTF(histo);
-    histo->SetStats(0);
+    auto histo = dynamic_cast<TH1F*>(mo->getObject());
+    if (histo) {
+      mHistoHelper.addLatex(histo, 0.3, 0.52, color, fmt::format("Quality::{}", checkResult.getName()));
+      mHistoHelper.updateTitleWithNTF(histo);
+      histo->SetStats(0);
+    }
   } else {
     // Change palette contours so that visibility of low-multiplicity strips or boards is improved
     std::vector<double> zcontoursLoc{ 0, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100 };
@@ -207,11 +247,11 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     std::string lbHistoName = "LocalBoardsMap";
     if (mo->getName().find(lbHistoName) != std::string::npos) {
       // This matches "LocalBoardsMap*"
-      auto histo = static_cast<TH2F*>(mo->getObject());
+      auto histo = dynamic_cast<TH2F*>(mo->getObject());
       if (mo->getName() == lbHistoName) {
         // This is LocalBoardsMap and it was already scaled in the checker
-        if (!checkResult.getReasons().empty()) {
-          mHistoHelper.addLatex(histo, 0.12, 0.72, color, checkResult.getReasons().front().second.c_str());
+        if (!checkResult.getFlags().empty()) {
+          mHistoHelper.addLatex(histo, 0.12, 0.72, color, checkResult.getFlags().front().second.c_str());
         }
         mHistoHelper.addLatex(histo, 0.3, 0.32, color, fmt::format("Quality::{}", checkResult.getName()));
         histo->SetMaximum(zcontoursLoc4.back());
@@ -229,13 +269,13 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       if (mo->getName().find("BendHitsMap") != std::string::npos) {
         // This matches both [N]BendHitsMap*
         int maxStrip = 20; // 20kHz Max Display
-        auto histo = static_cast<TH2F*>(mo->getObject());
+        auto histo = dynamic_cast<TH2F*>(mo->getObject());
         mHistoHelper.normalizeHistoTokHz(histo);
         histo->SetMaximum(zcontoursStrip.back());
         histo->SetContour(zcontoursStrip.size(), zcontoursStrip.data());
         histo->SetStats(0);
       } else if (mo->getName() == "Hits") {
-        auto histo = static_cast<TH1F*>(mo->getObject());
+        auto histo = dynamic_cast<TH1F*>(mo->getObject());
         mHistoHelper.normalizeHistoTokHz(histo);
         histo->SetStats(0);
       }

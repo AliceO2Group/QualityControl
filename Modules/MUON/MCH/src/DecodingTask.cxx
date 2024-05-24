@@ -15,6 +15,7 @@
 ///
 
 #include "MCH/DecodingTask.h"
+#include "MUONCommon/Helpers.h"
 #include "DetectorsRaw/RDHUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Framework/WorkflowSpec.h"
@@ -26,18 +27,28 @@
 #include "MCHBase/DecoderError.h"
 #include "MCHBase/HeartBeatPacket.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace muonchambers
-{
-
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::mch;
 using namespace o2::mch::raw;
 using RDH = o2::header::RDHAny;
+using namespace o2::quality_control_modules::muon;
+
+namespace o2::quality_control_modules::muonchambers
+{
+
+template <typename T>
+void DecodingTask::publishObject(T* histo, std::string drawOption, std::string displayHints, bool statBox, bool isExpert)
+{
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  getObjectsManager()->startPublishing(histo);
+  getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+  getObjectsManager()->setDisplayHint(histo, displayHints);
+}
 
 //_____________________________________________________________________________
 
@@ -85,9 +96,7 @@ void DecodingTask::initialize(o2::framework::InitContext& /*ic*/)
   ILOG(Debug, Devel) << "initialize DecodingErrorsTask" << ENDM;
 
   // expected bunch-crossing value in heart-beat packets
-  if (auto param = mCustomParameters.find("HBExpectedBc"); param != mCustomParameters.end()) {
-    mHBExpectedBc = std::stoi(param->second);
-  }
+  mHBExpectedBc = getConfigurationParameter<int>(mCustomParameters, "HBExpectedBc", mHBExpectedBc);
 
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
 
@@ -167,7 +176,7 @@ void DecodingTask::decodeBuffer(gsl::span<const std::byte> buf)
   size_t bufSize = buf.size();
   size_t pageStart = 0;
   while (bufSize > pageStart) {
-    RDH* rdh = reinterpret_cast<RDH*>(const_cast<std::byte*>(&(buf[pageStart])));
+    const RDH* rdh = reinterpret_cast<const RDH*>(&(buf[pageStart]));
     auto rdhHeaderSize = o2::raw::RDHUtils::getHeaderSize(rdh);
     if (rdhHeaderSize != 64) {
       break;
@@ -384,6 +393,4 @@ void DecodingTask::reset()
   }
 }
 
-} // namespace muonchambers
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::muonchambers

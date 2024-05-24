@@ -43,6 +43,11 @@ add_root_dictionary(O2QcFDD
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FDD
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
 
+install(FILES etc/fdd-digits.json
+              etc/fdd-post-processing.json
+              etc/fdd-recpoints.json
+        DESTINATION Modules/FIT/FDD/etc)
+
 # ---- Test(s) ----
 
 #set(TEST_SRCS test/testQcFDD.cxx) # uncomment to reenable the test which was empty

@@ -23,7 +23,8 @@
 #include <TH2.h>
 #include <TProfile2D.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -46,10 +47,10 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
 
   for (auto& item : *moMap) {
     if (item.second->getName() == "NbTimeFrame") {
-      mHistoHelper.setNTFs(static_cast<TH1F*>(item.second->getObject())->GetBinContent(1));
+      mHistoHelper.setNTFs(dynamic_cast<TH1F*>(item.second->getObject())->GetBinContent(1));
       result = mHistoHelper.getNTFs() == 0 ? Quality::Bad : Quality::Good;
     } else if (item.second->getName() == "NbDeadROF") {
-      mDeadRof = static_cast<TH1F*>(item.second->getObject())->GetBinContent(1);
+      mDeadRof = dynamic_cast<TH1F*>(item.second->getObject())->GetBinContent(1);
     }
   }
   return result;
@@ -66,17 +67,21 @@ void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     // Normalize Map and Strips objects
     if (mo->getName().find("Noise") != std::string::npos) {
       // Scale histograms with noise info
-      auto histo = static_cast<TH1*>(mo->getObject());
-      mHistoHelper.normalizeHistoTokHz(histo);
-      if (mo->getName().find("Map") != std::string::npos) {
-        histo->SetMaximum(10.);
+      auto histo = dynamic_cast<TH1*>(mo->getObject());
+      if (histo) {
+        mHistoHelper.normalizeHistoTokHz(histo);
+        if (mo->getName().find("Map") != std::string::npos) {
+          histo->SetMaximum(10.);
+        }
       }
     } else if (mo->getName().find("Dead") != std::string::npos) {
       if (mDeadRof > 0.) {
         // Scale histograms with dead channels info
-        auto histo = static_cast<TH1*>(mo->getObject());
-        histo->Scale(100. / mDeadRof);
-        mHistoHelper.updateTitle(histo, " (%)");
+        auto histo = dynamic_cast<TH1*>(mo->getObject());
+        if (histo) {
+          histo->Scale(100. / mDeadRof);
+          mHistoHelper.updateTitle(histo, " (%)");
+        }
       }
     }
   }

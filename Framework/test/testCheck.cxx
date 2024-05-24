@@ -25,12 +25,7 @@
 #include <TH1F.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Configuration/ConfigurationInterface.h>
-
-#define BOOST_TEST_MODULE Check test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
@@ -57,16 +52,28 @@ CheckConfig getCheckConfig(const std::string& configFilePath, const std::string&
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_check_specs)
+TEST_CASE("test_check_specs")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check(getCheckConfig(configFilePath, "singleCheck"));
 
-  BOOST_REQUIRE_EQUAL(check.getInputs().size(), 1);
-  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QTST", "skeletonTask", 0, Lifetime::Sporadic }));
+  REQUIRE(check.getInputs().size() == 1);
+  CHECK(check.getInputs()[0] == (InputSpec{ { "mo" }, "QTST", "skeletonTask", 0, Lifetime::Sporadic }));
 
-  BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0, Lifetime::Sporadic }));
+  CHECK(check.getOutputSpec() == (OutputSpec{ "CTST", "singleCheck", 0, Lifetime::Sporadic }));
+}
+
+TEST_CASE("test_check_long_description")
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+
+  Check check(getCheckConfig(configFilePath, "singleCheckLongDescription"));
+
+  REQUIRE(check.getInputs().size() == 1);
+  CHECK(check.getInputs()[0] == (InputSpec{ { "mo" }, "QTST", "skeletonTask", 0, Lifetime::Sporadic }));
+
+  CHECK(check.getOutputSpec() == (OutputSpec{ "CTST", "singleCheckL9fdb", 0, Lifetime::Sporadic }));
 }
 
 std::shared_ptr<MonitorObject> dummyMO(const std::string& objName)
@@ -76,7 +83,7 @@ std::shared_ptr<MonitorObject> dummyMO(const std::string& objName)
   return obj;
 }
 
-BOOST_AUTO_TEST_CASE(test_check_empty_mo)
+TEST_CASE("test_check_empty_mo")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
@@ -90,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_check_empty_mo)
     };
 
     auto qos = check.check(moMap);
-    BOOST_CHECK_EQUAL(qos.size(), 0);
+    CHECK(qos.size() == 0);
   }
 
   {
@@ -99,11 +106,11 @@ BOOST_AUTO_TEST_CASE(test_check_empty_mo)
     };
 
     auto qos = check.check(moMap);
-    BOOST_CHECK_EQUAL(qos.size(), 0);
+    CHECK(qos.size() == 0);
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_check_invoke_check)
+TEST_CASE("test_check_invoke_check")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
@@ -116,10 +123,10 @@ BOOST_AUTO_TEST_CASE(test_check_invoke_check)
   };
 
   auto qos = check.check(moMap);
-  BOOST_CHECK_EQUAL(qos.size(), 1);
+  CHECK(qos.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(test_check_postprocessing)
+TEST_CASE("test_check_postprocessing")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
@@ -132,10 +139,10 @@ BOOST_AUTO_TEST_CASE(test_check_postprocessing)
   };
 
   auto qos = check.check(moMap);
-  BOOST_CHECK_EQUAL(qos.size(), 1);
+  CHECK(qos.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(test_check_activity)
+TEST_CASE("test_check_activity")
 {
   Check check({ "test",
                 "QcSkeleton",
@@ -151,14 +158,14 @@ BOOST_AUTO_TEST_CASE(test_check_activity)
     { "abcTask/test2", dummyMO("test2") }
   };
 
-  moMap["abcTask/test1"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" });
-  moMap["abcTask/test2"]->setActivity({ 300000, 1, "LHC22a", "spass", "qc", { 5, 15 }, "pp" });
+  moMap["abcTask/test1"]->setActivity({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 1, 10 }, "pp" });
+  moMap["abcTask/test2"]->setActivity({ 300000, "PHYSICS", "LHC22a", "spass", "qc", { 5, 15 }, "pp" });
 
   check.init();
   check.startOfActivity(Activity());
   auto qos = check.check(moMap);
 
-  BOOST_REQUIRE_EQUAL(qos.size(), 1);
+  REQUIRE(qos.size() == 1);
   ValidityInterval correctValidity{ 1, 15 };
-  BOOST_CHECK(qos[0]->getActivity().mValidity == correctValidity);
+  CHECK(qos[0]->getActivity().mValidity == correctValidity);
 }

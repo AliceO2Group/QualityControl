@@ -25,7 +25,7 @@
 namespace o2::quality_control_modules::common
 {
 
-/// \brief  Aggregator which selects the worst Quality and adds all FlagReasons
+/// \brief  Aggregator which selects the worst Quality and adds all FlagTypes
 /// \author Piotr Konopka
 class WorstOfAllAggregator : public o2::quality_control::checker::AggregatorInterface
 {

@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -23,13 +23,12 @@
       }
     },
     "tasks": {
-      "QcZDCRawTask": {
+      "Raw": {
         "active": "true",
         "className": "o2::quality_control_modules::zdc::ZDCRawDataTask",
         "moduleName": "QcZDC",
         "detectorName": "ZDC",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -126,7 +125,7 @@
             },
             "dataSource": [{
               "type": "Task",
-              "name": "QcZDCRawTask",
+              "name": "Raw",
               "MOs": ["hpedSummary", "hAlignPlotShift", "herrorSummary"]
             }]
           }
@@ -142,7 +141,7 @@
         {
           "condition": "random",
           "fraction": "0.1",
-          "seed": "1234"
+          "seed": "0"
         }
       ],
       "blocking": "false"

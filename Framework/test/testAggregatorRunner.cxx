@@ -53,7 +53,7 @@ std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorCo
 TEST_CASE("test_aggregator_runner_static")
 {
   CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop")));
-  CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("0123456789012345")));
+  CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("012345678901639b")));
   CHECK_THROWS_AS(AggregatorRunner::createAggregatorRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
 
@@ -78,6 +78,7 @@ TEST_CASE("test_aggregator_runner")
 
   // check the reordering
   const std::vector<std::shared_ptr<Aggregator>> aggregators = aggregatorRunner.getAggregators();
+  REQUIRE(aggregators.size() == 4);
   CHECK((aggregators.at(0)->getName() == "MyAggregatorC" || aggregators.at(0)->getName() == "MyAggregatorB"));
   CHECK((aggregators.at(1)->getName() == "MyAggregatorC" || aggregators.at(1)->getName() == "MyAggregatorB"));
   CHECK(aggregators.at(2)->getName() == "MyAggregatorA");
@@ -108,7 +109,7 @@ TEST_CASE("test_aggregator_onAnyNonZero")
   QualityObjectsType result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Good);
 
-  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Bad);
 }
@@ -139,7 +140,7 @@ TEST_CASE("test_aggregator_quality_filter")
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Medium);
 
   // Add someNumbersCheck/example=bad return bad
-  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Bad);
 
@@ -148,8 +149,8 @@ TEST_CASE("test_aggregator_quality_filter")
   qoMap.clear();
   qoMap["dataSizeCheck1/q1"] = make_shared<QualityObject>(Quality::Good, "dataSizeCheck1/q1");
   qoMap["dataSizeCheck1/q2"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck1/q2");
-  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck2/someNumbersTask/example");
-  qoMap["dataSizeCheck2/someNumbersTask/example2"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example2");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck2/skeletonTask/example");
+  qoMap["dataSizeCheck2/skeletonTask/example2"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example2");
   result = aggregator->aggregate(qoMap);
   CHECK(getQualityForCheck(result, "MyAggregatorB/newQuality") == Quality::Medium);
 }
@@ -181,7 +182,7 @@ TEST_CASE("test_aggregator_activity_propagation")
   REQUIRE(myAggregatorCConfig != aggregatorConfigs.end());
   auto aggregator = make_shared<Aggregator>(*myAggregatorCConfig);
   aggregator->init();
-  Activity defaultActivity{ 123, 1, "LHC34b", "apass4", "qc", { 34, 54 }, "proton - mouton" };
+  Activity defaultActivity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 34, 54 }, "proton - mouton" };
 
   // empty list -> Good
   QualityObjectsMapType qoMap;
@@ -192,14 +193,14 @@ TEST_CASE("test_aggregator_activity_propagation")
 
   // Add dataSizeCheck1/q1=good and dataSizeCheck1/q2=medium -> return medium
   auto qo1 = make_shared<QualityObject>(Quality::Good, "dataSizeCheck");
-  qo1->setActivity({ 123, 1, "LHC34b", "apass4", "qc", { 100, 200 }, "proton - mouton" });
+  qo1->setActivity({ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 100, 200 }, "proton - mouton" });
   auto qo2 = make_shared<QualityObject>(Quality::Medium, "someNumbersCheck");
-  qo2->setActivity({ 123, 1, "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+  qo2->setActivity({ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
   qoMap["dataSizeCheck"] = qo1;
   qoMap["someNumbersCheck"] = qo2;
 
   result = aggregator->aggregate(qoMap);
   REQUIRE(result.size() == 2);
-  CHECK(result[0]->getActivity() == Activity{ 123, 1, "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
-  CHECK(result[1]->getActivity() == Activity{ 123, 1, "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+  CHECK(result[0]->getActivity() == Activity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+  CHECK(result[1]->getActivity() == Activity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
 }

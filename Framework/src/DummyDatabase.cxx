@@ -47,7 +47,7 @@ void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qua
 {
 }
 
-void DummyDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)
+void DummyDatabase::storeQCFC(std::shared_ptr<const o2::quality_control::QualityControlFlagCollection> qcfc)
 {
 }
 
@@ -87,7 +87,7 @@ void* DummyDatabase::retrieveAny(const std::type_info&, const std::string&, cons
 {
   return nullptr;
 }
-std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> DummyDatabase::retrieveTRFC(const std::string& name, const std::string& detector, int runNumber, const std::string& passName, const std::string& periodName, const std::string& provenance, long timestamp)
+std::shared_ptr<o2::quality_control::QualityControlFlagCollection> DummyDatabase::retrieveQCFC(const std::string& name, const std::string& detector, int runNumber, const std::string& passName, const std::string& periodName, const std::string& provenance, long timestamp)
 {
   return nullptr;
 }

@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2",
+        "type": "NONE",
         "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",             "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",         "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
@@ -36,7 +36,6 @@
         "moduleName": "QcExample",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",     "": "10 seconds minimum",
-        "maxNumberCycles": "-1",
         "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "direct",

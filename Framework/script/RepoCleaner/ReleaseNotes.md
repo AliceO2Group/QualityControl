@@ -1,5 +1,10 @@
 # Release notes
 
+1.7
+- [QC-1144] 1_per_run : Consider RunNumber=0 as no run number (#2238)
+- [QC-1142 ]fix object preservation for 1_per_run policy (#2228)
+- [QC-996] policy multiple_per_run can delete first and last (#1921)
+
 1.6 
 - add option to set adjustableEOV when updating validity
 - [QC-986] Do not touch the validity any more in rules 1_per_hour and production

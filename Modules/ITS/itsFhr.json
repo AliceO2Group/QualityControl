@@ -10,7 +10,7 @@
             },
             "Activity": {
                 "number": "42",
-                "type": "2"
+                "type": "NONE"
             },
             "monitoring": {
                 "url": "infologger:///debug?qc"
@@ -29,7 +29,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
                     "name": "RAWDATA"
@@ -53,16 +52,6 @@
                     "PhysicalOccupancyIB": "1.7e-3",
                     "PhysicalOccupancyOB": "4.3e-5",
                     "IgnoreRampUpData": "true"
-                },
-	        "grpGeomRequest" : {
-                    "geomRequest": "Aligned",
-                    "askGRPECS": "false",
-                    "askGRPLHCIF": "false",
-                    "askGRPMagField": "false",
-                    "askMatLUT": "false",
-                    "askTime": "false",
-                    "askOnceAllButField": "false",
-                    "needPropagatorD":  "false"
                 }
             }
         },

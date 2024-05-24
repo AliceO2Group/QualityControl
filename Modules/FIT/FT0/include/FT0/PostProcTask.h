@@ -29,6 +29,7 @@
 #include "DataFormatsFT0/Digit.h"
 
 #include <TH2.h>
+#include <TProfile.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 
@@ -73,8 +74,8 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH1F> mHistTrgValidation;
   std::unique_ptr<TH2F> mHistBcPattern;
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
-  TProfile* mAmpl = nullptr;
-  TProfile* mTime = nullptr;
+  std::unique_ptr<TProfile> mAmpl;
+  std::unique_ptr<TProfile> mTime;
   // Configurations
   int mLowTimeThreshold{ -192 };
   int mUpTimeThreshold{ 192 };
@@ -88,6 +89,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   using MapHistsDecomposed_t = std::map<std::string, std::map<unsigned int, std::shared_ptr<HistDecomposed_t>>>;
   MapHistsDecomposed_t mMapHistsToDecompose{};
   void decomposeHists();
+  void reset();
 };
 
 } // namespace o2::quality_control_modules::ft0

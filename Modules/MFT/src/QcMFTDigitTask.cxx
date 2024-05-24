@@ -15,24 +15,35 @@
 /// \author Guillermo Contreras
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
+/// \author David Grund
 ///
 
+// C++
+#include <gsl/span>
+#include <string>
+#include <vector>
 // ROOT
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TAxis.h>
+#include <TString.h>
 // O2
 #include <DataFormatsITSMFT/Digit.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
 #include <Framework/TimingInfo.h>
+#include <Framework/ProcessingContext.h>
+#include <Framework/ServiceRegistryRef.h>
+#include <Framework/ProcessingContext.h>
 #include <ITSMFTReconstruction/ChipMappingMFT.h>
+#include <CommonConstants/LHCConstants.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTDigitTask.h"
 #include "MFT/QcMFTUtilTables.h"
-// C++
-#include <fstream>
+#include "Common/TH1Ratio.h"
+#include "Common/TH2Ratio.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 
 namespace o2::quality_control_modules::mft
 {
@@ -46,15 +57,14 @@ QcMFTDigitTask::~QcMFTDigitTask()
 
 void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize QcMFTDigitTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize QcMFTDigitTask" << ENDM;
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  // loading custom parameters
   if (auto param = mCustomParameters.find("FLP"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - FLP: " << param->second << ENDM;
     mCurrentFLP = stoi(param->second);
   }
 
-  // loading custom parameters
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseScan: " << param->second << ENDM;
     mNoiseScan = stoi(param->second);
@@ -93,8 +103,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   resetArrays(mVectorIndexOfChips, mOccupancyMapIndexOfChips, mVectorIndexOfOccupancyMaps);
 
   // Defining histograms
-  //==============================================
-  mMergerTest = std::make_unique<TH1F>("mMergerTest", "Merger testing from different FLPs;FLP ID;#Entries", 5, -0.5, 4.5);
+
+  mMergerTest = std::make_unique<TH1F>(
+    "mMergerTest", "Merger testing from different FLPs;FLP ID;# entries", 5, -0.5, 4.5);
   mMergerTest->SetStats(0);
   mMergerTest->GetXaxis()->SetBinLabel(1, "FLP 182");
   mMergerTest->GetXaxis()->SetBinLabel(2, "FLP 183");
@@ -103,34 +114,28 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMergerTest->GetXaxis()->SetBinLabel(5, "FLP 186");
   getObjectsManager()->startPublishing(mMergerTest.get());
 
-  mDigitChipOccupancy = std::make_unique<TH1F>(
-    "mDigitChipOccupancy",
-    "Digit Chip Occupancy;Chip ID;#Entries per ROF",
-    936, -0.5, 935.5);
+  mDigitChipOccupancy = std::make_unique<TH1FRatio>(
+    "mDigitChipOccupancy", "Digit Chip Occupancy;Chip ID;# entries per orbit", 936, -0.5, 935.5, true);
   mDigitChipOccupancy->SetStats(0);
   getObjectsManager()->startPublishing(mDigitChipOccupancy.get());
   getObjectsManager()->setDisplayHint(mDigitChipOccupancy.get(), "hist");
 
-  mDigitDoubleColumnSensorIndices = std::make_unique<TH2F>("mDigitDoubleColumnSensorIndices",
-                                                           "Double Column vs Chip ID;Double Column;Chip ID",
-                                                           512, -0.5, 511.5, 936, -0.5, 935.5);
+  mDigitDoubleColumnSensorIndices = std::make_unique<TH2FRatio>(
+    "mDigitDoubleColumnSensorIndices", "Double Column vs Chip ID;Double Column;Chip ID",
+    512, -0.5, 511.5, 936, -0.5, 935.5, true);
   mDigitDoubleColumnSensorIndices->SetStats(0);
   getObjectsManager()->startPublishing(mDigitDoubleColumnSensorIndices.get());
   getObjectsManager()->setDisplayHint(mDigitDoubleColumnSensorIndices.get(), "colz");
 
   if (mNoiseScan == 1) { // to be executed only for special runs
     mDigitChipStdDev = std::make_unique<TH1F>(
-      "mDigitChipStdDev",
-      "Digit Chip Std Dev;Chip ID;Chip std dev",
-      936, -0.5, 935.5);
+      "mDigitChipStdDev", "Digit Chip Std Dev;Chip ID;Chip std dev", 936, -0.5, 935.5);
     mDigitChipStdDev->SetStats(0);
     getObjectsManager()->startPublishing(mDigitChipStdDev.get());
   }
 
-  mDigitOccupancySummary = std::make_unique<TH2F>(
-    "mDigitOccupancySummary",
-    "Digit Occupancy Summary;;",
-    10, -0.5, 9.5, 8, -0.5, 7.5);
+  mDigitOccupancySummary = std::make_unique<TH2FRatio>(
+    "mDigitOccupancySummary", "Digit Occupancy Summary;;", 10, -0.5, 9.5, 8, -0.5, 7.5, true);
   mDigitOccupancySummary->GetXaxis()->SetBinLabel(1, "d0-f0");
   mDigitOccupancySummary->GetXaxis()->SetBinLabel(2, "d0-f1");
   mDigitOccupancySummary->GetXaxis()->SetBinLabel(3, "d1-f0");
@@ -153,18 +158,22 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDigitOccupancySummary.get());
   getObjectsManager()->setDisplayHint(mDigitOccupancySummary.get(), "colz");
 
-  mDigitsROFSize = std::make_unique<TH1F>("mDigitsROFSize", "Distribution of the #digits per ROF; # digits per ROF; # entries", maxDigitROFSize, 0, maxDigitROFSize);
+  mDigitsROFSize = std::make_unique<TH1FRatio>("mDigitsROFSize",
+                                               "Distribution of the #digits per ROF; # digits per ROF; # entries per orbit",
+                                               maxDigitROFSize, 0, maxDigitROFSize, true);
   mDigitsROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mDigitsROFSize.get());
-  getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "logx logy");
+  getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "hist logx logy");
 
-  mDigitsBC = std::make_unique<TH1F>("mDigitsBC", "Digits per BC; BCid; # entries", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches);
+  mDigitsBC = std::make_unique<TH1FRatio>("mDigitsBC",
+                                          "Digits per BC; BCid; # entries per orbit",
+                                          o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, true);
   mDigitsBC->SetMinimum(0.1);
   getObjectsManager()->startPublishing(mDigitsBC.get());
   getObjectsManager()->setDisplayHint(mDigitsBC.get(), "hist");
 
-  // --Chip hit maps
-  //==============================================
+  // Chip hit maps
+
   QcMFTUtilTables MFTTable;
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
     // create only hit maps corresponding to the FLP
@@ -175,27 +184,27 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
     TString histogramName = "";
     getNameOfChipOccupancyMap(folderName, histogramName, iOccupancyMapIndex);
 
-    auto chiphitmap = std::make_unique<TH2F>(
+    auto chiphitmap = std::make_unique<TH2FRatio>(
       folderName, histogramName,
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][0],
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][1],
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][2],
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][3],
       MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][4],
-      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5], true);
     chiphitmap->SetStats(0);
     mDigitChipOccupancyMap.push_back(std::move(chiphitmap));
     getObjectsManager()->startPublishing(mDigitChipOccupancyMap[iVectorOccupancyMapIndex].get());
     getObjectsManager()->setDefaultDrawOptions(mDigitChipOccupancyMap[iVectorOccupancyMapIndex].get(), "colz");
   }
 
-  // --Pixel hit maps
-  //==============================================
+  // Pixel hit maps
   int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
   for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
     // create only hit maps corresponding to the FLP
     int iChipIndex = getChipIndexPixelOccupancyMap(iVectorIndex);
   }
+
   if (mNoiseScan == 1) { // to be executed only for special runs
     for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
       // create only hit maps corresponding to the FLP
@@ -236,20 +245,21 @@ void QcMFTDigitTask::startOfCycle()
 
 void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  auto mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+
   mMergerTest->Fill(mCurrentFLP);
   mMergerTest->Fill(-1); // To test what happenes with the normalisation when merged.
   // get the digits
   const auto digits = ctx.inputs().get<gsl::span<o2::itsmft::Digit>>("randomdigit");
-  if (digits.size() < 1)
+  if (digits.empty()) {
     return;
+  }
 
-  // get the number of rofs
+  // get the rofs
   const auto rofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("digitsrof");
-  auto nROFs = rofs.size();
-
-  // keep track of normalisation of the different histograms in the underflow
-  mDigitChipOccupancy->Fill(-1, nROFs);
-  mDigitOccupancySummary->Fill(-1, -1, nROFs);
+  if (rofs.empty()) {
+    return;
+  }
 
   // get correct timing info of the first TF orbit
   if (mRefOrbit == -1) {
@@ -258,9 +268,9 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // fill the digits time histograms
   for (const auto& rof : rofs) {
-    mDigitsROFSize->Fill(rof.getNEntries());
+    mDigitsROFSize->getNum()->Fill(rof.getNEntries());
     float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
-    mDigitsBC->Fill(rof.getBCData().bc, rof.getNEntries());
+    mDigitsBC->getNum()->Fill(rof.getBCData().bc, rof.getNEntries());
   }
 
   // fill the pixel hit maps and overview histograms
@@ -273,19 +283,19 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
       continue;
 
     // fill double column histogram
-    mDigitDoubleColumnSensorIndices->Fill(oneDigit.getColumn() >> 1, oneDigit.getChipIndex());
+    mDigitDoubleColumnSensorIndices->getNum()->Fill(oneDigit.getColumn() >> 1, oneDigit.getChipIndex());
 
     // fill info into the summary histo
     int xBin = mDisk[chipIndex] * 2 + mFace[chipIndex];
     int yBin = mZone[chipIndex] + mHalf[chipIndex] * 4;
-    mDigitOccupancySummary->Fill(xBin, yBin);
+    mDigitOccupancySummary->getNum()->Fill(xBin, yBin);
 
     // fill pixel hit maps
     if (mNoiseScan == 1)
       mDigitPixelOccupancyMap[vectorIndex]->Fill(oneDigit.getColumn(), oneDigit.getRow());
 
     // fill overview histograms
-    mDigitChipOccupancy->Fill(chipIndex);
+    mDigitChipOccupancy->getNum()->Fill(chipIndex);
     if (mNoiseScan == 1)
       mDigitChipStdDev->SetBinContent(chipIndex + 1, mDigitPixelOccupancyMap[vectorIndex]->GetStdDev(1));
 
@@ -293,13 +303,31 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
     int vectorOccupancyMapIndex = getVectorIndexChipOccupancyMap(chipIndex);
     if (vectorOccupancyMapIndex < 0)
       continue;
-    mDigitChipOccupancyMap[vectorOccupancyMapIndex]->Fill(mX[chipIndex], mY[chipIndex]);
+    mDigitChipOccupancyMap[vectorOccupancyMapIndex]->getNum()->Fill(mX[chipIndex], mY[chipIndex]);
   }
+
+  // fill the denominators
+  mDigitChipOccupancy->getDen()->SetBinContent(1, mDigitChipOccupancy->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mDigitOccupancySummary->getDen()->SetBinContent(1, 1, mDigitOccupancySummary->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
+  mDigitDoubleColumnSensorIndices->getDen()->SetBinContent(1, 1, mDigitDoubleColumnSensorIndices->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
+  mDigitsROFSize->getDen()->SetBinContent(1, mDigitsROFSize->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  mDigitsBC->getDen()->SetBinContent(1, mDigitsBC->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  for (int i = 0; i < 4; i++)
+    mDigitChipOccupancyMap[i]->getDen()->SetBinContent(1, 1, mDigitChipOccupancyMap[i]->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
 }
 
 void QcMFTDigitTask::endOfCycle()
 {
+  // update all THRatios
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+
+  mDigitChipOccupancy->update();
+  mDigitOccupancySummary->update();
+  mDigitDoubleColumnSensorIndices->update();
+  mDigitsROFSize->update();
+  mDigitsBC->update();
+  for (int i = 0; i < 4; i++)
+    mDigitChipOccupancyMap[i]->update();
 }
 
 void QcMFTDigitTask::endOfActivity(const Activity& /*activity*/)
@@ -320,17 +348,12 @@ void QcMFTDigitTask::reset()
   mDigitOccupancySummary->Reset();
   mDigitsROFSize->Reset();
   mDigitsBC->Reset();
-
-  // maps
-  for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
-    mDigitChipOccupancyMap[iVectorOccupancyMapIndex]->Reset();
-  }
-
+  for (int i = 0; i < 4; i++)
+    mDigitChipOccupancyMap[i]->Reset();
   if (mNoiseScan == 1) {
     int maxVectorIndex = mNumberOfPixelMapsPerFLP[mCurrentFLP] + mNumberOfPixelMapsPerFLP[4 - mCurrentFLP];
-    for (int iVectorIndex = 0; iVectorIndex < maxVectorIndex; iVectorIndex++) {
-      mDigitPixelOccupancyMap[iVectorIndex]->Reset();
-    }
+    for (int j = 0; j < maxVectorIndex; j++)
+      mDigitPixelOccupancyMap[j]->Reset();
   }
 }
 
@@ -389,11 +412,11 @@ int QcMFTDigitTask::getIndexChipOccupancyMap(int vectorChipOccupancyMapIndex)
   int vectorOccupancyMapHalf = int(vectorChipOccupancyMapIndex / 2);
 
   int occupancyMapIndex;
-  if (vectorOccupancyMapHalf == 0)
+  if (vectorOccupancyMapHalf == 0) {
     occupancyMapIndex = vectorChipOccupancyMapIndex + mCurrentFLP * 2;
-  else
+  } else {
     occupancyMapIndex = (vectorChipOccupancyMapIndex % 2) + (4 - mCurrentFLP) * 2 + numberOfOccupancyMaps / 2;
-
+  }
   //  fill the array of vector ID for corresponding hit map
   //  (opposite matching)
   mVectorIndexOfOccupancyMaps[occupancyMapIndex] = vectorChipOccupancyMapIndex;
@@ -412,18 +435,20 @@ int QcMFTDigitTask::getVectorIndexPixelOccupancyMap(int chipIndex)
 int QcMFTDigitTask::getChipIndexPixelOccupancyMap(int vectorIndex)
 {
   int vectorHalf = 0;
-  if (int(vectorIndex / mNumberOfPixelMapsPerFLP[mCurrentFLP]) < 1)
+  if (int(vectorIndex / mNumberOfPixelMapsPerFLP[mCurrentFLP]) < 1) {
     vectorHalf = 0;
-  else
+  } else {
     vectorHalf = 1;
+  }
 
   int chipIndex = vectorIndex + vectorHalf * (-mNumberOfPixelMapsPerFLP[mCurrentFLP] + numberOfChips / 2);
 
   int maxDisk = 0;
-  if (vectorHalf == 0)
+  if (vectorHalf == 0) {
     maxDisk = mCurrentFLP;
-  else
+  } else {
     maxDisk = 4 - mCurrentFLP;
+  }
 
   for (int idisk = 0; idisk < maxDisk; idisk++)
     chipIndex = chipIndex + mNumberOfPixelMapsPerFLP[idisk];

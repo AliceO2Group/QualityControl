@@ -68,13 +68,13 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config, core:
 
 void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig)
 {
+  QcInfoLogger::init(("post/" + taskConfig.taskName).substr(0, QcInfoLogger::maxFacilityLength), runnerConfig.infologgerDiscardParameters);
+  ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
+
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
   mActivity = taskConfig.activity;
   mActivity.mValidity = gInvalidValidityInterval;
-
-  QcInfoLogger::init("post/" + mID, mRunnerConfig.infologgerDiscardParameters);
-  ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   root_class_factory::loadLibrary(mTaskConfig.moduleName);
   if (!ConfigParamGlo::keyValues.empty()) {
@@ -168,29 +168,34 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 
 void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
 {
+  Activity activityFromDriver = mTaskConfig.activity;
+  activityFromDriver.mValidity.setMin(getCurrentTimestamp());
   if (dplServices.active<framework::RawDeviceService>()) {
-    mTaskConfig.activity = computeActivity(dplServices, mTaskConfig.activity);
+    activityFromDriver = computeActivity(dplServices, activityFromDriver);
     QcInfoLogger::setPartition(mTaskConfig.activity.mPartitionName);
   }
-  mActivity = mTaskConfig.activity;
-  mActivity.mValidity = gInvalidValidityInterval;
-  QcInfoLogger::setRun(mTaskConfig.activity.mId);
+  mActivity = activityFromDriver;
+  mActivity.mValidity = gInvalidValidityInterval; // object validity shall be based on input objects, not run duration
   mObjectManager->setActivity(mActivity);
+  QcInfoLogger::setRun(mActivity.mId);
 
   // register ourselves to the BK
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
     ILOG(Debug, Devel) << "Registering pp task to BookKeeping" << ENDM;
     try {
-      Bookkeeping::getInstance().registerProcess(mTaskConfig.activity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bookkeeping::DPL_PROCESS_TYPE_QC_POSTPROCESSING, "");
+      Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bkp::DplProcessType::QC_POSTPROCESSING, "");
     } catch (std::runtime_error& error) {
       ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
     }
   }
 
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
-    mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, mTaskConfig);
+    auto taskConfigWithCorrectActivity = mTaskConfig;
+    taskConfigWithCorrectActivity.activity = activityFromDriver;
+    taskConfigWithCorrectActivity.activity.mValidity = gFullValidityInterval;
+    mInitTriggers = trigger_helpers::createTriggers(mTaskConfig.initTriggers, taskConfigWithCorrectActivity);
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.initTriggers)) {
-      doInitialize({ TriggerType::UserOrControl });
+      doInitialize({ TriggerType::UserOrControl, false, activityFromDriver, activityFromDriver.mValidity.getMin() });
     }
   } else if (mTaskState == TaskState::Running) {
     ILOG(Debug, Devel) << "Requested start, but the user task is already running - doing nothing." << ENDM;
@@ -201,11 +206,17 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   }
 }
 
-void PostProcessingRunner::stop()
+void PostProcessingRunner::stop(framework::ServiceRegistryRef dplServices)
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
     if (trigger_helpers::hasUserOrControlTrigger(mTaskConfig.stopTriggers)) {
-      doFinalize({ TriggerType::UserOrControl });
+      // We try to get SOR and EOR times for ECS, which could be needed by the user code.
+      auto activityFromDriver = mActivity;
+      activityFromDriver.mValidity.setMax(getCurrentTimestamp());
+      if (dplServices.active<framework::RawDeviceService>()) {
+        activityFromDriver = computeActivity(dplServices, activityFromDriver);
+      }
+      doFinalize({ TriggerType::UserOrControl, false, activityFromDriver, activityFromDriver.mValidity.getMax() });
     }
   } else if (mTaskState == TaskState::Finished) {
     ILOG(Debug, Devel) << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
@@ -232,6 +243,13 @@ void PostProcessingRunner::reset()
 
 void PostProcessingRunner::updateValidity(const Trigger& trigger)
 {
+  if (trigger == TriggerType::UserOrControl) {
+    // we ignore it, because it would not make sense to use current time in tracking objects from the past,
+    // especially in asynchronous postprocessing
+    ILOG(Debug, Trace) << "Ignoring UserOrControl trigger in tracking objects validity" << ENDM;
+    mObjectManager->setValidity(mActivity.mValidity);
+    return;
+  }
   if (!trigger.activity.mValidity.isValid()) {
     ILOG(Warning, Devel) << "Not updating objects validity, because the provided trigger validity is invalid ("
                          << trigger.activity.mValidity.getMin() << ", " << trigger.activity.mValidity.getMax() << ")" << ENDM;
@@ -260,8 +278,11 @@ void PostProcessingRunner::doInitialize(const Trigger& trigger)
   mTaskState = TaskState::Running;
 
   // We create the triggers just after task init (and not any sooner), so the timer triggers work as expected.
-  mUpdateTriggers = trigger_helpers::createTriggers(mTaskConfig.updateTriggers, mTaskConfig);
-  mStopTriggers = trigger_helpers::createTriggers(mTaskConfig.stopTriggers, mTaskConfig);
+  auto taskConfigWithCorrectActivity = mTaskConfig;
+  taskConfigWithCorrectActivity.activity = mActivity;
+  taskConfigWithCorrectActivity.activity.mValidity = gFullValidityInterval;
+  mUpdateTriggers = trigger_helpers::createTriggers(mTaskConfig.updateTriggers, taskConfigWithCorrectActivity);
+  mStopTriggers = trigger_helpers::createTriggers(mTaskConfig.stopTriggers, taskConfigWithCorrectActivity);
 }
 
 void PostProcessingRunner::doUpdate(const Trigger& trigger)
@@ -270,7 +291,12 @@ void PostProcessingRunner::doUpdate(const Trigger& trigger)
   mTask->update(trigger, mServices);
   updateValidity(trigger);
 
-  mPublicationCallback(mObjectManager->getNonOwningArray());
+  if (mActivity.mValidity.isValid()) {
+    mPublicationCallback(mObjectManager->getNonOwningArray());
+    mObjectManager->stopPublishing(PublicationPolicy::Once);
+  } else {
+    ILOG(Warning, Support) << "Objects will not be published because their validity is invalid. This should not happen." << ENDM;
+  }
 }
 
 void PostProcessingRunner::doFinalize(const Trigger& trigger)
@@ -283,8 +309,15 @@ void PostProcessingRunner::doFinalize(const Trigger& trigger)
   mTask->finalize(trigger, mServices);
   updateValidity(trigger);
 
-  mPublicationCallback(mObjectManager->getNonOwningArray());
+  if (mActivity.mValidity.isValid()) {
+    mPublicationCallback(mObjectManager->getNonOwningArray());
+  } else {
+    // TODO: we could consider using SOR, EOR as validity in such case, so empty objects are still stored in the QCDB.
+    ILOG(Warning, Devel) << "Objects will not be published because their validity is invalid. Most likely the task's update() method was never triggered." << ENDM;
+  }
   mTaskState = TaskState::Finished;
+  mObjectManager->stopPublishing(PublicationPolicy::Once);
+  mObjectManager->stopPublishing(PublicationPolicy::ThroughStop);
 }
 
 const std::string& PostProcessingRunner::getID() const

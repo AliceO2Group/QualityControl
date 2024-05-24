@@ -17,9 +17,11 @@
 #ifndef QUALITYCONTROL_RUNNERUTILS_H
 #define QUALITYCONTROL_RUNNERUTILS_H
 
+#include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <string>
 #include <Framework/ServiceRegistryRef.h>
 #include <Framework/RawDeviceService.h>
+#include <ProgOptions.h>
 #include <fairmq/Device.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Activity.h"
@@ -38,14 +40,14 @@ std::string getFirstTaskName(const std::string& configurationSource);
 std::string getFirstCheckName(const std::string& configurationSource);
 bool hasChecks(const std::string& configSource);
 
-template <typename T> // TODO we should probably limit T to numbers somehow
-T computeActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
+template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   T result = 0;
 
   try {
     auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>(name);
-    ILOG(Info, Devel) << "Got this property " << name << " from RawDeviceService: '" << temp << "'" << ENDM;
+    ILOG(Info, Devel) << "Got this property '" << name << "' from RawDeviceService: '" << temp << "'" << ENDM;
     result = boost::lexical_cast<T>(temp);
   } catch (std::invalid_argument& ia) {
     ILOG(Info, Devel) << "   " << name << " is not a number, using the fallback." << ENDM;
@@ -59,6 +61,9 @@ T computeActivityField(framework::ServiceRegistryRef services, const std::string
   return result;
 }
 
+std::string computeStringActivityField(framework::ServiceRegistryRef services, const std::string& name, const std::string& fallBack);
+
+std::string_view translateIntegerRunType(const std::string& runType);
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity);
 
 std::string indentTree(int level);
@@ -77,7 +82,7 @@ std::string templateILDiscardFile(std::string& originalFile, framework::InitCont
 
 uint64_t getCurrentTimestamp();
 
-void initInfologger(framework::InitContext& iCtx, core::DiscardFileParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
+void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
 
 } // namespace o2::quality_control::core
 

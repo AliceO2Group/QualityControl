@@ -2,6 +2,7 @@
 .cproject
 .project
 .vscode
+.cache
 *~
 .idea
 *.jpg

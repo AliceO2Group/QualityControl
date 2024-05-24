@@ -23,7 +23,8 @@
 #include <TH1.h>
 #include <TList.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include <Common/Exceptions.h>
 
 using namespace std;
@@ -80,9 +81,9 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
       result = Quality::Bad;
       mFaultyObjectsNames.push_back(mo->getName());
       if (mMustIncrease) {
-        result.addReason(FlagReasonFactory::NoDetectorData(), "Number of entries stopped increasing.");
+        result.addFlag(FlagTypeFactory::NoDetectorData(), "Number of entries stopped increasing.");
       } else {
-        result.addReason(FlagReasonFactory::Unknown(), "Number of entries has increased.");
+        result.addFlag(FlagTypeFactory::Unknown(), "Number of entries has increased.");
       }
     }
 

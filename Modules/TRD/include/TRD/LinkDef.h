@@ -9,11 +9,13 @@
 #pragma link C++ class o2::quality_control_modules::trd::PulseHeightCheck + ;
 #pragma link C++ class o2::quality_control_modules::trd::TrackletsTask + ;
 #pragma link C++ class o2::quality_control_modules::trd::TRDHelpers + ;
-#pragma link C++ class o2::quality_control_modules::trd::TrackletsCheck + ;
 #pragma link C++ class o2::quality_control::postprocessing::TRDTrending + ;
 #pragma link C++ class o2::quality_control::postprocessing::PulseHeightPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::trd::PulseHeightTrackMatch + ;
 #pragma link C++ class o2::quality_control_modules::trd::TrackingTask + ;
 #pragma link C++ class o2::quality_control_modules::trd::PulsePositionCheck + ;
 #pragma link C++ class o2::quality_control_modules::trd::TrackletCountCheck + ;
+#pragma link C++ class o2::quality_control_modules::trd::RawDataCheckStats + ;
+#pragma link C++ class o2::quality_control_modules::trd::RawDataCheckSizes + ;
+#pragma link C++ class o2::quality_control_modules::trd::CalibReductorTRD + ;
 #endif

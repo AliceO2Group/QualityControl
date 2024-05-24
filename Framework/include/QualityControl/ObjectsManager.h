@@ -31,6 +31,22 @@ class TObjArray;
 namespace o2::quality_control::core
 {
 
+enum class PublicationPolicy {
+  // QC framework will publish the object once after TaskInterface::endOfCycle() or PostProcessingInterface::update()
+  // and then will remove it from the list of published objects. Typically to be used in TaskInterface::endOfCycle()
+  // and PostProcessingInterface::update()
+  Once,
+  // QC framework will continue publishing this object after each TaskInterface::endOfCycle() and
+  // PostProcessingInterface::update(), up to and including TaskInterface::endOfCycle() at EndOfStream and
+  // PostProcessingInterface::finalize(). It will remove it from the list of published objects after that.
+  // Typically to be used in TaskInterface::startOfActivity() and PostProcessingInterface::initialize()
+  ThroughStop,
+  // QC framework will continue publishing this object after each TaskInterface::endOfCycle() and
+  // PostProcessingInterface::update() until the user task is destructed.
+  // Usually to be used in TaskInterface::initialize() and PostProcessingInterface::configure()
+  Forever
+};
+
 class ServiceDiscovery;
 
 /// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
@@ -63,7 +79,7 @@ class ObjectsManager
    * @param obj The object to publish.
    * @throws DuplicateObjectError
    */
-  void startPublishing(TObject* obj);
+  void startPublishing(TObject* obj, PublicationPolicy = PublicationPolicy::Forever);
 
   /**
    * Stop publishing this object
@@ -78,6 +94,12 @@ class ObjectsManager
    * @throw ObjectNotFoundError if object is not found.
    */
   void stopPublishing(const std::string& objectName);
+
+  /// \brief Stop publishing all objects with this publication policy
+  void stopPublishing(PublicationPolicy policy);
+
+  /// \brief Stop publishing all registered objects
+  void stopPublishingAll();
 
   /**
    * Check whether an object is already being published
@@ -193,6 +215,7 @@ class ObjectsManager
 
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
+  std::map<MonitorObject*, PublicationPolicy> mPublicationPoliciesForMOs;
   std::string mTaskName;
   std::string mTaskClass;
   std::string mDetectorName;

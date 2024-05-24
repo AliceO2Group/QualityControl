@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -32,7 +32,6 @@
         "moduleName": "QcPHOS",
         "detectorName": "PHS",
         "cycleDurationSeconds": "30",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "rawerr:PHS/RAWHWERRORS;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0",
@@ -49,7 +48,6 @@
         "moduleName": "QcPHOS",
         "detectorName": "PHS",
         "cycleDurationSeconds": "30",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "clusters:PHS/CLUSTERS;clustertr:PHS/CLUSTERTRIGREC"

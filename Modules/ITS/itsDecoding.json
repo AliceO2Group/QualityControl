@@ -10,7 +10,7 @@
             },
             "Activity": {
                 "number": "42",
-                "type": "2"
+                "type": "NONE"
             },
             "monitoring": {
                 "url": "infologger:///debug?qc"
@@ -29,7 +29,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query": "linkerrors:ITS/LinkErrors/0;decerrors:ITS/ChipErrors/0"
@@ -48,9 +47,9 @@
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
                 "checkParameters": {
-                      "DecLinkErrorLimits": "1, 1, 1, 1, 1, 1000, 1000, 1000, 1000, 1000, 1000, 1, 1, 1000, 1000, 1, 1, 1, 1, 1000, 1000, 50, 50",
-                      "DecLinkErrorLimitsRatio": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",
-                      "DecLinkErrorType": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",
+                      "DecLinkErrorLimits": "5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, -1",
+                      "DecLinkErrorLimitsRatio": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1",
+                      "DecLinkErrorType": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",
                       "plotWithTextMessage": "",
                       "textMessage": ""
                 },

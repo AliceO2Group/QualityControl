@@ -41,6 +41,7 @@
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/WorkflowType.h"
+#include "QualityControl/HashDataDescription.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -134,12 +135,7 @@ header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(
   if (aggregatorName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
-  if (aggregatorName.length() > header::DataDescription::size) {
-    ILOG(Warning, Devel) << "Aggregator name \"" << aggregatorName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
-  }
-  o2::header::DataDescription description;
-  description.runtimeInit(std::string(aggregatorName.substr(0, header::DataDescription::size)).c_str());
-  return description;
+  return quality_control::core::createDataDescription(aggregatorName, AggregatorRunner::descriptionHashLength);
 }
 
 std::string AggregatorRunner::createAggregatorRunnerName()
@@ -407,7 +403,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
     ILOG(Debug, Devel) << "Registering aggregator to BookKeeping" << ENDM;
     try {
-      Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bookkeeping::DPL_PROCESS_TYPE_QC_AGGREGATOR, "");
+      Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bkp::DplProcessType::QC_AGGREGATOR, "");
     } catch (std::runtime_error& error) {
       ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
     }

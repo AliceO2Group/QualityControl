@@ -17,6 +17,8 @@
 #include "TPC/TPCAggregator.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
+
 using namespace o2::quality_control::core;
 using namespace o2::quality_control;
 
@@ -32,7 +34,7 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
   if (qoMap.empty()) {
     Quality null = Quality::Null;
     std::string NullReason = "QO map given to the aggregator '" + mName + "' is empty.";
-    null.addReason(FlagReasonFactory::UnknownQuality(), NullReason);
+    null.addFlag(FlagTypeFactory::UnknownQuality(), NullReason);
     null.addMetadata(Quality::Null.getName(), NullReason);
     return { { mName, null } };
   }
@@ -49,12 +51,12 @@ std::map<std::string, Quality> TPCAggregator::aggregate(QualityObjectsMapType& q
   AggregatorComment[Quality::Medium.getName()] = "";
   AggregatorComment[Quality::Good.getName()] = "";
 
-  // we return the worse quality of all the objects we receive, but we preserve all FlagReasons
+  // we return the worse quality of all the objects we receive, but we preserve all FlagTypes
   Quality current = Quality::Good;
   for (const auto& [qoName, qo] : qoMap) {
     (void)qoName;
-    for (const auto& reason : qo->getReasons()) {
-      current.addReason(reason.first, reason.second);
+    for (const auto& flag : qo->getFlags()) {
+      current.addFlag(flag.first, flag.second);
     }
 
     std::string qoTitle = qo->getName();

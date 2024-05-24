@@ -22,6 +22,7 @@
 #include <boost/test/unit_test.hpp>
 #include <fairlogger/Logger.h>
 #include <cstdlib>
+#include <InfoLogger/InfoLoggerMacros.hxx>
 
 using namespace std;
 using namespace AliceO2::InfoLogger;

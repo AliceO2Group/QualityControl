@@ -92,6 +92,7 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CalibQcTask::startOfActivity(const Activity& /*activity*/)
 {
+  reset();
 }
 
 void CalibQcTask::startOfCycle()
@@ -158,6 +159,7 @@ void CalibQcTask::endOfCycle()
 
 void CalibQcTask::endOfActivity(const Activity& /*activity*/)
 {
+  reset();
 }
 
 void CalibQcTask::resetDisplayHistos()

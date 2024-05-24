@@ -93,11 +93,11 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mStateLastIR2Ch = {};
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ns]", NCHANNELS, 0, NCHANNELS, 420, -10.50, 10.50);
-  mVertexVsCollTimeAllBC = std::make_unique<TH2F>("VertexVsCollTimeAllBC", "FDD vertex vs Collision time;FDD vertex (cm);  Collision Time [ns]", 2001, -100.5, 100.5, 2100, -20.5, 20.5);
-  mVertexVsCollTimeVertexTrigger = std::make_unique<TH2F>("VertexVsCollTimeVertexTrigger", "FDD vertex vs Collision time (Vertex trigger);FDD vertex (cm);  Collision Time [ns]", 2001, -100.5, 100.5, 2100, -20.5, 20.5);
-  mVertexNsVsCollTimeAllBC = std::make_unique<TH2F>("VertexNsVsCollTimeAllBC", "FDD vertex vs Collision time;FDD vertex (ns);  Collision Time [ns]", 2100, -20.5, 20.5, 2100, -20.5, 20.5);
-  mVertexNsVsCollTimeVertexTrigger = std::make_unique<TH2F>("VertexNsVsCollTimeVertexTrigger", "FDD vertex vs Collision time (Vertex trigger);FDD vertex (ns);  Collision Time [ns]", 2100, -20.5, 20.5, 2100, -20.5, 20.5);
-  mTimeAvsTimeC = std::make_unique<TH2F>("TimeAvsTimeC", "FDD time A  vs time C;time A (ns);time C (ns)", 1610, -80.5, 80.5, 1610, -80.5, 80.5);
+  mVertexVsCollTimeAllBC = std::make_unique<TH2F>("VertexVsCollTimeAllBC", "FDD vertex vs Collision time;FDD vertex (cm);  Collision Time [ns]", 200, -100.5, 100.5, 200, -20.5, 20.5);
+  mVertexVsCollTimeVertexTrigger = std::make_unique<TH2F>("VertexVsCollTimeVertexTrigger", "FDD vertex vs Collision time (Vertex trigger);FDD vertex (cm);  Collision Time [ns]", 200, -100.5, 100.5, 200, -20.5, 20.5);
+  mVertexNsVsCollTimeAllBC = std::make_unique<TH2F>("VertexNsVsCollTimeAllBC", "FDD vertex vs Collision time;FDD vertex (ns);  Collision Time [ns]", 200, -20.5, 20.5, 200, -20.5, 20.5);
+  mVertexNsVsCollTimeVertexTrigger = std::make_unique<TH2F>("VertexNsVsCollTimeVertexTrigger", "FDD vertex vs Collision time (Vertex trigger);FDD vertex (ns);  Collision Time [ns]", 200, -20.5, 20.5, 200, -20.5, 20.5);
+  mTimeAvsTimeC = std::make_unique<TH2F>("TimeAvsTimeC", "FDD time A  vs time C;time A (ns);time C (ns)", 200, -80.5, 80.5, 200, -80.5, 80.5);
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", NCHANNELS, 0, NCHANNELS, 2200, -100, 4100);
   mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;Time [ns]", 4100, -20.5, 20.5);
   mHistCollTimeC = std::make_unique<TH1F>("CollTimeC", "T0C;Time [ns]", 4100, -20.5, 20.5);
@@ -142,7 +142,7 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistBCorC.get());
 
   for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time (ns)", chID), 2200, -100, 4100, 410, -20.5, 20.5) });
+    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time (ns)", chID), 1000, -100, 4100, 100, -20.5, 20.5) });
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);

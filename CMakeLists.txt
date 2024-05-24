@@ -13,7 +13,7 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.133.0
+        VERSION 1.147.0
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES C CXX)
 
@@ -74,7 +74,7 @@ unset(isSystemDir)
 
 # C++ standard
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
 

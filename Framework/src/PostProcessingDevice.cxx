@@ -21,6 +21,8 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/HashDataDescription.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <Common/Exceptions.h>
 #include <Framework/CallbackService.h>
@@ -45,6 +47,8 @@ PostProcessingDevice::PostProcessingDevice(const PostProcessingRunnerConfig& run
 
 void PostProcessingDevice::init(framework::InitContext& ctx)
 {
+  core::initInfologger(ctx, mRunnerConfig.infologgerDiscardParameters, ("post/" + mRunnerConfig.taskName).substr(0, core::QcInfoLogger::maxFacilityLength), mRunnerConfig.detectorName);
+
   if (ctx.options().isSet("configKeyValues")) {
     mRunnerConfig.configKeyValues = ctx.options().get<std::string>("configKeyValues");
   }
@@ -55,7 +59,7 @@ void PostProcessingDevice::init(framework::InitContext& ctx)
   // registering state machine callbacks
   ctx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = ctx.services()]() mutable { start(services); });
   ctx.services().get<CallbackService>().set<CallbackService::Id::Reset>([this]() { reset(); });
-  ctx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this]() { stop(); });
+  ctx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this, services = ctx.services()]() mutable { stop(services); });
 }
 
 void PostProcessingDevice::run(framework::ProcessingContext& ctx)
@@ -100,12 +104,8 @@ header::DataDescription PostProcessingDevice::createPostProcessingDataDescriptio
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for pp-task's data description"));
   }
-  o2::header::DataDescription description;
-  if (taskName.length() > header::DataDescription::size) {
-    ILOG(Warning, Devel) << "PP Task name \"" << taskName << "\" is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
-  }
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
-  return description;
+
+  return quality_control::core::createDataDescription(taskName, PostProcessingDevice::descriptionHashLength);
 }
 
 void PostProcessingDevice::start(ServiceRegistryRef services)
@@ -113,9 +113,9 @@ void PostProcessingDevice::start(ServiceRegistryRef services)
   mRunner->start(services);
 }
 
-void PostProcessingDevice::stop()
+void PostProcessingDevice::stop(ServiceRegistryRef services)
 {
-  mRunner->stop();
+  mRunner->stop(services);
 }
 
 void PostProcessingDevice::reset()

@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       }
     },
     "tasks": {
@@ -20,7 +20,6 @@
         "moduleName": "QcMuonChambers",
         "detectorName": "MCH",
         "cycleDurationSeconds": "300",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "tracks:MCH/TRACKS;trackrofs:MCH/TRACKROFS;trackclusters:MCH/TRACKCLUSTERS"
@@ -40,7 +39,42 @@
         "location": "remote"
       }
     },
-    "checks": {}
+    "checks": {
+      "ClustersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muonchambers::ClustersCheck",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "minClustersPerTrack": "9.5",
+              "maxClustersPerTrack": "11.5",
+              "minClustersPerChamber": "0.8",
+              "clustersPerChamberRangeMin": "0.6",
+              "clustersPerChamberRangeMax": "1.2",
+              "minClusterSize": "6",
+              "clusterSizeRangeMin": "0",
+              "clusterSizeRangeMax": "10",
+              "markerSize": "0.8"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "MCHClusters",
+            "MOs" : "all"
+            "MOs" : [
+              "ClustersPerTrack",
+              "ClustersPerChamber",
+              "ClusterSizePerChamber"
+            ]
+          }
+        ]
+      }
+    }
   },
   "dataSamplingPolicies": []
 }

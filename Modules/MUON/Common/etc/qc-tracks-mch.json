@@ -10,36 +10,78 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       }
     },
     "tasks": {
-      "StdTracks": {
+      "MCHTracks": {
         "active": "true",
         "className": "o2::quality_control_modules::muon::TracksTask",
         "moduleName": "QcMUONCommon",
         "detectorName": "MCH",
+        "taskName": "Tracks",
         "cycleDurationSeconds": "600",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "trackMCH:MCH/TRACKS;trackMCHROF:MCH/TRACKROFS;trackMCHTRACKCLUSTERS:MCH/TRACKCLUSTERS"
         },
         "taskParameters": {
-          "maxTracksPerTF": "600",
+          "cutRAbsMin": "17.6",
+          "cutRAbsMax": "89.5",
+          "cutEtaMin": "-4.0",
+          "cutEtaMax": "-2.5",
+          "cutPtMin": "0.5",
+          "nSigmaPDCA": "6",
+          "cutChi2Max": "1000",
+          "diMuonTimeCut": "100", "": "in nanoseconds",
+          "etaBins": "100",
+          "phiBins": "100",
+          "ptBins": "100",
+          "maxTracksPerTF": "1000",
           "GID" : "MCH"
         },
         "grpGeomRequest" : {
           "geomRequest": "Aligned",
-          "askGRPECS": "false",
+          "askGRPECS": "true",
           "askGRPLHCIF": "false",
-          "askGRPMagField": "false",
+          "askGRPMagField": "true",
           "askMatLUT": "false",
           "askTime": "false",
           "askOnceAllButField": "true",
           "needPropagatorD":  "false"
         },
         "location": "remote"
+      }
+    },
+    "checks": {
+      "TracksCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::muon::TracksCheck",
+        "moduleName": "QcMuonChambers",
+        "detectorName": "MCH",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "minTracksPerTF": "100",
+              "maxTracksPerTF": "500",
+              "maxDeltaPhi": "0.2",
+              "maxChargeAsymmetry": "0.2",
+              "markerSize": "0.8"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "MCHTracks",
+            "MOs" : [
+              "WithCuts/TracksPerTF",
+              "WithCuts/TrackPhi",
+              "WithCuts/TrackQOverPt"
+            ]
+          }
+        ]
       }
     }
   }

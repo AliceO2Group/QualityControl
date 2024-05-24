@@ -45,6 +45,10 @@ HmpidTaskMatches::~HmpidTaskMatches()
     delete mMatchInfoResidualsYTrackMIP[iCh];
     delete mMatchInfoChargeClusterMIP[iCh];
     delete mMatchInfoChargeClusterPhotons[iCh];
+    delete mMatchInfoXMip[iCh];
+    delete mMatchInfoYMip[iCh];
+    delete mMatchInfoXTrack[iCh];
+    delete mMatchInfoYTrack[iCh];
     delete mMatchInfoClusterMIPMap[iCh];
     delete mMatchInfoThetaCherenkovVsMom[iCh];
   }
@@ -66,6 +70,10 @@ void HmpidTaskMatches::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mMatchInfoClusterMIPMap[iCh]);
     getObjectsManager()->setDefaultDrawOptions(mMatchInfoClusterMIPMap[iCh], "colz");
     getObjectsManager()->setDisplayHint(mMatchInfoClusterMIPMap[iCh], "colz");
+    getObjectsManager()->startPublishing(mMatchInfoXMip[iCh]);
+    getObjectsManager()->startPublishing(mMatchInfoYMip[iCh]);
+    getObjectsManager()->startPublishing(mMatchInfoXTrack[iCh]);
+    getObjectsManager()->startPublishing(mMatchInfoXTrack[iCh]);
     getObjectsManager()->startPublishing(mMatchInfoThetaCherenkovVsMom[iCh]);
   }
 }
@@ -112,6 +120,10 @@ void HmpidTaskMatches::monitorData(o2::framework::ProcessingContext& ctx)
     if (matchHMP.getMipClusSize() < 20 && matchHMP.getMipClusSize() > 1) {
       mMatchInfoChargeClusterMIP[ch]->Fill(q);
     }
+    mMatchInfoXMip[ch]->Fill(xMip);
+    mMatchInfoYMip[ch]->Fill(yMip);
+    mMatchInfoXTrack[ch]->Fill(xTrk);
+    mMatchInfoYTrack[ch]->Fill(yTrk);
     mMatchInfoClusterMIPMap[ch]->Fill(xMip, yMip);
     mMatchInfoThetaCherenkovVsMom[ch]->Fill(TMath::Abs(matchHMP.getHmpMom()), matchHMP.getHMPsignal());
   } // match info loop
@@ -129,13 +141,17 @@ void HmpidTaskMatches::BookHistograms()
 {
   for (int iCh = 0; iCh < 7; iCh++) {
 
-    mMatchInfoResidualsXTrackMIP[iCh] = new TH1F(Form("X Residuals chamber %i", iCh), Form("X Residuals chamber %i; X residuals (cm); Counts/1 cm", iCh), 100, -50., 50.);
-    mMatchInfoResidualsYTrackMIP[iCh] = new TH1F(Form("Y Residuals chamber %i", iCh), Form("Y Residuals chamber %i; Y residuals (cm); Counts/1 cm", iCh), 100, -50., 50.);
-    mMatchInfoChargeClusterMIP[iCh] = new TH1F(Form("MIP Cluster Charge chamber %i", iCh), Form("MIP Cluster Charge chamber %i; ADC charge; Counts/1 ADC", iCh), 2000, 200., 2200.);
-    mMatchInfoChargeClusterPhotons[iCh] = new TH1F(Form("Photo-electron Cluster Charge chamber %i", iCh), Form("Photo-electron cluster charge chmaber %i; ADC charge; Counts/1 ADC", iCh), 180, 20., 200.);
-    mMatchInfoClusterMIPMap[iCh] = new TH2F(Form("MIP Cluster map chamber %i", iCh), Form("MIP Cluster map chamber %i; X (cm); Y (cm)", iCh), 133, 0, 133, 125, 0, 125);
+    mMatchInfoResidualsXTrackMIP[iCh] = new TH1F(Form("XResCham%i", iCh), Form("X Residuals chamber %i; X residuals (cm); Entries/1 cm", iCh), 100, -50., 50.);
+    mMatchInfoResidualsYTrackMIP[iCh] = new TH1F(Form("YRescham%i", iCh), Form("Y Residuals chamber %i; Y residuals (cm); Entries/1 cm", iCh), 100, -50., 50.);
+    mMatchInfoChargeClusterMIP[iCh] = new TH1F(Form("MipClusQch%i", iCh), Form("MIP Cluster Charge chamber %i; ADC charge; Entries/1 ADC", iCh), 2000, 200., 2200.);
+    mMatchInfoChargeClusterPhotons[iCh] = new TH1F(Form("PhelQch%i", iCh), Form("Photo-electron cluster charge chmaber %i; ADC charge; Counts/1 ADC", iCh), 180, 20., 200.);
+    mMatchInfoClusterMIPMap[iCh] = new TH2F(Form("MipClusMap%i", iCh), Form("MIP Cluster map chamber %i; X (cm); Y (cm)", iCh), 133, 0, 133, 125, 0, 125);
     mMatchInfoClusterMIPMap[iCh]->SetStats(0);
-    mMatchInfoThetaCherenkovVsMom[iCh] = new TH2F(Form("ThetaCherenkov Vs Mom chamber %i", iCh), Form("ThetaCherenkov Vs Mom chamber %i; #it{p} (GeV/#it{c}); #theta_{Ckov} (rad);", iCh), 100, 0., 10., 1000, 0., 1.);
+    mMatchInfoXMip[iCh] = new TH1F(Form("MipX%i", iCh), Form("X MIP in HMPID Chamber %i;  X (cm); Entries/1 cm", iCh), 133, 0, 133);
+    mMatchInfoYMip[iCh] = new TH1F(Form("MipY%i", iCh), Form("Y MIP in HMPID Chamber %i;  Y (cm); Entries/1 cm", iCh), 125, 0, 125);
+    mMatchInfoXTrack[iCh] = new TH1F(Form("TrackX%i", iCh), Form("X Track in HMPID Chamber %i;  X (cm); Entries/1 cm", iCh), 133, 0, 133);
+    mMatchInfoYTrack[iCh] = new TH1F(Form("TrackY%i", iCh), Form("Y Track in HMPID Chamber %i;  Y (cm); Entries/1 cm", iCh), 125, 0, 125);
+    mMatchInfoThetaCherenkovVsMom[iCh] = new TH2F(Form("ThetavsMom%i", iCh), Form("ThetaCherenkov Vs Mom chamber %i; #it{p} (GeV/#it{c}); #theta_{Ckov} (rad);", iCh), 100, 0., 10., 1000, 0., 1.);
   }
   //
 }
@@ -152,6 +168,10 @@ void HmpidTaskMatches::reset()
     mMatchInfoChargeClusterMIP[iCh]->Reset();
     mMatchInfoChargeClusterPhotons[iCh]->Reset();
     mMatchInfoClusterMIPMap[iCh]->Reset();
+    mMatchInfoXMip[iCh]->Reset();
+    mMatchInfoYMip[iCh]->Reset();
+    mMatchInfoXTrack[iCh]->Reset();
+    mMatchInfoYTrack[iCh]->Reset();
     mMatchInfoThetaCherenkovVsMom[iCh]->Reset();
   }
 }

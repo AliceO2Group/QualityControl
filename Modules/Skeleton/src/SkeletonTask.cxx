@@ -27,32 +27,28 @@ namespace o2::quality_control_modules::skeleton
 
 SkeletonTask::~SkeletonTask()
 {
-  delete mHistogram;
 }
 
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
-  ILOG(Debug, Devel) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-  ILOG(Debug, Support) << "Debug" << ENDM;                 // QcInfoLogger is used. FairMQ logs will go to there as well.
-  ILOG(Info, Support) << "Info" << ENDM;                   // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Debug, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
+  // This is how logs are created. QcInfoLogger is used. In production, FairMQ logs will go to InfoLogger as well.
+  ILOG(Debug, Devel) << "initialize SkeletonTask" << ENDM;
+  ILOG(Debug, Support) << "A debug targeted for support" << ENDM;
+  ILOG(Info, Ops) << "An Info log targeted for operators" << ENDM;
 
-  mHistogram = new TH1F("example", "example", 20, 0, 30000);
-  // this will make the two histograms published at the end of each cycle. no need to use the method in monitorData
-  getObjectsManager()->startPublishing(mHistogram);
-  getObjectsManager()->startPublishing(new TH1F("example2", "example2", 20, 0, 30000));
+  // This creates and registers a histogram for publication at the end of each cycle, until the end of the task lifetime
+  mHistogramA = std::make_unique<TH1F>("example", "example", 20, 0, 30000);
+  getObjectsManager()->startPublishing(mHistogramA.get(), PublicationPolicy::Forever);
+
   try {
-    getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
+    getObjectsManager()->addMetadata(mHistogramA->GetName(), "custom", "34");
   } catch (...) {
     // some methods can throw exceptions, it is indicated in their doxygen.
     // In case it is recoverable, it is recommended to catch them and do something meaningful.
     // Here we don't care that the metadata was not added and just log the event.
-    ILOG(Warning, Support) << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
+    ILOG(Warning, Support) << "Metadata could not be added to " << mHistogramA->GetName() << ENDM;
   }
 }
 
@@ -60,9 +56,19 @@ void SkeletonTask::startOfActivity(const Activity& activity)
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
-  mHistogram->Reset();
 
-  // Example: retrieve custom parameters
+  // We clean any histograms that could have been filled in previous runs.
+  mHistogramA->Reset();
+
+  // This creates and registers a histogram for publication at the end of each cycle until and including the end of run.
+  // Typically you may create and register a histogram here if you require Activity information for binning or decoration.
+  // Since ROOT does not respond well to having two histograms with the same name in the memory,
+  // we invoke the reset() to first delete the object that could remained from a previous run.
+  mHistogramB.reset();
+  mHistogramB = std::make_unique<TH1F>("example2", "example2", 256, 0, 255);
+  getObjectsManager()->startPublishing(mHistogramB.get(), PublicationPolicy::ThroughStop);
+
+  // Example of retrieving a custom parameter based on the run type + beam type available in Activity
   std::string parameter;
   // first we try for the current activity. It returns an optional.
   if (auto param = mCustomParameters.atOptional("myOwnKey", activity)) {
@@ -83,61 +89,40 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
+  // In this function you can access data inputs specified in the JSON config file.
+  // Typically, you should have asked for data inputs as a direct data source or as a data sampling policy.
+  // In both cases you probably used a query such as:
+  //   "query": "data:TST/RAWDATA/0"
+  // which follows the format <binding>:<dataOrigin>/<dataDescription>[/<subSpecification]
+  // Usually inputs should be accessed by their bindings:
+  auto randomData = ctx.inputs().get("data");
+  // If you know what type the data is, you can specify it as such:
+  // auto channels = ctx.inputs().get<gsl::span<o2::fdd::ChannelData>>("channels");
+  // auto digits = ctx.inputs().get<gsl::span<o2::fdd::Digit>>("digits");
 
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
+  // In our case we will access the header and the payload as a raw array of bytes
+  const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(randomData);
+  auto payloadSize = header->payloadSize;
 
-  // Some examples:
+  // as an example, let's fill the histogram A with payload sizes and histogram B with the value in the first byte
+  mHistogramA->Fill(payloadSize);
 
-  // 1. In a loop
-  for (auto&& input : framework::InputRecordWalker(ctx.inputs())) {
-    // get message header
-    const auto* header = o2::framework::DataRefUtils::getHeader<header::DataHeader*>(input);
-    auto payloadSize = o2::framework::DataRefUtils::getPayloadSize(input);
-    // get payload of a specific input, which is a char array.
-    // const char* payload = input.payload;
-
-    // for the sake of an example, let's fill the histogram with payload sizes
-    mHistogram->Fill(payloadSize);
+  if (payloadSize > 0) {
+    auto firstByte = static_cast<uint8_t>(randomData.payload[0]);
+    mHistogramB->Fill(firstByte);
   }
 
-  // 2. Using get("<binding>")
-
-  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-  //   auto payload = ctx.inputs().get("random").payload;
-
-  // get payload of a specific input, which is a structure array:
-  //   auto input = ctx.inputs().get("random");
-  //   auto payload = input.payload;
-
-  // get payload of a specific input, which is a structure array:
-  //  const auto* header = DataRefUtils::getHeader<header::DataHeader*>(input);
-  //  auto payloadSize = DataRefUtils::getPayloadSize(input);
-  //  struct s {int a; double b;};
-  //  auto array = ctx.inputs().get<s*>(input);
-  //  for (int j = 0; j < payloadSize / sizeof(s); ++j) {
-  //    int i = array.get()[j].a;
-  //  }
-
-  // get payload of a specific input, which is a root object
-  //   auto h = ctx.inputs().get<TH1F*>("histos");
-  //   Double_t stats[4];
-  //   h->GetStats(stats);
-  //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(info) << "String is " << s->GetString().Data();
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //     TObject* condition = TaskInterface::retrieveCondition("GRP/Calib/LHCClockPhase"); // put a valid condition or calibration object path here
-  //     if (condition) {
-  //       LOG(info) << "Retrieved " << condition->ClassName();
-  //       delete condition;
-  //     }
+  // One can find some examples of using InputRecord at:
+  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
+  //
+  // One can also iterate over all inputs in a loop:
+  for (const framework::DataRef& input : framework::InputRecordWalker(ctx.inputs())) {
+    // do something with input
+  }
+  // To know how to access CCDB objects, please refer to:
+  // https://github.com/AliceO2Group/QualityControl/blob/master/doc/Advanced.md#accessing-objects-in-ccdb
+  // for GRP objects in particular:
+  // https://github.com/AliceO2Group/QualityControl/blob/master/doc/Advanced.md#access-grp-objects-with-grp-geom-helper
 }
 
 void SkeletonTask::endOfCycle()
@@ -156,10 +141,14 @@ void SkeletonTask::reset()
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
-  // clean all the monitor objects here
-
+  // Clean all the monitor objects here.
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
-  mHistogram->Reset();
+  if (mHistogramA) {
+    mHistogramA->Reset();
+  }
+  if (mHistogramB) {
+    mHistogramB->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::skeleton

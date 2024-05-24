@@ -132,6 +132,15 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
+  mIDCZeroScale.reset();
+  mIDCZerOverview.reset();
+  mIDCZeroRadialProf.reset();
+  mIDCZeroStacksA.reset();
+  mIDCZeroStacksC.reset();
+  mIDCOneSides1D.reset();
+  mFourierCoeffsA.reset();
+  mFourierCoeffsC.reset();
+
   mIDCZeroScale = std::make_unique<TCanvas>("c_sides_IDC0_scale");
   mIDCZerOverview = std::make_unique<TCanvas>("c_sides_IDC0_overview");
   mIDCZeroRadialProf = std::make_unique<TCanvas>("c_sides_IDC0_radialProfile");
@@ -144,6 +153,8 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
   mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
 
   if (mDoIDCDelta) {
+    mIDCDeltaStacksA.reset();
+    mIDCDeltaStacksC.reset();
     mIDCDeltaStacksA = std::make_unique<TCanvas>("c_GEMStacks_IDCDelta_1D_ASide");
     mIDCDeltaStacksC = std::make_unique<TCanvas>("c_GEMStacks_IDCDelta_1D_CSide");
     getObjectsManager()->startPublishing(mIDCDeltaStacksA.get());

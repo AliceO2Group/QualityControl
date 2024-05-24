@@ -23,7 +23,8 @@
 #include <TH2F.h>
 #include <TLatex.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -57,18 +58,22 @@ Quality ClustQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
     if (mo->getName() == "ClusterMap11") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
     if (mo->getName() == "ClusterMap12") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
     if (mo->getName() == "ClusterMap21") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
     if (mo->getName() == "ClusterMap22") {
       auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
       h2->Scale(scale);
+      result = Quality::Good;
     }
   }
   return result;
@@ -116,31 +121,39 @@ void ClustQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 
   if (mo->getName() == "ClusterMap11") {
     auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(Hz)");
-    updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
-    updateTitle(h2, getCurrentTime());
-    h2->SetMaximum(mClusterScale);
+    if (h2) {
+      updateTitle(h2, "(Hz)");
+      updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
+      updateTitle(h2, getCurrentTime());
+      h2->SetMaximum(mClusterScale);
+    }
   }
   if (mo->getName() == "ClusterMap12") {
     auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(Hz)");
-    updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
-    updateTitle(h2, getCurrentTime());
-    h2->SetMaximum(mClusterScale);
+    if (h2) {
+      updateTitle(h2, "(Hz)");
+      updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
+      updateTitle(h2, getCurrentTime());
+      h2->SetMaximum(mClusterScale);
+    }
   }
   if (mo->getName() == "ClusterMap21") {
     auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(Hz)");
-    updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
-    updateTitle(h2, getCurrentTime());
-    h2->SetMaximum(mClusterScale);
+    if (h2) {
+      updateTitle(h2, "(Hz)");
+      updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
+      updateTitle(h2, getCurrentTime());
+      h2->SetMaximum(mClusterScale);
+    }
   }
   if (mo->getName() == "ClusterMap22") {
     auto* h2 = dynamic_cast<TH2F*>(mo->getObject());
-    updateTitle(h2, "(Hz)");
-    updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
-    updateTitle(h2, getCurrentTime());
-    h2->SetMaximum(mClusterScale);
+    if (h2) {
+      updateTitle(h2, "(Hz)");
+      updateTitle(h2, Form("- TF=%3.0f -", mClusterTF));
+      updateTitle(h2, getCurrentTime());
+      h2->SetMaximum(mClusterScale);
+    }
   }
 }
 

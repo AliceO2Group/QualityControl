@@ -1,8 +1,10 @@
 # ---- Library ----
 
-add_library(O2QcCTP)
+add_library(O2QcCTP
+            src/TrendingConfigCTP.cxx
+            src/TH1ctpReductor.cxx )
 
-target_sources(O2QcCTP PRIVATE src/RawDataReaderCheck.cxx  src/CountersQcTask.cxx  src/RawDataQcTask.cxx )
+target_sources(O2QcCTP PRIVATE src/RawDataReaderCheck.cxx  src/CountersQcTask.cxx  src/RawDataQcTask.cxx  src/TH1ctpReductor.cxx  src/CTPTrendingTask.cxx)
 
 target_include_directories(
   O2QcCTP
@@ -10,7 +12,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcCTP PUBLIC O2QualityControl O2::DataFormatsCTP O2::CTPReconstruction)
+target_link_libraries(O2QcCTP PUBLIC O2QualityControl O2QcCommon O2::DataFormatsCTP O2::CTPReconstruction O2QcCommon)
 
 install(TARGETS O2QcCTP
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -18,11 +20,13 @@ install(TARGETS O2QcCTP
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcCTP
-                    HEADERS
-  include/CTP/CountersQcTask.h
-include/CTP/RawDataQcTask.h
-      include/CTP/RawDataReaderCheck.h
-                          LINKDEF include/CTP/LinkDef.h)
+                    HEADERS include/CTP/CountersQcTask.h
+                            include/CTP/RawDataQcTask.h
+                            include/CTP/RawDataReaderCheck.h
+                            include/CTP/TH1ctpReductor.h
+                            include/CTP/CTPTrendingTask.h
+                            include/CTP/TrendingConfigCTP.h
+                    LINKDEF include/CTP/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/CTP
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
@@ -42,4 +46,17 @@ foreach(test ${TEST_SRCS})
   set_property(TARGET ${test_name}
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
+endforeach()
+
+# ---- Extra scripts ----
+
+install(FILES
+        src/ctpTrending.json
+        DESTINATION etc)
+
+get_property(dirs
+             DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+             PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
 endforeach()

@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 #include "Common/Utils.h"
 #include "TPC/Utility.h"
+#include "Algorithm/RangeTokenizer.h"
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
@@ -32,6 +33,7 @@
 
 #include <vector>
 #include <numeric>
+#include <sstream>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -97,6 +99,12 @@ void CheckOfSlices::configure()
       std::swap(mRangeBad, mRangeMedium);
     }
     mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
+  }
+
+  std::string maskingValues = common::getFromConfig<string>(mCustomParameters, "maskedPoints", "");
+  mMaskedPoints.clear();
+  if (maskingValues != "") {
+    mMaskedPoints = RangeTokenizer::tokenize<int>(maskingValues);
   }
 }
 
@@ -168,10 +176,9 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
   }
 
-  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev);
+  calculateStatistics(yValues, yErrors, useErrors, 0, NBins, mMean, mStdev, mMaskedPoints);
 
   for (size_t i = 0; i < v.size(); ++i) {
-
     Quality totalQualityPoint = Quality::Null;
     std::vector<Quality> qualityPoints;
     const auto yvalue = v[i];
@@ -180,6 +187,14 @@ Quality CheckOfSlices::check(std::map<std::string, std::shared_ptr<MonitorObject
     std::string badStringPoint = "";
     std::string mediumStringPoint = "";
     std::string goodStringPoint = "";
+
+    if (std::find(mMaskedPoints.begin(), mMaskedPoints.end(), i) != mMaskedPoints.end()) { // i is in the masked points
+      // if point is masked -> push back empty string to not mess with ordering and skip calculation
+      checks[Quality::Bad.getName()].push_back(badStringPoint);
+      checks[Quality::Medium.getName()].push_back(mediumStringPoint);
+      checks[Quality::Good.getName()].push_back(goodStringPoint);
+      continue;
+    }
 
     if (mMeanCheck) {
       const double totalError = sqrt(mStdev * mStdev + yError * yError);
@@ -341,6 +356,13 @@ void CheckOfSlices::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     checkMessage.erase(0, pos + delimiter.length());
   }
   msg->AddText(checkResult.getMetadata("Comment", "").c_str());
+
+  std::string mMaskedPointsString = "Masked Points:";
+  for (int iMasked = 0; iMasked < mMaskedPoints.size(); iMasked++) {
+    mMaskedPointsString += " " + std::to_string(mMaskedPoints[iMasked]) + ",";
+  }
+  mMaskedPointsString.pop_back();
+  msg->AddText(mMaskedPointsString.c_str());
 
   const int nPoints = h->GetN();
   if (nPoints == 0) {

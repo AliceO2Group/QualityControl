@@ -17,6 +17,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <catch_amalgamated.hpp>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
 
@@ -52,29 +53,29 @@ TEST_CASE("quality_test")
   CHECK(!Quality::Good.isBetterThan(Quality::Good));
 }
 
-TEST_CASE("quality_reasons")
+TEST_CASE("quality_flags")
 {
   Quality myQuality = Quality::Bad;
-  myQuality.addReason(FlagReasonFactory::BadTracking(), "exception in x");
-  myQuality.addReason(FlagReasonFactory::BadTracking(), "exception in y");
-  myQuality.addReason(FlagReasonFactory::LimitedAcceptance(), "sector C off");
+  myQuality.addFlag(FlagTypeFactory::BadTracking(), "exception in x");
+  myQuality.addFlag(FlagTypeFactory::BadTracking(), "exception in y");
+  myQuality.addFlag(FlagTypeFactory::BadPID(), "Bethe and Bloch had a bad day");
 
-  auto myReasons = myQuality.getReasons();
-  CHECK(myReasons[0].first == FlagReasonFactory::BadTracking());
-  CHECK(myReasons[0].second == "exception in x");
-  CHECK(myReasons[1].first == FlagReasonFactory::BadTracking());
-  CHECK(myReasons[1].second == "exception in y");
-  CHECK(myReasons[2].first == FlagReasonFactory::LimitedAcceptance());
-  CHECK(myReasons[2].second == "sector C off");
+  auto myFlags = myQuality.getFlags();
+  CHECK(myFlags[0].first == FlagTypeFactory::BadTracking());
+  CHECK(myFlags[0].second == "exception in x");
+  CHECK(myFlags[1].first == FlagTypeFactory::BadTracking());
+  CHECK(myFlags[1].second == "exception in y");
+  CHECK(myFlags[2].first == FlagTypeFactory::BadPID());
+  CHECK(myFlags[2].second == "Bethe and Bloch had a bad day");
 
   auto copyQuality = myQuality;
-  auto copyReasons = copyQuality.getReasons();
-  CHECK(copyReasons[0].first == FlagReasonFactory::BadTracking());
-  CHECK(copyReasons[0].second == "exception in x");
-  CHECK(copyReasons[1].first == FlagReasonFactory::BadTracking());
-  CHECK(copyReasons[1].second == "exception in y");
-  CHECK(copyReasons[2].first == FlagReasonFactory::LimitedAcceptance());
-  CHECK(copyReasons[2].second == "sector C off");
+  auto copyFlags = copyQuality.getFlags();
+  CHECK(copyFlags[0].first == FlagTypeFactory::BadTracking());
+  CHECK(copyFlags[0].second == "exception in x");
+  CHECK(copyFlags[1].first == FlagTypeFactory::BadTracking());
+  CHECK(copyFlags[1].second == "exception in y");
+  CHECK(copyFlags[2].first == FlagTypeFactory::BadPID());
+  CHECK(copyFlags[2].second == "Bethe and Bloch had a bad day");
 }
 
 } // namespace o2::quality_control::core

@@ -9,6 +9,9 @@ set(SRCS
   src/TrackPlotter.cxx
   src/TracksCheck.cxx
   src/TracksTask.cxx
+  src/TracksPostProcessing.cxx
+  src/TracksPostProcessingConfig.cxx
+  src/MatchingEfficiencyCheck.cxx
 )
 
 set(HEADERS
@@ -17,6 +20,10 @@ set(HEADERS
   include/MUONCommon/TrackCheck.h
   include/MUONCommon/TrackPlotter.h
   include/MUONCommon/TracksTask.h
+  include/MUONCommon/TracksCheck.h
+  include/MUONCommon/TracksPostProcessing.h
+  include/MUONCommon/TracksPostProcessingConfig.h
+  include/MUONCommon/MatchingEfficiencyCheck.h
 )
 
 # ---- Library ----
@@ -51,6 +58,9 @@ add_root_dictionary(${MODULE_NAME}
                     HEADERS include/MUONCommon/TrackPlotter.h
                             include/MUONCommon/TracksCheck.h
                             include/MUONCommon/TracksTask.h
+                            include/MUONCommon/TracksCheck.h
+                            include/MUONCommon/TracksPostProcessing.h
+                            include/MUONCommon/MatchingEfficiencyCheck.h
                     LINKDEF include/MUONCommon/LinkDef.h)
 
 # ---- Tests ----

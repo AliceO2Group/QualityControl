@@ -68,15 +68,15 @@ void RecoFITQcTask::initialize(o2::framework::InitContext& ctx)
 
   const auto mapFDD_FT0_FV0 = helper::multiplyMaps({ { "FDD ", DetectorFDD::sMapTrgBits, " && " }, { "FT0 ", DetectorFT0::sMapTrgBits, " && " }, { "FV0 ", DetectorFV0::sMapTrgBits, "" } });
   std::tuple<int, float, float> axisBC{ static_cast<int>(sNBC), 0., sNBC };
-  mHistTrgCorrelationFDD_FT0 = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TrgCorrelationFDD_FT0", "Correlation between trigger signals: FDD & FT0;BC;Triggers", axisBC, mapFDD_FT0);
-  mHistTrgCorrelationFDD_FV0 = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TrgCorrelationFDD_FV0", "Correlation between trigger signals: FDD & FV0;BC;Triggers", axisBC, mapFDD_FV0);
-  mHistTrgCorrelationFT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TrgCorrelationFT0_FV0", "Correlation between trigger signals: FT0 & FV0;BC;Triggers", axisBC, mapFT0_FV0);
+  mHistTrgCorrelationFDD_FT0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FT0", "Correlation between trigger signals: FDD & FT0;BC;Triggers", axisBC, mapFDD_FT0);
+  mHistTrgCorrelationFDD_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FV0", "Correlation between trigger signals: FDD & FV0;BC;Triggers", axisBC, mapFDD_FV0);
+  mHistTrgCorrelationFT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFT0_FV0", "Correlation between trigger signals: FT0 & FV0;BC;Triggers", axisBC, mapFT0_FV0);
 
   //  mHistTrgCorrelationFDD_FT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TrgCorrelationFDD_FT0_FV0","Correlation between trigger signals: FDD & FT0 & FV0;BC;Triggers",sNBC,0,sNBC,mapFDD_FT0_FV0);
   for (const auto& enTrgFT0 : DetectorFT0::sMapTrgBits) {
     const std::string histName = "TrgCorrelation_FT0" + enTrgFT0.second + "_FDD_FV0";
     const std::string histTitle = "Correlation between trigger signals (FT0 " + enTrgFT0.second + "): FDD & FV0;BC;Triggers";
-    mHistTrgCorrelationFT0_FDD_FV0[enTrgFT0.first] = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", histName, histTitle, sNBC, 0, sNBC, mapFDD_FV0);
+    mHistTrgCorrelationFT0_FDD_FV0[enTrgFT0.first] = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", histName, histTitle, sNBC, 0, sNBC, mapFDD_FV0);
   }
 }
 

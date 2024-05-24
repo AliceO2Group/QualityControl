@@ -19,7 +19,7 @@ Advanced topics
    * [Monitor cycles](#monitor-cycles)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [Custom merging](#custom-merging)
-   * [Critical and non-critical tasks](#critical-and-non-critical-tasks)
+   * [Critical, resilient and non-critical tasks](#critical-resilient-and-non-critical-tasks)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
       * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
@@ -27,8 +27,10 @@ Advanced topics
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [Solving performance issues](#solving-performance-issues)
    * [Dispatcher](#dispatcher)
-   * [QC Tasks](#qc-tasks)
+   * [QC Tasks](#qc-tasks-1)
    * [Mergers](#mergers)
+* [Understanding and reducing memory footprint](#understanding-and-reducing-memory-footprint)
+   * [Analysing memory usage with valgrind](#analysing-memory-usage-with-valgrind)
 * [CCDB / QCDB](#ccdb--qcdb)
    * [Accessing objects in CCDB](#accessing-objects-in-ccdb)
    * [Access GRP objects with GRP Geom Helper](#access-grp-objects-with-grp-geom-helper)
@@ -50,7 +52,8 @@ Advanced topics
    * [Enable the repo cleaner](#enable-the-repo-cleaner)
 * [Configuration](#configuration-1)
    * [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one)
-   * [Definition and access of user-specific configuration](#definition-and-access-of-user-specific-configuration)
+   * [Definition and access of simple user-defined task configuration ("taskParameters")](#definition-and-access-of-simple-user-defined-task-configuration-taskparameters)
+   * [Definition and access of user-defined configuration ("extendedTaskParameters")](#definition-and-access-of-user-defined-configuration-extendedtaskparameters)
    * [Definition of new arguments](#definition-of-new-arguments)
    * [Configuration files details](#configuration-files-details)
       * [Global configuration structure](#global-configuration-structure)
@@ -717,13 +720,58 @@ The following points might help avoid backpressure:
 - if an object has its custom Merge() method, check if it could be optimized
 - enable multi-layer Mergers to split the computations across multiple processes (config parameter "mergersPerLayer")
 
+# Understanding and reducing memory footprint
+
+When developing a QC module, please be considerate in terms of memory usage.
+Large histograms could be optionally enabled/disabled depending on the context that the QC is ran.
+Investigate if reducing the bin size (e.g. TH2D to TH2F) would still provide satisfactory results.
+Consider loading only the parts of detector geometry which are being used by a given task.
+
+## Analysing memory usage with valgrind
+
+0) Install valgrind, if not yet installed
+
+1) Run the QC workflow with argument `--child-driver 'valgrind --tool=massif'` (as well as any file reader / processing workflow you need to obtain data in QC)
+
+2) The workflow will run and save files massif.out.<pid>
+
+3) Generate a report for the file corresponding to the PID of the QC task:
+```
+ms_print massif.out.976329 > massif_abc_task.log
+```
+4) The generated report contains:
+- the command used to run the process
+- graph of the memory usage
+- grouped call stacks of all memory allocations on the heap (above certain threshold) within certain time intervals. 
+  The left-most call contains all the calls which lead to it, represented on the right.
+  For example, the call stack below means that the AbcTask created a TH2F histogram in the initalize method at the line 
+  AbcTask.cxx:82, which was 51,811,760B. In total, 130,269,568B worth of TH2F histograms were created in this time interval.
+```
+98.56% (256,165,296B) (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+->50.12% (130,269,568B) 0xFCBD1A6: TArrayF::Set(int) [clone .part.0] (TArrayF.cxx:111)
+| ->50.12% (130,269,568B) 0xEC1DB1C: TH2F::TH2F(char const*, char const*, int, double, double, int, double, double) (TH2.cxx:3573)
+|   ->19.93% (51,811,760B) 0x32416518: make_unique<TH2F, char const (&)[16], char const (&)[22], unsigned int const&, int, unsigned int const&, int, int, int> (unique_ptr.h:1065)
+|   | ->19.93% (51,811,760B) 0x32416518: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:82)
+```
+5) To get a lightweight and more digestible output, consider running the massif report through the following command to get the summary of the calls only within a QC module. This essentially tells you how much memory a given line allocates.
+```
+[O2PDPSuite/latest] ~/alice/test-rss $> grep quality_control_modules massif_abc_task.log | sed 's/^.*[0-9][0-9]\.[0-9][0-9]\% //g' | sort | uniq
+(242,371,376B) 0x324166B2: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:88)
+(4,441,008B) 0x3241633F: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:76)
+(4,441,008B) 0x32416429: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:79)
+(51,811,760B) 0x32416518: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:82)
+(51,811,760B) 0x324165EB: o2::quality_control_modules::det::AbcTask::initialize(o2::framework::InitContext&) (AbcTask.cxx:85)
+```
+6) Consider reducing the size and number of the biggest histogram. Consider disabling histograms which will not be useful for async QC (no allocations, no startPublishing).
+
 # CCDB / QCDB
 
 ## Accessing objects in CCDB
 
 The MonitorObjects generated by Quality Control are stored in a dedicated repository (QCDB), which is based on CCDB. 
 The run conditions, on the other hand, are located in another, separate database.
-The recommended way to access these is to use a `Lifetime::Condition` DPL input, which can be requested as in the query below:
+
+The recommended way (excluding postprocessing) to access these conditions is to use a `Lifetime::Condition` DPL input, which can be requested as in the query below:
 ```json
   "tasks": {
     "MyTask": {
@@ -740,6 +788,10 @@ The timestamp of the CCDB object will be aligned with the data timestamp.
 Geometry and General Run Parameters (GRP) can be also accessed with the [GRP Geom Helper](#access-grp-objects-with-grp-geom-helper).
 
 If your task accesses CCDB objects using `TaskInterface::retrieveCondition`, please migrate to using one of the methods mentioned above.
+
+### Accessing from a Postprocessing task
+
+PostProcessingTasks do not take DPL inputs, so in this case `TaskInterface::retrieveCondition` should be used.
 
 ## Access GRP objects with GRP Geom Helper
 
@@ -1085,6 +1137,34 @@ The following tasks will be merged correctly:
 ```
 The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
 
+## Templating config files
+
+> [!IMPORTANT]  
+> Templating only works when using aliECS, i.e. in production and staging.
+
+To template a config file, modify the corresponding workflow in `ControlWorkflows`. This is needed because we won't use directly `Consul`  but instead go through `apricot` to template it. 
+
+1. Replace `consul-json` by `apricot`
+2. Replace `consul_endpoint` by `apricot_endpoint`
+3. Make sure to have single quotes around the URI
+
+Example:
+
+```
+o2-qc --config consul-json://{{ consul_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching --remote -b
+```
+becomes
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching' --remote -b
+```
+Make sure that you are able to run with the new workflow before actually templating. 
+
+### Include a config file
+
+To include a config file (e.g. named `mch_digits`) add this line: `{% include "mch_digits" %}`
+
+What it does is very literally copy and paste the content of the file into the other one. Thus make sure that you include all the commas and stuff. 
+
 ## Definition and access of simple user-defined task configuration ("taskParameters")
 
 The new, extended, way of defining such parameters, not only in Tasks but also in Checks, Aggregators and PP tasks, 
@@ -1298,7 +1378,7 @@ should not be present in real configuration files.
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
                                                "change or the values might come from other source (e.g. ECS+Bookkeeping)." ],
         "number": "42",                   "": "Activity number.",
-        "type": "2",                      "": "Arbitrary activity type.",
+        "type": "PHYSICS",                "": "Activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data",

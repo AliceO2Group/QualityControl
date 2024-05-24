@@ -24,7 +24,7 @@ class HistPlotter
 {
  public:
   HistPlotter() = default;
-  ~HistPlotter() = default;
+  virtual ~HistPlotter() = default;
 
  public:
   struct HistInfo {
@@ -36,13 +36,20 @@ class HistPlotter
   /** reset all histograms */
   void reset();
 
+  virtual void endOfCycle() {}
+
   std::vector<HistInfo>& histograms() { return mHistograms; }
   const std::vector<HistInfo>& histograms() const { return mHistograms; }
 
-  virtual void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager);
+  virtual void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager,
+                       o2::quality_control::core::PublicationPolicy policy = o2::quality_control::core::PublicationPolicy::Forever);
+  virtual void publish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, HistInfo& hinfo,
+                       o2::quality_control::core::PublicationPolicy policy = o2::quality_control::core::PublicationPolicy::Forever);
+  virtual void unpublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager);
 
  private:
   std::vector<HistInfo> mHistograms;
+  std::vector<HistInfo> mPublishedHistograms;
 };
 
 } // namespace o2::quality_control_modules::muon

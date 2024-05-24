@@ -32,7 +32,8 @@
 #include <TList.h>
 #include <TLine.h>
 
-#include <DataFormatsQualityControl/FlagReasons.h>
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <string>
 
@@ -41,11 +42,15 @@ using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::zdc
 {
+void ZDCRawDataCheck::startOfActivity(const Activity& activity)
+{
+  // ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
+  init(activity);
+}
 Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
-  init();
   int ib = 0;
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -58,6 +63,10 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
         if ((mo->getName() == "hpedSummary")) {
           auto* h = dynamic_cast<TH1*>(mo->getObject());
+          if (h == nullptr) {
+            ILOG(Error, Support) << "could not cast hpedSummary to TH1*" << ENDM;
+            return Quality::Null;
+          }
           if ((int)h->GetNbinsX() != (int)mVectHistoCheck.at(ih).paramch.size()) {
             return Quality::Null;
           }
@@ -67,12 +76,12 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
             if ((((float)h->GetBinContent(ib) < (float)mVectHistoCheck.at(ih).paramch.at(i).minW && (float)h->GetBinContent(ib) >= (float)mVectHistoCheck.at(ih).paramch.at(i).minE)) || ((float)h->GetBinContent(ib) > (float)mVectHistoCheck.at(ih).paramch.at(i).maxW && (float)h->GetBinContent(ib) < (float)mVectHistoCheck.at(ih).paramch.at(i).maxE)) {
               mVectHistoCheck.at(ih).numW += 1;
               mVectHistoCheck.at(ih).stringW = mVectHistoCheck.at(ih).stringW + mVectHistoCheck.at(ih).paramch.at(i).ch + " ";
-              ILOG(Warning, Support) << "Baseline Warning in " << mVectHistoCheck.at(ih).paramch.at(i).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(i).minW << " - " << mVectHistoCheck.at(ih).paramch.at(i).maxW << " Value: " << h->GetBinContent(ib) << ENDM;
+              //  ILOG(Warning, Support) << "Baseline Warning in " << mVectHistoCheck.at(ih).paramch.at(i).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(i).minW << " - " << mVectHistoCheck.at(ih).paramch.at(i).maxW << " Value: " << h->GetBinContent(ib) << ENDM;
             }
             if (((float)h->GetBinContent(ib) < (float)mVectHistoCheck.at(ih).paramch.at(i).minE) || ((float)h->GetBinContent(ib) > (float)mVectHistoCheck.at(ih).paramch.at(i).maxE)) {
               mVectHistoCheck.at(ih).numE += 1;
               mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(i).ch + " ";
-              ILOG(Error, Support) << "Baseline Error in " << mVectHistoCheck.at(ih).paramch.at(i).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(i).minE << " - " << mVectHistoCheck.at(ih).paramch.at(i).maxE << " Value: " << h->GetBinContent(ib) << ENDM;
+              //  ILOG(Error, Support) << "Baseline Error in " << mVectHistoCheck.at(ih).paramch.at(i).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(i).minE << " - " << mVectHistoCheck.at(ih).paramch.at(i).maxE << " Value: " << h->GetBinContent(ib) << ENDM;
             }
           }
         }
@@ -81,6 +90,10 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           int flag_ch_empty = 1;
           int flag_all_ch_empty = 1;
           auto* h = dynamic_cast<TH2*>(mo->getObject());
+          if (h == nullptr) {
+            ILOG(Error, Support) << "could not cast hAlignPlot to TH2*" << ENDM;
+            return Quality::Null;
+          }
           if ((int)h->GetNbinsX() != (int)mVectHistoCheck.at(ih).paramch.size()) {
             return Quality::Null;
           }
@@ -92,12 +105,12 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
                 if ((((float)y < (float)mVectHistoCheck.at(ih).paramch.at(x).minW && (float)y >= (float)mVectHistoCheck.at(ih).paramch.at(x).minE)) || ((float)y > (float)mVectHistoCheck.at(ih).paramch.at(x).maxW && (float)y < (float)mVectHistoCheck.at(ih).paramch.at(x).maxE)) {
                   mVectHistoCheck.at(ih).numW += 1;
                   mVectHistoCheck.at(ih).stringW = mVectHistoCheck.at(ih).stringW + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
-                  ILOG(Warning, Support) << "Alignment warning:" << mVectHistoCheck.at(ih).paramch.at(x).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(x).minW << " - " << mVectHistoCheck.at(ih).paramch.at(x).maxW << " Value: " << y << ENDM;
+                  // ILOG(Warning, Support) << "Alignment warning:" << mVectHistoCheck.at(ih).paramch.at(x).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(x).minW << " - " << mVectHistoCheck.at(ih).paramch.at(x).maxW << " Value: " << y << ENDM;
                 }
                 if (((float)y < (float)mVectHistoCheck.at(ih).paramch.at(x).minE) || ((float)y > (float)mVectHistoCheck.at(ih).paramch.at(x).maxE)) {
                   mVectHistoCheck.at(ih).numE += 1;
                   mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
-                  ILOG(Error, Support) << "Alignment error:" << mVectHistoCheck.at(ih).paramch.at(x).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(x).minE << " - " << mVectHistoCheck.at(ih).paramch.at(x).maxE << " Value: " << y << ENDM;
+                  // ILOG(Error, Support) << "Alignment error:" << mVectHistoCheck.at(ih).paramch.at(x).param << " intervall: " << mVectHistoCheck.at(ih).paramch.at(x).minE << " - " << mVectHistoCheck.at(ih).paramch.at(x).maxE << " Value: " << y << ENDM;
                 }
               }
             }
@@ -117,6 +130,10 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         if (mo->getName() == "herrorSummary") {
           int flag_ch_empty = 1;
           auto* h = dynamic_cast<TH2*>(mo->getObject());
+          if (h == nullptr) {
+            ILOG(Error, Support) << "could not cast herrorSummary to TH2*" << ENDM;
+            return Quality::Null;
+          }
           if ((int)h->GetNbinsX() != (int)mVectHistoCheck.at(ih).paramch.size()) {
             return Quality::Null;
           }
@@ -127,17 +144,17 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
                 if (y == 0) {
                   mVectHistoCheck.at(ih).numE += 1;
                   mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
-                  ILOG(Error, Support) << "Error Bit:" << mVectHistoCheck.at(ih).paramch.at(x).ch << " Value: " << h->GetBinContent(x + 1, y + 1) << ENDM;
+                  // ILOG(Error, Support) << "Error Bit:" << mVectHistoCheck.at(ih).paramch.at(x).ch << " Value: " << h->GetBinContent(x + 1, y + 1) << ENDM;
                 }
                 if (y == 1) {
                   mVectHistoCheck.at(ih).numW += 1;
                   mVectHistoCheck.at(ih).stringW = mVectHistoCheck.at(ih).stringW + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
-                  ILOG(Warning, Support) << "Data Loss warning:" << mVectHistoCheck.at(ih).paramch.at(x).ch << " Value: " << h->GetBinContent(x + 1, y + 1) << ENDM;
+                  // ILOG(Warning, Support) << "Data Loss warning:" << mVectHistoCheck.at(ih).paramch.at(x).ch << " Value: " << h->GetBinContent(x + 1, y + 1) << ENDM;
                 }
                 if (y == 2) {
                   mVectHistoCheck.at(ih).numW += 1;
                   mVectHistoCheck.at(ih).stringW = mVectHistoCheck.at(ih).stringW + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
-                  ILOG(Warning, Support) << "Data Corrupted warning:" << mVectHistoCheck.at(ih).paramch.at(x).ch << " Value: " << h->GetBinContent(x + 1, y + 1) << ENDM;
+                  // ILOG(Warning, Support) << "Data Corrupted warning:" << mVectHistoCheck.at(ih).paramch.at(x).ch << " Value: " << h->GetBinContent(x + 1, y + 1) << ENDM;
                 }
               }
             }
@@ -151,14 +168,14 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
         if (mVectHistoCheck.at(ih).numW > 0) {
           result = Quality::Medium;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is medium because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringW + "have a value in the medium range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is medium because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringW + "have a value in the medium range");
           mVectHistoCheck.at(ih).quality = 2;
         }
         if (mVectHistoCheck.at(ih).numE > 0) {
           result = Quality::Bad;
-          result.addReason(FlagReasonFactory::Unknown(),
-                           "It is bad because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringE + "have a value in the bad range");
+          result.addFlag(FlagTypeFactory::Unknown(),
+                         "It is bad because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringE + "have a value in the bad range");
           mVectHistoCheck.at(ih).quality = 3;
         }
       }
@@ -177,7 +194,10 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
     if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
       auto* h = dynamic_cast<TH1*>(mo->getObject());
-
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+        return;
+      }
       if (mVectHistoCheck.at(ih).quality == 1) {
         std::string errorSt = getCurrentDataTime() + " Ok";
         TLatex* msg = new TLatex(mVectHistoCheck.at(ih).posMsgX, mVectHistoCheck.at(ih).posMsgY, errorSt.c_str());
@@ -214,7 +234,7 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
 }
 
-void ZDCRawDataCheck::init()
+void ZDCRawDataCheck::init(const Activity& activity)
 {
   mVectch.clear();
   mVectHistoCheck.clear();
@@ -244,9 +264,9 @@ void ZDCRawDataCheck::init()
   setChName("ZPCS");
   setChName("ZPC1");
   setChName("ZPC2");
-  setChCheck("hpedSummary", "TH1F", "PED", "PED_POS_MSG_X", "PED_POS_MSG_Y");
-  setChCheck("hAlignPlotShift", "TH2F", "ALIGN", "ALIGN_POS_MSG_X", "ALIGN_POS_MSG_Y");
-  setChCheck("herrorSummary", "TH2F", "ERROR", "ERROR_POS_MSG_X", "ERROR_POS_MSG_Y");
+  setChCheck("hpedSummary", "TH1F", "PED", "PED_POS_MSG_X", "PED_POS_MSG_Y", activity);
+  setChCheck("hAlignPlotShift", "TH2F", "ALIGN", "ALIGN_POS_MSG_X", "ALIGN_POS_MSG_Y", activity);
+  setChCheck("herrorSummary", "TH2F", "ERROR", "ERROR_POS_MSG_X", "ERROR_POS_MSG_Y", activity);
   // dumpStruct();
 }
 
@@ -255,7 +275,7 @@ void ZDCRawDataCheck::setChName(std::string channel)
   mVectch.push_back(channel);
 }
 
-void ZDCRawDataCheck::setChCheck(std::string histoName, std::string typeHisto, std::string typeCheck, std::string paramPosMsgX, std::string paramPosMsgY)
+void ZDCRawDataCheck::setChCheck(std::string histoName, std::string typeHisto, std::string typeCheck, std::string paramPosMsgX, std::string paramPosMsgY, const Activity& activity)
 {
   sCheck chCheck;
   sHistoCheck histoCheck;
@@ -266,18 +286,18 @@ void ZDCRawDataCheck::setChCheck(std::string histoName, std::string typeHisto, s
   histoCheck.typecheck = typeCheck;
   histoCheck.paramPosMsgX = paramPosMsgX;
   histoCheck.paramPosMsgY = paramPosMsgY;
-  if (const auto param = mCustomParameters.find(histoCheck.paramPosMsgX); param != mCustomParameters.end()) {
-    histoCheck.posMsgX = atof(param->second.c_str());
+  if (auto param = mCustomParameters.atOptional(histoCheck.paramPosMsgX, activity)) {
+    histoCheck.posMsgX = atof(param.value().c_str());
   }
-  if (const auto param = mCustomParameters.find(histoCheck.paramPosMsgY); param != mCustomParameters.end()) {
-    histoCheck.posMsgY = atof(param->second.c_str());
+  if (auto param = mCustomParameters.atOptional(histoCheck.paramPosMsgY, activity)) {
+    histoCheck.posMsgY = atof(param.value().c_str());
   }
   // For each ZDC Channel
   for (int i = 0; i < (int)mVectch.size(); i++) {
     chCheck.ch = mVectch.at(i);
     chCheck.param = histoCheck.typecheck + "_" + chCheck.ch;
-    if (const auto param = mCustomParameters.find(chCheck.param); param != mCustomParameters.end()) {
-      tokenString = tokenLine(param->second, ";");
+    if (auto param = mCustomParameters.atOptional(chCheck.param, activity)) {
+      tokenString = tokenLine(param.value(), ";");
       chCheck.minW = atof(tokenString.at(0).c_str()) - atof(tokenString.at(1).c_str());
       chCheck.maxW = atof(tokenString.at(0).c_str()) + atof(tokenString.at(1).c_str());
       chCheck.minE = atof(tokenString.at(0).c_str()) - atof(tokenString.at(2).c_str());

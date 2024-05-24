@@ -17,11 +17,11 @@
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Activity.h"
-#include "BookkeepingApi/BkpProtoClientFactory.h"
-#include "BookkeepingApi/BkpProtoClient.h"
+#include "BookkeepingApi/BkpClientFactory.h"
+#include "BookkeepingApi/BkpClient.h"
 #include <unistd.h>
 
-using namespace o2::bkp::api::proto;
+using namespace o2::bkp::api;
 
 namespace o2::quality_control::core
 {
@@ -43,7 +43,7 @@ void Bookkeeping::init(const std::string& url)
   }
 
   try {
-    mClient = BkpProtoClientFactory::create(url);
+    mClient = BkpClientFactory::create(url);
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error connecting to Bookkeeping: " << error.what() << ENDM;
     return;
@@ -58,26 +58,6 @@ void Bookkeeping::init(const std::string& url)
   mInitialized = true;
 }
 
-void Bookkeeping::populateActivity(Activity& activity, size_t runNumber)
-{
-  if (!mInitialized) {
-    return;
-  }
-  try {
-    auto bkRun = mClient->run()->Get(runNumber, { bookkeeping::RUN_RELATIONS_LHC_FILL });
-    ILOG(Debug, Devel) << "Retrieved run info from Bookkeeping : " << bkRun->run().environmentid() << ", " << bkRun->run().runtype() << ENDM;
-    activity.mId = bkRun->run().runnumber();
-    activity.mType = bkRun->run().runtype();
-    activity.mPeriodName = bkRun->run().lhcperiod();
-    activity.mValidity.setMin(bkRun->run().timeo2start());
-    activity.mValidity.setMax(bkRun->run().timeo2end());
-    activity.mBeamType = bkRun->lhcfill().beamtype();
-    ILOG(Debug, Devel) << "activity created from run : " << activity << ENDM;
-  } catch (std::runtime_error& error) {
-    ILOG(Warning, Support) << "Error retrieving run info from Bookkeeping: " << error.what() << ENDM;
-  }
-}
-
 std::string getHostName()
 {
   char hostname[256];
@@ -88,7 +68,7 @@ std::string getHostName()
   }
 }
 
-void Bookkeeping::registerProcess(int runNumber, const std::string& name, const std::string& detector, bookkeeping::DplProcessType type, const std::string& args)
+void Bookkeeping::registerProcess(int runNumber, const std::string& name, const std::string& detector, bkp::DplProcessType type, const std::string& args)
 {
   if (!mInitialized) {
     return;

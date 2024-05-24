@@ -48,6 +48,7 @@ void MIDTrending::configure(const boost::property_tree::ptree& config)
 void MIDTrending::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Preparing data structure of TTree
+  mTrend.reset();
   mTrend = std::make_unique<TTree>();
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("runNumber", &mMetaData.runNumber);
@@ -131,10 +132,6 @@ void MIDTrending::generatePlots(repository::DatabaseInterface& qcdb)
   int mPlot = 0;
 
   for (const auto& plot : mConfig.plots) {
-
-    // TEST VR
-    // if (plot.varexp.find("binContent") == std::string::npos)
-    //  continue;
 
     mCanvasMID.push_back(std::make_unique<TCanvas>(plot.name.c_str(), plot.title.c_str()));
     mCanvasMID[mPlot].get()->cd();

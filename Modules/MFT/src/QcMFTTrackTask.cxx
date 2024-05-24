@@ -16,24 +16,32 @@
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
 /// \author David Grund
+///
 
+// C++
+#include <string>
+#include <gsl/span>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
+#include <TString.h>
 // O2
 #include <DataFormatsMFT/TrackMFT.h>
 #include <MFTTracking/TrackCA.h>
 #include <Framework/InputRecord.h>
-#include <Framework/TimingInfo.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <DataFormatsITSMFT/Cluster.h>
 #include <DataFormatsITSMFT/CompCluster.h>
+#include <CommonConstants/LHCConstants.h>
+#include <Framework/ProcessingContext.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTTrackTask.h"
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
 #include "DetectorsBase/GRPGeomHelper.h"
+#include "QualityControl/CustomParameters.h"
+#include "QualityControl/ObjectsManager.h"
 
 namespace o2::quality_control_modules::mft
 {
@@ -170,7 +178,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", MaxTrackROFSize, 0, MaxTrackROFSize, true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
-  getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist");
+  getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist logx logy");
 
   mTracksBC = std::make_unique<TH1FRatio>("mMFTTracksBC", "Tracks per BC; BCid; # entries per orbit", o2::constants::lhc::LHCMaxBunches, 0, o2::constants::lhc::LHCMaxBunches, true);
   mTracksBC->SetMinimum(0.1);
@@ -202,12 +210,26 @@ void QcMFTTrackTask::startOfCycle()
 
 void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  if (!mGeom) {
+    o2::mft::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::mft::GeometryTGeo>("MFT/Config/Geometry"));
+    mGeom = o2::mft::GeometryTGeo::Instance();
+    ILOG(Info, Support) << "GeometryTGeo loaded" << ENDM;
+  }
   auto mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
 
   // get the tracks
   const auto tracks = ctx.inputs().get<gsl::span<o2::mft::TrackMFT>>("tracks");
+  if (tracks.empty()) {
+    return;
+  }
   const auto tracksrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("tracksrofs");
+  if (tracksrofs.empty()) {
+    return;
+  }
   const auto clustersrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrofs");
+  if (clustersrofs.empty()) {
+    return;
+  }
 
   // fill the tracks histogram
 

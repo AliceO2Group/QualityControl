@@ -20,7 +20,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "ZDC/ZDCRawDataTask.h"
 #include <Framework/InputRecord.h>
-#include <Framework/InputRecordWalker.h>
 #include "DPLUtils/DPLRawParser.h"
 #include <TROOT.h>
 #include <TPad.h>
@@ -45,27 +44,17 @@ namespace o2::quality_control_modules::zdc
 
 ZDCRawDataTask::~ZDCRawDataTask()
 {
-  if (fFireChannel) {
-    delete fFireChannel;
-  }
-  if (fTrasmChannel) {
-    delete fTrasmChannel;
-  }
-  if (fSummaryPedestal) {
-    delete fSummaryPedestal;
-  }
-  if (fTriggerBits) {
-    delete fTriggerBits;
-  }
-  if (fTriggerBitsHits) {
-    delete fTriggerBitsHits;
-  }
-  if (fDataLoss) {
-    delete fDataLoss;
-  }
-  if (fOverBc) {
-    delete fOverBc;
-  }
+  delete fFireChannel;
+  delete fTrasmChannel;
+  delete fDataLoss;
+  delete fTriggerBits;
+  delete fTriggerBitsHits;
+  delete fSummaryPedestal;
+  delete fSummaryRate;
+  delete fSummaryAlign;
+  delete fSummaryAlignShift;
+  delete fSummaryError;
+  delete fOverBc;
 }
 
 void ZDCRawDataTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -78,6 +67,9 @@ void ZDCRawDataTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   // reset for all object
+  fNumCycle = 0;
+  fNumCycleErr = 0;
+  resetAlign();
   reset();
 }
 
@@ -103,11 +95,7 @@ void ZDCRawDataTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto rdhPtr = reinterpret_cast<const o2::header::RDHAny*>(it.raw());
     if (rdhPtr == nullptr || !o2::raw::RDHUtils::checkRDH(rdhPtr, true)) {
       nErr[0]++;
-      /*if (nErr[0] < 5) {
-        LOG(warning) << "ZDCDataReaderDPLSpec::run - Missing RAWDataHeader on page " << count;
-      } else if (nErr[0] == 5) {
-        LOG(warning) << "ZDCDataReaderDPLSpec::run - Missing RAWDataHeader on page " << count << " suppressing further messages";
-      }*/
+
     } else {
       if (it.data() == nullptr) {
         nErr[1]++;
@@ -191,8 +179,8 @@ void ZDCRawDataTask::reset()
   if (fTrasmChannel) {
     fTrasmChannel->Reset();
   }
-  if (fSummaryPedestal) {
-    fSummaryPedestal->Reset();
+  if (fDataLoss) {
+    fDataLoss->Reset();
   }
   if (fTriggerBits) {
     fTriggerBits->Reset();
@@ -200,17 +188,23 @@ void ZDCRawDataTask::reset()
   if (fTriggerBitsHits) {
     fTriggerBitsHits->Reset();
   }
-  if (fDataLoss) {
-    fDataLoss->Reset();
-  }
-  if (fOverBc) {
-    fOverBc->Reset();
+  if (fSummaryPedestal) {
+    fSummaryPedestal->Reset();
   }
   if (fSummaryRate) {
     fSummaryRate->Reset();
   }
   if (fSummaryAlign) {
     fSummaryAlign->Reset();
+  }
+  if (fSummaryAlignShift) {
+    fSummaryAlignShift->Reset();
+  }
+  if (fSummaryError) {
+    fSummaryError->Reset();
+  }
+  if (fOverBc) {
+    fOverBc->Reset();
   }
 }
 
@@ -633,16 +627,16 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
         } else {
           s[i] = us[i];
         }
-        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_3 || f.Auto_3)) {
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0) == "AoT") && (f.Alice_3 || f.Auto_3)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 36., double(s[i]));
         }
-        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_2 || f.Auto_2)) {
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0) == "AoT") && (f.Alice_2 || f.Auto_2)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 24., double(s[i]));
         }
-        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_1 || f.Auto_1)) {
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0) == "AoT") && (f.Alice_1 || f.Auto_1)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i - 12., double(s[i]));
         }
-        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0).compare("AoT") == 0) && (f.Alice_0 || f.Auto_0)) {
+        if ((fMatrixHistoSignal[f.board][f.ch].at(j).condHisto.at(0) == "AoT") && (f.Alice_0 || f.Auto_0)) {
           fMatrixHistoSignal[f.board][f.ch].at(j).histo->Fill(i + 0., double(s[i]));
           if (f.Auto_0) {
             fMatrixAlign[f.board][f.ch].minSample.vSamples[i].num_entry += 1;
@@ -753,13 +747,13 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     double bc_d = uint32_t(f.bc / 100);
     double bc_m = uint32_t(f.bc % 100);
     for (int i = 0; i < (int)fMatrixHistoBunch[f.board][f.ch].size(); i++) {
-      if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0oT0") == 0) {
+      if (fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0) == "A0oT0") {
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
       }
-      if (f.Alice_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("A0") == 0) {
+      if (f.Alice_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0) == "A0") {
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
       }
-      if (f.Auto_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0).compare("T0") == 0) {
+      if (f.Auto_0 && fMatrixHistoBunch[f.board][f.ch].at(i).condHisto.at(0) == "T0") {
         fMatrixHistoBunch[f.board][f.ch].at(i).histo->Fill(bc_m, -bc_d);
       }
     }
@@ -853,7 +847,7 @@ void ZDCRawDataTask::setNameChannel(int imod, int ich, std::string namech, int b
 
 bool ZDCRawDataTask::getModAndCh(std::string chName, int* module, int* channel)
 {
-  if (chName.compare("NONE") == 0) {
+  if (chName == "NONE") {
     return true;
   }
   if (fMapChNameModCh.find(chName) != fMapChNameModCh.end()) {
@@ -897,7 +891,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     TString hname = TString::Format("%s", name.c_str());
     TString htit = TString::Format("%s", title.c_str());
     // BASELINE
-    if (type.compare("BASELINE") == 0) {
+    if (type == "BASELINE") {
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
         fNameHisto.push_back(name);
@@ -928,7 +922,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
     // COUNTS
-    if (type.compare("COUNTS") == 0) {
+    if (type == "COUNTS") {
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
         fNameHisto.push_back(name);
@@ -959,7 +953,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
     // SIGNAL
-    if (type.compare("SIGNAL") == 0) {
+    if (type == "SIGNAL") {
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
         fNameHisto.push_back(name);
@@ -990,7 +984,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
     // BUNCH
-    if (type.compare("BUNCH") == 0) {
+    if (type == "BUNCH") {
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
         fNameHisto.push_back(name);
@@ -1023,7 +1017,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
 
-    if (type.compare("FIRECHANNEL") == 0) {
+    if (type == "FIRECHANNEL") {
       fFireChannel = new TH2I(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       fFireChannel->SetStats(0);
       getObjectsManager()->startPublishing(fFireChannel);
@@ -1035,7 +1029,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-    if (type.compare("DATALOSS") == 0) {
+    if (type == "DATALOSS") {
       fDataLoss = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       getObjectsManager()->startPublishing(fDataLoss);
       try {
@@ -1046,7 +1040,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-    if (type.compare("TRASMITTEDCHANNEL") == 0) {
+    if (type == "TRASMITTEDCHANNEL") {
       fTrasmChannel = new TH2I(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       fTrasmChannel->SetStats(0);
       getObjectsManager()->startPublishing(fTrasmChannel);
@@ -1058,7 +1052,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-    if (type.compare("TRIGGER_BIT") == 0) {
+    if (type == "TRIGGER_BIT") {
       fTriggerBits = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       fTriggerBits->GetYaxis()->SetBinLabel(10, "Alice_3");
       fTriggerBits->GetYaxis()->SetBinLabel(9, "Alice_2");
@@ -1085,7 +1079,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-    if (type.compare("TRIGGER_BIT_HIT") == 0) {
+    if (type == "TRIGGER_BIT_HIT") {
       fTriggerBitsHits = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
       fTriggerBitsHits->GetYaxis()->SetBinLabel(10, "Alice_3");
       fTriggerBitsHits->GetYaxis()->SetBinLabel(9, "Alice_2");
@@ -1112,7 +1106,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return false;
       }
     }
-    if (type.compare("OVER_BC") == 0) {
+    if (type == "OVER_BC") {
       fOverBc = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
       for (int im = 0; im < o2::zdc::NModules; im++) {
         for (int ic = 0; ic < o2::zdc::NChPerModule; ic++) {
@@ -1130,28 +1124,28 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
 
-    if ((type.compare("SUMMARYBASELINE") == 0) || (type.compare("SUMMARYRATE") == 0) || (type.compare("SUMMARY_ALIGN") == 0) || (type.compare("SUMMARY_ALIGN_SHIFT") == 0) || (type.compare("SUMMARY_ERROR") == 0)) {
-      if (type.compare("SUMMARYBASELINE") == 0) {
+    if ((type == "SUMMARYBASELINE") || (type == "SUMMARYRATE") || (type == "SUMMARY_ALIGN") || (type == "SUMMARY_ALIGN_SHIFT") || (type == "SUMMARY_ERROR")) {
+      if (type == "SUMMARYBASELINE") {
         fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         fSummaryPedestal->GetXaxis()->LabelsOption("v");
         fSummaryPedestal->SetStats(0);
       }
-      if (type.compare("SUMMARYRATE") == 0) {
+      if (type == "SUMMARYRATE") {
         fSummaryRate = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         fSummaryRate->GetXaxis()->LabelsOption("v");
         fSummaryRate->SetStats(0);
       }
-      if (type.compare("SUMMARY_ALIGN") == 0) {
+      if (type == "SUMMARY_ALIGN") {
         fSummaryAlign = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
         fSummaryAlign->GetXaxis()->LabelsOption("v");
         fSummaryAlign->SetStats(0);
       }
-      if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
+      if (type == "SUMMARY_ALIGN_SHIFT") {
         fSummaryAlignShift = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
         fSummaryAlignShift->GetXaxis()->LabelsOption("v");
         fSummaryAlignShift->SetStats(0);
       }
-      if (type.compare("SUMMARY_ERROR") == 0) {
+      if (type == "SUMMARY_ERROR") {
         fSummaryError = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
         fSummaryError->GetXaxis()->LabelsOption("v");
         fSummaryError->SetStats(0);
@@ -1164,74 +1158,74 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
             continue;
           } else {
             i++;
-            if (type.compare("SUMMARYBASELINE") == 0) {
+            if (type == "SUMMARYBASELINE") {
               fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
             }
-            if (type.compare("SUMMARYRATE") == 0) {
+            if (type == "SUMMARYRATE") {
               fSummaryRate->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
             }
-            if (type.compare("SUMMARY_ERROR") == 0) {
+            if (type == "SUMMARY_ERROR") {
               fSummaryError->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
             }
-            if (type.compare("SUMMARY_ALIGN") == 0) {
+            if (type == "SUMMARY_ALIGN") {
               fSummaryAlign->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
             }
-            if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
+            if (type == "SUMMARY_ALIGN_SHIFT") {
               fSummaryAlignShift->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
             }
             fMapBinNameIdSummaryHisto.insert(std::pair<std::string, int>(chName, i));
           }
         }
       }
-      if (type.compare("SUMMARYBASELINE") == 0) {
+      if (type == "SUMMARYBASELINE") {
         getObjectsManager()->startPublishing(fSummaryPedestal);
       }
-      if (type.compare("SUMMARYRATE") == 0) {
+      if (type == "SUMMARYRATE") {
         getObjectsManager()->startPublishing(fSummaryRate);
       }
-      if (type.compare("SUMMARY_ALIGN") == 0) {
+      if (type == "SUMMARY_ALIGN") {
         getObjectsManager()->startPublishing(fSummaryAlign);
       }
-      if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
+      if (type == "SUMMARY_ALIGN_SHIFT") {
         getObjectsManager()->startPublishing(fSummaryAlignShift);
       }
-      if (type.compare("SUMMARY_ERROR") == 0) {
+      if (type == "SUMMARY_ERROR") {
         fSummaryError->GetYaxis()->SetBinLabel(1, TString::Format("Bit Error"));
         fSummaryError->GetYaxis()->SetBinLabel(2, TString::Format("Data Loss"));
         fSummaryError->GetYaxis()->SetBinLabel(3, TString::Format("Data Corrupted"));
         getObjectsManager()->startPublishing(fSummaryError);
       }
       try {
-        if (type.compare("SUMMARYBASELINE") == 0) {
+        if (type == "SUMMARYBASELINE") {
           getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
         }
-        if (type.compare("SUMMARYRATE") == 0) {
+        if (type == "SUMMARYRATE") {
           getObjectsManager()->addMetadata(fSummaryRate->GetName(), fSummaryRate->GetName(), "34");
         }
-        if (type.compare("SUMMARY_ALIGN") == 0) {
+        if (type == "SUMMARY_ALIGN") {
           getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlign->GetName(), "34");
         }
-        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
+        if (type == "SUMMARY_ALIGN_SHIFT") {
           getObjectsManager()->addMetadata(fSummaryAlign->GetName(), fSummaryAlignShift->GetName(), "34");
         }
-        if (type.compare("SUMMARY_ERROR") == 0) {
+        if (type == "SUMMARY_ERROR") {
           getObjectsManager()->addMetadata(fSummaryError->GetName(), fSummaryError->GetName(), "34");
         }
         return true;
       } catch (...) {
-        if (type.compare("SUMMARYBASELINE") == 0) {
+        if (type == "SUMMARYBASELINE") {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
         }
-        if (type.compare("SUMMARYRATE") == 0) {
+        if (type == "SUMMARYRATE") {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryRate->GetName() << ENDM;
         }
-        if (type.compare("SUMMARY_ERROR") == 0) {
+        if (type == "SUMMARY_ERROR") {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryError->GetName() << ENDM;
         }
-        if (type.compare("SUMMARY_ALIGN") == 0) {
+        if (type == "SUMMARY_ALIGN") {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlign->GetName() << ENDM;
         }
-        if (type.compare("SUMMARY_ALIGN_SHIFT") == 0) {
+        if (type == "SUMMARY_ALIGN_SHIFT") {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryAlignShift->GetName() << ENDM;
         }
         return false;
@@ -1310,40 +1304,40 @@ bool ZDCRawDataTask::decodeConfLine(std::vector<std::string> TokenString, int Li
     return decodeModule(TokenString, LineNumber);
   }
   // Bin Histograms
-  if (TokenString.at(0).compare("BIN") == 0) {
+  if (TokenString.at(0) == "BIN") {
     return decodeBinHistogram(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("BASELINE") == 0) {
+  if (TokenString.at(0) == "BASELINE") {
     return decodeBaseline(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("COUNTS") == 0) {
+  if (TokenString.at(0) == "COUNTS") {
     return decodeCounts(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("SIGNAL") == 0) {
+  if (TokenString.at(0) == "SIGNAL") {
     return decodeSignal(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("BUNCH") == 0) {
+  if (TokenString.at(0) == "BUNCH") {
     return decodeBunch(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("TRASMITTEDCHANNEL") == 0) {
+  if (TokenString.at(0) == "TRASMITTEDCHANNEL") {
     return decodeTrasmittedChannel(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("FIRECHANNEL") == 0) {
+  if (TokenString.at(0) == "FIRECHANNEL") {
     return decodeFireChannel(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("DATALOSS") == 0) {
+  if (TokenString.at(0) == "DATALOSS") {
     return decodeDataLoss(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("TRIGGER_BIT") == 0) {
+  if (TokenString.at(0) == "TRIGGER_BIT") {
     return decodeTriggerBitChannel(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("TRIGGER_BIT_HIT") == 0) {
+  if (TokenString.at(0) == "TRIGGER_BIT_HIT") {
     return decodeTriggerBitHitChannel(TokenString, LineNumber);
   }
-  if (TokenString.at(0).compare("OVER_BC") == 0) {
+  if (TokenString.at(0) == "OVER_BC") {
     return decodeOverBc(TokenString, LineNumber);
   }
-  if ((TokenString.at(0).compare("SUMMARYBASELINE") == 0) || (TokenString.at(0).compare("SUMMARYRATE") == 0)) {
+  if ((TokenString.at(0) == "SUMMARYBASELINE") || (TokenString.at(0) == "SUMMARYRATE")) {
     return decodeSummary(TokenString, LineNumber);
   }
   ILOG(Error, Support) << TString::Format("ERROR Line number %d Key word %s does not exist.", LineNumber, TokenString.at(0).c_str()) << ENDM;
@@ -1519,25 +1513,25 @@ bool ZDCRawDataTask::decodeSummary(std::vector<std::string> TokenString, int Lin
 bool ZDCRawDataTask::checkCondition(std::string cond)
 {
 
-  if (cond.compare("A0") == 0) {
+  if (cond == "A0") {
     return true; // Alice Trigger 0
   }
-  if (cond.compare("T0") == 0) {
+  if (cond == "T0") {
     return true; // Auto Trigger 0
   }
-  if (cond.compare("A0eT0") == 0) {
+  if (cond == "A0eT0") {
     return true; // Alice Trigger 0 AND Auto Trigger 0
   }
-  if (cond.compare("A0oT0") == 0) {
+  if (cond == "A0oT0") {
     return true; // Alice Trigger 0 OR Auto Trigger 0
   }
-  if (cond.compare("AoT") == 0) {
+  if (cond == "AoT") {
     return true; // Alice Trigger 0 OR Auto Trigger 0
   }
-  if (cond.compare("LBC") == 0) {
+  if (cond == "LBC") {
     return true; // Last BC
   }
-  if (cond.compare("ALL") == 0) {
+  if (cond == "ALL") {
     return true; // no trigger
   }
   return false;

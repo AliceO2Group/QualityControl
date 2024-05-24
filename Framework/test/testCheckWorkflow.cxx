@@ -54,7 +54,7 @@ using namespace o2::configuration;
 
 /**
  * Test description
- * 
+ *
  * Test a complex configuration with 3 tasks and 4 checks.
  * Checks sources contain several tasks with different policies.
  *
@@ -110,7 +110,7 @@ class Receiver : public framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName), Lifetime::Sporadic });
+      inputs.push_back({ checkName, "CTST", Check::createCheckDataDescription(checkName), Lifetime::Sporadic });
     }
     return inputs;
   }

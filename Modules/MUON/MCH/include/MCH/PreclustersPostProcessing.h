@@ -21,6 +21,7 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 
+#include "MCH/PostProcessingConfigMCH.h"
 #include "MCH/Helpers.h"
 #include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
@@ -73,8 +74,10 @@ class PreclustersPostProcessing : public PostProcessingInterface
   static std::string clusterSizeSourceName() { return "clsize"; }
 
   // PreclustersConfig mConfig;
-  int64_t mRefTimeStamp;
+  int64_t mRefTimeStamp{ 0 };
   bool mFullHistos{ false };
+
+  PostProcessingConfigMCH mConfig;
 
   // CCDB object accessors
   std::map<std::string, CcdbObjectHelper> mCcdbObjects;

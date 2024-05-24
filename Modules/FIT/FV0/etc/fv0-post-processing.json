@@ -1,0 +1,428 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "#host": "http://localhost:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "alice-ccdb.cern.ch"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "checks": {
+      "OutOfBunchCollCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.1",
+          "thresholdError": "0.15",
+          "binPos": "2"
+        }
+      },
+      "OutOfBunchCollCheckFee": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModules"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "#thresholdWarning": "TODO",
+          "#thresholdError": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeCharge": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForChargeTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "#thresholdWarning": "TODO",
+          "#thresholdError": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeNChannel": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForNChanTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "#thresholdWarning": "TODO",
+          "#thresholdError": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeOrA": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForOrATrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "#thresholdWarning": "TODO",
+          "#thresholdError": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeOrAIn": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForOrAInTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "#thresholdWarning": "TODO",
+          "#thresholdError": "TODO"
+        }
+      },
+      "OutOfBunchCollCheckFeeOrAOut": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::OutOfBunchCollFeeModulesCheck",
+        "moduleName": "QcFV0",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "OutOfBunchColl_BCvsFeeModulesForOrAOutTrg"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "#thresholdWarning": "TODO",
+          "#thresholdError": "TODO"
+        }
+      },
+      "CFDinTimeGateCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "TimeInWindowFraction"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.8",
+          "thresholdError": "0.6",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "TimeInWindowFraction",
+          "isInversedThresholds": "false",
+          "pathDeadChannelMap": "FV0/Calib/DeadChannelMap",
+          "binsToIgnore": "48"
+        }
+      },
+      "CFDinADCgateCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "CFD_efficiency"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.8",
+          "thresholdError": "0.6",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "CFD_efficiency",
+          "isInversedThresholds": "false",
+          "pathDeadChannelMap": "FV0/Calib/DeadChannelMap",
+          "binsToIgnore": "48"
+        }
+      },
+      "TrgValidationCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::LevelCheck",
+        "moduleName": "QcFIT",
+        "policy": "OnAny",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "TrgValidation"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "thresholdWarning": "0.0005",
+          "thresholdError": "0.002",
+          "ccdbUrl": "alice-ccdb.cern.ch",
+          "nameObjectToCheck": "TrgValidation",
+          "isInversedThresholds": "true",
+          "pathDeadChannelMap": "",
+          "binsToIgnore": ""
+        }
+      }
+    },
+    "aggregators": {
+      "GlobalQuality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "FV0",
+        "dataSource": [
+          {
+            "type": "Check",
+            "name": "OutOfBunchCollCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinTimeGateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "CFDinADCgateCheck"
+          },
+          {
+            "type": "Check",
+            "name": "TrgValidationCheck"
+          }
+        ]
+      }
+    },
+    "postprocessing": {
+      "Quality": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "FV0",
+        "qualityGroups": [
+          {
+            "name": "Global",
+            "title": "GLOBAL FV0 QUALITY",
+            "path": "FV0/QO/GlobalQuality",
+            "ignoreQualitiesDetails": [
+              "Null",
+              "Good",
+              "Medium",
+              "Bad"
+            ],
+            "inputObjects": [
+              {
+                "name": "GlobalQuality",
+                "title": "Global FV0 Quality",
+                "messageBad": "Inform the FIT on-call immediately",
+                "messageMedium": "Follow individual check instructions",
+                "messageGood": "All checks are OK",
+                "messageNull": "Some histograms are empty, inform the FIT on-call immediately"
+              }
+            ]
+          },
+          {
+            "name": "Details",
+            "title": "FV0 DETAILS",
+            "path": "FV0/QO",
+            "ignoreQualitiesDetails": [],
+            "inputObjects": [
+              {
+                "name": "OutOfBunchCollCheck",
+                "title": "Out of bunch collisions"
+              },
+              {
+                "name": "CFDinTimeGateCheck",
+                "title": "CFD in time gate"
+              },
+              {
+                "name": "CFDinADCgateCheck",
+                "title": "CDF in ADC gate"
+              },
+              {
+                "name": "TrgValidationCheck",
+                "title": "Trigger validation"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FV0/QO/GlobalQuality/GlobalQuality"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PostProc": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fv0::PostProcTask",
+        "moduleName": "QcFV0",
+        "detectorName": "FV0",
+        "custom": {
+          "numOrbitsInTF": "32",
+          "cycleDurationMoName": "CycleDurationNTF",
+          "timestampSourceLhcIf": "metadata",
+          "pathDigitQcTask": "FV0/MO/Digits"
+        },
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FV0/MO/Digits/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "Trending": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcFV0",
+        "detectorName": "FV0",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "FV0/MO/Digits",
+            "names": [
+              "CycleDuration",
+              "CycleDurationNTF",
+              "SumAmpA"
+            ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "trend_cycle_duration",
+            "title": "cycle duration [ns]",
+            "varexp": "CycleDuration.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_cycle_duration_ntf",
+            "title": "cycle duration [TimeFrames]",
+            "varexp": "CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_corr",
+            "title": "cycle duration: ns/TF;time;cycle duration [ns/TimeFrames]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "cycle_duration_ntf_corr",
+            "title": "TF duration [ns];#TF;TF duration [ns]",
+            "varexp": "CycleDuration.entries/CycleDurationNTF.entries:CycleDurationNTF.entries",
+            "selection": "",
+            "option": "colz"
+          },
+          {
+            "name": "trend_mean_sumAmpA",
+            "title": "Mean trend of the sum of amplitudes (TCM)",
+            "varexp": "SumAmpA.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "trend_stddev_sumAmpA",
+            "title": "Stddev trend of the sum of amplitudes (TCM)",
+            "varexp": "SumAmpA.stddev:time",
+            "selection": "",
+            "option": "*L"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:FV0/MO/Digits/TriggersCorrelation"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

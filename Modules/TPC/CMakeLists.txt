@@ -35,7 +35,9 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/SACs.cxx
                              src/TPCAggregator.cxx
                              src/SACZeroScaleReductor.cxx
-                             src/TrackClusters.cxx)
+                             src/TrackClusters.cxx
+                             src/VDriftCalibReductor.cxx
+                             src/SeparationPowerReductor.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -91,6 +93,8 @@ add_root_dictionary(O2QcTPC
                             include/TPC/TPCAggregator.h
                             include/TPC/SACZeroScaleReductor.h
                             include/TPC/TrackClusters.h
+                            include/TPC/VDriftCalibReductor.h
+                            include/TPC/SeparationPowerReductor.h
                     LINKDEF include/TPC/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
@@ -171,4 +175,6 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCSACs.json
               run/tpcQCSACScaleTrend.json
               run/tpcQCTrackClusters.json
+              run/tpcQCvDriftTrending.json
+              run/tpcQCTrending_separationpower.json
         DESTINATION etc)

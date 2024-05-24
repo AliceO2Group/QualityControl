@@ -120,7 +120,7 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services
   }
 
   if (mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get());
+    getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
   }
 }
 
@@ -194,8 +194,8 @@ void TrendingTaskTPC::generatePlots()
   for (const auto& plot : mConfig.plots) {
     // Delete the existing plots before regenerating them.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
       delete mPlots[plot.name];
+      mPlots[plot.name] = nullptr;
     }
 
     // Postprocess each pad (titles, axes, flushing buffers).
@@ -267,7 +267,7 @@ void TrendingTaskTPC::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 } // void TrendingTaskTPC::generatePlots()
 

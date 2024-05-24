@@ -20,7 +20,6 @@
 #include "MCH/Helpers.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
-#include "MCHRawElecMap/Mapper.h"
 #include <string>
 
 namespace o2::quality_control::core
@@ -44,6 +43,7 @@ class DigitsCheck : public o2::quality_control::checker::CheckInterface
 
   // Override interface
   void configure() override;
+  void startOfActivity(const Activity& activity) override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
@@ -70,10 +70,7 @@ class DigitsCheck : public o2::quality_control::checker::CheckInterface
 
   QualityChecker mQualityChecker;
 
-  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
-
-  ClassDefOverride(DigitsCheck, 1);
+  ClassDefOverride(DigitsCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

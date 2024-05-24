@@ -215,8 +215,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     { TrgComparisonResult::kBoth, "both TCM and Sw" }
   };
 
-  mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TriggersSoftwareVsTCM", "Trigger validation", mMapTrgBits, mapTrgValidationStatus);
   for (const auto& entry : mMapTechTrgBits) {
+    mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersSoftwareVsTCM", "Trigger validation", mMapTrgBits, mapTrgValidationStatus);
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -395,7 +395,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPMbitsToCheck_ChID = mBadPMbits_ChID | mGoodPMbits_ChID;
   mLowTimeGate_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "lowTimeGate_ChID", -192);
   mUpTimeGate_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "upTimeGate_ChID", 192);
-  mHistChIDperBC = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "ChannelIDperBC", Form("FT0 ChannelID per BC, bad PM bit suppression %i, good PM checking %i, gate (%i,%i)", mBadPMbits_ChID, mGoodPMbits_ChID, mLowTimeGate_ChID, mUpTimeGate_ChID), sBCperOrbit, 0, sBCperOrbit, sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistChIDperBC = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "ChannelIDperBC", Form("FT0 ChannelID per BC, bad PM bit suppression %i, good PM checking %i, gate (%i,%i)", mBadPMbits_ChID, mGoodPMbits_ChID, mLowTimeGate_ChID, mUpTimeGate_ChID), sBCperOrbit, 0, sBCperOrbit, sNCHANNELS_PM, 0, sNCHANNELS_PM);
+
   // Timestamp
   mMetaAnchorOutput = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "metaAnchorOutput", "CycleDurationNTF");
   mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");

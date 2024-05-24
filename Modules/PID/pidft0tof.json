@@ -10,7 +10,7 @@
             },
             "Activity": {
                 "number": "42",
-                "type": "2"
+                "type": "NONE"
             },
             "monitoring": {
                 "url": "infologger:///debug?qc"
@@ -36,7 +36,6 @@
                 "moduleName": "QcTOF",
                 "detectorName": "TOF",
                 "cycleDurationSeconds": "60",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query_comment": "checking every matched track",

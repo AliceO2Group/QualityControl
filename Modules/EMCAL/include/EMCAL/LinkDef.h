@@ -16,6 +16,7 @@
 #pragma link C++ class o2::quality_control_modules::emcal::RawCheck + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::OccupancyReductor + ;
+#pragma link C++ class o2::quality_control_modules::emcal::OccupancyToFECReductor + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::ClusterTask + ;
 
@@ -38,5 +39,12 @@
 #pragma link C++ class o2::quality_control_modules::emcal::SubdetectorProjectionReductor + ;
 #pragma link C++ class o2::quality_control_modules::emcal::BCTask + ;
 #pragma link C++ class o2::quality_control_modules::emcal::BCVisualization + ;
+
+#pragma link C++ class o2::quality_control_modules::emcal::PedestalTask + ;
+
+#pragma link C++ class o2::quality_control_modules::emcal::CalibCheck + ;
+#pragma link C++ class o2::quality_control_modules::emcal::TriggerTask + ;
+#pragma link C++ class o2::quality_control_modules::emcal::NumPatchesPerFastORCheck + ;
+#pragma link C++ class o2::quality_control_modules::emcal::PedestalChannelCheck + ;
 
 #endif

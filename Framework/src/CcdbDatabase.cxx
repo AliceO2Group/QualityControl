@@ -23,7 +23,6 @@
 #include "QualityControl/ObjectMetadataKeys.h"
 
 // O2
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
 #include <Common/Exceptions.h>
 #include <CCDB/CcdbApi.h>
 #include <CommonUtils/MemFileHelper.h>
@@ -34,7 +33,6 @@
 #include <TList.h>
 #include <TROOT.h>
 #include <TKey.h>
-#include <TStreamerInfo.h>
 // std
 #include <chrono>
 #include <sstream>
@@ -50,6 +48,8 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
+#include <InfoLogger/InfoLoggerMacros.hxx>
+
 using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace o2::quality_control::core;
@@ -63,42 +63,6 @@ CcdbDatabase::CcdbDatabase() : ccdbApi(new o2::ccdb::CcdbApi())
 }
 
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
-
-void CcdbDatabase::loadDeprecatedStreamerInfos()
-{
-  if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    ILOG(Debug, Devel) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found. "
-                           << "Consequently, old data might not be readable." << ENDM;
-    return;
-  }
-  string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  vector<string> filenames = { "streamerinfos.root" };
-  for (const auto& filename : filenames) {
-    string localPath = path + filename;
-    ILOG(Debug, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
-    TFile file(localPath.data(), "READ");
-    if (file.IsZombie()) {
-      string s = string("Cannot find ") + localPath;
-      ILOG(Warning, Support) << s << ENDM;
-      continue;
-    }
-    TIter next(file.GetListOfKeys());
-    TKey* key;
-    std::unordered_set<std::string> alreadySeen;
-    while ((key = (TKey*)next())) {
-      TClass* cl = gROOT->GetClass(key->GetClassName());
-      if (!cl->InheritsFrom("TStreamerInfo"))
-        continue;
-      auto* si = (TStreamerInfo*)key->ReadObj();
-      string stringRepresentation = si->GetName() + si->GetClassVersion();
-      if (alreadySeen.count(stringRepresentation) == 0) {
-        alreadySeen.emplace(stringRepresentation);
-        ILOG(Debug, Trace) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << "'" << ENDM;
-        si->BuildCheck();
-      }
-    }
-  }
-}
 
 void CcdbDatabase::connect(const string& host, const string& /*database*/, const string& /*username*/, const string& /*password*/)
 {
@@ -119,7 +83,6 @@ void CcdbDatabase::init()
 {
   ccdbApi->init(mUrl);
   ccdbApi->setCurlRetriesParameters(5);
-  loadDeprecatedStreamerInfos();
 }
 
 void CcdbDatabase::handleStorageError(const string& path, int result)
@@ -307,30 +270,30 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   handleStorageError(path, result);
 }
 
-void CcdbDatabase::storeTRFC(std::shared_ptr<const o2::quality_control::TimeRangeFlagCollection> trfc)
+void CcdbDatabase::storeQCFC(std::shared_ptr<const o2::quality_control::QualityControlFlagCollection> qcfc)
 {
   // metadata
   map<string, string> metadata;
-  metadata[metadata_keys::runNumber] = std::to_string(trfc->getRunNumber());
-  metadata[metadata_keys::periodName] = trfc->getPeriodName();
-  metadata[metadata_keys::passName] = trfc->getPassName();
+  metadata[metadata_keys::runNumber] = std::to_string(qcfc->getRunNumber());
+  metadata[metadata_keys::periodName] = qcfc->getPeriodName();
+  metadata[metadata_keys::passName] = qcfc->getPassName();
   // QC metadata (prefix qc_)
-  addFrameworkMetadata(metadata, trfc->getDetector(), trfc->IsA()->GetName());
-  metadata[metadata_keys::qcTRFCName] = trfc->getName();
+  addFrameworkMetadata(metadata, qcfc->getDetector(), qcfc->IsA()->GetName());
+  metadata[metadata_keys::qcQCFCName] = qcfc->getName();
 
   // other attributes
-  string path = RepoPathUtils::getTrfcPath(trfc.get());
-  auto from = trfc->getStart();
-  auto to = trfc->getEnd();
+  string path = RepoPathUtils::getQcfcPath(qcfc.get());
+  auto from = qcfc->getStart();
+  auto to = qcfc->getEnd();
   if (from > to) {
-    ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' cannot be stored in CCDB, because it has invalid validity range (" + std::to_string(from) + ", " + std::to_string(to) + ")." << ENDM;
+    ILOG(Error, Support) << "QCFC '" + qcfc->getName() + "' cannot be stored in CCDB, because it has invalid validity range (" + std::to_string(from) + ", " + std::to_string(to) + ")." << ENDM;
   }
   std::stringstream buffer;
-  trfc->streamTo(buffer);
-  ILOG(Debug, Support) << "Storing TimeRangeFlagCollection at " << path << " (" << trfc->getName() << ")" << ENDM;
-  auto result = ccdbApi->storeAsBinaryFile(buffer.str().c_str(), buffer.str().size(), trfc->getName(), trfc->IsA()->GetName(), path, metadata, from, to);
+  qcfc->streamTo(buffer);
+  ILOG(Debug, Support) << "Storing QualityControlFlagCollection at " << path << " (" << qcfc->getName() << ")" << ENDM;
+  auto result = ccdbApi->storeAsBinaryFile(buffer.str().c_str(), buffer.str().size(), qcfc->getName(), qcfc->IsA()->GetName(), path, metadata, from, to);
   if (result != 0) {
-    ILOG(Error, Support) << "TRFC '" + trfc->getName() + "' could not be stored in CCDB, error: " + std::to_string(result) << ENDM;
+    ILOG(Error, Support) << "QCFC '" + qcfc->getName() + "' could not be stored in CCDB, error: " + std::to_string(result) << ENDM;
   }
 }
 
@@ -433,7 +396,7 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
   return qo;
 }
 
-std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retrieveTRFC(const std::string& trfcName, const std::string& detector, int runNumber, const string& passName, const string& periodName, const std::string& provenance, long timestamp)
+std::shared_ptr<o2::quality_control::QualityControlFlagCollection> CcdbDatabase::retrieveQCFC(const std::string& qcfcName, const std::string& detector, int runNumber, const string& passName, const string& periodName, const std::string& provenance, long timestamp)
 {
   map<string, string> headers;
   map<string, string> metadata;
@@ -446,27 +409,27 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
   if (!periodName.empty()) {
     metadata[metadata_keys::periodName] = periodName;
   }
-  const auto trfcPath = RepoPathUtils::getTrfcPath(detector, trfcName, provenance);
+  const auto qcfcPath = RepoPathUtils::getQcfcPath(detector, qcfcName, provenance);
   const std::string localFileDir = "/tmp";
-  const std::string localFileName = "trfc_" + trfcName + std::to_string(time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count());
+  const std::string localFileName = "qcfc_" + qcfcName + std::to_string(time_point_cast<nanoseconds>(system_clock::now()).time_since_epoch().count());
   const std::string localFilePath = localFileDir + std::filesystem::path::preferred_separator + localFileName;
   if (localFilePath.find("..") != std::string::npos || localFilePath.find('~') != std::string::npos) {
     ILOG(Error, Support) << "The path '" << localFilePath << "' looks hacky, will not download any files there." << ENDM;
     return nullptr;
   }
 
-  auto resultMetadata = ccdbApi->retrieveHeaders(trfcPath, metadata, timestamp);
+  auto resultMetadata = ccdbApi->retrieveHeaders(qcfcPath, metadata, timestamp);
   if (resultMetadata.empty()) {
-    ILOG(Error, Support) << "Could not extract headers of TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
+    ILOG(Error, Support) << "Could not extract headers of QCFC at '" << qcfcPath << "' with the metadata: " << ENDM; // TODO
     ILOG(Error, Support) << " - RunNumber  : " << metadata[metadata_keys::runNumber] << ENDM;
     ILOG(Error, Support) << " - PassName   : " << metadata[metadata_keys::passName] << ENDM;
     ILOG(Error, Support) << " - PeriodName : " << metadata[metadata_keys::periodName] << ENDM;
     return nullptr;
   }
 
-  auto success = ccdbApi->retrieveBlob(trfcPath, localFileDir, metadata, timestamp, false, localFileName);
+  auto success = ccdbApi->retrieveBlob(qcfcPath, localFileDir, metadata, timestamp, false, localFileName);
   if (!success) {
-    ILOG(Error, Support) << "Could not retrieve the TRFC at '" << trfcPath << "' with the metadata: " << ENDM; // TODO
+    ILOG(Error, Support) << "Could not retrieve the QCFC at '" << qcfcPath << "' with the metadata: " << ENDM; // TODO
     ILOG(Error, Support) << " - RunNumber  : " << metadata[metadata_keys::runNumber] << ENDM;
     ILOG(Error, Support) << " - PassName   : " << metadata[metadata_keys::passName] << ENDM;
     ILOG(Error, Support) << " - PeriodName : " << metadata[metadata_keys::periodName] << ENDM;
@@ -480,13 +443,13 @@ std::shared_ptr<o2::quality_control::TimeRangeFlagCollection> CcdbDatabase::retr
     return nullptr;
   }
 
-  TimeRangeFlagCollection::RangeInterval validity{ std::stoull(resultMetadata[metadata_keys::validFrom]), std::stoull(resultMetadata[metadata_keys::validUntil]) };
-  auto trfc = std::make_shared<TimeRangeFlagCollection>(trfcName, detector, validity, runNumber, periodName, passName, provenance);
-  trfc->streamFrom(localFile);
+  QualityControlFlagCollection::RangeInterval validity{ std::stoull(resultMetadata[metadata_keys::validFrom]), std::stoull(resultMetadata[metadata_keys::validUntil]) };
+  auto qcfc = std::make_shared<QualityControlFlagCollection>(qcfcName, detector, validity, runNumber, periodName, passName, provenance);
+  qcfc->streamFrom(localFile);
   localFile.close();
   std::filesystem::remove(localFilePath);
 
-  return trfc;
+  return qcfc;
 }
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
@@ -689,20 +652,6 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
   ILOG(Info, Support) << "Truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi->truncate(taskName + "/" + objectName);
-}
-
-void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
-{
-  TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class", "DET");
-  TMessage message(kMESS_OBJECT);
-  message.Reset();
-  message.EnableSchemaEvolution(true);
-  message.WriteObjectAny(mo1.get(), mo1->IsA());
-  TList* infos = message.GetStreamerInfos();
-  TFile f(filename.data(), "recreate");
-  infos->Write();
-  f.Close();
 }
 
 void CcdbDatabase::setMaxObjectSize(size_t maxObjectSize)

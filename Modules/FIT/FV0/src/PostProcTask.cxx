@@ -43,6 +43,10 @@ PostProcTask::~PostProcTask()
 {
   delete mAmpl;
   delete mTime;
+  for (auto& [_, histo] : mMapTrgHistBC) {
+    delete histo;
+    histo = nullptr;
+  }
 }
 
 void PostProcTask::configure(const boost::property_tree::ptree& config)
@@ -126,6 +130,42 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
+  // delete any objects from previous runs
+  mRateOrA.reset();
+  mRateOrAout.reset();
+  mRateOrAin.reset();
+  mRateTrgCharge.reset();
+  mRateTrgNchan.reset();
+  mHistChDataNegBits.reset();
+  mHistTriggers.reset();
+
+  mHistTimeInWindow.reset();
+  mHistCFDEff.reset();
+  mHistTrgValidation.reset();
+
+  mRatesCanv.reset();
+  delete mAmpl;
+  mAmpl = nullptr;
+  delete mTime;
+  mTime = nullptr;
+
+  mHistBcPattern.reset();
+  mHistBcPatternFee.reset();
+  mHistBcTrgOutOfBunchColl.reset();
+  mHistBcFeeOutOfBunchColl.reset();
+  mHistBcFeeOutOfBunchCollForOrATrg.reset();
+  mHistBcFeeOutOfBunchCollForOrAOutTrg.reset();
+  mHistBcFeeOutOfBunchCollForNChanTrg.reset();
+  mHistBcFeeOutOfBunchCollForChargeTrg.reset();
+  mHistBcFeeOutOfBunchCollForOrAInTrg.reset();
+
+  for (auto& [_, histo] : mMapTrgHistBC) {
+    delete histo;
+    histo = nullptr;
+  }
+  mMapTrgHistBC.clear();
+
+  // start initialization
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
   mCcdbApi.init(mCcdbUrl);
 
@@ -165,7 +205,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     std::string stBitName = "! " + entry.second;
     mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
   }
-  getObjectsManager()->startPublishing(mHistChDataNegBits.get());
+  getObjectsManager()->startPublishing(mHistChDataNegBits.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistChDataNegBits.get(), "COLZ");
 
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
@@ -181,7 +221,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
       continue;
     auto pairHistBC = mMapTrgHistBC.insert({ entry.first, new TH1D(Form("BC_%s", entry.second.c_str()), Form("BC for %s trigger;BC;counts;", entry.second.c_str()), sBCperOrbit, 0, sBCperOrbit) });
     if (pairHistBC.second) {
-      getObjectsManager()->startPublishing(pairHistBC.first->second);
+      getObjectsManager()->startPublishing(pairHistBC.first->second, quality_control::core::PublicationPolicy::ThroughStop);
     }
   }
 
@@ -231,34 +271,34 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     mHistBcFeeOutOfBunchCollForChargeTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
     mHistBcFeeOutOfBunchCollForOrAInTrg->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
   }
-  getObjectsManager()->startPublishing(mHistTriggers.get());
-  getObjectsManager()->startPublishing(mHistBcPattern.get());
+  getObjectsManager()->startPublishing(mHistTriggers.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mHistBcPattern.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcPattern.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcTrgOutOfBunchColl.get());
+  getObjectsManager()->startPublishing(mHistBcTrgOutOfBunchColl.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcTrgOutOfBunchColl.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcPatternFee.get());
+  getObjectsManager()->startPublishing(mHistBcPatternFee.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcPatternFee.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchColl.get());
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchColl.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchColl.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrATrg.get());
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrATrg.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForOrATrg.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrAOutTrg.get());
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrAOutTrg.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForOrAOutTrg.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForNChanTrg.get());
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForNChanTrg.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForNChanTrg.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForChargeTrg.get());
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForChargeTrg.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForChargeTrg.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrAInTrg.get());
+  getObjectsManager()->startPublishing(mHistBcFeeOutOfBunchCollForOrAInTrg.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistBcFeeOutOfBunchCollForOrAInTrg.get(), "COLZ");
 
-  getObjectsManager()->startPublishing(mRateOrA.get());
-  getObjectsManager()->startPublishing(mRateOrAout.get());
-  getObjectsManager()->startPublishing(mRateOrAin.get());
-  getObjectsManager()->startPublishing(mRateTrgCharge.get());
-  getObjectsManager()->startPublishing(mRateTrgNchan.get());
-  // getObjectsManager()->startPublishing(mRatesCanv.get());
-  getObjectsManager()->startPublishing(mAmpl);
-  getObjectsManager()->startPublishing(mTime);
+  getObjectsManager()->startPublishing(mRateOrA.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateOrAout.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateOrAin.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateTrgCharge.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mRateTrgNchan.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  // getObjectsManager()->startPublishing(mRatesCanv.get(), quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mAmpl, quality_control::core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->startPublishing(mTime, quality_control::core::PublicationPolicy::ThroughStop);
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
@@ -267,9 +307,9 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
 
-  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapTrgBits);
-  mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), "", "TimeInWindowFraction", Form("FV0 Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), "", "CFD_efficiency", "FV0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapTrgBits);
+  mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TimeInWindowFraction", Form("FV0 Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "CFD_efficiency", "FV0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
 
 void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)

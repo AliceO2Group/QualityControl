@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -29,7 +29,6 @@
         "moduleName": "QcEMCAL",
         "detectorName": "EMC",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query": "emcal-cells:EMC/CELLS/0;emcal-triggerecords:EMC/CELLSSTRGR/0"

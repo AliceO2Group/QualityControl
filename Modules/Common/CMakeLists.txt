@@ -12,12 +12,16 @@ add_library(O2QcCommon)
 target_sources(O2QcCommon
                PRIVATE src/IncreasingEntries.cxx
                        src/WorstOfAllAggregator.cxx
-                       src/TRFCollectionTask.cxx
-                       src/TRFCollectionTaskConfig.cxx
+                       src/FlagCollectionTask.cxx
+                       src/FlagCollectionTaskConfig.cxx
                        src/QualityTask.cxx
                        src/QualityTaskConfig.cxx
+                       src/BigScreenCanvas.cxx
                        src/BigScreen.cxx
                        src/BigScreenConfig.cxx
+                       src/CcdbInspectorTask.cxx
+                       src/CcdbInspectorTaskConfig.cxx
+                       src/CcdbInspectorCheck.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -45,9 +49,11 @@ install(TARGETS O2QcCommon
 add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
                             include/Common/WorstOfAllAggregator.h
-                            include/Common/TRFCollectionTask.h
+                            include/Common/FlagCollectionTask.h
                             include/Common/QualityTask.h
                             include/Common/BigScreen.h
+                            include/Common/CcdbInspectorTask.h
+                            include/Common/CcdbInspectorCheck.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Ratio.h
                             include/Common/TH2Ratio.h
@@ -62,7 +68,7 @@ add_root_dictionary(O2QcCommon
                             include/Common/LHCClockPhaseReductor.h
                     LINKDEF include/Common/LinkDef.h)
 
-install(FILES etc/trfcollection-example.json
+install(FILES etc/flagcollection-example.json
   DESTINATION Modules/Common)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Common

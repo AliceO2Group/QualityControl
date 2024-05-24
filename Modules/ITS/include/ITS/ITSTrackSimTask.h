@@ -73,27 +73,16 @@ class ITSTrackSimTask : public TaskInterface
   std::vector<std::vector<InfoStruct>> info;
   std::vector<TObject*> mPublishedObjects;
 
-  TH1D* hNumRecoValid_pt;
-  TH1D* hNumRecoFake_pt;
-  TH1D* hDenTrue_pt;
   TEfficiency *hEfficiency_pt, *hEfficiency_phi, *hEfficiency_eta, *hEfficiency_z, *hEfficiency_r;
-  TEfficiency *hFakeTrack_pt, *hFakeTrack_phi, *hFakeTrack_eta, *hFakeTrack_z, *hFakeTrack_r;
+  TEfficiency *hFakeTrack_pt[5], *hFakeTrack_phi[5], *hFakeTrack_eta[5], *hFakeTrack_z[5], *hFakeTrack_r[5], *hFakeTrack_QoverPt[5]; // idxs 0 to 3 -> 4 to 7 cluster tracks, idx 4 - total
+  TH1D *hNumRecoFake_pt[5], *hNumRecoFake_phi[5], *hNumRecoFake_eta[5], *hNumRecoFake_z[5], *hNumRecoFake_r[5], *hNumRecoFake_QoverPt[5];
+  TH1D *hDenTrue_pt[5], *hDenTrue_phi[5], *hDenTrue_eta[5], *hDenTrue_z[5], *hDenTrue_r[5], *hDenTrue_QoverPt[5];
 
+  TH1D* hNumRecoValid_pt;
   TH1D* hNumRecoValid_eta;
-  TH1D* hNumRecoFake_eta;
-  TH1D* hDenTrue_eta;
-
   TH1D* hNumRecoValid_phi;
-  TH1D* hNumRecoFake_phi;
-  TH1D* hDenTrue_phi;
-
   TH1D* hNumRecoValid_r;
-  TH1D* hNumRecoFake_r;
-  TH1D* hDenTrue_r;
-
   TH1D* hNumRecoValid_z;
-  TH1D* hNumRecoFake_z;
-  TH1D* hDenTrue_z;
 
   TH1F* hTrackImpactTransvFake;
   TH1F* hTrackImpactTransvValid;
@@ -105,6 +94,7 @@ class ITSTrackSimTask : public TaskInterface
 
   TEfficiency *hDuplicate_pt, *hDuplicate_phi, *hDuplicate_eta, *hDuplicate_z, *hDuplicate_r;
   TH1D *hNumDuplicate_pt, *hNumDuplicate_phi, *hNumDuplicate_eta, *hNumDuplicate_z, *hNumDuplicate_r;
+
   int mRunNumber = 0;
   std::string mO2GrpPath;
   std::string mCollisionsContextPath;

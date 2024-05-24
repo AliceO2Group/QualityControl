@@ -30,6 +30,7 @@ set(SRCS
   src/DecodingCheck.cxx
   src/DigitsCheck.cxx
   src/PreclustersCheck.cxx
+  src/ClustersCheck.cxx
   src/TracksTask.cxx
   src/DecodingPostProcessing.cxx
   src/DigitsPostProcessing.cxx
@@ -70,6 +71,7 @@ set(HEADERS
   include/MCH/DecodingCheck.h
   include/MCH/DigitsCheck.h
   include/MCH/PreclustersCheck.h
+  include/MCH/ClustersCheck.h
   include/MCH/TracksTask.h
   include/MCH/DedodingPostProcessing.h
   include/MCH/DigitsPostProcessing.h
@@ -150,6 +152,7 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PreclustersTask.h
                             include/MCH/DigitsCheck.h
                             include/MCH/PreclustersCheck.h
+                            include/MCH/ClustersCheck.h
                             include/MCH/DecodingTask.h
                             include/MCH/DecodingCheck.h
                             include/MCH/ErrorTask.h
@@ -183,3 +186,8 @@ foreach(test ${TEST_SRCS})
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
+
+
+add_executable(o2-qc-mch-clustermap-display src/Clustermap-Display.cxx)
+target_link_libraries(o2-qc-mch-clustermap-display PRIVATE O2QualityControl  O2::MCHMappingSegContour O2::MCHMappingImpl4 O2::MCHMappingInterface O2::MCHContour O2::MCHGeometryCreator O2::MCHGeometryTransformer O2::MCHConstants O2::MCHGlobalMapping)
+install(TARGETS o2-qc-mch-clustermap-display RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

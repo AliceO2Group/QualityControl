@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -33,7 +33,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst2"
@@ -46,7 +45,6 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst1"
@@ -133,7 +131,7 @@
       "id": "tst1",
       "active": "true",
       "machines": [],
-      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
+      "query" : "data:TST/SUM/2;param:TST/PARAM/2",
       "samplingConditions": [
         {
           "condition": "random",

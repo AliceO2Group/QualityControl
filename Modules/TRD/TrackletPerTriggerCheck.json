@@ -11,7 +11,7 @@
         },
         "Activity": {
           "number": "42",
-          "type": "2",
+          "type": "NONE",
           "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
           "passName": "",             "": "Pass type - e.g. spass, cpass1",
           "provenance": "qc",         "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
@@ -46,7 +46,6 @@
           "moduleName": "QcTRD",
           "detectorName": "TRD",
           "cycleDurationSeconds": "60",
-          "maxNumberCycles": "-1", "..........try this value..............":"-1",
           "dataSource": {
             "type": "direct",
             "query": "tracklets:TRD/TRACKLETS;digits:TRD/DIGITS;triggers:TRD/TRKTRGRD" ,"":"digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"

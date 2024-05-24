@@ -74,7 +74,7 @@ class PostProcessingRunner
   /// \brief Start transition. Throws on errors.
   void start(framework::ServiceRegistryRef dplServices);
   /// \brief Stop transition. Throws on errors.
-  void stop();
+  void stop(framework::ServiceRegistryRef dplServices);
   /// \brief Reset transition. Throws on errors.
   void reset();
   /// \brief Runs the task over selected timestamps, performing the full start, run, stop cycle.

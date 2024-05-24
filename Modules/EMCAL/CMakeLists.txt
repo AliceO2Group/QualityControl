@@ -2,7 +2,7 @@
 
 add_library(O2QcEMCAL)
 
-target_sources(O2QcEMCAL PRIVATE src/BCTask.cxx src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/OccupancyReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx src/SupermoduleProjectorTask.cxx src/BadChannelMapReductor.cxx src/TimeCalibParamReductor.cxx src/SupermoduleProjectionReductor.cxx src/SubdetectorProjectionReductor.cxx src/BCVisualization.cxx)
+target_sources(O2QcEMCAL PRIVATE src/TriggerTask.cxx src/PedestalTask.cxx src/BCTask.cxx src/RawErrorCheck.cxx src/RawTask.cxx src/RawCheck.cxx src/CellTask.cxx src/CellCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/OccupancyReductor.cxx src/OccupancyToFECReductor.cxx src/ClusterTask.cxx src/RawErrorTask.cxx src/CalibMonitoringTask.cxx src/SupermoduleProjectorTask.cxx src/BadChannelMapReductor.cxx src/TimeCalibParamReductor.cxx src/SupermoduleProjectionReductor.cxx src/SubdetectorProjectionReductor.cxx src/BCVisualization.cxx src/CalibCheck.cxx src/NumPatchesPerFastORCheck.cxx src/PedestalChannelCheck.cxx)
 
 target_include_directories(
   O2QcEMCAL
@@ -10,7 +10,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(O2QcEMCAL PUBLIC O2QualityControl O2::DetectorsBase O2::EMCALBase O2::EMCALReconstruction O2::CCDB O2::EMCALCalib O2::DataFormatsCTP)
+target_link_libraries(O2QcEMCAL PUBLIC O2QualityControl O2::DetectorsBase O2::EMCALBase O2::EMCALReconstruction O2::CCDB O2::EMCALCalib O2::DataFormatsCTP ROOT::Spectrum)
 
 add_root_dictionary(O2QcEMCAL
   HEADERS include/EMCAL/DigitsQcTask.h
@@ -21,6 +21,7 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/CellTask.h
   include/EMCAL/CellCheck.h
   include/EMCAL/OccupancyReductor.h
+  include/EMCAL/OccupancyToFECReductor.h
   include/EMCAL/ClusterTask.h
   include/EMCAL/RawErrorTask.h
   include/EMCAL/RawErrorCheck.h
@@ -31,6 +32,11 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/SupermoduleProjectionReductor.h
   include/EMCAL/SubdetectorProjectionReductor.h
   include/EMCAL/BCVisualization.h
+  include/EMCAL/PedestalTask.h
+  include/EMCAL/TriggerTask.h
+  include/EMCAL/CalibCheck.h
+  include/EMCAL/NumPatchesPerFastORCheck.h
+  include/EMCAL/PedestalChannelCheck.h
   LINKDEF include/EMCAL/LinkDef.h)
 
 install(TARGETS O2QcEMCAL

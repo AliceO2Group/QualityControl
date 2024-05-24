@@ -29,7 +29,6 @@
         "moduleName" : "QcMFT",
         "detectorName" : "MFT",
         "cycleDurationSeconds" : "60",
-        "maxNumberCycles" : "-1",
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "direct",
@@ -59,7 +58,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "Readout",
-            "MOs"  : ["mDDWSummary","mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mZoneSummaryChipWarning", "mZoneSummaryChipError", "mZoneSummaryChipFault", "mRDHSummary"]
+            "MOs"  : ["mSummaryChipOk","mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning", "mZoneSummaryChipWarning", "mZoneSummaryChipError", "mZoneSummaryChipFault"]
         } ]
       }
     },

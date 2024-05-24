@@ -31,6 +31,11 @@
 #include "MCHRawDecoder/ErrorCodes.h"
 #include "MCHBase/DecoderError.h"
 
+using namespace o2;
+using namespace o2::framework;
+using namespace o2::mch::mapping;
+using namespace o2::mch::raw;
+using RDH = o2::header::RDHAny;
 using namespace o2::quality_control::core;
 
 namespace o2
@@ -40,18 +45,17 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-using namespace o2;
-using namespace o2::framework;
-using namespace o2::mch::mapping;
-using namespace o2::mch::raw;
-using RDH = o2::header::RDHAny;
-
-RofsTask::RofsTask()
+template <typename T>
+void RofsTask::publishObject(std::shared_ptr<T> histo, std::string drawOption, bool statBox)
 {
-  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo.get());
+  getObjectsManager()->startPublishing(histo.get());
+  getObjectsManager()->setDefaultDrawOptions(histo.get(), drawOption);
 }
-
-RofsTask::~RofsTask() = default;
 
 void RofsTask::initialize(o2::framework::InitContext& /*ic*/)
 {
@@ -65,6 +69,8 @@ void RofsTask::initialize(o2::framework::InitContext& /*ic*/)
   for (int b = 0; b <= nLogBins; b++) {
     xbins[b] = TMath::Power(10, dLog * b);
   }
+
+  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
 
   // ROF size distributions
   mHistRofSize = std::make_shared<TH1F>("RofSize", "ROF size", nLogBins, xbins);
@@ -109,7 +115,23 @@ void RofsTask::startOfCycle()
 void RofsTask::plotROF(const o2::mch::ROFRecord& rof, gsl::span<const o2::mch::Digit> digits)
 {
   const auto bcInOrbit = o2::constants::lhc::LHCMaxBunches;
+
+  if (rof.getNEntries() < 1) {
+    ILOG(Warning, Support) << "Current ROF is empty" << ENDM;
+    return;
+  }
+
+  if ((rof.getFirstIdx() + rof.getNEntries()) > digits.size()) {
+    ILOG(Warning, Support) << "Current ROF has invalid digits range: (rof.getFirstIdx() + rof.getNEntries())=" << (rof.getFirstIdx() + rof.getNEntries()) << " > digits.size()=" << digits.size() << ENDM;
+    return;
+  }
+
   auto rofDigits = digits.subspan(rof.getFirstIdx(), rof.getNEntries());
+  if (rofDigits.empty()) {
+    ILOG(Warning, Support) << "Current ROF has no associated digits" << ENDM;
+    return;
+  }
+
   auto start = rofDigits.front().getTime();
   auto end = rofDigits.back().getTime();
   mHistRofWidth->Fill(end - start + 1);

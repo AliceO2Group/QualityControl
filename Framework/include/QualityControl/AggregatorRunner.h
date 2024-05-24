@@ -82,6 +82,10 @@ struct AggregatorSource;
 /// \author Barthélémy von Haller
 class AggregatorRunner : public framework::Task
 {
+  /// \brief Number of bytes in data description used for hashing of AggregatorRunner names. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
  public:
   /// Constructor
   /**

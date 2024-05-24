@@ -15,14 +15,9 @@
 /// \author Sebastien Perrin
 ///
 
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TGraph.h>
-#include <TFile.h>
-#include <algorithm>
-
 #include "MCH/DigitsTask.h"
+#include "MCH/Helpers.h"
+#include "MUONCommon/Helpers.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHRawDecoder/DataDecoder.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -30,14 +25,15 @@
 #include <Framework/InputRecord.h>
 #include <CommonConstants/LHCConstants.h>
 #include <DetectorsRaw/HBFUtils.h>
-#include "MCHConstants/DetectionElements.h"
 #include "MCHGlobalMapping/DsIndex.h"
+
+#include <TH1.h>
+#include <TH2.h>
 
 using namespace std;
 using namespace o2::mch;
 using namespace o2::mch::raw;
-
-static int nCycles = 0;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2
 {
@@ -46,57 +42,60 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-DigitsTask::DigitsTask() : TaskInterface()
+template <typename T>
+void DigitsTask::publishObject(T* histo, std::string drawOption, bool statBox, bool isExpert)
 {
-  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
+  histo->SetOption(drawOption.c_str());
+  if (!statBox) {
+    histo->SetStats(0);
+  }
+  mAllHistograms.push_back(histo);
+  if (mFullHistos || (isExpert == false)) {
+    getObjectsManager()->startPublishing(histo);
+    getObjectsManager()->setDefaultDrawOptions(histo, drawOption);
+  }
 }
-
-DigitsTask::~DigitsTask() {}
 
 void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  // flag to enable extra disagnostics plots; it also enables on-cycle plots
-  mDiagnostic = false;
-  if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
-    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
-      mDiagnostic = true;
-    }
-  }
+  mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
 
-  mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
+  // flag to enable extra disagnostics plots; it also enables on-cycle plots
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos);
 
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   resetOrbits();
 
   // Histograms in electronics coordinates
-  mHistogramOccupancyElec = std::make_unique<TH2FRatio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramOccupancyElec = std::make_unique<TH2FRatio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
   publishObject(mHistogramOccupancyElec.get(), "colz", false, false);
 
-  mHistogramSignalOccupancyElec = std::make_unique<TH2FRatio>("OccupancySignal_Elec", "Occupancy (signal)", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramSignalOccupancyElec = std::make_unique<TH2FRatio>("OccupancySignal_Elec", "Occupancy (signal)", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
   publishObject(mHistogramSignalOccupancyElec.get(), "colz", false, false);
 
-  mHistogramDigitsOrbitElec = std::make_unique<TH2F>("DigitOrbit_Elec", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 768, -384, 384);
+  mHistogramDigitsOrbitElec = std::make_unique<TH2F>("DigitOrbit_Elec", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 130, -1, 129);
   publishObject(mHistogramDigitsOrbitElec.get(), "colz", true, false);
 
-  mHistogramDigitsSignalOrbitElec = std::make_unique<TH2F>("DigitSignalOrbit_Elec", "Digit orbits vs DS Id (signal)", nElecXbins, 0, nElecXbins, 768, -384, 384);
+  mHistogramDigitsSignalOrbitElec = std::make_unique<TH2F>("DigitSignalOrbit_Elec", "Digit orbits vs DS Id (signal)", nElecXbins, 0, nElecXbins, 130, -1, 129);
   publishObject(mHistogramDigitsSignalOrbitElec.get(), "colz", true, false);
 
-  mHistogramDigitsBcInOrbit = std::make_unique<TH2F>("Expert/DigitsBcInOrbit_Elec", "Digit BC vs DS Id", nElecXbins, 0, nElecXbins, 3600, 0, 3600);
-  publishObject(mHistogramDigitsBcInOrbit.get(), "colz", false, true);
+  if (mFullHistos) {
+    mHistogramDigitsBcInOrbit = std::make_unique<TH2F>("Expert/DigitsBcInOrbit_Elec", "Digit BC vs DS Id", nElecXbins, 0, nElecXbins, 3600, 0, 3600);
+    publishObject(mHistogramDigitsBcInOrbit.get(), "colz", false, true);
 
-  mHistogramAmplitudeVsSamples = std::make_unique<TH2F>("Expert/AmplitudeVsSamples", "Digit amplitude vs nsamples", 1000, 0, 1000, 1000, 0, 10000);
-  publishObject(mHistogramAmplitudeVsSamples.get(), "colz", false, true);
+    mHistogramAmplitudeVsSamples = std::make_unique<TH2F>("Expert/AmplitudeVsSamples", "Digit amplitude vs nsamples", 1000, 0, 1000, 1000, 0, 10000);
+    publishObject(mHistogramAmplitudeVsSamples.get(), "colz", false, true);
 
-  // Histograms in detector coordinates
-  for (auto de : o2::mch::constants::deIdsForAllMCH) {
-    auto h = std::make_unique<TH1F>(TString::Format("Expert/%sADCamplitude_DE%03d", getHistoPath(de).c_str(), de),
-                                    TString::Format("ADC amplitude (DE%03d)", de), 5000, 0, 5000);
-    publishObject(h.get(), "hist", false, true);
-    mHistogramADCamplitudeDE.emplace(de, std::move(h));
+    // Histograms in detector coordinates
+    for (auto de : o2::mch::constants::deIdsForAllMCH) {
+      auto h = std::make_unique<TH1F>(TString::Format("Expert/%sADCamplitude_DE%03d", getHistoPath(de).c_str(), de),
+                                      TString::Format("ADC amplitude (DE%03d)", de), 5000, 0, 5000);
+      publishObject(h.get(), "hist", false, true);
+      mHistogramADCamplitudeDE.emplace(de, std::move(h));
+    }
   }
 }
 
@@ -124,59 +123,12 @@ static bool checkInput(o2::framework::ProcessingContext& ctx, std::string bindin
 
 void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  bool hasOrbits = checkInput(ctx, "orbits");
-
-  mNOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
-
-  if (hasOrbits) {
-    // if (ctx.inputs().isValid("orbits")) {
-    auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
-    if (orbits.empty()) {
-      static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningSupport, 1, 600); // send it once every 10 minutes
-      string msg = "WARNING: empty orbits vector";
-      ILOG_INST.log(msgLimit, "%s", msg.c_str());
-      return;
-    }
-
-    for (auto& orb : orbits) {
-      storeOrbit(orb);
-    }
-  } else {
-    addDefaultOrbitsInTF();
-  }
+  static auto nOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+  mNOrbits += nOrbitsPerTF;
 
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("digits");
   for (auto& d : digits) {
     plotDigit(d);
-  }
-}
-
-void DigitsTask::storeOrbit(const uint64_t& orb)
-{
-  uint32_t orbit = (orb & 0xFFFFFFFF);
-  uint32_t link = (orb >> 32) & 0xFF;
-  uint32_t fee = (orb >> 40) & 0xFF;
-  if (link != 15) {
-    if (orbit != mLastOrbitSeen[fee][link]) {
-      mNOrbits[fee][link] += 1;
-    }
-    mLastOrbitSeen[fee][link] = orbit;
-  } else if (link == 15) {
-    for (int li = 0; li < FecId::sLinkNum; li++) {
-      if (orbit != mLastOrbitSeen[fee][li]) {
-        mNOrbits[fee][li] += 1;
-      }
-      mLastOrbitSeen[fee][li] = orbit;
-    }
-  }
-}
-
-void DigitsTask::addDefaultOrbitsInTF()
-{
-  for (int fee = 0; fee < FecId::sFeeNum; fee++) {
-    for (int li = 0; li < FecId::sLinkNum; li++) {
-      mNOrbits[fee][li] += mNOrbitsPerTF;
-    }
   }
 }
 
@@ -211,16 +163,6 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
   }
 
   //--------------------------------------------------------------------------
-  // ADC amplitude plots
-  //--------------------------------------------------------------------------
-
-  auto h = mHistogramADCamplitudeDE.find(deId);
-  if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
-    h->second->Fill(ADC);
-  }
-  mHistogramAmplitudeVsSamples->Fill(digit.getNofSamples(), ADC);
-
-  //--------------------------------------------------------------------------
   // Time plots
   //--------------------------------------------------------------------------
 
@@ -232,9 +174,22 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
     bc = digit.getTime() % static_cast<int32_t>(o2::constants::lhc::LHCMaxBunches);
   }
   mHistogramDigitsOrbitElec->Fill(fecId, orbit);
-  mHistogramDigitsBcInOrbit->Fill(fecId, bc);
   if (isSignal) {
     mHistogramDigitsSignalOrbitElec->Fill(fecId, orbit);
+  }
+
+  if (mFullHistos) {
+    mHistogramDigitsBcInOrbit->Fill(fecId, bc);
+
+    //--------------------------------------------------------------------------
+    // ADC amplitude plots
+    //--------------------------------------------------------------------------
+
+    auto h = mHistogramADCamplitudeDE.find(deId);
+    if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
+      h->second->Fill(ADC);
+    }
+    mHistogramAmplitudeVsSamples->Fill(digit.getNofSamples(), ADC);
   }
 }
 
@@ -244,59 +199,13 @@ void DigitsTask::updateOrbits()
   static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
   static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
 
-  // Fill NOrbits, in Elec view, for electronics channels associated to readout pads (in order to then compute the Occupancy in Elec view, physically meaningful because in Elec view, each bin is a physical pad)
-  for (uint16_t feeId = 0; feeId < FecId::sFeeNum; feeId++) {
-
-    // loop on FEE links and check if it corresponds to an existing SOLAR board
-    for (uint8_t linkId = 0; linkId < FecId::sLinkNum; linkId++) {
-
-      if (mNOrbits[feeId][linkId] == 0) {
-        continue;
-      }
-
-      std::optional<uint16_t> solarId = mFeeLink2SolarMapper(FeeLinkId{ feeId, linkId });
-      if (!solarId.has_value()) {
-        continue;
-      }
-
-      // loop on DS boards and check if it exists in the mapping
-      for (uint8_t dsAddr = 0; dsAddr < FecId::sDsNum; dsAddr++) {
-        uint8_t groupId = dsAddr / 5;
-        uint8_t dsAddrInGroup = dsAddr % 5;
-        std::optional<DsDetId> dsDetId = mElec2DetMapper(DsElecId{ solarId.value(), groupId, dsAddrInGroup });
-        if (!dsDetId.has_value()) {
-          continue;
-        }
-        auto deId = dsDetId->deId();
-        auto dsId = dsDetId->dsId();
-
-        int xbin = getDsIndex(DsDetId{ deId, dsId }) + 1;
-
-        // loop on DS channels and check if it is associated to a readout pad
-        for (int channel = 0; channel < 64; channel++) {
-
-          const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(deId);
-          int padId = segment.findPadByFEE(dsId, channel);
-          if (padId < 0) {
-            continue;
-          }
-
-          int ybin = channel + 1;
-          mHistogramOccupancyElec->getDen()->SetBinContent(xbin, ybin, mNOrbits[feeId][linkId] * sOrbitLengthInMilliseconds);
-          mHistogramSignalOccupancyElec->getDen()->SetBinContent(xbin, ybin, mNOrbits[feeId][linkId] * sOrbitLengthInMilliseconds);
-        }
-      }
-    }
-  }
+  mHistogramOccupancyElec->getDen()->SetBinContent(1, 1, mNOrbits * sOrbitLengthInMilliseconds);
+  mHistogramSignalOccupancyElec->getDen()->SetBinContent(1, 1, mNOrbits * sOrbitLengthInMilliseconds);
 }
 
 void DigitsTask::resetOrbits()
 {
-  for (int fee = 0; fee < FecId::sFeeNum; fee++) {
-    for (int link = 0; link < FecId::sLinkNum; link++) {
-      mNOrbits[fee][link] = mLastOrbitSeen[fee][link] = 0;
-    }
-  }
+  mNOrbits = 0;
 }
 
 void DigitsTask::endOfCycle()
@@ -308,8 +217,6 @@ void DigitsTask::endOfCycle()
   // update mergeable ratios
   mHistogramOccupancyElec->update();
   mHistogramSignalOccupancyElec->update();
-
-  nCycles += 1;
 }
 
 void DigitsTask::endOfActivity(const Activity& /*activity*/)

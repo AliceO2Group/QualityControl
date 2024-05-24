@@ -15,8 +15,7 @@
 ///
 
 #include "MCH/DigitsCheck.h"
-#include <MCHConstants/DetectionElements.h>
-#include <MCHRawElecMap/Mapper.h>
+#include "MUONCommon/Helpers.h"
 #include "QualityControl/MonitorObject.h"
 
 // ROOT
@@ -29,55 +28,32 @@
 #include <string>
 
 using namespace std;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2::quality_control_modules::muonchambers
 {
 
 void DigitsCheck::configure()
 {
-  mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = o2::mch::raw::createFeeLink2SolarMapper<o2::mch::raw::ElectronicMapperGenerated>();
+}
 
-  if (auto param = mCustomParameters.find("MeanRateHistName"); param != mCustomParameters.end()) {
-    mMeanRateHistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("MeanRateRatioHistName"); param != mCustomParameters.end()) {
-    mMeanRateRatioHistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("GoodChanFracHistName"); param != mCustomParameters.end()) {
-    mGoodChanFracHistName = param->second;
-  }
-  if (auto param = mCustomParameters.find("GoodChanFracRatioHistName"); param != mCustomParameters.end()) {
-    mGoodChanFracRatioHistName = param->second;
-  }
+void DigitsCheck::startOfActivity(const Activity& activity)
+{
+  mMeanRateHistName = getConfigurationParameter<std::string>(mCustomParameters, "MeanRateHistName", mMeanRateHistName, activity);
+  mMeanRateRatioHistName = getConfigurationParameter<std::string>(mCustomParameters, "MeanRateRatioHistName", mMeanRateRatioHistName, activity);
+  mGoodChanFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodChanFracHistName", mGoodChanFracHistName, activity);
+  mGoodChanFracRatioHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodChanFracRatioHistName", mGoodChanFracRatioHistName, activity);
 
-  if (auto param = mCustomParameters.find("MinRate"); param != mCustomParameters.end()) {
-    mMinRate = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxRate"); param != mCustomParameters.end()) {
-    mMaxRate = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxRateDelta"); param != mCustomParameters.end()) {
-    mMaxRateDelta = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MinGoodFraction"); param != mCustomParameters.end()) {
-    mMinGoodFraction = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxGoodFractionDelta"); param != mCustomParameters.end()) {
-    mMaxGoodFractionDelta = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("RatePlotScaleMin"); param != mCustomParameters.end()) {
-    mRatePlotScaleMin = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("RatePlotScaleMax"); param != mCustomParameters.end()) {
-    mRatePlotScaleMax = std::stof(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST12"); param != mCustomParameters.end()) {
-    mMaxBadST12 = std::stoi(param->second);
-  }
-  if (auto param = mCustomParameters.find("MaxBadDE_ST345"); param != mCustomParameters.end()) {
-    mMaxBadST345 = std::stoi(param->second);
-  }
+  mMinRate = getConfigurationParameter<double>(mCustomParameters, "MinRate", mMinRate, activity);
+  mMaxRate = getConfigurationParameter<double>(mCustomParameters, "MaxRate", mMaxRate, activity);
+  mMaxRateDelta = getConfigurationParameter<double>(mCustomParameters, "MaxRateDelta", mMaxRateDelta, activity);
+  mMinGoodFraction = getConfigurationParameter<double>(mCustomParameters, "MinGoodFraction", mMinGoodFraction, activity);
+  mMaxGoodFractionDelta = getConfigurationParameter<double>(mCustomParameters, "MaxGoodFractionDelta", mMaxGoodFractionDelta, activity);
+  mRatePlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "RatePlotScaleMin", mRatePlotScaleMin, activity);
+  mRatePlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "RatePlotScaleMax", mRatePlotScaleMax, activity);
+
+  mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
+  mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
 
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;

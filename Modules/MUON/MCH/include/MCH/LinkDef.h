@@ -24,6 +24,7 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DigitsCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PreclustersCheck + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::ClustersCheck + ;
 // Aggregators
 // legacy tasks
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsTaskDigits + ;

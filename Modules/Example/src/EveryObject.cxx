@@ -51,13 +51,13 @@ void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
   // todo: ttree, tefficiency, tprofile
 
   mTH1F = new TH1F("th1f", "th1f", 64000, 0, rangeLimiter);
-  getObjectsManager()->startPublishing(mTH1F);
+  getObjectsManager()->startPublishing(mTH1F, PublicationPolicy::Forever);
 
   mTH2F = new TH2F("th2f", "th2f", 250, 0, rangeLimiter, 250, 0, rangeLimiter);
-  getObjectsManager()->startPublishing(mTH2F);
+  getObjectsManager()->startPublishing(mTH2F, PublicationPolicy::Forever);
 
   mTH3F = new TH3F("th3f", "th3f", 40, 0, rangeLimiter, 40, 0, rangeLimiter, 40, 0, rangeLimiter);
-  getObjectsManager()->startPublishing(mTH3F);
+  getObjectsManager()->startPublishing(mTH3F, PublicationPolicy::Forever);
   {
     const size_t bins = 1000;
     const size_t dim = 5;
@@ -68,7 +68,7 @@ void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
     const std::vector<Double_t> mins(dim, min);
     const std::vector<Double_t> maxs(dim, max);
     mTHnSparseF = new THnSparseF("thnsparsef", "thnsparsef", dim, binsDims.data(), mins.data(), maxs.data());
-    getObjectsManager()->startPublishing(mTHnSparseF);
+    getObjectsManager()->startPublishing(mTHnSparseF, PublicationPolicy::Forever);
   }
   {
     mTCanvas = new TCanvas("tcanvas", "tcanvas", 1000, 1000);
@@ -82,7 +82,7 @@ void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
       mTCanvasMembers[i]->Draw();
       mTCanvasMembers[i]->SetBit(TObject::kCanDelete);
     }
-    getObjectsManager()->startPublishing(mTCanvas);
+    getObjectsManager()->startPublishing(mTCanvas, PublicationPolicy::Forever);
   }
 }
 

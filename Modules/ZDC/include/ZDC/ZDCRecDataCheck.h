@@ -48,10 +48,10 @@ class ZDCRecDataCheck : public o2::quality_control::checker::CheckInterface
     float maxE;
     std::string typech;
   };
-
-  void init();
+  void startOfActivity(const Activity& activity) override;
+  void init(const Activity& activity);
   void setChName(std::string channel, std::string type);
-  void setChCheck(int i, std::string type);
+  void setChCheck(int i, std::string type, const Activity& activity);
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
   void dumpVecParam(int numBinHisto, int num_ch);
   void setQualityInfo(std::shared_ptr<MonitorObject> mo, int color, std::string text);

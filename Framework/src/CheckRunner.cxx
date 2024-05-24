@@ -108,9 +108,9 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
 
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
-  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.
+  // it starts with "check/" and is followed by the unique part of the device name truncated to the maximum allowed length
   string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
-  facilityName = facilityName.substr(0, 32);
+  facilityName = facilityName.substr(0, QcInfoLogger::maxFacilityLength);
   return facilityName;
 }
 
@@ -517,7 +517,7 @@ void CheckRunner::start(ServiceRegistryRef services)
   if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
     ILOG(Debug, Devel) << "Registering checkRunner to BookKeeping" << ENDM;
     try {
-      Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, mDetectorName, bookkeeping::DPL_PROCESS_TYPE_QC_CHECKER, "");
+      Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, mDetectorName, bkp::DplProcessType::QC_CHECKER, "");
     } catch (std::runtime_error& error) {
       ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
     }

@@ -389,9 +389,9 @@ void ITSFhrTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   if (mGeom == nullptr) {
-    ILOG(Warning, Devel) << "Created new instance of mGeom" << ENDM;
+    o2::its::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::its::GeometryTGeo>("ITS/Config/Geometry"));
     mGeom = o2::its::GeometryTGeo::Instance();
-    mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+    ILOG(Debug, Devel) << "Loaded new instance of mGeom" << ENDM;
   }
   // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;

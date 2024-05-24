@@ -80,12 +80,21 @@ bool TrendingTask::canContinueTrend(TTree* tree)
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
+  // removing leftovers from any previous runs
+  mTrend.reset();
+  for (auto& [name, object] : mPlots) {
+    delete object;
+    object = nullptr;
+  }
+  mPlots.clear();
+  mReductors.clear();
+
   // Preparing data structure of TTree
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
-    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {
@@ -94,8 +103,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
       }
     } else {
       ILOG(Warning, Support)
-        << "Could not retrieve an existing TTree for this task, maybe there is none which match these Activity settings"
-        << ENDM;
+        << "Could not retrieve an existing TTree for this task" << ENDM;
     }
   }
   for (const auto& source : mConfig.dataSources) {
@@ -119,7 +127,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
   if (mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get());
+    getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
   }
 }
 
@@ -209,8 +217,8 @@ void TrendingTask::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plot.name)) {
-      getObjectsManager()->stopPublishing(plot.name);
       delete mPlots[plot.name];
+      mPlots[plot.name] = nullptr;
     }
 
     // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
@@ -290,6 +298,6 @@ void TrendingTask::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 }

@@ -19,69 +19,84 @@
 // O2 includes
 #include "DataFormatsTOF/TOFFEElightInfo.h"
 #include "TOFBase/Geo.h"
-#include "CCDB/BasicCCDBManager.h"
-
-// QC includes
-#include "TOF/PostProcessHitMap.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/QcInfoLogger.h"
 
 // ROOT includes
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <TColor.h>
 #include <boost/property_tree/ptree.hpp>
 
+// QualityControl includes
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "TOF/PostProcessHitMap.h"
+#include "QualityControl/DatabaseInterface.h"
+
+using namespace std;
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::core;
+using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::tof
 {
 
 void PostProcessHitMap::configure(const boost::property_tree::ptree& config)
 {
-  mRefMapCcdbPath = "/TOF/Calib/FEELIGHT";
-  mCCDBPath = "TOF/MO/TaskDigits/";
-  if (const auto& customConfigs = config.get_child_optional("qc.postprocessing." + getID() + ".customization"); customConfigs.has_value()) {
-    for (const auto& customConfig : customConfigs.value()) { // Plot configuration
-      if (const auto& customNames = customConfig.second.get_child_optional("name"); customNames.has_value()) {
-        if (customConfig.second.get<std::string>("name") == "CCDBPath") {
-          mCCDBPath = customConfig.second.get<std::string>("value");
-          ILOG(Info, Support) << "Setting CCDBPath to " << mCCDBPath << ENDM;
-        } else if (customConfig.second.get<std::string>("name") == "RefMapCcdbPath") {
-          mRefMapCcdbPath = customConfig.second.get<std::string>("value");
-          ILOG(Info, Support) << "Setting RefMapCcdbPath to " << mRefMapCcdbPath << ENDM;
-        } else if (customConfig.second.get<std::string>("name") == "RefMapTimestamp") {
-          mRefMapTimestamp = customConfig.second.get<int>("value");
-          ILOG(Info, Support) << "Setting RefMapTimestamp to " << mRefMapTimestamp << ENDM;
-        }
-      }
-    }
-  }
+  const std::string baseJsonPath = "qc.postprocessing." + getID() + ".customization.";
+  mCCDBPath = config.get<std::string>(baseJsonPath + "CCDBPath", "TOF/MO/TaskDigits/");
+  ILOG(Info, Support) << "Setting CCDBPath to " << mCCDBPath << ENDM;
+  mCCDBPathObject = config.get<std::string>(baseJsonPath + "CCDBPathObject", "HitMapNoiseFiltered");
+  ILOG(Info, Support) << "Setting CCDBPathObject to " << mCCDBPathObject << ENDM;
+  mRefMapCcdbPath = config.get<std::string>(baseJsonPath + "RefMapCcdbPath", "/TOF/Calib/FEELIGHT");
+  ILOG(Info, Support) << "Setting RefMapCcdbPath to " << mRefMapCcdbPath << ENDM;
+  mRefMapTimestamp = config.get<int>(baseJsonPath + "RefMapTimestamp", -1);
+  ILOG(Info, Support) << "Setting RefMapTimestamp to " << mRefMapTimestamp << ENDM;
+  mDrawRefOnTop = config.get<bool>(baseJsonPath + "DrawRefOnTop", false);
+  ILOG(Info, Support) << "Setting DrawRefOnTop to " << (mDrawRefOnTop ? "true" : "false") << ENDM;
 }
 
 void PostProcessHitMap::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // Setting up services
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
+
+  mCanvasMo.reset();
+  mCanvasMo = std::make_shared<TCanvas>("defaultMap", "defaultMap");
+  getObjectsManager()->startPublishing(mCanvasMo.get());
+
+  mPhosPad.reset();
+  mPhosPad = std::make_shared<TPaveText>(13.f, 38.f, 16.f, 53.f, "bl");
+  mPhosPad->SetTextSize(0.05);
+  mPhosPad->SetBorderSize(1);
+  mPhosPad->SetTextColor(kBlack);
+  mPhosPad->SetFillColor(kGreen);
+  mPhosPad->SetFillStyle(3004);
+  mPhosPad->AddText("Red: No Match");
+  mPhosPad->AddText("Blu: RefMap");
+  mPhosPad->AddText("Green: HitMap");
 }
 
-void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef)
+void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef services)
 {
   // Getting the hit map
-  const auto mo = mDatabase->retrieveMO(mCCDBPath, "HitMap", t.timestamp, t.activity);
+  const auto mo = mDatabase->retrieveMO(mCCDBPath, mCCDBPathObject, t.timestamp, t.activity);
   TH2F* h = static_cast<TH2F*>(mo ? mo->getObject() : nullptr);
   if (!h) {
-    ILOG(Warning, Devel) << "MO 'HitMap' not found in path " << mCCDBPath << " with timestamp " << t.timestamp << ENDM;
+    ILOG(Warning, Devel) << "MO '" << mCCDBPathObject << "' not found in path " << mCCDBPath << " with timestamp " << t.timestamp << ENDM;
     return;
   }
-
   // Getting the reference map
-  const auto* refmap = o2::ccdb::BasicCCDBManager::instance().getForTimeStamp<o2::tof::TOFFEElightInfo>(mRefMapCcdbPath, mRefMapTimestamp);
+  const o2::tof::TOFFEElightInfo* refmap = nullptr;
+  refmap = o2::quality_control::core::UserCodeInterface::retrieveConditionAny<o2::tof::TOFFEElightInfo>(mRefMapCcdbPath);
   if (!mHistoRefHitMap) {
     ILOG(Debug, Devel) << "making new refmap from " << mRefMapCcdbPath << " and timestamp " << mRefMapTimestamp << ENDM;
     mHistoRefHitMap.reset(static_cast<TH2F*>(h->Clone("ReferenceHitMap")));
     mHistoRefHitMap->SetTitle(Form("%s (With reference)", mHistoRefHitMap->GetTitle()));
-    mHistoRefHitMap->SetFillColor(2);
+    mHistoRefHitMap->SetFillColor(kRed);
+    if (mDrawRefOnTop) {
+      mHistoRefHitMap->SetFillColor(kBlue);
+    }
   }
   mHistoRefHitMap->Reset();
   int det[5] = { 0 }; // Coordinates
@@ -97,32 +112,27 @@ void PostProcessHitMap::update(Trigger t, framework::ServiceRegistryRef)
     const int crate = det[0] * 4 + det[4] / 12;
     const int icrate = mHistoRefHitMap->GetXaxis()->FindBin(0.25f * crate);
     mHistoRefHitMap->SetBinContent(icrate, istrip, 1);
-    // ILOG(Debug, Devel) << "setting channel " << i << " as enabled: crate " << crate << " -> " << icrate << "/" << mHistoRefHitMap->GetNbinsX() << ", strip " << strip << " -> " << istrip << "/" << mHistoRefHitMap->GetNbinsY() << ENDM;
   }
 
   if (!mHistoHitMap) {
     ILOG(Debug, Devel) << "making new hit map" << ENDM;
     mHistoHitMap.reset(static_cast<TH2F*>(h->Clone("WithReferenceHitMap")));
-    mHistoHitMap->SetFillColor(3);
+    mHistoHitMap->SetFillColor(kGreen);
+    if (mDrawRefOnTop) {
+      mHistoHitMap->SetFillColor(kRed);
+    }
   }
-  mNWithHits = 0;
-  mNEnabled = 0;
-  for (int i = 1; i <= mHistoHitMap->GetNbinsX(); i++) {
-    for (int j = 1; j <= mHistoHitMap->GetNbinsY(); j++) {
-      mHistoHitMap->SetBinContent(i, j, h->GetBinContent(i, j));
-      // Check matching with respect to reference
-      if (h->GetBinContent(i, j) > 0.0) { // Yes hit
-        mNWithHits++;
-      }
-      if (mHistoRefHitMap->GetBinContent(i, j) > 0.0) { // Ch. enabled
-        mNEnabled++;
+  mHistoHitMap->Reset();
+  for (int i = 1; i <= h->GetNbinsX(); i++) {
+    for (int j = 1; j <= h->GetNbinsY(); j++) {
+      mHistoHitMap->SetBinContent(i, j, 0);
+      if (h->GetBinContent(i, j) > 0) {
+        mHistoHitMap->SetBinContent(i, j, 1);
       }
     }
   }
-}
 
-void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
-{
+  // Finalizing the plot and updating the MO on the CCDB
   if (!mHistoRefHitMap) {
     ILOG(Warning, Support) << "mHistoRefHitMap undefined, can't finalize" << ENDM;
     return;
@@ -131,37 +141,39 @@ void PostProcessHitMap::finalize(Trigger t, framework::ServiceRegistryRef)
     ILOG(Warning, Support) << "mHistoHitMap undefined, can't finalize" << ENDM;
     return;
   }
-  TCanvas* c = new TCanvas(mHistoHitMap->GetName(), mHistoHitMap->GetName());
-  mHistoRefHitMap->Draw("BOX");
-  mHistoHitMap->Draw("BOXsame");
-  TPaveText phosPad{ 13.f, 38.f, 16.f, 53.f, "bl" };
-  phosPad.SetTextSize(0.05);
-  phosPad.SetBorderSize(1);
-  phosPad.SetTextColor(kBlack);
-  phosPad.SetFillColor(kGreen);
-  phosPad.SetFillStyle(3004);
-  phosPad.AddText("Red: Channel ON");
-  phosPad.AddText("Green: Hits");
-  phosPad.Draw();
-  TPaveText errorPad{ 0.9f, 0.1f, 0.99f, 0.99f, "blNDC" };
-  errorPad.SetTextSize(0.05);
-  errorPad.SetBorderSize(1);
-  errorPad.SetTextColor(kBlack);
-  errorPad.SetFillColor(kRed);
-  if ((mNWithHits - mNEnabled) > mTrheshold) {
-    errorPad.AddText(Form("Hits %i > enabled %i", mNWithHits, mNEnabled));
-    errorPad.Draw();
-  } else if ((mNWithHits - mNEnabled) < mTrheshold) {
-    errorPad.AddText(Form("Hits %i < enabled %i", mNWithHits, mNEnabled));
-    errorPad.Draw();
+
+  mCanvasMo->SetName(mHistoHitMap->GetName());
+  mCanvasMo->SetTitle(mHistoHitMap->GetName());
+  mCanvasMo->cd();
+  mCanvasMo->Clear();
+
+  mHistoRefHitMap->GetZaxis()->SetRangeUser(0, 1);
+  mHistoHitMap->GetZaxis()->SetRangeUser(0, 1);
+
+  if (!mDrawRefOnTop) {
+    mHistoRefHitMap->GetListOfFunctions()->Clear();
+    mHistoRefHitMap->Draw("BOX");
+    mHistoHitMap->GetListOfFunctions()->Clear();
+    mHistoHitMap->Draw("BOXsame");
+
+  } else {
+    mHistoHitMap->GetListOfFunctions()->Clear();
+    mHistoHitMap->Draw("BOX");
+    mHistoRefHitMap->GetListOfFunctions()->Clear();
+    mHistoRefHitMap->Draw("BOXsame");
   }
+  mPhosPad->Draw();
 
-  auto mo = std::make_shared<o2::quality_control::core::MonitorObject>(c, "PostProcessHitMap", "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
-  mo->setIsOwner(false);
-  mDatabase->storeMO(mo);
+  // Draw the shifter message
+  if (mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))) {
+    mHistoHitMap->GetListOfFunctions()->FindObject(Form("%s_msg", mHistoHitMap->GetName()))->Draw("same");
+  }
+}
 
-  // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
-  delete c;
+void PostProcessHitMap::finalize(Trigger, framework::ServiceRegistryRef)
+{
+  // Only if you don't want it to be published after finalisation.
+  getObjectsManager()->stopPublishing(mCanvasMo.get());
 }
 
 } // namespace o2::quality_control_modules::tof

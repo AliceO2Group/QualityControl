@@ -29,6 +29,8 @@
 
 class TH1F;
 class TH2F;
+class TCanvas;
+class TPaveText;
 
 namespace o2::quality_control_modules::tof
 {
@@ -67,17 +69,18 @@ class PostProcessHitMap final : public quality_control::postprocessing::PostProc
 
  private:
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  int mRefMapTimestamp = -1;
-  std::string mCCDBPath;
-  std::string mRefMapCcdbPath;
+  int mRefMapTimestamp;        /// Timestamp of the hitmap to fetch (initialized from the configure method)
+  std::string mCCDBPath;       /// CCDB path of the MO (initialized from the configure method)
+  std::string mCCDBPathObject; /// CCDB name of the MO (initialized from the configure method)
+  std::string mRefMapCcdbPath; /// CCDB path of the RefMap (initialized from the configure method)
   /// Reference hit map taken from the CCDB and translated into QC binning
   std::shared_ptr<TH2F> mHistoRefHitMap = nullptr; /// TOF reference hit map
   std::shared_ptr<TH2F> mHistoHitMap = nullptr;    /// TOF hit map
-  int mNWithHits = 0;                              /// Number of half strips with hits
-  int mNEnabled = 0;                               /// Number of enabled half strips
-  int mTrheshold = 0;                              /// Threshold of agreement between read and enabled half strips
+  std::shared_ptr<TCanvas> mCanvasMo = nullptr;    /// Canvas with hit map and ref. map
+  std::shared_ptr<TPaveText> mPhosPad = nullptr;   /// PHOS pad to draw
+  bool mDrawRefOnTop;                              /// flag to enable the drawing of the refmap on top of the hit map. if false drawing on top the hitmap (initialized from the configure method)
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif //QUALITYCONTROL_TOF_POSTPROCESSHITMAP_H
+#endif // QUALITYCONTROL_TOF_POSTPROCESSHITMAP_H

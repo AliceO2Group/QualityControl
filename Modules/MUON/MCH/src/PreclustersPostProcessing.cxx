@@ -17,55 +17,15 @@
 ///
 
 #include "MCH/PreclustersPostProcessing.h"
-#include "MCH/PostProcessingConfigMCH.h"
+#include "MUONCommon/Helpers.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <TDatime.h>
 
 using namespace o2::quality_control_modules::muonchambers;
+using namespace o2::quality_control_modules::muon;
 
 void PreclustersPostProcessing::configure(const boost::property_tree::ptree& config)
 {
-  PostProcessingConfigMCH mchConfig(getID(), config);
-
-  mRefTimeStamp = mchConfig.getParameter<int64_t>("ReferenceTimeStamp", -1);
-  auto refDate = mchConfig.getParameter<std::string>("ReferenceDate");
-  if (!refDate.empty()) {
-    TDatime date(refDate.c_str());
-    mRefTimeStamp = date.Convert();
-  }
-  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp << "  (" << refDate << ")" << ENDM;
-
-  mFullHistos = mchConfig.getParameter<bool>("FullHistos", false);
-
-  mCcdbObjects.emplace(effSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(clusterChargeSourceName(), CcdbObjectHelper());
-  mCcdbObjects.emplace(clusterSizeSourceName(), CcdbObjectHelper());
-
-  if (mRefTimeStamp > 0) {
-    mCcdbObjectsRef.emplace(effSourceName(), CcdbObjectHelper());
-    mCcdbObjectsRef.emplace(clusterChargeSourceName(), CcdbObjectHelper());
-    mCcdbObjectsRef.emplace(clusterSizeSourceName(), CcdbObjectHelper());
-  }
-
-  for (const auto& source : mchConfig.dataSources) {
-    std::string sourceType, sourceName;
-    splitDataSourceName(source.name, sourceType, sourceName);
-    if (sourceType.empty()) {
-      continue;
-    }
-
-    auto obj = mCcdbObjects.find(sourceType);
-    if (obj != mCcdbObjects.end()) {
-      obj->second.mPath = source.path;
-      obj->second.mName = sourceName;
-    }
-
-    auto objRef = mCcdbObjectsRef.find(sourceType);
-    if (objRef != mCcdbObjectsRef.end()) {
-      objRef->second.mPath = source.path;
-      objRef->second.mName = sourceName;
-    }
-  }
+  mConfig = PostProcessingConfigMCH(getID(), config);
 }
 
 //_________________________________________________________________________________________
@@ -97,18 +57,21 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
   // Efficiency plotters
   //----------------------------------
 
+  mEfficiencyPlotter.reset();
   mEfficiencyPlotter = std::make_unique<EfficiencyPlotter>("Efficiency/", hElecHistoRef, mFullHistos);
-  mEfficiencyPlotter->publish(getObjectsManager());
+  mEfficiencyPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  mEfficiencyPlotterOnCycle.reset();
   mEfficiencyPlotterOnCycle = std::make_unique<EfficiencyPlotter>("Efficiency/LastCycle/", hElecHistoRef, mFullHistos);
-  mEfficiencyPlotterOnCycle->publish(getObjectsManager());
+  mEfficiencyPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Efficiency trends
   //----------------------------------
 
+  mEfficiencyTrendsPlotter.reset();
   mEfficiencyTrendsPlotter = std::make_unique<EfficiencyTrendsPlotter>("Trends/", hElecHistoRef, mFullHistos);
-  mEfficiencyTrendsPlotter->publish(getObjectsManager());
+  mEfficiencyTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -121,6 +84,7 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
 
   auto obj = mCcdbObjects.find(clusterChargeSourceName());
   if (obj != mCcdbObjects.end()) {
+    mClusterChargeOnCycle.reset();
     mClusterChargeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
   }
 
@@ -138,18 +102,21 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
   // Cluster charge plotters
   //----------------------------------
 
+  mClusterChargePlotter.reset();
   mClusterChargePlotter = std::make_unique<ClusterChargePlotter>("ClusterCharge/", histoRef, mFullHistos);
-  mClusterChargePlotter->publish(getObjectsManager());
+  mClusterChargePlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  mClusterChargePlotterOnCycle.reset();
   mClusterChargePlotterOnCycle = std::make_unique<ClusterChargePlotter>("ClusterCharge/LastCycle/", histoRef, mFullHistos);
-  mClusterChargePlotterOnCycle->publish(getObjectsManager());
+  mClusterChargePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Cluster charge trends
   //----------------------------------
 
+  mClusterChargeTrendsPlotter.reset();
   mClusterChargeTrendsPlotter = std::make_unique<ClusterChargeTrendsPlotter>("Trends/", histoRef, mFullHistos);
-  mClusterChargeTrendsPlotter->publish(getObjectsManager());
+  mClusterChargeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -162,6 +129,7 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
 
   auto obj = mCcdbObjects.find(clusterSizeSourceName());
   if (obj != mCcdbObjects.end()) {
+    mClusterSizeOnCycle.reset();
     mClusterSizeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
   }
 
@@ -179,18 +147,21 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
   // Cluster size plotters
   //----------------------------------
 
+  mClusterSizePlotter.reset();
   mClusterSizePlotter = std::make_unique<ClusterSizePlotter>("ClusterSize/", histoRef, mFullHistos);
-  mClusterSizePlotter->publish(getObjectsManager());
+  mClusterSizePlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  mClusterSizePlotterOnCycle.reset();
   mClusterSizePlotterOnCycle = std::make_unique<ClusterSizePlotter>("ClusterSize/LastCycle/", histoRef, mFullHistos);
-  mClusterSizePlotterOnCycle->publish(getObjectsManager());
+  mClusterSizePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
   // Cluster size trends
   //----------------------------------
 
+  mClusterSizeTrendsPlotter.reset();
   mClusterSizeTrendsPlotter = std::make_unique<ClusterSizeTrendsPlotter>("Trends/", histoRef, mFullHistos);
-  mClusterSizeTrendsPlotter->publish(getObjectsManager());
+  mClusterSizeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
 //_________________________________________________________________________________________
@@ -198,7 +169,47 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
 void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
+  const auto& activity = t.activity;
 
+  mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+
+  mRefTimeStamp = getConfigurationParameter<int64_t>(mCustomParameters, "ReferenceTimeStamp", mRefTimeStamp, activity);
+  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp << ENDM;
+
+  mCcdbObjects.clear();
+  mCcdbObjects.emplace(effSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(clusterChargeSourceName(), CcdbObjectHelper());
+  mCcdbObjects.emplace(clusterSizeSourceName(), CcdbObjectHelper());
+
+  mCcdbObjectsRef.clear();
+  if (mRefTimeStamp > 0) {
+    mCcdbObjectsRef.emplace(effSourceName(), CcdbObjectHelper());
+    mCcdbObjectsRef.emplace(clusterChargeSourceName(), CcdbObjectHelper());
+    mCcdbObjectsRef.emplace(clusterSizeSourceName(), CcdbObjectHelper());
+  }
+
+  // set objects path from configuration
+  for (const auto& source : mConfig.dataSources) {
+    std::string sourceType, sourceName;
+    splitDataSourceName(source.name, sourceType, sourceName);
+    if (sourceType.empty()) {
+      continue;
+    }
+
+    auto obj = mCcdbObjects.find(sourceType);
+    if (obj != mCcdbObjects.end()) {
+      obj->second.mPath = source.path;
+      obj->second.mName = sourceName;
+    }
+
+    auto objRef = mCcdbObjectsRef.find(sourceType);
+    if (objRef != mCcdbObjectsRef.end()) {
+      objRef->second.mPath = source.path;
+      objRef->second.mName = sourceName;
+    }
+  }
+
+  // instantiate and publish the histograms
   createEfficiencyHistos(t, &qcdb);
   createClusterChargeHistos(t, &qcdb);
   createClusterSizeHistos(t, &qcdb);
@@ -207,13 +218,14 @@ void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistry
   // Detector quality histogram
   //--------------------------------------------------
 
+  mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
   mHistogramQualityPerDE->SetOption("colz");
   mHistogramQualityPerDE->SetStats(0);
-  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get());
+  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
 }

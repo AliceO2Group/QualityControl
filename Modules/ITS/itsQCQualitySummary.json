@@ -10,7 +10,7 @@
       },
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "NONE"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -29,7 +29,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "direct",
                     "query": "filter:ITS/RAWDATA"
@@ -47,7 +46,6 @@
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
-                "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
                     "name": "RAWDATA"
@@ -70,16 +68,6 @@
                     "DoHitmapFilter": "1",
                     "PhysicalOccupancyIB": "1.7e-3",
                     "PhysicalOccupancyOB": "4.3e-5"
-                },
-	        "grpGeomRequest" : {
-                    "geomRequest": "Aligned",
-                    "askGRPECS": "false",
-                    "askGRPLHCIF": "false",
-                    "askGRPMagField": "false",
-                    "askMatLUT": "false",
-                    "askTime": "false",
-                    "askOnceAllButField": "true",
-                    "needPropagatorD":  "false"
                 }
             },
  "ITSClusterTask": {
@@ -88,7 +76,6 @@
         "moduleName": "QcITS",
         "detectorName": "ITS",
         "cycleDurationSeconds": "180",
-        "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
@@ -103,16 +90,6 @@
           "geomPath": "./",
           "publishSummary1D": "0",
           "publishDetailedSummary": "0"
-        },
-	"grpGeomRequest" : {
-          "geomRequest": "Aligned",
-          "askGRPECS": "false",
-          "askGRPLHCIF": "false",
-          "askGRPMagField": "false",
-          "askMatLUT": "false",
-          "askTime": "false",
-          "askOnceAllButField": "true",
-          "needPropagatorD":  "false"
         }
       },
 "ITSTrackTask" : {

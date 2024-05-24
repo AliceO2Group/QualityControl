@@ -1,0 +1,63 @@
+{
+    "qc" : {
+      "config" : {
+        "database" : {
+          "implementation" : "CCDB",
+          "host" : "ccdb-test.cern.ch:8080",
+          "username" : "not_applicable",
+          "password" : "not_applicable",
+          "name" : "not_applicable"
+        },
+        "Activity" : {
+          "number" : "42",
+          "type" : "2"
+        },
+        "monitoring" : {
+          "url" : "infologger:///debug?qc"
+        },
+        "consul" : {
+          "url" : ""
+        },
+        "conditionDB" : {
+          "url" : "ccdb-test.cern.ch:8080"
+        }
+      },
+      "tasks" : {
+        "TracksMC" : {
+          "active" : "true",
+          "className" : "o2::quality_control_modules::mft::QcMFTTrackMCTask",
+          "moduleName" : "QcMFT",
+          "detectorName" : "MFT",
+          "cycleDurationSeconds" : "30",
+          "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+          "dataSource" : {
+            "type" : "dataSamplingPolicy",
+            "name" : "tracks-mc"
+          },
+          "location" : "remote",
+          "taskParameters" : {
+                       "collisionsContextPath": "./collisioncontext.root" 
+            }
+        }
+      }
+   },
+  
+           "dataSamplingPolicies" : [
+             {
+               "id" : "tracks-mc",
+               "active" : "true",
+               "machines" : [],
+               "query" : "tracks:MFT/TRACKS/0;mctruth:MFT/TRACKSMCTR/0",
+               "samplingConditions" : [
+                 {
+                   "condition" : "random",
+                   "fraction" : "1",
+                   "seed" : "1234"
+                 }
+               ],
+  
+               "blocking" : "false"
+             }
+           ]
+  }
+  
