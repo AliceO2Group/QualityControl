@@ -9,7 +9,6 @@
 #include <TGraph.h>
 #include <TLegend.h>
 #include <TText.h>
-#include <algorithm> // For std::rotate
 
 namespace o2::quality_control_modules::its
 {

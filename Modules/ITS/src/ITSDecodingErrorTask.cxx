@@ -290,7 +290,6 @@ void ITSDecodingErrorTask::endOfCycle()
     }
   }
 
-  nQCCycle++;
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   hBusyFraction->Reset();
   hAlwaysBusy->Reset();
@@ -321,7 +320,6 @@ void ITSDecodingErrorTask::endOfCycle()
 void ITSDecodingErrorTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
-  nQCCycle = 0;
 }
 
 void ITSDecodingErrorTask::resetGeneralPlots()

@@ -73,7 +73,6 @@ class ITSDecodingErrorTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
   void reset() override;
-  TH2D* CreateDeadChipHisto(TH2* histo, int nBarrel);
 
  private:
   int mTFCount = 0;
@@ -99,7 +98,6 @@ class ITSDecodingErrorTask final : public TaskInterface
   TH2D* mChipErrorVsChipid[7]; // chip ErrorVsChipid
   TH2D* mLinkErrorVsFeeid;     // link ErrorVsFeeid
   TH2D* mChipErrorVsFeeid;     // chip ErrorVsFeeid
-  int nQCCycle = 0;
   TH2D* DeadChips[3];
   Stack* ChipsStack[3];
   int nQCCycleToMonitor = 50;
