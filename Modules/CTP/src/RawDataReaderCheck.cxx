@@ -18,17 +18,13 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "DataFormatsCTP/Configuration.h"
 #include "DataFormatsCTP/RunManager.h"
 #include <DataFormatsCTP/Configuration.h>
 // ROOT
 #include <TH1.h>
 #include <TLatex.h>
-#include <DataFormatsCTP/Configuration.h>
 #include <DataFormatsParameters/GRPLHCIFData.h>
-
 #include <DataFormatsQualityControl/FlagType.h>
-
 #include <DetectorsBase/GRPGeomHelper.h>
 
 using namespace std;
@@ -91,154 +87,66 @@ void RawDataReaderCheck::configure()
 
 Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  // ILOG(Info, Support) << "===> Starting check " << ENDM;
   Quality result = Quality::Null;
 
-  map<string, string> metadata; // can be empty
-
-  auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
-  if (lhcifdata == nullptr) {
-    ILOG(Info, Support) << "LHC data not found for timestamp:" << mTimestamp << ENDM;
-    return result;
-  }
-  auto bfilling = lhcifdata->getBunchFilling();
-  std::vector<int> bcs = bfilling.getFilledBCs();
-  std::bitset<o2::constants::lhc::LHCMaxBunches> lhcBC_bitset;
-  lhcBC_bitset.reset();
   vBadBC.clear();
   vMediumBC.clear();
   vGoodBC.clear();
   vIndexBad.clear();
   vIndexMedium.clear();
-  relativeRates = false;
-  inputRates = false;
+  flagRatio = false;
+  flagInput = false;
 
-  for (auto const& bc : bcs) {
-    lhcBC_bitset.set(bc, 1);
-  }
   for (auto& [moName, mo] : *moMap) {
-
-    (void)moName;
+    if (moName.find("Ratio") != std::string::npos) {
+      flagRatio = true;
+    }
+    if (moName.find("input") != std::string::npos) {
+      flagInput = true;
+    }
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    if (!h) {
+      ILOG(Info, Support) << "histogram is not found for check:" << moName << ENDM;
+      continue;
+    }
     if (mo->getName() == "bcMTVX") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      if (!h) {
-        ILOG(Info, Support) << "histogram bcMTVX is not found for check" << ENDM;
-        continue;
-      }
-      mThreshold = h->GetEntries() / getNumberFilledBins(h);
-      mThreshold = mThreshold - sqrt(mThreshold);
-
+      mThreshold = h->GetEntries() / mLHCBCs.count();
+      // mThreshold = mThreshold - sqrt(mThreshold);
+      mThreshold = sqrt(mThreshold);
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
-        if (lhcBC_bitset[i]) {
-          ILOG(Info, Support) << i << " ";
-        }
-        if (lhcBC_bitset[i] && h->GetBinContent(i + 1) <= mThreshold) {
+        if (mLHCBCs[i] && h->GetBinContent(i + 1) <= mThreshold) {
           vMediumBC.push_back(i);
-        } else if (!lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold) {
+        } else if (!mLHCBCs[i] && h->GetBinContent(i + 1) > mThreshold) {
           vBadBC.push_back(i);
-        } else if (lhcBC_bitset[i] && h->GetBinContent(i + 1) > mThreshold) {
+        } else if (mLHCBCs[i] && h->GetBinContent(i + 1) > mThreshold) {
           vGoodBC.push_back(i);
         }
       }
-    } else {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
-      if (!h) {
-        ILOG(Info, Support) << "histogram for input/class rate is not found for check" << ENDM;
-        continue;
-      }
-      std::string moName = mo->getName();
-      if (moName.find("Ratio") != std::string::npos) {
-        relativeRates = true;
-      }
-      if (moName.find("input") != std::string::npos) {
-        inputRates = true;
-      }
-      if (relativeRates && inputRates) {
-        if (h->GetBinContent(3) != 0) {
-          h->Scale(1. / h->GetBinContent(3));
-        }
-      } else if (relativeRates) {
-        if (h->GetBinContent(mIndexMBclass) != 0) {
-          h->Scale(1. / h->GetBinContent(mIndexMBclass));
-        }
-      }
-
-      if (cycleCounter > 1) { // skipping the check for first two cycles, as the first one is arbitrary long
-        TH1F* fHistDifference = (TH1F*)h->Clone();
-        TH1F* fHistPrev;
-        if (inputRates && !relativeRates) {
-          if (fHistInputPrevious) {
-            fHistPrev = (TH1F*)fHistInputPrevious->Clone();
-          } else {
-            fHistInputPrevious = (TH1F*)h->Clone();
-            continue;
-          }
-        }
-        if (inputRates && relativeRates) {
-          if (fHistInputRatioPrevious) {
-            fHistPrev = (TH1F*)fHistInputRatioPrevious->Clone();
-          } else {
-            fHistInputRatioPrevious = (TH1F*)h->Clone();
-            continue;
-          }
-        }
-        if (!inputRates && !relativeRates) {
-          if (fHistClassesPrevious) {
-            fHistPrev = (TH1F*)fHistClassesPrevious->Clone();
-          } else {
-            fHistClassesPrevious = (TH1F*)h->Clone();
-            continue;
-          }
-        }
-        if (!inputRates && relativeRates) {
-          if (fHistClassRatioPrevious) {
-            fHistPrev = (TH1F*)fHistClassRatioPrevious->Clone();
-          } else {
-            fHistClassRatioPrevious = (TH1F*)h->Clone();
-            continue;
-          }
-        }
-        if (!relativeRates) {
-          fHistDifference->Scale(1. / (mCycleDuration * mFraction));
-          fHistPrev->Scale(1. / (mCycleDuration * mFraction));
-        }
-        fHistDifference->Add(fHistPrev, -1); // Calculate relative difference w.r.t. rate in previous cycle
-        fHistDifference->Divide(fHistPrev);
-
-        float thrBad = mThresholdRateBad;
-        float thrMedium = mThresholdRateMedium;
-        if (relativeRates) {
-          thrBad = mThresholdRateRatioBad;
-          thrMedium = mThresholdRateRatioMedium;
-        }
-        for (size_t i = 1; i < fHistDifference->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
-          if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrBad) {
-            vIndexBad.push_back(i);
-          } else if (TMath::Abs(fHistDifference->GetBinContent(i)) > thrMedium) {
-            vIndexMedium.push_back(i);
-          }
-        }
-        delete fHistDifference;
-        delete fHistPrev;
-      }
-      if (inputRates && !relativeRates) {
+    } else if (mo->getName() == "inputs") {
+      if (fHistInputPrevious) {
+        checkChange(h, fHistInputPrevious, vIndexBad, vIndexMedium);
         delete fHistInputPrevious;
-        fHistInputPrevious = (TH1F*)h->Clone();
       }
-      if (inputRates && relativeRates) {
+      fHistInputPrevious = (TH1F*)h->Clone();
+    } else if (mo->getName() == "inputRatio") {
+      if (fHistInputRatioPrevious) {
         delete fHistInputRatioPrevious;
-        fHistInputRatioPrevious = (TH1F*)h->Clone();
       }
-      if (!inputRates && !relativeRates) {
+      fHistInputRatioPrevious = (TH1F*)h->Clone();
+    } else if (mo->getName() == "classes") {
+      if (fHistClassesPrevious) {
+        checkChange(h, fHistClassesPrevious, vIndexBad, vIndexMedium);
         delete fHistClassesPrevious;
-        fHistClassesPrevious = (TH1F*)h->Clone();
       }
-      if (!inputRates && relativeRates) {
+      fHistClassesPrevious = (TH1F*)h->Clone();
+    } else if (mo->getName() == "classRatio") {
+      if (fHistClassRatioPrevious) {
         delete fHistClassRatioPrevious;
-        fHistClassRatioPrevious = (TH1F*)h->Clone();
       }
-      if (!relativeRates && inputRates) {
-        cycleCounter++;
-      }
+      fHistClassRatioPrevious = (TH1F*)h->Clone();
+    } else {
+      ILOG(Info, Support) << "Unknown histo:" << moName << ENDM;
     }
   }
   if ((vBadBC.size() > 0) || (vIndexBad.size() > 0)) {
@@ -250,6 +158,26 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   }
   return result;
 }
+int RawDataReaderCheck::checkChange(TH1F* fHist, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium)
+{
+  float thrBad = mThresholdRateBad;
+  float thrMedium = mThresholdRateMedium;
+  if (flagRatio) {
+    thrBad = mThresholdRateRatioBad;
+    thrMedium = mThresholdRateRatioMedium;
+  }
+  for (size_t i = 1; i < fHist->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
+    double val = fHist->GetBinContent(i);
+    double valPrev = fHistPrev->GetBinContent(i);
+    double relDiff = (valPrev != 0) ? (val - valPrev) / valPrev : 0;
+    if (TMath::Abs(relDiff) > thrBad) {
+      vIndexBad.push_back(i);
+    } else if (TMath::Abs(relDiff) > thrMedium) {
+      vIndexMedium.push_back(i);
+    }
+  }
+  return 0;
+}
 
 std::string RawDataReaderCheck::getAcceptedType() { return "TH1"; }
 
@@ -258,6 +186,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
   std::shared_ptr<TLatex> msg;
   if (mo->getName() == "bcMTVX") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    h->GetXaxis()->SetTitle("BC");
     msg = std::make_shared<TLatex>(0.5, 0.8, Form("Overall Quality: %s", (checkResult.getName()).c_str()));
     if (checkResult == Quality::Bad) {
       msg->SetTextColor(kRed);
@@ -298,10 +227,10 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     msg = std::make_shared<TLatex>(0.45, 0.8, Form("Overall Quality: %s", (checkResult.getName()).c_str()));
     std::string groupName = "Input";
     std::string relativeness = "relative";
-    if (!inputRates) {
+    if (!flagInput) {
       groupName = "Class";
     }
-    if (!relativeRates) {
+    if (!flagRatio) {
       relativeness = "absolute";
     }
     if (checkResult == Quality::Bad) {
@@ -345,6 +274,12 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
     }
+    h->SetMarkerStyle(20);
+    if (flagInput) {
+      h->LabelsOption("v");
+      // h->LabelsOption("a");
+    }
+    h->LabelsDeflate("X");
   }
 }
 
@@ -363,30 +298,23 @@ int RawDataReaderCheck::getNumberFilledBins(TH1F* hist)
 
 void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
 {
-  ILOG(Debug, Devel) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
-  mRunNumber = activity.mId;
+  ILOG(Info, Support) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
   mTimestamp = activity.mValidity.getMin();
-  cycleCounter = 0;
-
-  std::string MBclassName = mCustomParameters["MBclassName"];
-  if (MBclassName.empty()) {
-    MBclassName = "CMTVX-B-NOPF";
+  //
+  // mTimestamp = 1714315086649;
+  map<string, string> metadata; // can be empty
+  auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
+  if (lhcifdata == nullptr) {
+    ILOG(Info, Support) << "LHC data not found for timestamp:" << mTimestamp << ENDM;
+    return;
+  } else {
+    ILOG(Info, Support) << "LHC data found for timestamp:" << mTimestamp << ENDM;
   }
-  std::string run = std::to_string(mRunNumber);
-  CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  o2::ctp::CTPConfiguration CTPconfig = CTPRunManager::getConfigFromCCDB(mTimestamp, run);
-
-  // get the index of the MB reference class
-  std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
-  std::vector<int> clslist = CTPconfig.getTriggerClassList();
-  for (size_t i = 0; i < clslist.size(); i++) {
-    if (ctpcls[i].name.find(MBclassName) != std::string::npos) {
-      mIndexMBclass = ctpcls[i].descriptorIndex + 1;
-      break;
-    }
-  }
-  if (mIndexMBclass == -1) {
-    mIndexMBclass = 1;
+  auto bfilling = lhcifdata->getBunchFilling();
+  std::vector<int> bcs = bfilling.getFilledBCs();
+  mLHCBCs.reset();
+  for (auto const& bc : bcs) {
+    mLHCBCs.set(bc, 1);
   }
 }
 
