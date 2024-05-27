@@ -248,6 +248,7 @@ add_executable(o2-qc-test-core
                test/testTriggerHelpers.cxx
                test/testVersion.cxx
                test/testMonitorObjectCollection.cxx
+               test/testTrendingTask.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
@@ -274,7 +275,6 @@ set(TEST_SRCS
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
     test/testReductor.cxx
-    test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testRepoPathUtils.cxx
@@ -285,7 +285,6 @@ set(TEST_SRCS
 )
 
 set(TEST_ARGS
-    ""
     ""
     ""
     ""
@@ -326,8 +325,7 @@ foreach(i RANGE ${count})
 endforeach()
 
 foreach(t testWorkflow testTaskRunner testCheckWorkflow
-        testPostProcessingConfig testPostProcessingInterface
-        testTrendingTask)
+        testPostProcessingConfig testPostProcessingInterface)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -344,7 +342,6 @@ set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow CCDB)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual CCDB)
-set_property(TEST testTrendingTask PROPERTY LABELS manual)
 set_property(TEST testDbFactory PROPERTY LABELS CCDB)
 set_property(TEST testUserCodeInterface PROPERTY LABELS CCDB)
 
@@ -460,7 +457,6 @@ set(TEST_FILES
   "testSharedConfig.json"
   "testEmptyConfig.json"
   "testCheckWorkflow.json"
-  "testTrendingTask.json"
   "testWorkflow.json"
   "testThrowNameClash.json")
 set(TEST_FILES_PREFIXED ${TEST_FILES})
