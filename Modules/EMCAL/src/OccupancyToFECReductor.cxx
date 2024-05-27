@@ -30,7 +30,7 @@ void* OccupancyToFECReductor::getBranchAddress()
 
 const char* OccupancyToFECReductor::getBranchLeafList()
 {
-  return "fecCounts[800]/D:averageFEC[800]:RMSFEC[8000]";
+  return "fecCounts[800]/D:averageFEC[800]:RMSFEC[800]";
 }
 
 void OccupancyToFECReductor::update(TObject* obj)
