@@ -647,11 +647,11 @@ long CcdbDatabase::getCurrentTimestamp()
   return value.count();
 }
 
-void CcdbDatabase::truncate(std::string taskName, std::string objectName)
+void CcdbDatabase::truncate(std::string path, std::string objectName)
 {
-  ILOG(Info, Support) << "Truncating data for " << taskName << "/" << objectName << ENDM;
+  ILOG(Info, Support) << "Truncating data for " << path << "/" << objectName << ENDM;
 
-  ccdbApi->truncate(taskName + "/" + objectName);
+  ccdbApi->truncate(path + "/" + objectName);
 }
 
 void CcdbDatabase::setMaxObjectSize(size_t maxObjectSize)
