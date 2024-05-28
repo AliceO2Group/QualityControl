@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   RawCheck.h
-/// \author Cristina Terrevoli
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALRAWCHECK_H
 #define QC_MODULE_EMCAL_EMCALRAWCHECK_H
 
@@ -30,9 +25,11 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::emcal
 {
 
+/// \class RawCheck
 /// \brief EMCAL raw data check
-/// It is final because there is no reason to derive from it. Just remove it if needed.
+/// \ingroup EMCALQCCheckers
 /// \author Cristina Terrevoli
+/// \since March 4th, 2020
 class RawCheck final : public o2::quality_control::checker::CheckInterface
 {
  public:

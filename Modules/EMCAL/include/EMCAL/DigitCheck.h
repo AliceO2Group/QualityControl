@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   DigitCheck.h
-/// \author Cristina Terrevoli
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALDIGITCHECK_H
 #define QC_MODULE_EMCAL_EMCALDIGITCHECK_H
 
@@ -22,9 +17,11 @@
 namespace o2::quality_control_modules::emcal
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Barthelemy von Haller
+/// \class  DigitsCheck
+/// \brief  Checker for histograms from the digits QC task
+/// \ingroup EMCALQCCheckers
+/// \author Cristina Terrevoli
+/// \since September 30th, 2019
 class DigitCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

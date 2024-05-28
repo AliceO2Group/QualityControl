@@ -50,6 +50,7 @@ class CalibCheck : public o2::quality_control::checker::CheckInterface
   float mBadThresholdFractionGoodCellsSupermodule = 0.;       ///< Bad Threshold used in the fraction Good Cells per Supermodule check
   float mBadThresholdCellAmplitudeSupermoduleCalibPHYS = 10.; ///< Bad Threshold used in the PHYS Cell amplitude (Calib) vs. supermodule ID check
   float mBadThresholdCellTimeSupermoduleCalibPHYS = 10.;      ///< Bad Threshold used in the PHYS Cell Time (Calib) vs. supermodule ID (High gain) check
+  float mBadThresholdChannelsFEC = 200.;                      ///< Bad Threshold used in the Number of Dead/Bad/Dead+Bad per FEC check
 
   float mMedThresholdMaskStatsAll = 10.;                      ///< Medium Threshold used in the Max Stats All bad and dead channels check
   float mMedThresholdTimeCalibCoeff = 10.;                    ///< Medium Threshold used in the time Calib Coeff points outside of mean check
@@ -57,6 +58,7 @@ class CalibCheck : public o2::quality_control::checker::CheckInterface
   float mMedThresholdFractionGoodCellsSupermodule = 10.;      ///< Medium Threshold used in the fraction Good Cells per Supermodule check
   float mMedThresholdCellAmplitudeSupermoduleCalibPHYS = 10.; ///< Medium Threshold used in the PHYS Cell amplitude (Calib) vs. supermodule ID check
   float mMedThresholdCellTimeSupermoduleCalibPHYS = 10.;      ///< Medium Threshold used in the PHYS Cell Time (Calib) vs. supermodule ID (High gain) check
+  float mMedThresholdChannelsFEC = 100.;                      ///< Bad Threshold used in the Number of Dead/Bad/Dead+Bad per FEC check
 
   float mSigmaTimeCalibCoeff = 2.; ///< Number of sigmas used in the timeCalibCoeff points outside of mean check
 

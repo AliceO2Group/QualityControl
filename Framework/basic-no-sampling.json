@@ -31,7 +31,7 @@
         "cycleDurationSeconds": "10",
         "dataSource": {
           "type": "direct",
-          "query" : "tst-rawdata:TST/RAWDATA/0"
+          "query" : "data:TST/RAWDATA/0"
         },
         "taskParameters": {
           "nothing": "rien"

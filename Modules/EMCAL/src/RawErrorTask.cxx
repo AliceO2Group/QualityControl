@@ -7,12 +7,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   RawErrorTask.cxx
-/// \author My Name
-///
-
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -209,7 +203,7 @@ void RawErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
   int firstEntry = 0;
   for (const auto& rawErrorData : framework::InputRecordWalker(ctx.inputs(), filter)) {
     auto errorcont = o2::framework::DataRefUtils::as<o2::emcal::ErrorTypeFEE>(rawErrorData); // read error message
-    LOG(debug) << "Received " << errorcont.size() << " errors";
+    ILOG(Debug, Devel) << "Received " << errorcont.size() << " errors" << ENDM;
     for (auto& error : errorcont) {
       auto feeid = error.getFEEID();
       if (error.getErrorType() != o2::emcal::ErrorTypeFEE::ErrorSource_t::GAIN_ERROR || !mExcludeGainErrorsFromOverview)

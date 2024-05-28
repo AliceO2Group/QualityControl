@@ -18,6 +18,7 @@
 #define QC_MODULE_SKELETON_SKELETONTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include <memory>
 
 class TH1F;
 
@@ -26,7 +27,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::skeleton
 {
 
-/// \brief Example Quality Control DPL Task
+/// \brief Example Quality Control Task
 /// \author My Name
 class SkeletonTask final : public TaskInterface
 {
@@ -46,7 +47,8 @@ class SkeletonTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* mHistogram = nullptr;
+  std::shared_ptr<TH1F> mHistogramA = nullptr;
+  std::shared_ptr<TH1F> mHistogramB = nullptr;
 };
 
 } // namespace o2::quality_control_modules::skeleton

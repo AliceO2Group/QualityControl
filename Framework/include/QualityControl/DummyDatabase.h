@@ -55,7 +55,7 @@ class DummyDatabase : public DatabaseInterface
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
-  void truncate(std::string taskName, std::string objectName) override;
+  void truncate(std::string path, std::string objectName) override;
   void setMaxObjectSize(size_t maxObjectSize) override;
 
   core::ValidityInterval getLatestObjectValidity(const std::string& path, const std::map<std::string, std::string>& metadata = {}) override;

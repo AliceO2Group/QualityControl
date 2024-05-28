@@ -45,7 +45,7 @@ class CheckInterface : public core::UserCodeInterface
 
   /// \brief Returns the quality associated with these objects.
   ///
-  /// @param moMap A map of the the MonitorObjects to check and their full names.
+  /// @param moMap A map of the the MonitorObjects to check and their full names (i.e. <task_name>/<mo name>) as keys.
   /// @return The quality associated with these objects.
   virtual core::Quality check(std::map<std::string, std::shared_ptr<core::MonitorObject>>* moMap) = 0;
 

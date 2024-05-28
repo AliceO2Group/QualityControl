@@ -8,50 +8,38 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   ClusterTask.cxx
-/// \author Vivek Kumar Singh
-///
-
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 
+#include <boost/algorithm/string.hpp>
+#include <gsl/span>
+
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TGeoManager.h>
 #include <TLorentzVector.h>
 
-#include "EMCAL/ClusterTask.h"
-#include "QualityControl/QcInfoLogger.h"
-#include <Framework/InputRecord.h>
-#include <Framework/InputRecordWalker.h>
-
-#include <gsl/span>
-
-#include "CommonConstants/Triggers.h"
-#include "DataFormatsEMCAL/Digit.h"
-#include "DataFormatsEMCAL/Cluster.h"
-#include "DataFormatsEMCAL/TriggerRecord.h"
-#include "DetectorsBase/GeometryManager.h"
-#include "EMCALBase/Geometry.h"
-#include "EMCALCalib/CalibDB.h"
-#include "EMCALCalib/BadChannelMap.h"
-#include "EMCALCalib/GainCalibrationFactors.h"
-#include "EMCALCalib/TimeCalibrationParams.h"
-#include "Framework/ControlService.h"
-#include "Framework/Logger.h"
-#include <TGeoManager.h>
-
-#include <DataFormatsEMCAL/EventHandler.h>
-#include <EMCALBase/ClusterFactory.h>
-
+#include <CommonConstants/Triggers.h>
 #include <DataFormatsEMCAL/AnalysisCluster.h>
+#include <DataFormatsEMCAL/Digit.h>
+#include <DataFormatsEMCAL/Cluster.h>
+#include <DataFormatsEMCAL/EventHandler.h>
+#include <DataFormatsEMCAL/TriggerRecord.h>
+#include <DetectorsBase/GeometryManager.h>
+#include <EMCALBase/ClusterFactory.h>
+#include <EMCALBase/Geometry.h>
+#include <EMCALCalib/CalibDB.h>
+#include <EMCALCalib/BadChannelMap.h>
+#include <EMCALCalib/GainCalibrationFactors.h>
+#include <EMCALCalib/TimeCalibrationParams.h>
+#include <EMCALReconstruction/Clusterizer.h>
+#include <Framework/InputRecord.h>
+#include <Framework/Logger.h>
 
-#include <EMCALReconstruction/Clusterizer.h> //svk
+#include "QualityControl/QcInfoLogger.h"
+#include "EMCAL/ClusterTask.h"
 
 namespace o2::quality_control_modules::emcal
 {

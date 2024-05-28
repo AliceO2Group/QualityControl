@@ -23,13 +23,12 @@
       }
     },
     "tasks": {
-      "DigitQcTask": {
+      "Digits": {
         "active": "true",
         "className": "o2::quality_control_modules::fv0::DigitQcTask",
         "moduleName": "QcFV0",
         "detectorName": "FV0",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",
@@ -40,10 +39,10 @@
           "ChannelIDsAmpVsTime": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48",
           "trgModeInnerOuterThresholdVar": "Ampl",
           "trgThresholdNChannels": "2",
-          "trgThresholdCharge": "1080",
+          "trgThresholdCharge": "8",
           "trgThresholdChargeInner": "4",
           "trgThresholdChargeOuter": "4",
-          "trgChargeLevelLow": "10",
+          "trgChargeLevelLow": "6",
           "trgChargeLevelHigh": "4095",
           "minGateTimeForRatioHistogram": "-192",
           "maxGateTimeForRatioHistogram": "192"

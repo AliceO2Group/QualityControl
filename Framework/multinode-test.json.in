@@ -97,7 +97,7 @@
       "machines": [
         "localhost"
       ],
-      "query": "random:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
@@ -114,7 +114,7 @@
         "localhost"
       ],
       "port": "@UNIQUE_PORT_2@",
-      "query": "random0:TST/RAWDATA",
+      "query": "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

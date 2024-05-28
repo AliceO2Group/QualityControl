@@ -8,12 +8,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   TriggerTask.h
-/// \author Markus Fasel
-///
-
 #ifndef QC_MODULE_EMCAL_EMCALTRIGGERTASK_H
 #define QC_MODULE_EMCAL_EMCALTRIGGERTASK_H
 
@@ -47,6 +41,7 @@ namespace o2::quality_control_modules::emcal
 
 /// \class TriggerTask
 /// \brief Task monitoring EMCAL trigger observables
+/// \ingroup EMCALQCTasks
 /// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
 /// \since April 19, 2024
 ///

@@ -23,13 +23,12 @@
       }
     },
     "tasks": {
-      "DigitQcTask": {
+      "Digits": {
         "active": "true",
         "className": "o2::quality_control_modules::fdd::DigitQcTask",
         "moduleName": "QcFDD",
         "detectorName": "FDD",
         "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
         "resetAfterCycles": "1",
         "dataSource": {
           "type": "direct",

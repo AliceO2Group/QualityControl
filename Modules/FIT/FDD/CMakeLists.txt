@@ -45,6 +45,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FDD
 
 install(FILES etc/fdd-digits.json
               etc/fdd-post-processing.json
+              etc/fdd-recpoints.json
         DESTINATION Modules/FIT/FDD/etc)
 
 # ---- Test(s) ----

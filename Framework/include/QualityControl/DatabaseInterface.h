@@ -200,10 +200,10 @@ class DatabaseInterface
   virtual std::vector<std::string> getPublishedObjectNames(std::string taskName) = 0;
   /**
    * Delete all versions of a given object
-   * @param taskName Task sending the object
+   * @param path Path to the object to be removed
    * @param objectName Name of the object
    */
-  virtual void truncate(std::string taskName, std::string objectName) = 0;
+  virtual void truncate(std::string path, std::string objectName) = 0;
 
   virtual void setMaxObjectSize(size_t maxObjectSize) = 0;
 

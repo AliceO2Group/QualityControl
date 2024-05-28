@@ -438,6 +438,111 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
 }
 ```
 
+### The CcdbInspectorTask class
+
+A post-processing task that checks the existence, time stamp and validity of CCDB/QCDB objects.
+The task produces a 2-D plot with object indexes in the X-axis (the bin labels are set to the mnemonic name of the object defined in the configuration) and the check status on the Y-axis, where the first bin corresponds to OK and the following bins to different errors. The 2-D bins are populated according to the result of the object inspection.
+
+A `CcdbInspectorCheck` task receives the 2-D histogram produced by the CCDB inspector and outputs an overall quality based on the status flag of each object in the histogram.
+
+#### Configuration
+
+The input objects are specified in the `DataSources` section. Each object is identified by the following parameters:
+* `name`: the name of the object, which is used to label the X-axis bins of the output histogram
+* `path`: the path of the object in the database
+* `updatePolicy`: the policy with wich the object is updated. Possible values are:
+    - `atSOR`: the object is only created once after start-of-run
+    - `atEOR`: the object is only created once at end-of-run
+    - `periodic`: the object is created periodically during the run
+* `cycleDuration`: for periodic objects, the time interval between updates
+* `validatorName`: (optional) name of the software module used to validate the contents of the object
+* `moduleName`: library where the validator module is located
+
+The task accepts the following configuration parameters:
+* `timeStampTolerance`: tolerance (in seconds) applied when comparing the actual and expected object time stamp
+* `databaseType`: type of input database. Possible values are `ccdb` or `qcdb` (default: `ccdb`)
+* `databaseUrl`: address of the database (default: `https://alice-ccdb.cern.ch`)
+* `retryTimeout`: timeout (in seconds) for accessing the objects at the task finalization
+* `retryDelay`: delay (in seconds) between the retries when accessing the objects at the task finalization
+* `verbose`: print additional debugging messages
+
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "CcdbInspector": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::CcdbInspectorTask",
+        "moduleName": "QualityControl",
+        "detectorName": "GLO",
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "verbose" : "1",
+              "timeStampTolerance": "60",
+              "retryTimeout" : "60",
+              "retryDelay": "10",
+              "databaseType": "ccdb",
+              "databaseUrl": "https://alice-ccdb.cern.ch"
+            }
+          }
+        },
+        "dataSources": [
+          {
+            "name": "Mean Vertex",
+            "path": "GLO/Calib/MeanVertex",
+            "updatePolicy": "periodic",
+            "cycleDuration": "200",
+            "validatorName": "o2::quality_control_modules::glo::MeanVertexValidator",
+            "moduleName": "QcGLO"
+          },
+          {
+            "name": "CTP Config",
+            "path": "CTP/Config/Config",
+            "updatePolicy": "atSOR"
+          },
+          {
+            "name": "CTP Scalers",
+            "path": "CTP/Calib/Scalers",
+            "updatePolicy": "atEOR"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    },
+    "checks": {
+      "CcdbInspectorCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::CcdbInspectorCheck",
+        "moduleName": "QualityControl",
+        "detectorName": "GLO",
+        "policy": "OnAll",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "CcdbInspector",
+             "MOs" : [
+               "ObjectsStatus"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
 ### The QualityTask class
 
 This task allows to trend a set of QualityObjects (QO) stored in the QCDB, and to display their name and value in human-readable format on a canvas (see the figure below).

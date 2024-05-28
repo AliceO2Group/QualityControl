@@ -34,15 +34,15 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         Remove the empty run from the map (we ignore objects without a run)
         Go through the map: for each run (resp. run+pass+period)
 
-            if delete_first_last
-                Get flag cleaner_2nd from first object (if there)
-                if cleaner_2nd
-                    continue   # we do not want to reprocess the same run twice
-                flag second with `cleaner_2nd`
-                delete first and last versions in the bucket
-
             Get SOR (validity of first object)
             if SOR < now - delay
+                if delete_first_last
+                    Get flag cleaner_2nd from first object (if there)
+                    if cleaner_2nd
+                        continue   # we do not want to reprocess the same run twice
+                    flag second with `cleaner_2nd`
+                    delete first and last versions in the bucket
+
                 do
                     keep first
                     delete everything for the next interval_between_versions

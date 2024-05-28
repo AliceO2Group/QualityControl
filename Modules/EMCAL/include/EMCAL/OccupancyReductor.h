@@ -8,8 +8,8 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-#ifndef QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
-#define QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
+#ifndef QUALITYCONTROL_EMCAL_OCCUPANCYREDUCTOR_H
+#define QUALITYCONTROL_EMCAL_OCCUPANCYREDUCTOR_H
 
 #include "QualityControl/ReductorTObject.h"
 
@@ -67,4 +67,4 @@ class OccupancyReductor : public quality_control::postprocessing::ReductorTObjec
 
 } // namespace o2::quality_control_modules::emcal
 
-#endif // QUALITYCONTROL_EMCAL_DIGITOCCUPANCYREDUCTOR_H
+#endif // QUALITYCONTROL_EMCAL_OCCUPANCYREDUCTOR_H
