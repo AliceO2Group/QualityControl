@@ -9,11 +9,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   CellTask.h
-/// \author Markus Fasel, Cristina Terrevoli
-///
-
 #ifndef QC_MODULE_EMCAL_CELLTASK_H
 #define QC_MODULE_EMCAL_CELLTASK_H
 
@@ -49,8 +44,12 @@ class Cell;
 namespace quality_control_modules::emcal
 {
 
+/// \class CellTask
 /// \brief QC Task for EMCAL cells
-/// \author Markus Fasel
+/// \author Cristina Terrevoli
+/// \author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+/// \ingroup EMCALQCTasks
+/// \since February 14th, 2022
 ///
 /// The main monitoring component for EMCAL cell (energy and time measurement in tower).
 /// Monitoring observables:

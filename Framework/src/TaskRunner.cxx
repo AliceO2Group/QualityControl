@@ -149,7 +149,8 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup timekeeping
   mDeploymentMode = DefaultsHelpers::deploymentMode();
-  mTimekeeper = TimekeeperFactory::create(mDeploymentMode, mTaskConfig.cycleDurations.back().first * 1000);
+  auto windowLengthMs = mTaskConfig.movingWindows.empty() ? 0 : (mTaskConfig.cycleDurations.back().first * 1000);
+  mTimekeeper = TimekeeperFactory::create(mDeploymentMode, windowLengthMs);
   mTimekeeper->setCCDBOrbitsPerTFAccessor([]() {
     // getNHBFPerTF() returns 128 if it does not know, which can be very misleading.
     // instead we use 0, which will trigger another try when processing another timeslice.

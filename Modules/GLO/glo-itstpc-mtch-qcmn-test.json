@@ -45,6 +45,7 @@
           "verbose": "false",
           "minPtCut": "0.1f",
           "etaCut": "1.4f",
+          "isSync": "true",
           "minNTPCClustersCut": "60",
           "minDCACut": "100.f",
           "minDCACutY": "10.f"
@@ -75,9 +76,9 @@
             "type": "Task",
             "name": "ITSTPCMatchingTask",
             "MOs": [
-              "mFractionITSTPCmatch_ITS",
-              "mFractionITSTPCmatchPhi_ITS",
-              "mFractionITSTPCmatchEta_ITS"
+              "mFractionITSTPCmatch_ITS_Hist",
+              "mFractionITSTPCmatchPhi_ITS_Hist",
+              "mFractionITSTPCmatchEta_ITS_Hist"
             ]
           }
         ],
@@ -85,7 +86,7 @@
           "default": {
             "default": {
               "showPt": "true",
-              "thresholdPt": "0.9",
+              "thresholdPt": "0.5",
               "showPhi": "true",
               "thresholdPhi": "0.3",
               "showEta": "1",

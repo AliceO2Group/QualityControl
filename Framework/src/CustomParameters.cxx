@@ -96,7 +96,7 @@ std::optional<std::string> CustomParameters::atOptional(const std::string& key, 
   return atOptional(key, activity.mType, activity.mBeamType);
 }
 
-std::string CustomParameters::atOrDefaultValue(const std::string& key, std::string defaultValue, const std::string& runType, const std::string& beamType)
+std::string CustomParameters::atOrDefaultValue(const std::string& key, std::string defaultValue, const std::string& runType, const std::string& beamType) const
 {
   try {
     return mCustomParameters.at(runType).at(beamType).at(key);

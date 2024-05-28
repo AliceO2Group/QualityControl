@@ -8,12 +8,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   RawCheck.cxx
-/// \author Cristina Terrevoli
-///
-
 #include <array>
 #include <bitset>
 #include <memory>
@@ -236,7 +230,6 @@ std::string RawCheck::getAcceptedType() { return "TH1"; }
 
 void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  QcInfoLogger::setDetector("EMC");
   if (mo->getName().find("Error") != std::string::npos) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
 
@@ -260,7 +253,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -355,7 +348,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
         h->GetListOfFunctions()->Add(msg);
         msg->Draw();
       } else if (checkResult == Quality::Medium) {
-        ILOG(Info, Support) << "Quality::medium, setting to orange";
+        ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
         TLatex* msg = new TLatex(0.2, 0.8, "#color[42]{empty:if in run, call EMCAL oncall}");
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -406,7 +399,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->GetListOfFunctions()->Add(msg);
       msg->Draw();
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange" << ENDM;
       TLatex* msg = new TLatex(0.2, 0.8, "#color[42]{empty:if in run, call EMCAL-oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);

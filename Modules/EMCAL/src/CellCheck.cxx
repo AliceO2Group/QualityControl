@@ -8,17 +8,10 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-
-///
-/// \file   CellCheck.cxx
-/// \author Cristina Terrevoli
-///
-
 #include "EMCAL/CellCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <fairlogger/Logger.h>
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -51,6 +44,9 @@ Quality CellCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* 
   if (mo->getName() == "SMMaxNumDigits") {
     double errormargin = 2.;
     auto hist = dynamic_cast<TH1*>(mo->getObject());
+    if (hist == nullptr) {
+      return Quality::Null;
+    }
     std::vector<double> smcounts;
     for (auto ib : ROOT::TSeqI(0, hist->GetXaxis()->GetNbins())) {
       auto countSM = hist->GetBinContent(ib + 1);
@@ -107,6 +103,9 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("Time") != std::string::npos) {
     auto* h = dynamic_cast<TH2*>(mo->getObject());
+    if (h == nullptr) {
+      return;
+    }
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
@@ -133,6 +132,9 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
   }
   if (mo->getName().find("Amplitude") != std::string::npos) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
+    if (h == nullptr) {
+      return;
+    }
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
@@ -159,6 +161,9 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
   }
   if (mo->getName() == "SMMaxNumDigits") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
+    if (h == nullptr) {
+      return;
+    }
     if (checkResult == Quality::Good) {
       TLatex* msg = new TLatex(0.2, 0.8, "#color[418]{Data OK}");
       msg->SetNDC();
@@ -197,6 +202,9 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
   }
   if (mo->getName().find("cellOccupancy") != std::string::npos) {
     auto* h2D = dynamic_cast<TH2*>(mo->getObject());
+    if (h2D == nullptr) {
+      return;
+    }
     // orizontal
     TLine* l1 = new TLine(-0.5, 24, 95.5, 24);
     TLine* l2 = new TLine(-0.5, 48, 95.5, 48);
@@ -214,7 +222,7 @@ void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     TLine* l11 = new TLine(-0.5, 200, 95.5, 200);
     TLine* l12 = new TLine(47.5, 200, 47.5, 207.5);
 
-    //vertical
+    // vertical
     TLine* l13 = new TLine(47.5, -0.5, 47.5, 128);
     TLine* l14 = new TLine(31.5, 128, 31.5, 200);
     TLine* l15 = new TLine(63.5, 128, 63.5, 200);

@@ -31,6 +31,8 @@ SkeletonPostProcessing::~SkeletonPostProcessing()
 
 void SkeletonPostProcessing::configure(const boost::property_tree::ptree& config)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+
   // A histogram created here can be reused throughout the task lifetime
   mHistogramA = std::make_unique<TH1F>("exampleA", "exampleA", 20, 0, 30000);
   // We request that the histogram A is published until the end of the task lifetime
@@ -39,6 +41,8 @@ void SkeletonPostProcessing::configure(const boost::property_tree::ptree& config
 
 void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+
   // Resetting the histogram A, so it is empty at each new START
   mHistogramA->Reset();
 
@@ -53,6 +57,8 @@ void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistryRef)
 
 void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistryRef)
 {
+  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 
   // Histogram C is recreated at each update and is expected to be published just once. We delete the previous

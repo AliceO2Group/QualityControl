@@ -123,7 +123,7 @@ class CustomParameters
    * @param defaultValue
    * @return the value for the given key, runType and beamType. If it is not found, it returns an empty string or defaultValue if provided.
    */
-  std::string atOrDefaultValue(const std::string& key, std::string defaultValue = "", const std::string& runType = "default", const std::string& beamType = "default");
+  std::string atOrDefaultValue(const std::string& key, std::string defaultValue = "", const std::string& runType = "default", const std::string& beamType = "default") const;
 
   std::string atOrDefaultValue(const std::string& key, std::string defaultValue, const Activity& activity) const;
 

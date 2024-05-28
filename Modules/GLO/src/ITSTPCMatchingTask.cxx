@@ -19,6 +19,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "GLO/ITSTPCMatchingTask.h"
+#include "Common/Utils.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <QualityControl/stringUtils.h>
@@ -126,6 +127,39 @@ void ITSTPCMatchingTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   mMatchITSTPCQC.finalize();
+
+  // Sync Mode
+  if (common::getFromConfig(mCustomParameters, "isSync", false)) {
+    {
+      // Pt
+      auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(globaltracking::MatchITSTPCQC::ITS);
+      auto hEffPtHist = dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist"));
+      hEffPtHist->Sumw2();
+      hEffPtHist->Divide(hEffPt->GetTotalHistogram());
+      hEffPtHist->SetBit(TH1::EStatusBits::kNoStats);
+      getObjectsManager()->startPublishing(hEffPtHist);
+    }
+
+    {
+      // Eta
+      auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(globaltracking::MatchITSTPCQC::ITS);
+      auto hEffEtaHist = dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist"));
+      hEffEtaHist->Sumw2();
+      hEffEtaHist->Divide(hEffEta->GetTotalHistogram());
+      hEffEtaHist->SetBit(TH1::EStatusBits::kNoStats);
+      getObjectsManager()->startPublishing(hEffEtaHist);
+    }
+
+    {
+      // Phi
+      auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(globaltracking::MatchITSTPCQC::ITS);
+      auto hEffPhiHist = dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist"));
+      hEffPhiHist->Sumw2();
+      hEffPhiHist->Divide(hEffPhi->GetTotalHistogram());
+      hEffPhiHist->SetBit(TH1::EStatusBits::kNoStats);
+      getObjectsManager()->startPublishing(hEffPhiHist);
+    }
+  }
 }
 
 void ITSTPCMatchingTask::endOfActivity(const Activity& /*activity*/)
