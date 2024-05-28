@@ -352,10 +352,9 @@ def process_object(object_path, rules, ccdb, args):
         try:
             stats = module.process(ccdb, object_path, int(rule.delay),  rule.from_timestamp, rule.to_timestamp,
                                    rule.extra_params)
+            logger.info(f"{rule.policy} applied on {object_path}: {stats}")
         except Exception as e:
             logger.error(f"processing error:  {e}")
-
-        logger.info(f"{rule.policy} applied on {object_path}: {stats}")
 
         if not rule.continue_with_next_rule:
             break
