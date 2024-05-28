@@ -29,6 +29,12 @@ Rules:
   - object_path: qc/TST/MO/MultiNodeLocalTest*
     delay: 60
     policy: none_kept
+  - object_path: qc/TST/MO/TrendingTaskTest*
+    delay: 60
+    policy: none_kept
+  - object_path: qc/TST/QO/TrendingTaskTest*
+    delay: 60
+    policy: none_kept
   - object_path: qc/TST/MO/Test/.*
     delay: 1440
     policy: none_kept
