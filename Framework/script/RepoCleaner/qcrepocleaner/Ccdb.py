@@ -106,17 +106,17 @@ class Ccdb:
             raise
         return json['objects']
 
-    def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1) \
+    def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1, metadata: str = "") \
             -> List[ObjectVersion]:
-        '''
+        """
         Get the list of all versions for a given object sorted by CreatedAt.
+        :param metadata: only objects matching these metadata. Format: "[/key=value]*"
         :param run: only objects for this run (based on metadata)
         :param object_path: Path to the object for which we want the list of versions.
         :param from_ts: only objects created at or after this timestamp
         :param to_ts: only objects created before or at this timestamp
-        :param sort: which field to sort with
         :return A list of ObjectVersion.
-        '''
+        """
         url_browse_all_versions = self.url + '/browse/' + object_path
         headers = {'Accept': 'application/json', 'Connection': 'close'}
         if from_ts != "":
@@ -124,19 +124,23 @@ class Ccdb:
         if to_ts != "":
             headers["If-Not-After"] = to_ts
         if run != -1:
-            url_browse_all_versions += '/RunNumber=' + run
+            url_browse_all_versions += '/RunNumber=' + str(run)
+        if metadata != "":
+            url_browse_all_versions += metadata
         logger.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
         logger.debug(f"{headers}")
         r = requests.get(url_browse_all_versions, headers=headers)
         r.raise_for_status()
         try:
-            json_result = r.json(strict=False) # to survive bad characters in the strings of the json
+            json_result = r.json(strict=False)  # to survive bad characters in the strings of the json
         except ValueError as e:
             print(f"Error while reading json for object {object_path} from CCDB: {e}")
             exit(1)
         versions = []
         for object_path in json_result['objects']:
-            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'], metadata=object_path, createdAt=object_path['Created'])
+            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'],
+                                    validFrom=object_path['validFrom'], validTo=object_path['validUntil'],
+                                    metadata=object_path, createdAt=object_path['Created'])
             versions.insert(0, version)
         versions.sort(key=lambda v: v.createdAt, reverse=False)
         return versions

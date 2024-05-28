@@ -72,5 +72,14 @@ Prerequisite
 Create new version
 
 1. Update version number in `setup.py`
-3. `python3 setup.py sdist bdist_wheel`
-4. `python3 -m twine upload --repository pypi dist/*`
+2. `python3 setup.py sdist bdist_wheel`
+3. `python3 -m twine upload --repository pypi dist/*`
+
+## Use venv
+
+1. cd Framework/script/RepoCleaner
+2. python3 -m venv env
+3. source env/bin/activate
+4. python -m pip install -r requirements.txt
+5. python3 -m pip install . 
+6. You can execute and work. Next time just do "activate" and then you are good to go
