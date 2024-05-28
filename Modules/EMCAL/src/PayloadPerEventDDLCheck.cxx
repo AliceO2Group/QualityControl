@@ -47,7 +47,7 @@ Quality PayloadPerEventDDLCheck::check(std::map<std::string, std::shared_ptr<Mon
 {
   if (!mCalibReference) {
     // Load reference histogram from the CCDB
-    mCalibReference = this->retrieveConditionAny<TH2>("/EMC/QCREF/PayloadSizeCheck");
+    mCalibReference = this->retrieveConditionAny<TH2>("EMC/QCREF/PayloadSizeCheck");
   }
 
   auto mo = moMap->begin()->second;
