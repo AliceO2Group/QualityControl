@@ -32,4 +32,6 @@
       
 #pragma link C++ class o2::quality_control_modules::emcal::PayloadPerEventDDLCheck + ;
 
+#pragma link C++ class o2::quality_control_modules::emcal::RawErrorCheckAll + ;
+
 #endif
