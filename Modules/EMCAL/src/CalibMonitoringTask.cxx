@@ -143,8 +143,10 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
   for (const auto& obj : mCalibObjects) {
     if (obj == "BadChannelMap") {
       mBadChannelMap = mCalibDB->readBadChannelMap(o2::ccdb::getCurrentTimestamp(), metadata);
-      if (!mBadChannelMap)
+      if (!mBadChannelMap) {
         ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
+        continue;
+      }
       TH2* hist_temp2 = 0x0;
       hist_temp2 = mBadChannelMap->getHistogramRepresentation();
       for (Int_t i = 0; i < hist_temp2->GetNbinsX(); i++) {
@@ -183,8 +185,10 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
 
     if (obj == "TimeCalibParams") {
       mTimeCalib = mCalibDB->readTimeCalibParam(o2::ccdb::getCurrentTimestamp(), metadata);
-      if (!mTimeCalib)
+      if (!mTimeCalib) {
         ILOG(Info, Support) << " No Time Calib object " << ENDM;
+        continue;
+      }
       TH1* hist_temp = 0x0;
       hist_temp = mTimeCalib->getHistogramRepresentation(false); // we monitor for the moment only the high gain
       for (Int_t i = 0; i < hist_temp->GetNbinsX(); i++) {
