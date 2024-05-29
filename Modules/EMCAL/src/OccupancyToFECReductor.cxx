@@ -13,8 +13,9 @@
 #include "TH2.h"
 #include "EMCALReconstruction/Channel.h"
 #include "EMCALBase/Geometry.h"
-#include "EMCAL/OccupancyToFECReductor.h"
 #include "MathUtils/Utils.h"
+#include "EMCAL/OccupancyToFECReductor.h"
+#include <QualityControl/QcInfoLogger.h>
 
 using namespace o2::quality_control_modules::emcal;
 
@@ -38,22 +39,30 @@ void OccupancyToFECReductor::update(TObject* obj)
   memset(mStats.mCountFEC, 0, sizeof(double) * 800);
   memset(mStats.mAverageFEC, 0, sizeof(double) * 800);
   memset(mStats.mRMSFEC, 0, sizeof(double) * 800);
+  TH2* digitOccupancyHistogram = dynamic_cast<TH2*>(obj);
+  if (!digitOccupancyHistogram) {
+    ILOG(Error, Support) << "Object " << obj->GetName() << " not a proper occupancy histogram, or does not exist. Not possible to analyse" << ENDM;
+    return;
+  }
   std::array<o2::math_utils::StatAccumulator, 800> statAccumulatorsSM;
-  TH2* digitOccupancyHistogram = static_cast<TH2*>(obj);
   o2::math_utils::StatAccumulator statAccumulatorTotal;
   for (int icol = 0; icol < digitOccupancyHistogram->GetXaxis()->GetNbins(); icol++) {
     for (int irow = 0; irow < digitOccupancyHistogram->GetYaxis()->GetNbins(); irow++) {
       double count = digitOccupancyHistogram->GetBinContent(icol + 1, irow + 1);
       if (count) {
         statAccumulatorTotal.add(count);
-        auto [smod, mod, phimod, etamod] = mGeometry->GetCellIndexFromGlobalRowCol(irow, icol);
-        auto absCellID = mGeometry->GetCellAbsIDFromGlobalRowCol(irow, icol);
-        auto [ddl, onlinerow, onlinecol] = mGeometry->getOnlineID(absCellID);
-        auto hwaddress = mMapper.getMappingForDDL(ddl).getHardwareAddress(onlinerow, onlinecol, o2::emcal::ChannelType_t::HIGH_GAIN);
-        auto localfec = mMapper.getFEEForChannelInDDL(ddl, o2::emcal::Channel::getFecIndexFromHwAddress(hwaddress), o2::emcal::Channel::getBranchIndexFromHwAddress(hwaddress));
-        auto globalfec = smod * 40 + localfec;
-        mStats.mCountFEC[globalfec] += count;
-        statAccumulatorsSM[globalfec].add(count);
+        try {
+          auto [smod, mod, phimod, etamod] = mGeometry->GetCellIndexFromGlobalRowCol(irow, icol);
+          auto absCellID = mGeometry->GetCellAbsIDFromGlobalRowCol(irow, icol);
+          auto [ddl, onlinerow, onlinecol] = mGeometry->getOnlineID(absCellID);
+          auto hwaddress = mMapper.getMappingForDDL(ddl).getHardwareAddress(onlinerow, onlinecol, o2::emcal::ChannelType_t::HIGH_GAIN);
+          auto localfec = mMapper.getFEEForChannelInDDL(ddl, o2::emcal::Channel::getFecIndexFromHwAddress(hwaddress), o2::emcal::Channel::getBranchIndexFromHwAddress(hwaddress));
+          auto globalfec = smod * 40 + localfec;
+          mStats.mCountFEC[globalfec] += count;
+          statAccumulatorsSM[globalfec].add(count);
+        } catch (std::exception& e) {
+          ILOG(Error, Support) << e.what() << ENDM;
+        }
       }
     }
   }

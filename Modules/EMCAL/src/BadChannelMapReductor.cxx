@@ -36,38 +36,46 @@ void BadChannelMapReductor::update(TObject* obj)
   const std::map<o2::emcal::EMCALSMType, int> channelsSMTYPE = { { o2::emcal::EMCAL_STANDARD, 1152 }, { o2::emcal::EMCAL_THIRD, 384 }, { o2::emcal::DCAL_STANDARD, 768 }, { o2::emcal::DCAL_EXT, 384 } };
   constexpr int CHANNELS_TOTAL = 17664, CHANNELS_EMC = 12288, CHANNELS_DCAL = CHANNELS_TOTAL - CHANNELS_EMC;
   memset(&mStats, 0, sizeof(mStats));
-  auto badChannelMap = static_cast<TH2*>(obj);
+  auto badChannelMap = dynamic_cast<TH2*>(obj);
+  if (!badChannelMap) {
+    ILOG(Error, Support) << "Object " << obj->GetName() << " not a proper bad channel histogram, or does not exist. Not possible to analyse" << ENDM;
+    return;
+  }
   for (int icolumn = 0; icolumn < badChannelMap->GetXaxis()->GetNbins(); icolumn++) {
     for (int irow = 0; irow < badChannelMap->GetYaxis()->GetNbins(); irow++) {
       if (isPHOSRegion(icolumn, irow)) {
         continue;
       }
       auto status = badChannelMap->GetBinContent(icolumn + 1, irow + 1);
-      auto [sm, mod, modrow, modcol] = mGeometry->GetCellIndexFromGlobalRowCol(irow, icolumn);
-      if (status == 1) { // bad channel
-        mStats.mNonGoodChannelsTotal++;
-        mStats.mNonGoodChannelsSM[sm]++;
-        mStats.mBadChannelsTotal++;
-        mStats.mBadChannelsSM[sm]++;
-        if (sm < 12) {
-          mStats.mNonGoodChannelsEMCAL++;
-          mStats.mBadChannelsEMCAL++;
-        } else {
-          mStats.mNonGoodChannelsDCAL++;
-          mStats.mBadChannelsDCAL++;
+      try {
+        auto [sm, mod, modrow, modcol] = mGeometry->GetCellIndexFromGlobalRowCol(irow, icolumn);
+        if (status == 1) { // bad channel
+          mStats.mNonGoodChannelsTotal++;
+          mStats.mNonGoodChannelsSM[sm]++;
+          mStats.mBadChannelsTotal++;
+          mStats.mBadChannelsSM[sm]++;
+          if (sm < 12) {
+            mStats.mNonGoodChannelsEMCAL++;
+            mStats.mBadChannelsEMCAL++;
+          } else {
+            mStats.mNonGoodChannelsDCAL++;
+            mStats.mBadChannelsDCAL++;
+          }
+        } else if (status == 2) {
+          mStats.mNonGoodChannelsTotal++;
+          mStats.mNonGoodChannelsSM[sm]++;
+          mStats.mDeadChannelsTotal++;
+          mStats.mDeadChannelsSM[sm]++;
+          if (sm < 12) {
+            mStats.mNonGoodChannelsEMCAL++;
+            mStats.mDeadChannelsEMCAL++;
+          } else {
+            mStats.mNonGoodChannelsDCAL++;
+            mStats.mDeadChannelsDCAL++;
+          }
         }
-      } else if (status == 2) {
-        mStats.mNonGoodChannelsTotal++;
-        mStats.mNonGoodChannelsSM[sm]++;
-        mStats.mDeadChannelsTotal++;
-        mStats.mDeadChannelsSM[sm]++;
-        if (sm < 12) {
-          mStats.mNonGoodChannelsEMCAL++;
-          mStats.mDeadChannelsEMCAL++;
-        } else {
-          mStats.mNonGoodChannelsDCAL++;
-          mStats.mDeadChannelsDCAL++;
-        }
+      } catch (o2::emcal::RowColException& e) {
+        ILOG(Error, Support) << e.what() << ENDM;
       }
     }
   }
@@ -82,26 +90,30 @@ void BadChannelMapReductor::update(TObject* obj)
   mStats.mFractionNonGoodDCAL = static_cast<double>(mStats.mNonGoodChannelsDCAL) / static_cast<double>(CHANNELS_DCAL);
   int currentbad = -1, currentdead = -1, currentnongood = -1;
   for (int ism = 0; ism < 20; ism++) {
-    auto smtype = mGeometry->GetSMType(ism);
-    auto nchannels = channelsSMTYPE.find(smtype);
-    if (nchannels == channelsSMTYPE.end()) {
-      ILOG(Error, Support) << "Unhandled Supermodule type" << ENDM;
-      continue;
-    }
-    mStats.mFractionDeadSM[ism] = static_cast<double>(mStats.mDeadChannelsSM[ism]) / nchannels->second;
-    mStats.mFractionBadSM[ism] = static_cast<double>(mStats.mBadChannelsSM[ism]) / static_cast<double>(nchannels->second);
-    mStats.mFractionNonGoodSM[ism] = static_cast<double>(mStats.mNonGoodChannelsSM[ism]) / static_cast<double>(nchannels->second);
-    if (mStats.mBadChannelsSM[ism] > currentbad) {
-      currentbad = mStats.mBadChannelsSM[ism];
-      mStats.mSupermoduleMaxBad = ism;
-    }
-    if (mStats.mDeadChannelsSM[ism] > currentdead) {
-      currentdead = mStats.mDeadChannelsSM[ism];
-      mStats.mSupermoduleMaxDead = ism;
-    }
-    if (mStats.mNonGoodChannelsSM[ism] > currentnongood) {
-      currentnongood = mStats.mNonGoodChannelsSM[ism];
-      mStats.mSupermoduleMaxNonGood = ism;
+    try {
+      auto smtype = mGeometry->GetSMType(ism);
+      auto nchannels = channelsSMTYPE.find(smtype);
+      if (nchannels == channelsSMTYPE.end()) {
+        ILOG(Error, Support) << "Unhandled Supermodule type" << ENDM;
+        continue;
+      }
+      mStats.mFractionDeadSM[ism] = static_cast<double>(mStats.mDeadChannelsSM[ism]) / nchannels->second;
+      mStats.mFractionBadSM[ism] = static_cast<double>(mStats.mBadChannelsSM[ism]) / static_cast<double>(nchannels->second);
+      mStats.mFractionNonGoodSM[ism] = static_cast<double>(mStats.mNonGoodChannelsSM[ism]) / static_cast<double>(nchannels->second);
+      if (mStats.mBadChannelsSM[ism] > currentbad) {
+        currentbad = mStats.mBadChannelsSM[ism];
+        mStats.mSupermoduleMaxBad = ism;
+      }
+      if (mStats.mDeadChannelsSM[ism] > currentdead) {
+        currentdead = mStats.mDeadChannelsSM[ism];
+        mStats.mSupermoduleMaxDead = ism;
+      }
+      if (mStats.mNonGoodChannelsSM[ism] > currentnongood) {
+        currentnongood = mStats.mNonGoodChannelsSM[ism];
+        mStats.mSupermoduleMaxNonGood = ism;
+      }
+    } catch (o2::emcal::SupermoduleIndexException& e) {
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
 }

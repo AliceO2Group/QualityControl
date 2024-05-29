@@ -39,19 +39,27 @@ void TimeCalibParamReductor::update(TObject* obj)
   const std::map<o2::emcal::EMCALSMType, int> channelsSMTYPE = { { o2::emcal::EMCAL_STANDARD, 1152 }, { o2::emcal::EMCAL_THIRD, 384 }, { o2::emcal::DCAL_STANDARD, 768 }, { o2::emcal::DCAL_EXT, 384 } };
   constexpr int CHANNELS_TOTAL = 17664, CHANNELS_EMC = 12288, CHANNELS_DCAL = CHANNELS_TOTAL - CHANNELS_EMC;
   memset(&mStats, 0, sizeof(mStats));
-  auto timeCalib = static_cast<TH1*>(obj);
+  auto timeCalib = dynamic_cast<TH1*>(obj);
+  if (!timeCalib) {
+    ILOG(Error, Support) << "Object " << obj->GetName() << " not a proper time calib histogram, or does not exist. Not possible to analyse" << ENDM;
+    return;
+  }
   std::vector<double> tcpGood;
   for (auto itower = 0; itower < timeCalib->GetXaxis()->GetNbins(); itower++) {
     auto param = timeCalib->GetBinContent(itower + 1);
     if (std::abs(param) > 100) {
       // Consider fit failed if the time calibration param is larger than 100
       mStats.mFailedParams++;
-      auto [sm, mod, modphi, modeta] = mGeometry->GetCellIndex(itower);
-      mStats.mFailedParamSM[sm]++;
-      if (sm >= 12) {
-        mStats.mFailedParamsDCAL++;
-      } else {
-        mStats.mFailedParamsEMCAL++;
+      try {
+        auto [sm, mod, modphi, modeta] = mGeometry->GetCellIndex(itower);
+        mStats.mFailedParamSM[sm]++;
+        if (sm >= 12) {
+          mStats.mFailedParamsDCAL++;
+        } else {
+          mStats.mFailedParamsEMCAL++;
+        }
+      } catch (o2::emcal::InvalidCellIDException& e) {
+        ILOG(Error, Support) << e.what() << ENDM;
       }
     } else {
       tcpGood.emplace_back(param);
@@ -62,16 +70,20 @@ void TimeCalibParamReductor::update(TObject* obj)
   mStats.mFractionFailedDCAL = static_cast<double>(mStats.mFailedParamsDCAL) / static_cast<double>(CHANNELS_DCAL);
   int currentmax = -1;
   for (int ism = 0; ism < 20; ism++) {
-    auto smtype = mGeometry->GetSMType(ism);
-    auto nchannels = channelsSMTYPE.find(smtype);
-    if (nchannels == channelsSMTYPE.end()) {
-      ILOG(Error, Support) << "Unhandled Supermodule type" << ENDM;
-      continue;
-    }
-    mStats.mFractionFailedSM[ism] = static_cast<double>(mStats.mFailedParamSM[ism]) / static_cast<double>(nchannels->second);
-    if (mStats.mFailedParamSM[ism] > currentmax) {
-      currentmax = mStats.mFailedParamSM[ism];
-      mStats.mSupermoduleMaxFailed = ism;
+    try {
+      auto smtype = mGeometry->GetSMType(ism);
+      auto nchannels = channelsSMTYPE.find(smtype);
+      if (nchannels == channelsSMTYPE.end()) {
+        ILOG(Error, Support) << "Unhandled Supermodule type" << ENDM;
+        continue;
+      }
+      mStats.mFractionFailedSM[ism] = static_cast<double>(mStats.mFailedParamSM[ism]) / static_cast<double>(nchannels->second);
+      if (mStats.mFailedParamSM[ism] > currentmax) {
+        currentmax = mStats.mFailedParamSM[ism];
+        mStats.mSupermoduleMaxFailed = ism;
+      }
+    } catch (o2::emcal::SupermoduleIndexException& e) {
+      ILOG(Error, Support) << e.what() << ENDM;
     }
   }
   mStats.mMeanShiftGood = TMath::Mean(tcpGood.begin(), tcpGood.end());
