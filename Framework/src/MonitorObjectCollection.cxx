@@ -19,6 +19,7 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Mergers/MergerAlgorithm.h>
+#include <TNamed.h>
 
 using namespace o2::mergers;
 
@@ -120,6 +121,41 @@ const std::string& MonitorObjectCollection::getTaskName() const
   return mTaskName;
 }
 
+std::string formatDuration(uint64_t durationMs)
+{
+  auto remainder = durationMs;
+  uint64_t hours = remainder / (1000 * 60 * 60);
+  remainder %= (1000 * 60 * 60);
+  uint64_t minutes = remainder / (1000 * 60);
+  remainder %= (1000 * 60);
+  uint64_t seconds = remainder / 1000;
+
+  std::stringstream result;
+
+  if (hours > 0) {
+    result << hours << "h";
+  }
+  if (minutes > 0 || hours > 0) {
+    result << minutes << "m";
+  }
+  result << seconds << "s";
+  if (durationMs < 1000) {
+    result << durationMs << "ms";
+  }
+
+  return result.str();
+}
+
+void decorateMovingWindowTitle(TObject* obj, uint64_t durationMs)
+{
+  if (!obj->InheritsFrom(TNamed::Class())) {
+    return;
+  }
+  auto objTNamed = reinterpret_cast<TNamed*>(obj);
+  std::string newTitle = std::string(objTNamed->GetTitle()) + " (" + formatDuration(durationMs) + " window)";
+  objTNamed->SetTitle(newTitle.c_str());
+}
+
 MergeInterface* MonitorObjectCollection::cloneMovingWindow() const
 {
   auto mw = new MonitorObjectCollection();
@@ -147,6 +183,7 @@ MergeInterface* MonitorObjectCollection::cloneMovingWindow() const
     auto clonedMO = dynamic_cast<MonitorObject*>(mo->Clone());
     clonedMO->setTaskName(clonedMO->getTaskName() + "/mw");
     clonedMO->setIsOwner(true);
+    decorateMovingWindowTitle(clonedMO->getObject(), clonedMO->getValidity().delta());
     mw->Add(clonedMO);
   }
   delete it;
