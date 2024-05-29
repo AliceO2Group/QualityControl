@@ -52,9 +52,10 @@ struct CheckSpec {
   UpdatePolicyType updatePolicy = UpdatePolicyType::OnAny;
   // advanced
   bool active = true;
+  bool exportToBookkeeping = false;
   core::CustomParameters customParameters;
 };
 
 } // namespace o2::quality_control::checker
 
-#endif //QUALITYCONTROL_CHECKSPEC_H
+#endif // QUALITYCONTROL_CHECKSPEC_H

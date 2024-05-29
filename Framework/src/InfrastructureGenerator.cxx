@@ -16,20 +16,23 @@
 
 #include "QualityControl/InfrastructureGenerator.h"
 
-#include "QualityControl/TaskRunner.h"
-#include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
+#include "QualityControl/BookkeepingQualitySink.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/InfrastructureSpec.h"
+#include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/PostProcessingDevice.h"
 #include "QualityControl/PostProcessingRunner.h"
-#include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/InfrastructureSpecReader.h"
-#include "QualityControl/InfrastructureSpec.h"
 #include "QualityControl/RootFileSink.h"
 #include "QualityControl/RootFileSource.h"
+#include "QualityControl/TaskRunner.h"
+#include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/Version.h"
 
+#include <Framework/DataProcessorSpec.h>
+#include <Framework/DataRefUtils.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -99,6 +102,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
     }
   }
   generateCheckRunners(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -147,6 +151,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -316,6 +321,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -396,6 +402,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
 
@@ -798,6 +805,32 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
       workflow.emplace_back(std::move(dataProcessorSpec));
     }
   }
+}
+
+void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
+{
+  framework::Inputs sinkInputs{};
+  for (const auto& checkSpec : infrastructureSpec.checks) {
+    if (checkSpec.active && checkSpec.exportToBookkeeping) {
+      sinkInputs.emplace_back(checkSpec.checkName, Check::createCheckDataOrigin(checkSpec.detectorName), Check::createCheckDataDescription(checkSpec.checkName), 0, Lifetime::Sporadic);
+    }
+  }
+
+  if (sinkInputs.empty()) {
+    ILOG(Warning) << "BookkeepingSink is not being created because there any suitable inputs with quality objects were not found" << ENDM;
+    return;
+  }
+
+  DataProcessorSpec sinkDataProcessor{
+    .name = "BookkeepingSink",
+    .inputs = sinkInputs,
+    .outputs = Outputs{},
+    .algorithm = adaptFromTask<quality_control::core::BookkeepingQualitySink>(
+      infrastructureSpec.common.bookkeepingUrl,
+      core::toEnum(infrastructureSpec.common.activityProvenance)),
+    .labels = { framework::DataProcessorLabel("resilient") }
+  };
+  workflow.emplace_back(std::move(sinkDataProcessor));
 }
 
 } // namespace o2::quality_control::core

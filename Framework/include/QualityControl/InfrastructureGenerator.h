@@ -229,6 +229,7 @@ class InfrastructureGenerator
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generateBookkeepingQualitySink(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
 };
 
 } // namespace core
@@ -302,4 +303,4 @@ inline void customizeInfrastructure(std::vector<framework::CompletionPolicy>& po
 
 } // namespace o2::quality_control
 
-#endif //QC_CORE_INFRASTRUCTUREGENERATOR_H
+#endif // QC_CORE_INFRASTRUCTUREGENERATOR_H

@@ -19,7 +19,6 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/UpdatePolicyType.h"

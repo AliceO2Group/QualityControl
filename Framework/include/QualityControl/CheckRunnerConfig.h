@@ -16,6 +16,7 @@
 #ifndef QUALITYCONTROL_CHECKRUNNERCONFIG_H
 #define QUALITYCONTROL_CHECKRUNNERCONFIG_H
 
+#include <Framework/DataProcessorSpec.h>
 #include <string>
 #include <unordered_map>
 
