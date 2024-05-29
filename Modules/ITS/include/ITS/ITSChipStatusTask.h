@@ -88,7 +88,6 @@ class ITSChipStatusTask final : public TaskInterface
   std::vector<int> CurrentDeadChips[3]; // Vectors of Dead Chips in current QC cycle
 };
 
-
 } // namespace o2::quality_control_modules::its
 
 #endif // QC_MODULE_ITS_ITSITSCHIPSTATUSTASK_H
