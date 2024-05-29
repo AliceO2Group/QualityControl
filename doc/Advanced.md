@@ -1194,7 +1194,7 @@ The following table gives the path in the config file and the name of the config
 | Task           | `qc.tasks.<task_id>.extendedTaskParameters`            |
 | Check          | `qc.checks.<check_id>.extendedCheckParameters`         |
 | Aggregator     | `qc.aggregators.<agg_id>.extendedAggregatorParameters` |
-| PostProcessing | `qc.postprocessing.<pp_id>.extendedTaskParameters`      |
+| PostProcessing | `qc.postprocessing.<pp_id>.extendedTaskParameters`     |
 
 The new syntax is
 ```json

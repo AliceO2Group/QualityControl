@@ -280,7 +280,21 @@
         ],
         "stopTrigger": [
           "once"
-        ]
+        ],
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            }
+          }
+        }
       }
     },
     "aggregators": {
