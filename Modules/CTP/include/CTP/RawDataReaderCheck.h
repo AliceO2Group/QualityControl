@@ -50,8 +50,10 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
   int getNumberFilledBins(TH1F* hist);
   int checkChange(TH1F* fHist, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium);
+  Quality SetQualityResult(std::vector<int>& vBad, std::vector<int>& vMedium);
+  void ClearIndexVectors();
   long int mTimestamp;
-  float mThreshold;
+  float mThreshold = -1;
   float mThresholdRateBad;
   float mThresholdRateMedium;
   float mThresholdRateRatioBad;
@@ -70,6 +72,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> vIndexBad;
   std::vector<int> vIndexMedium;
   std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs;
+  const char* ctpinputs[49] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" };
 };
 
 } // namespace o2::quality_control_modules::ctp
