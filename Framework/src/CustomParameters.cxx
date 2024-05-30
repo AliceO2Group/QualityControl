@@ -146,6 +146,19 @@ std::unordered_map<std::string, std::string>::const_iterator CustomParameters::e
   return mCustomParameters.at("null").at("null").end();
 }
 
+size_t CustomParameters::size() const
+{
+  size_t total = 0;
+  for (const auto& runType : mCustomParameters) {
+    for (const auto& beamType : runType.second) {
+      for (const auto& name : beamType.second) {
+        total++;
+      }
+    }
+  }
+  return total;
+}
+
 std::string CustomParameters::operator[](const std::string& key) const
 {
   return at(key);
