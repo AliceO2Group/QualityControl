@@ -57,7 +57,6 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
       customParameters.set(key, value.get_value<std::string>());
     }
   }
-
 }
 
 } // namespace o2::quality_control::postprocessing
