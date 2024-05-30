@@ -149,6 +149,10 @@ class CustomParameters
 
   std::unordered_map<std::string, std::string>::const_iterator end() const;
 
+  /**
+   * Returns the total count of all the kv pairs for all beam/type combinations
+   * @return
+   */
   size_t size() const;
 
   /**

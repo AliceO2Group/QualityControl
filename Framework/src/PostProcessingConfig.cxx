@@ -50,14 +50,14 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
   }
   auto ppTree = config.get_child("qc.postprocessing." + id);
-  if (ppTree.count("taskParameters") > 0) {
+  if (ppTree.count("extendedTaskParameters")) {
+    customParameters.populateCustomParameters(ppTree.get_child("extendedTaskParameters"));
+  } else if (ppTree.count("taskParameters") > 0) {
     for (const auto& [key, value] : ppTree.get_child("taskParameters")) {
       customParameters.set(key, value.get_value<std::string>());
     }
   }
-  if (ppTree.count("extendedTaskParameters")) {
-    customParameters.populateCustomParameters(ppTree.get_child("extendedTaskParameters"));
-  }
+
 }
 
 } // namespace o2::quality_control::postprocessing
