@@ -18,6 +18,7 @@
 #define QUALITYCONTROL_SUPERMODULEPROJECTORTASK_H
 
 // QC includes
+#include "QualityControl/QualityObject.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include <map>
 #include <memory>
@@ -50,6 +51,7 @@ class SupermoduleProjectorTask final : public quality_control::postprocessing::P
     double maxX = DBL_MAX;
     bool logx = false;
     bool logy = false;
+    std::string qualityPath;
   };
 
   /// \brief Constructor
@@ -85,12 +87,13 @@ class SupermoduleProjectorTask final : public quality_control::postprocessing::P
  private:
   std::vector<DataSource> getDataSources(std::string name, const boost::property_tree::ptree& config);
   std::map<std::string, PlotAttributes> parseCustomizations(std::string name, const boost::property_tree::ptree& config);
+  std::map<int, std::string> parseQuality(const quality_control::core::QualityObject& qo) const;
 
   /// \brief Make projections of the monitoring object per supermodule
   /// \param mo Monitoring object to project
   /// \param plot Canvas to plot the projections on
   /// \param customizations Plotting customizations for all pads (optional)
-  void makeProjections(quality_control::core::MonitorObject& mo, TCanvas& plot, PlotAttributes* customizations = nullptr);
+  void makeProjections(quality_control::core::MonitorObject& mo, TCanvas& plot, const PlotAttributes* customizations = nullptr, const quality_control::core::QualityObject* qo = nullptr);
 
   std::vector<DataSource> mDataSources;                    ///< Data sources to be projected
   std::map<std::string, TCanvas*> mCanvasHandler;          ///< Mapping between data source and output canvas
