@@ -13,11 +13,14 @@
 #include "EMCAL/SupermoduleProjectorTask.h"
 #include "QualityControl/DatabaseInterface.h"
 
+#include <boost/algorithm/string/case_conv.hpp>
+
 // root includes
 #include "TCanvas.h"
 #include "TPaveText.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TLatex.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -63,7 +66,15 @@ void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistryRef s
       if (customiztions != mAttributeHandler.end()) {
         plotCustomizations = &(customiztions->second);
       }
-      makeProjections(*mo, *(canvas->second), plotCustomizations);
+
+      // retrive associated quality object
+      std::shared_ptr<QualityObject> qo;
+      if (plotCustomizations && plotCustomizations->qualityPath.length()) {
+        std::string qopath = dataSource.path;
+        ILOG(Debug, Support) << "Looking for associated quality: " << plotCustomizations->qualityPath << ENDM;
+        qo = qcdb.retrieveQO(plotCustomizations->qualityPath, t.timestamp, t.activity);
+      }
+      makeProjections(*mo, *(canvas->second), plotCustomizations, qo.get());
     }
   }
 }
@@ -119,23 +130,71 @@ std::map<std::string, SupermoduleProjectorTask::PlotAttributes> SupermoduleProje
   for (const auto& customizationConfig : config.get_child("qc.postprocessing." + name + ".customizations")) {
     std::string objectname = customizationConfig.second.get<std::string>("name");
     // each setting is optional
-    customizations[objectname] = { customizationConfig.second.get<std::string>("xtitle", ""),
-                                   customizationConfig.second.get<std::string>("ytitle", ""),
-                                   customizationConfig.second.get<double>("xmin", DBL_MIN),
-                                   customizationConfig.second.get<double>("xmax", DBL_MAX),
-                                   decodeBool(customizationConfig.second.get<std::string>("logx", "false")),
-                                   decodeBool(customizationConfig.second.get<std::string>("logy", "false")) };
+    customizations[objectname] = {
+      customizationConfig.second.get<std::string>("xtitle", ""),
+      customizationConfig.second.get<std::string>("ytitle", ""),
+      customizationConfig.second.get<double>("xmin", DBL_MIN),
+      customizationConfig.second.get<double>("xmax", DBL_MAX),
+      decodeBool(customizationConfig.second.get<std::string>("logx", "false")),
+      decodeBool(customizationConfig.second.get<std::string>("logy", "false")),
+      customizationConfig.second.get<std::string>("qualityPath", ""),
+    };
   }
   return customizations;
 }
 
-void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObject& mo, TCanvas& plot, PlotAttributes* customizations)
+std::map<int, std::string> SupermoduleProjectorTask::parseQuality(const quality_control::core::QualityObject& qo) const
+{
+  std::map<int, std::string> result;
+  auto globalQuality = qo.getQuality();
+  if (globalQuality == Quality::Bad || globalQuality == Quality::Medium) {
+    auto flags = qo.getFlags();
+    auto emflag = std::find_if(flags.begin(), flags.end(), [](const std::pair<quality_control::FlagType, std::string>& testflag) -> bool {
+      bool found = testflag.first == quality_control::FlagTypeFactory::BadEMCalorimetry();
+      return testflag.first == quality_control::FlagTypeFactory::BadEMCalorimetry();
+    });
+    if (emflag != flags.end()) {
+      std::stringstream lineparser(emflag->second);
+      std::string line;
+      while (std::getline(lineparser, line, '\n')) {
+        std::stringstream tokenizer(line);
+        std::string token;
+        bool found = false;
+        int smID = -1;
+        while (std::getline(tokenizer, token, ' ')) {
+          if (found) {
+            try {
+              smID = std::stoi(token);
+            } catch (...) {
+            }
+            break;
+          }
+          auto lowertoken = boost::algorithm::to_lower_copy(token);
+          if (lowertoken == "sm" || lowertoken == "supermodule") {
+            found = true;
+          }
+        }
+        if (smID >= 0 && smID < 20) {
+          result[smID] = line;
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObject& mo, TCanvas& plot, const PlotAttributes* customizations, const quality_control::core::QualityObject* qo)
 {
   auto inputhist = dynamic_cast<TH2*>(mo.getObject());
   bool xAxisSM = inputhist->GetXaxis()->GetNbins() == 20; // for the moment assume that the axis with 20 bins is the SM axis, very unlikely that we have an observable with exactly 20 bins
   if (!inputhist) {
     ILOG(Error, Support) << "Monitoring object to be projected not of type TH2" << ENDM;
     return;
+  }
+  std::map<int, std::string> badSMs;
+  if (qo) {
+    badSMs = parseQuality(*qo);
   }
   plot.Clear();
   plot.Divide(4, 5);
@@ -184,6 +243,26 @@ void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObj
     }
     if (logy) {
       gPad->SetLogy();
+    }
+    if (qo) {
+      auto bad_quality = badSMs.find(supermoduleID);
+      if (bad_quality != badSMs.end()) {
+        TLatex* msg = new TLatex(0.3, 0.8, Form("#color[2]{%s}", bad_quality->second.data()));
+        msg->SetNDC();
+        msg->SetTextSize(8);
+        msg->SetTextFont(43);
+        projection->GetListOfFunctions()->Add(msg);
+        msg->Draw();
+        projection->SetFillColor(kRed);
+      } else {
+        TLatex* msg = new TLatex(0.3, 0.8, "#color[418]{Data OK}");
+        msg->SetNDC();
+        msg->SetTextSize(8);
+        msg->SetTextFont(43);
+        projection->GetListOfFunctions()->Add(msg);
+        msg->Draw();
+        projection->SetFillColor(kGreen);
+      }
     }
     projection->Draw();
     projection->SetBit(TObject::kCanDelete);
