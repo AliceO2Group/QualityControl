@@ -22,6 +22,13 @@ target_sources(O2QcCommon
                        src/CcdbInspectorTask.cxx
                        src/CcdbInspectorTaskConfig.cxx
                        src/CcdbInspectorCheck.cxx
+                       src/ObjectComparatorDeviation.cxx
+                       src/ObjectComparatorChi2.cxx
+                       src/ObjectComparatorKolmogorov.cxx
+                       src/ReferenceComparatorPlot.cxx
+                       src/ReferenceComparatorTask.cxx
+                       src/ReferenceComparatorTaskConfig.cxx
+                       src/ReferenceComparatorCheck.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -54,6 +61,12 @@ add_root_dictionary(O2QcCommon
                             include/Common/BigScreen.h
                             include/Common/CcdbInspectorTask.h
                             include/Common/CcdbInspectorCheck.h
+                            include/Common/ObjectComparatorInterface.h
+                            include/Common/ObjectComparatorDeviation.h
+                            include/Common/ObjectComparatorChi2.h
+                            include/Common/ObjectComparatorKolmogorov.h
+                            include/Common/ReferenceComparatorTask.h
+                            include/Common/ReferenceComparatorCheck.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Ratio.h
                             include/Common/TH2Ratio.h

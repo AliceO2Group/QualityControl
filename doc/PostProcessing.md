@@ -438,6 +438,129 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
 }
 ```
 
+### The ReferenceComparatorTask class
+
+This task draws a given set of plots in comparison with their corresponding references, both as superimposed histograms and as current/reference ratio histograms.
+
+#### Configuration
+
+Currently the source of reference data is specified as a run-type and beam-type specific `referenceRun` number. This will be modified once a centralized way of accessing reference plots will become available in the framework.
+The `notOlderThan` option allows to ignore monitor objects that are older than a given number of seconds. A value of -1 means "no limit".
+
+The input MonitorObjects to be processed are logically divided in **dataGroups**. Each group is configured via the following parameters:
+* `inputPath`: path in the QCDB where the input objects are located
+* `referencePath` (optional): specifies the path for the reference objects, if not set the `inputPath` is used
+* `outputPath`: path in the QCDB where the output objects are stored
+* `drawRatioOnly`: boolean parameter specifying wether to only draw the ratio plots, or the current/reference comparisons as well
+* `drawOption1D`: the ROOT draw option to be used for the 1-D histograms
+* `drawOption2D`: the ROOT draw option to be used for the 2-D histograms
+
+ The input objects are searched within the `inputPath`, and the output plots are stored inside the `outputPath`.
+It is also possible to optionally specify a different path for the reference objects, via the `referencePath` parameter. If not given, the `referencePath` will coincide with the `inputPath`.
+The `normalizeReference` boolean parameter controls wether the reference histogram is scaled such that its integral matches that of the current plot.
+
+The checker extracts the current and reference plots from the stored MO, and compares them using external modules, specified via the `moduleName` and `comparatorName` parameters. The `threshold` parameter specifies the value used to discriminate between good and bad matches between the histograms.
+
+Three comparison modules are provided in the framework:
+1. `o2::quality_control_modules::common::ObjectComparatorDeviation`: comparison based on the average relative deviation between the bins of the current and reference histograms; the `threshold` parameter represent in this case the maximum allowed deviation
+2. `o2::quality_control_modules::common::ObjectComparatorChi2`: comparison based on a standard chi2 test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed chi2 probability
+3. `o2::quality_control_modules::common::ObjectComparatorKolmogorov`: comparison based on a standard Kolmogorov test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed Kolmogorov probability
+
+In the example configuration below, the relationship between the input and output histograms is the following:
+* `MCH/MO/Tracks/WithCuts/TrackEta` (1-D histogram)
+    * `MCH/MO/RefComp/TracksMCH/WithCuts/TrackEta`
+        * 1-D version, current and reference plots drawn superimposed in the same canvas, with the ratio below
+        * comparison with a chi2 test method
+* `MCH/MO/Tracks/WithCuts/TrackEtaPhi` (2-D histogram)
+    * `MCH/MO/RefComp/TracksMCH/WithCuts/TrackEtaPhi`
+        * 2-D version, ratio between plots drawn on top with the current and reference plots drawn smaller at the bottom
+        * comparison with a chi2 test method (`"comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2`)
+
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "ExampleRefComp": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::ReferenceComparatorTask",
+        "moduleName": "QualityControl",
+        "detectorName": "MCH",
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "notOlderThan" : "300",
+              "referenceRun" : "551875"
+            }
+          },
+          "PHYSICS": {
+            "PROTON-PROTON": {
+              "referenceRun" : "551890"
+            }
+          }
+        },
+        "dataGroups": [
+          {
+            "name": "Tracks",
+            "inputPath": "MCH/MO/Tracks/WithCuts",
+            "referencePath": "MCH/MO/Tracks",
+            "outputPath": "Tracks/WithCuts",
+            "normalizeReference": "true",
+            "drawRatioOnly": "false",
+            "drawOption1D": "E",
+            "drawOption2D": "COL",
+            "inputObjects": [
+              "TrackEta",
+              "TrackEtaPhi"
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "60 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    },
+    "checks": {
+      "ExampleRefCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::ReferenceComparatorCheck",
+        "moduleName": "QualityControl",
+        "detectorName": "MCH",
+        "policy": "OnAny",
+        "extendedCheckParameters": {
+          "default": {      
+            "default": {      
+              "moduleName" : "QualityControl",
+              "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
+              "threshold" : "0.5"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "ExampleRefComp",
+             "MOs" : [
+              "Tracks/WithCuts/TrackEta",
+              "Tracks/WithCuts/TrackEtaPhi"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+
 ### The CcdbInspectorTask class
 
 A post-processing task that checks the existence, time stamp and validity of CCDB/QCDB objects.
