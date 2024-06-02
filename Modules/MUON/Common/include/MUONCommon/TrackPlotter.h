@@ -80,6 +80,13 @@ class TrackPlotter : public HistPlotter
                                  const char* displayHints = "");
   template <typename T>
   std::unique_ptr<T> createHisto(const char* name, const char* title,
+                                 int nbins, double* xbins,
+                                 bool optional,
+                                 bool statBox = false,
+                                 const char* drawOptions = "",
+                                 const char* displayHints = "");
+  template <typename T>
+  std::unique_ptr<T> createHisto(const char* name, const char* title,
                                  int nbins, double xmin, double xmax,
                                  int nbinsy, double ymin, double ymax,
                                  bool optional,
@@ -158,6 +165,26 @@ std::unique_ptr<T> TrackPlotter::createHisto(const char* name, const char* title
   }
   std::string fullTitle = std::string("[") + GID::getSourceName(mSrc) + "] " + title;
   auto h = std::make_unique<T>(name, fullTitle.c_str(), nbins, xmin, xmax);
+  if (!statBox) {
+    h->SetStats(0);
+  }
+  histograms().emplace_back(HistInfo{ h.get(), drawOptions, displayHints });
+  return h;
+}
+
+template <typename T>
+std::unique_ptr<T> TrackPlotter::createHisto(const char* name, const char* title,
+                                             int nbins, double* xbins,
+                                             bool optional,
+                                             bool statBox,
+                                             const char* drawOptions,
+                                             const char* displayHints)
+{
+  if (optional && !mFullHistos) {
+    return nullptr;
+  }
+  std::string fullTitle = std::string("[") + GID::getSourceName(mSrc) + "] " + title;
+  auto h = std::make_unique<T>(name, fullTitle.c_str(), nbins, xbins);
   if (!statBox) {
     h->SetStats(0);
   }
