@@ -19,6 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "Common/Utils.h"
+#include "Common/TH2Ratio.h"
 
 #include <TH1D.h>
 #include <TH2D.h>
@@ -38,9 +39,9 @@ class Stack
  public:
   std::vector<std::vector<int>> stack;
   Stack() : size_max(0), current_element_id(0) {}
-  Stack(int nsizey, int nsizex) : size_max(nsizey), current_element_id(0)
+  Stack(int nsizex, int nsizey) : size_max(nsizex), current_element_id(0)
   {
-    stack.resize(nsizey, std::vector<int>(nsizex, 0));
+    stack.resize(nsizex, std::vector<int>(nsizey, 0));
   }
   void push(const std::vector<int>& element)
   {
@@ -73,19 +74,23 @@ class ITSChipStatusTask final : public TaskInterface
  private:
   void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
+  void Beautify();
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
   const int nChipsPerLayer[NLayer] = { 108, 144, 180, 2688, 3360, 8232, 9408 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
+  const int ChipsBoundaryLayers[8] = { 0, 108, 252, 432, 3120 - 432, 6480 - 432, 14712 - 6480, 24120 - 6480 }; // needed for drawing labels and lines for histogram
   const int ChipsBoundaryBarrels[4] = { 0, 432, 6480, 24120 };
   static constexpr int NFees = 48 * 3 + 144 * 2;
   TString LayerBinLabels[11] = { "L0", "L1", "L2", "L3B", "L3T", "L4B", "L4T", "L5B", "L5T", "L6B", "L6T" };
-  TH2D* DeadChips[3];
+  std::shared_ptr<TH2FRatio> DeadChips[3];
   Stack* ChipsStack[3];
+  Stack* TFsStack[3];
   int nQCCycleToMonitor = 50;
   TString BarrelNames[3] = { "IB", "ML", "OB" };
   std::vector<int> CurrentDeadChips[3]; // Vectors of Dead Chips in current QC cycle
+  std::vector<int> CurrentTFs[3];       // Vectors of Dead Chips in current QC cycle
 };
 
 } // namespace o2::quality_control_modules::its
