@@ -83,7 +83,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     logger.debug(f"Number of buckets : {len(versions_buckets_dict)}")
     if not period_pass:
         logger.debug(f"Number of versions without runs : {len(versions_buckets_dict['none'])}")
-        del versions_buckets_dict['none']
+        if 'none' in versions_buckets_dict:
+            del versions_buckets_dict['none']
 
     # for each run or combination of pass and run
     for bucket, run_versions in versions_buckets_dict.items():

@@ -1,5 +1,9 @@
 # Release notes
 
+New
+- 3 small fixes (https://github.com/AliceO2Group/QualityControl/pull/2308)
+- QC-1097 - use metadata to filter what to delete with o2-qc-repo-delete-time-interval
+
 1.7
 - [QC-1144] 1_per_run : Consider RunNumber=0 as no run number (#2238)
 - [QC-1142 ]fix object preservation for 1_per_run policy (#2228)

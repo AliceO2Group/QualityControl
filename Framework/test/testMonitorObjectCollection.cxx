@@ -135,7 +135,7 @@ TEST_CASE("monitor_object_collection_clone_mw")
   MonitorObject* moTH1I = new MonitorObject(objTH1I, "histo 1d", "class", "DET");
   moTH1I->setIsOwner(false);
   moTH1I->setCreateMovingWindow(true);
-  moTH1I->setValidity({ 10, 432 });
+  moTH1I->setValidity({ 10, 432000 });
   moc->Add(moTH1I);
 
   TH2I* objTH2I = new TH2I("histo 2d", "histo 2d", bins, min, max, bins, min, max);
@@ -157,6 +157,7 @@ TEST_CASE("monitor_object_collection_clone_mw")
   TH1I* mwTH1I = dynamic_cast<TH1I*>(mwMoTH1I->getObject());
   REQUIRE(mwTH1I != nullptr);
   CHECK(mwTH1I->GetBinContent(mwTH1I->FindBin(5)) == 1);
+  CHECK(std::strcmp(mwTH1I->GetTitle(), "histo 1d (7m11s window)") == 0);
 
   moTH1I->setValidity(gInvalidValidityInterval);
   auto mwMergeInterface2 = moc->cloneMovingWindow();

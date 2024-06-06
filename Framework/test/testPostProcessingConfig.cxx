@@ -48,4 +48,6 @@ BOOST_AUTO_TEST_CASE(test_configuration_read)
 
   BOOST_REQUIRE_EQUAL(ppconfig.stopTriggers.size(), 1);
   BOOST_CHECK_EQUAL(ppconfig.stopTriggers[0], "once");
+
+  BOOST_CHECK_EQUAL(ppconfig.customParameters.size(), 4);
 }
