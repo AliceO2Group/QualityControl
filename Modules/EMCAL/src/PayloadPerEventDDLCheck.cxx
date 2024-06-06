@@ -94,7 +94,7 @@ void PayloadPerEventDDLCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red" << ENDM;
       msg->Clear();
       msg->AddText("Suspicious payload size detected.");
       msg->AddText("If NOT a technical run,");
@@ -103,7 +103,7 @@ void PayloadPerEventDDLCheck::beautify(std::shared_ptr<MonitorObject> mo, Qualit
     } else if (checkResult == Quality::Medium) {
       msg->Clear();
       msg->AddText("WARNING: Deviation from expectations. Keep monitoring");
-      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange" << ENDM;
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
