@@ -26,4 +26,5 @@
 #pragma link C++ class o2::quality_control_modules::its::ITSDecodingErrorTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSDecodingErrorCheck + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTaskITSError + ;
+#pragma link C++ class o2::quality_control_modules::its::ITSChipStatusTask+;
 #endif
