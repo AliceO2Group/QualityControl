@@ -82,6 +82,10 @@ void CellTimeCalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
 {
   if (mo->getName() == "cellTimeCalib_PHYS") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
+    if ( h == nullptr) {
+      ILOG(Error, Support) << "Could not cast 'cellTimeCalib_PHYS' to TH1*, skipping" << ENDM;
+      return;
+    }
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
@@ -93,14 +97,14 @@ void CellTimeCalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad, setting to red";
+      ILOG(Debug, Devel) << "Quality::Bad, setting to red" << ENDM;
       msg->Clear();
       msg->AddText("Secondary peak amplitude is high");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Debug, Devel) << "Quality::medium, setting to orange";
+      ILOG(Debug, Devel) << "Quality::medium, setting to orange" << ENDM;
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
