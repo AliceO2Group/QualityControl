@@ -79,6 +79,9 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   }
   std::string run = std::to_string(mRunNumber);
   std::string ccdbName = mCustomParameters["ccdbName"];
+  if (ccdbName.empty()) {
+    ccdbName = "https://alice-ccdb.cern.ch";
+  }
 
   o2::ctp::CTPRunManager::setCCDBHost(ccdbName);
   bool ok;
