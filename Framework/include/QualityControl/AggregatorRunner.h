@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 // O2
+#include <Framework/DataProcessorSpec.h>
 #include <Framework/Task.h>
 #include <Common/Timer.h>
 // QC
@@ -107,6 +108,7 @@ class AggregatorRunner : public framework::Task
   void run(framework::ProcessingContext& ctx) override;
 
   framework::Inputs getInputs() { return mInputs; }
+  framework::Outputs getOutputs() { return mOutputs; }
   std::string getDeviceName() { return mDeviceName; }
   const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const { return mAggregators; }
 
@@ -128,14 +130,17 @@ class AggregatorRunner : public framework::Task
    * call its `aggregate()` method.
    * This method is usually called upon reception of fresh inputs data.
    */
-  core::QualityObjectsType aggregate();
+  using QualityObjectsWithAggregatorNameVector = std::vector<std::pair<std::string, core::QualityObjectsType>>;
+  QualityObjectsWithAggregatorNameVector aggregate();
 
   /**
    * \brief Store the QualityObjects in the database.
    *
    * @param qualityObjects QOs to be stored in DB.
    */
-  void store(core::QualityObjectsType& qualityObjects);
+  void store(QualityObjectsWithAggregatorNameVector& qualityObjects);
+
+  void send(const QualityObjectsWithAggregatorNameVector&, framework::DataAllocator&);
 
   void refreshConfig(framework::InitContext& iCtx);
 
@@ -143,6 +148,7 @@ class AggregatorRunner : public framework::Task
    * Prepare the inputs, remove the duplicates
    */
   void prepareInputs();
+  void prepareOutputs();
 
   void initDatabase();
   void initMonitoring();
@@ -181,6 +187,7 @@ class AggregatorRunner : public framework::Task
   std::string mDeviceName;
   std::shared_ptr<core::Activity> mActivity; // shareable with the Aggregators
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
+  std::unordered_map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   AggregatorRunnerConfig mRunnerConfig;
   std::vector<AggregatorConfig> mAggregatorsConfig;
@@ -189,6 +196,7 @@ class AggregatorRunner : public framework::Task
 
   // DPL
   o2::framework::Inputs mInputs;
+  o2::framework::Outputs mOutputs;
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;

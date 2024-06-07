@@ -35,7 +35,7 @@ namespace o2::quality_control::core
 {
 struct CommonSpec;
 struct Activity;
-}
+} // namespace o2::quality_control::core
 
 namespace o2::quality_control::checker
 {
@@ -51,6 +51,10 @@ struct AggregatorSpec;
 class Aggregator
 {
  public:
+  /// \brief Number of bytes in data description used for hashing of AggregatorRunner names. See HashDataDescription.h for details
+  static constexpr size_t descriptionHashLength = 4;
+  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
+
   /// Constructor
   /**
    * \brief Aggregator constructor
@@ -75,10 +79,12 @@ class Aggregator
   std::vector<AggregatorSource> getSources() const;
   std::vector<AggregatorSource> getSources(core::DataSourceType type);
   const std::string& getDetector() const { return mAggregatorConfig.detectorName; };
+  const AggregatorConfig& getConfig() const noexcept { return mAggregatorConfig; }
   void startOfActivity(const core::Activity& activity);
   void endOfActivity(const core::Activity& activity);
 
   static AggregatorConfig extractConfig(const core::CommonSpec&, const AggregatorSpec&);
+  static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& aggregatorName);
 
  private:
   /**

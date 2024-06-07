@@ -23,8 +23,12 @@
 #include "QualityControl/Activity.h"
 #include <Common/Exceptions.h>
 #include "QualityControl/CommonSpec.h"
+#include "QualityControl/HashDataDescription.h"
 
 #include <utility>
+
+using namespace AliceO2::Common;
+using namespace AliceO2::InfoLogger;
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
@@ -35,7 +39,6 @@ namespace o2::quality_control::checker
 
 Aggregator::Aggregator(AggregatorConfig configuration) : mAggregatorConfig(std::move(configuration))
 {
-
 }
 
 void Aggregator::init()
@@ -219,9 +222,32 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
     std::move(objectNames),
     checkAllObjects,
     std::move(inputs),
+    createOutputSpec(aggregatorSpec.detectorName, aggregatorSpec.aggregatorName),
     sources,
     commonSpec.conditionDBUrl
   };
+}
+
+o2::header::DataOrigin createAggregatorDataOrigin(const std::string& detector)
+{
+  using Origin = o2::header::DataOrigin;
+  Origin header;
+  header.runtimeInit(std::string{ "A" }.append(detector.substr(0, Origin::size - 1)).c_str());
+  return header;
+}
+
+o2::header::DataDescription createAggregatorDataDescription(const std::string& aggregatorName)
+{
+  if (aggregatorName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << AliceO2::Common::errinfo_details("Empty aggregatorName for aggregator's data description"));
+  }
+
+  return quality_control::core::createDataDescription(aggregatorName, Aggregator::descriptionHashLength);
+}
+
+framework::OutputSpec Aggregator::createOutputSpec(const std::string& detector, const std::string& aggregatorName)
+{
+  return { createAggregatorDataOrigin(detector), createAggregatorDataDescription(aggregatorName), 0, framework::Lifetime::Sporadic };
 }
 
 void Aggregator::startOfActivity(const core::Activity& activity)
