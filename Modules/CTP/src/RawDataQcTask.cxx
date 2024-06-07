@@ -69,18 +69,18 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoClassRatios->Reset();
   mHistoInputRatios->Reset();
   mHistoMTVXBC->Reset();
-  //
+
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
-  //
-  // mTimestamp = 1714315086649;
-  //
+
   std::string MBclassName = mCustomParameters["MBclassName"];
   if (MBclassName.empty()) {
     MBclassName = "CMTVX-B-NOPF";
   }
   std::string run = std::to_string(mRunNumber);
-  o2::ctp::CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  std::string ccdbName = mCustomParameters["ccdbName"];
+
+  o2::ctp::CTPRunManager::setCCDBHost(ccdbName);
   bool ok;
   o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
   if (ok) {
