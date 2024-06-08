@@ -76,13 +76,16 @@ void DecodingTask::createHeartBeatHistos()
 
   // Heart-beat packets time distribution and synchronization errors
   mHistogramHBTimeFEC = std::make_unique<TH2FRatio>("HBTime_Elec", "HB time vs. FEC ID", nElecXbins, 0, nElecXbins, 40, mHBExpectedBc - 20, mHBExpectedBc + 20);
+  mHistogramHBTimeFEC->Sumw2(kFALSE);
   publishObject(mHistogramHBTimeFEC.get(), "colz", "logz", false, false);
 
   uint64_t max = ((static_cast<uint64_t>(0x100000) / 100) + 1) * 100;
   mHistogramHBCoarseTimeFEC = std::make_unique<TH2FRatio>("HBCoarseTime_Elec", "HB time vs. FEC ID (coarse)", nElecXbins, 0, nElecXbins, 100, 0, max);
+  mHistogramHBCoarseTimeFEC->Sumw2(kFALSE);
   publishObject(mHistogramHBCoarseTimeFEC.get(), "colz", "", false, false);
 
   mSyncStatusFEC = std::make_unique<TH2FRatio>("SyncStatus_Elec", "Heart-beat status vs. FEC ID", nElecXbins, 0, nElecXbins, 3, 0, 3);
+  mSyncStatusFEC->Sumw2(kFALSE);
   mSyncStatusFEC->GetYaxis()->SetBinLabel(1, "OK");
   mSyncStatusFEC->GetYaxis()->SetBinLabel(2, "Out-of-sync");
   mSyncStatusFEC->GetYaxis()->SetBinLabel(3, "Missing");

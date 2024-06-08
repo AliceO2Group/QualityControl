@@ -65,6 +65,7 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Histograms in electronics coordinates
   mHistogramPseudoeffElec = std::make_unique<TH2FRatio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramPseudoeffElec->Sumw2(kFALSE);
   publishObject(mHistogramPseudoeffElec.get(), "colz", false);
 
   //----------------------------------
