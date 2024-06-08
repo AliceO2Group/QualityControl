@@ -130,34 +130,38 @@ void ITSTPCMatchingTask::endOfCycle()
 
   // Sync Mode
   if (common::getFromConfig(mCustomParameters, "isSync", false)) {
-    {
-      // Pt
+    { // Pt
       auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(globaltracking::MatchITSTPCQC::ITS);
-      auto hEffPtHist = dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist"));
-      hEffPtHist->Sumw2();
-      hEffPtHist->Divide(hEffPt->GetTotalHistogram());
-      hEffPtHist->SetBit(TH1::EStatusBits::kNoStats);
-      getObjectsManager()->startPublishing(hEffPtHist);
+      if (auto hEffPtHist = dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist")); hEffPtHist != nullptr) {
+        hEffPtHist->Divide(hEffPt->GetPassedHistogram(), hEffPt->GetTotalHistogram(), 1.0, 1.0, "B");
+        hEffPtHist->SetBit(TH1::EStatusBits::kNoStats);
+        getObjectsManager()->startPublishing(hEffPtHist);
+        getObjectsManager()->setDefaultDrawOptions(hEffPtHist->GetName(), "logx");
+      } else {
+        ILOG(Error) << "Failed cast for hEffPtHist, will not publish!" << ENDM;
+      }
     }
 
-    {
-      // Eta
+    { // Eta
       auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(globaltracking::MatchITSTPCQC::ITS);
-      auto hEffEtaHist = dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist"));
-      hEffEtaHist->Sumw2();
-      hEffEtaHist->Divide(hEffEta->GetTotalHistogram());
-      hEffEtaHist->SetBit(TH1::EStatusBits::kNoStats);
-      getObjectsManager()->startPublishing(hEffEtaHist);
+      if (auto hEffEtaHist = dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist")); hEffEtaHist != nullptr) {
+        hEffEtaHist->Divide(hEffEta->GetPassedHistogram(), hEffEta->GetTotalHistogram(), 1.0, 1.0, "B");
+        hEffEtaHist->SetBit(TH1::EStatusBits::kNoStats);
+        getObjectsManager()->startPublishing(hEffEtaHist);
+      } else {
+        ILOG(Error) << "Failed cast for hEffEtaHist, will not publish!" << ENDM;
+      }
     }
 
-    {
-      // Phi
+    { // Phi
       auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(globaltracking::MatchITSTPCQC::ITS);
-      auto hEffPhiHist = dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist"));
-      hEffPhiHist->Sumw2();
-      hEffPhiHist->Divide(hEffPhi->GetTotalHistogram());
-      hEffPhiHist->SetBit(TH1::EStatusBits::kNoStats);
-      getObjectsManager()->startPublishing(hEffPhiHist);
+      if (auto hEffPhiHist = dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist")); hEffPhiHist != nullptr) {
+        hEffPhiHist->Divide(hEffPhi->GetPassedHistogram(), hEffPhi->GetTotalHistogram(), 1.0, 1.0, "B");
+        hEffPhiHist->SetBit(TH1::EStatusBits::kNoStats);
+        getObjectsManager()->startPublishing(hEffPhiHist);
+      } else {
+        ILOG(Error) << "Failed cast for hEffPhiHist, will not publish!" << ENDM;
+      }
     }
   }
 }
