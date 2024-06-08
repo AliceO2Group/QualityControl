@@ -70,11 +70,13 @@ class TH2Ratio : public T, public o2::mergers::MergeInterface
   Bool_t Add(const TH1* h1, const TH1* h2, Double_t c1 = 1, Double_t c2 = 1) override;
   Bool_t Add(const TH1* h1, Double_t c1 = 1) override;
   void SetBins(Int_t nx, Double_t xmin, Double_t xmax, Int_t ny, Double_t ymin, Double_t ymax) override;
+  void Sumw2(Bool_t flag = kTRUE) override;
 
  private:
   T* mHistoNum{ nullptr };
   T* mHistoDen{ nullptr };
   bool mUniformScaling{ true };
+  Bool_t mSumw2Enabled{ kFALSE };
   std::string mTreatMeAs{ T::Class_Name() };
 
   ClassDefOverride(TH2Ratio, 1);
