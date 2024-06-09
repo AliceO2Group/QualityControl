@@ -33,7 +33,7 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
   auto bkpClient = o2::bkp::api::BkpClientFactory::create(grpcUri);
   auto& qcClient = bkpClient->qcFlag();
 
-  ILOG(Info) << "Sending " << flags.size() << " flag collections" << ENDM;
+  ILOG(Info, Support) << "Sending " << flags.size() << " flag collections" << ENDM;
 
   for (const auto& [_, flagCollection] : flags) {
 
@@ -50,8 +50,6 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
         .comment = flag.getComment() });
     }
 
-    ILOG(Info) << "Flag collection has " << bkpQcFlags.size() << " flags" << ENDM;
-
     if (bkpQcFlags.empty()) {
       continue;
     }
@@ -67,9 +65,9 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
           break;
       }
     } catch (const std::runtime_error& err) {
-      ILOG(Error) << "Failed to send flags for detector: " << flagCollection->getDetector()
-                  << " and pass: " << flagCollection->getPassName()
-                  << " with error: " << err.what() << ENDM;
+      ILOG(Error, Support) << "Failed to send flags for detector: " << flagCollection->getDetector()
+                           << " and pass: " << flagCollection->getPassName()
+                           << " with error: " << err.what() << ENDM;
     }
   }
 }

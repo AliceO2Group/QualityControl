@@ -817,7 +817,7 @@ void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workf
   }
 
   if (sinkInputs.empty()) {
-    ILOG(Warning) << "BookkeepingSink is not being created because there any suitable inputs with quality objects were not found" << ENDM;
+    ILOG(Debug, Support) << "BookkeepingSink is not being created because there any suitable inputs with quality objects were not found" << ENDM;
     return;
   }
 
