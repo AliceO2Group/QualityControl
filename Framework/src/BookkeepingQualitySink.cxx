@@ -59,11 +59,11 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
     try {
       switch (type) {
         case Provenance::SyncQc:
+        case Provenance::AsyncQc:
           qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), flagCollection->getDetector(), bkpQcFlags);
           break;
-        case Provenance::AsyncQc:
-          // NOTE: There is productionName in Bookkeaping API instead of passName, but I don't seen anythin like production around here.
-          qcClient->createForSimulationPass(flagCollection->getRunNumber(), flagCollection->getPassName(), flagCollection->getDetector(), bkpQcFlags);
+        case Provenance::MCQC:
+          qcClient->createForSimulationPass(flagCollection->getRunNumber(), flagCollection->getPeriodName(), flagCollection->getDetector(), bkpQcFlags);
           break;
       }
     } catch (const std::runtime_error& err) {

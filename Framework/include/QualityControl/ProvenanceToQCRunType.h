@@ -21,17 +21,22 @@ namespace o2::quality_control::core
 
 enum class Provenance {
   SyncQc,
-  AsyncQc
+  AsyncQc,
+  MCQC
 };
 
 inline Provenance toEnum(const std::string& provenance)
 {
   if (provenance == "qc_mc") {
-    return Provenance::AsyncQc;
+    return Provenance::MCQC;
   }
 
-  if (provenance == "qc" || provenance == "qc_async") {
+  if (provenance == "qc") {
     return Provenance::SyncQc;
+  }
+
+  if (provenance == "qc_async") {
+    return Provenance::AsyncQc;
   }
 
   throw std::runtime_error{ "unknown provenance flag: " + provenance };
