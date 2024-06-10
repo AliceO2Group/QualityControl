@@ -76,7 +76,7 @@ class TH2Ratio : public T, public o2::mergers::MergeInterface
   T* mHistoNum{ nullptr };
   T* mHistoDen{ nullptr };
   bool mUniformScaling{ true };
-  Bool_t mSumw2Enabled{ kFALSE };
+  Bool_t mSumw2Enabled{ kTRUE };
   std::string mTreatMeAs{ T::Class_Name() };
 
   ClassDefOverride(TH2Ratio, 1);
