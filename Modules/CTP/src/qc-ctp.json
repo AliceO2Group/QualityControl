@@ -43,6 +43,8 @@
           "name": "ctp-raw"
         },
         "taskParameters": {
+          "ccdbName": "https://alice-ccdb.cern.ch",
+          "MBclassName" : "CMTVX-B-NOPF"
         },
         "location": "remote"
       }

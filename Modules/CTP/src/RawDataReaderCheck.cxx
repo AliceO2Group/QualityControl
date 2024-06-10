@@ -106,8 +106,9 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       continue;
     }
     if (mo->getName() == "bcMTVX") {
-      if (mLHCBCs.count() == 0)
+      if (mLHCBCs.count() == 0) {
         continue;
+      }
       mThreshold = h->GetEntries() / mLHCBCs.count();
       mThreshold = sqrt(mThreshold);
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
@@ -184,19 +185,19 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
   if (mo->getName() == "bcMTVX") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     h->GetXaxis()->SetTitle("BC");
-    if (checkResult != Quality::Null)
+    if (checkResult != Quality::Null) {
       msg = std::make_shared<TLatex>(0.4, 0.85, Form("Quality: %s", (checkResult.getName()).c_str()));
-    if (checkResult == Quality::Bad) {
-      msg->SetTextColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      msg->SetTextColor(kOrange);
-    } else if (checkResult == Quality::Good) {
-      msg->SetTextColor(kGreen + 1);
+      if (checkResult == Quality::Bad) {
+        msg->SetTextColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        msg->SetTextColor(kOrange);
+      } else if (checkResult == Quality::Good) {
+        msg->SetTextColor(kGreen + 1);
+      }
+      msg->SetTextSize(0.03);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
     }
-
-    msg->SetTextSize(0.03);
-    msg->SetNDC();
-    h->GetListOfFunctions()->Add(msg->Clone());
 
     if (checkResult == Quality::Null) {
       msg = std::make_shared<TLatex>(0.4, 0.8, Form("Check was not performed, LHC information not available"));
