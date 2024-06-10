@@ -32,7 +32,6 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include <Framework/ControlService.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Configuration/ConfigurationInterface.h>
-#include <TH1F.h>
 #include <QualityControl/BookkeepingQualitySink.h>
 #include <QualityControl/QualityObject.h>
 
@@ -75,7 +74,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     Inputs{ { { "tst-qo" }, "TST", "DATA" } },
     Outputs{},
     adaptFromTask<quality_control::core::BookkeepingQualitySink>(
-      "grpcUri", core::Provenance::SyncQc,
+      "grpcUri", core::Provenance::SyncQC,
       [](const std::string&, const core::BookkeepingQualitySink::FlagsMap& flagsMap, core::Provenance) {
         for (auto& [_, flagsCollection] : flagsMap) {
           for (size_t i = 0; auto& flag : *flagsCollection) {

@@ -10,18 +10,19 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ProvenanceToQCRunType.h
+/// \file   Provenance.h
 /// \author Michal Tichak
 ///
 
 #include <stdexcept>
 #include <string>
+
 namespace o2::quality_control::core
 {
 
 enum class Provenance {
-  SyncQc,
-  AsyncQc,
+  SyncQC,
+  AsyncQC,
   MCQC
 };
 
@@ -32,11 +33,11 @@ inline Provenance toEnum(const std::string& provenance)
   }
 
   if (provenance == "qc") {
-    return Provenance::SyncQc;
+    return Provenance::SyncQC;
   }
 
   if (provenance == "qc_async") {
-    return Provenance::AsyncQc;
+    return Provenance::AsyncQC;
   }
 
   throw std::runtime_error{ "unknown provenance flag: " + provenance };

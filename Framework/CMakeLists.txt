@@ -306,8 +306,6 @@ set(TEST_ARGS
     ""
     ""
     ""
-    ""
-    ""
   )
 
 list(LENGTH TEST_SRCS count)

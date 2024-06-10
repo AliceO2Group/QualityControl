@@ -20,7 +20,7 @@
 #include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/Task.h>
-#include "ProvenanceToQCRunType.h"
+#include "Provenance.h"
 
 namespace o2::quality_control::core
 {

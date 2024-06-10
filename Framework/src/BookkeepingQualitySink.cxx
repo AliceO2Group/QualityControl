@@ -37,6 +37,10 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
 
   for (const auto& [_, flagCollection] : flags) {
 
+    if (flagCollection->size() == 0) {
+      continue;
+    }
+
     std::vector<QcFlag> bkpQcFlags{};
     for (const auto& flag : *flagCollection) {
       // BKP uses start/end of run for missing time values, so we are using this functionality in order to avoid
@@ -50,14 +54,10 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
         .comment = flag.getComment() });
     }
 
-    if (bkpQcFlags.empty()) {
-      continue;
-    }
-
     try {
       switch (type) {
-        case Provenance::SyncQc:
-        case Provenance::AsyncQc:
+        case Provenance::SyncQC:
+        case Provenance::AsyncQC:
           qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), flagCollection->getDetector(), bkpQcFlags);
           break;
         case Provenance::MCQC:
@@ -104,14 +104,10 @@ auto to_key(const QualityObject& qualityObject) -> std::string
   return key;
 }
 
-template <typename t>
-struct tt;
-
 void BookkeepingQualitySink::run(framework::ProcessingContext& context)
 {
   for (auto const& ref : framework::InputRecordWalker(context.inputs())) {
     try {
-      // mQualityObjects.push_back(std::move(framework::DataRefUtils::as<QualityObject>(ref)));
       auto qualityObject = framework::DataRefUtils::as<QualityObject>(ref);
       auto [emplacedIt, _] = mQualityObjectsMap.emplace(to_key(*qualityObject), collectionFromQualityObject(*qualityObject));
       emplacedIt->second = merge(std::move(emplacedIt->second), qualityObject);

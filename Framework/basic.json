@@ -73,7 +73,6 @@
     "checks": {
       "QcCheck": {
         "active": "true",
-        "exportToBookkeeping": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",

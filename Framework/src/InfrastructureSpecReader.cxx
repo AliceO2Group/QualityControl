@@ -357,6 +357,8 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
   }
 
   as.active = aggregatorTree.get<bool>("active", as.active);
+  as.exportToBookkeeping = aggregatorTree.get<bool>("exportToBookkeeping", as.exportToBookkeeping);
+
   if (aggregatorTree.count("extendedAggregatorParameters") > 0) {
     as.customParameters.populateCustomParameters(aggregatorTree.get_child("extendedAggregatorParameters"));
   }

@@ -52,6 +52,7 @@ struct AggregatorSpec {
   UpdatePolicyType updatePolicy = UpdatePolicyType::OnAny;
   // advanced
   bool active = true;
+  bool exportToBookkeeping = false;
   core::CustomParameters customParameters;
 };
 

@@ -16,6 +16,7 @@
 
 #include "QualityControl/InfrastructureGenerator.h"
 
+#include "QualityControl/Aggregator.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/BookkeepingQualitySink.h"
 #include "QualityControl/Check.h"
@@ -807,17 +808,35 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
   }
 }
 
+template <typename Type>
+auto createSinkInput(const std::string& detectorName, const std::string& name) -> framework::InputSpec
+{
+  const auto outputSpec = Type::createOutputSpec(detectorName, name);
+  auto input = DataSpecUtils::matchingInput(outputSpec);
+  input.binding = name;
+  return input;
+}
+
 void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
   framework::Inputs sinkInputs{};
+
   for (const auto& checkSpec : infrastructureSpec.checks) {
     if (checkSpec.active && checkSpec.exportToBookkeeping) {
-      sinkInputs.emplace_back(checkSpec.checkName, Check::createCheckDataOrigin(checkSpec.detectorName), Check::createCheckDataDescription(checkSpec.checkName), 0, Lifetime::Sporadic);
+      ILOG(Debug, Support) << "Adding input to BookkeepingSink from check " << checkSpec.checkName << " and detector: " << checkSpec.detectorName << ENDM;
+      sinkInputs.emplace_back(createSinkInput<Check>(checkSpec.detectorName, checkSpec.checkName));
+    }
+  }
+
+  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
+    if (aggregatorSpec.active && aggregatorSpec.exportToBookkeeping) {
+      ILOG(Debug, Support) << "Adding input to BookkeepingSink from aggregator " << aggregatorSpec.aggregatorName << " and detector: " << aggregatorSpec.detectorName << ENDM;
+      sinkInputs.emplace_back(createSinkInput<Aggregator>(aggregatorSpec.detectorName, aggregatorSpec.aggregatorName));
     }
   }
 
   if (sinkInputs.empty()) {
-    ILOG(Debug, Support) << "BookkeepingSink is not being created because there any suitable inputs with quality objects were not found" << ENDM;
+    ILOG(Debug, Support) << "BookkeepingSink is not being created because we couldn't find any suitable inputs." << ENDM;
     return;
   }
 
