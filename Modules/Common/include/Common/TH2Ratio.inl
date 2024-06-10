@@ -123,12 +123,7 @@ TH2Ratio<T>::~TH2Ratio()
 template<class T>
 void TH2Ratio<T>::init()
 {
-  if (!mHistoNum || !mHistoDen) {
-    return;
-  }
-  mHistoNum->Sumw2();
-  mHistoDen->Sumw2();
-  T::Sumw2();
+  Sumw2(kTRUE);
 }
 
 template<class T>
@@ -160,7 +155,12 @@ void TH2Ratio<T>::update()
   if (mUniformScaling) {
     double entries = mHistoDen->GetBinContent(1, 1);
     double norm = (entries > 0) ? 1.0 / entries : 0;
-    T::Scale(norm);
+    // make sure the sum-of-weights structure is not initialized if not required
+    if (mSumw2Enabled == kTRUE) {
+      T::Scale(norm);
+    } else {
+      T::Scale(norm, "nosw2");
+    }
   } else {
     // copy bin labels to denominator before dividing, otherwise we get a warning
     if (T::GetXaxis()->GetLabels())  {
@@ -284,6 +284,19 @@ void TH2Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
   getNum()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
   getDen()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
   T::SetBins(nx, xmin, xmax, ny, ymin, ymax);
+}
+
+template<class T>
+void TH2Ratio<T>::Sumw2(Bool_t flag)
+{
+  if (!mHistoNum || !mHistoDen) {
+    return;
+  }
+
+  mSumw2Enabled = flag;
+  mHistoNum->Sumw2(flag);
+  mHistoDen->Sumw2(flag);
+  T::Sumw2(flag);
 }
 
 } // namespace o2::quality_control_modules::common
