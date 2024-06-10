@@ -205,7 +205,7 @@ TEST_CASE("qc_factory_remote_test")
     [](const DataProcessorSpec& d) {
       return d.name == "qc-aggregator" &&
              d.inputs.size() == 4 &&
-             d.outputs.size() == 0;
+             d.outputs.size() == 4;
     });
   CHECK(aggregator != workflow.end());
 }
@@ -278,7 +278,7 @@ TEST_CASE("qc_factory_standalone_test")
     [](const DataProcessorSpec& d) {
       return d.name == "qc-aggregator" &&
              d.inputs.size() == 4 &&
-             d.outputs.size() == 0;
+             d.outputs.size() == 4;
     });
   CHECK(aggregator != workflow.end());
 }
@@ -408,7 +408,7 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
     [](const DataProcessorSpec& d) {
       return d.name == "qc-aggregator" &&
              d.inputs.size() == 4 &&
-             d.outputs.size() == 0;
+             d.outputs.size() == 4;
     });
   CHECK(aggregator != workflow.end());
 }
