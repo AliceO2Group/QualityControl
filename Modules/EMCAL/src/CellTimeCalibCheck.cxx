@@ -82,7 +82,7 @@ void CellTimeCalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
 {
   if (mo->getName() == "cellTimeCalib_PHYS") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
-    if ( h == nullptr) {
+    if (h == nullptr) {
       ILOG(Error, Support) << "Could not cast 'cellTimeCalib_PHYS' to TH1*, skipping" << ENDM;
       return;
     }
