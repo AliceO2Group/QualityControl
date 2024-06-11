@@ -19,13 +19,15 @@
 
 #include "QualityControl/CheckInterface.h"
 
-namespace o2::quality_control_modules::emcal {
+namespace o2::quality_control_modules::emcal
+{
 
 /// \brief  Check if the trend rate is as expected.
 ///
 /// \author Ananya Rai
-class TrendGraphCheck : public o2::quality_control::checker::CheckInterface {
-public:
+class TrendGraphCheck : public o2::quality_control::checker::CheckInterface
+{
+ public:
   /// Default constructor
   TrendGraphCheck() = default;
   /// Destructor
@@ -34,22 +36,22 @@ public:
   // Override interface
   void configure() override;
   Quality
-  check(std::map<std::string, std::shared_ptr<MonitorObject>> *moMap) override;
+    check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo,
                 Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-private:
+ private:
   /************************************************
    * threshold cuts                               *
    ************************************************/
   int mPeriodMovAvg = 5; ///< Period for moving average
   double mBadThresholdLow =
-      10; ///< If rate lower than this threshold - medium, keep checking
+    10; ///< If rate lower than this threshold - medium, keep checking
   double mBadThresholdHigh =
-      1000; ///< If rate higher than this thereshold - medium, keep checking
+    1000; ///< If rate higher than this thereshold - medium, keep checking
   double mBadDiff =
-      20; ///< If difference is higher than this between consecutive rates - bad
+    20; ///< If difference is higher than this between consecutive rates - bad
 
   ClassDefOverride(TrendGraphCheck, 5);
 };
