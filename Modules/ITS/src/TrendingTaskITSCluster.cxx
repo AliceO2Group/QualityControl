@@ -301,9 +301,17 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
           min = -0.5;
         else
           min = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmin();
+                float max, min;
+        max = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmax();
+
+        if (id == 2)
+          min = -0.5;
+        else
+          min = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmin();
         SetGraphNameAndAxes(hfake, "hfake",
                             Form("L%d - %s trends", ilay, trendtitles[id].c_str()),
-                            isrun ? "run" : "time", ytitles[id], min, max, runlist);
+                            isrun ? "run" : "time", ytitles[id], min, max, runlist);   
+
         hfake->SetStats(kFALSE);
         hfake->Draw();
 

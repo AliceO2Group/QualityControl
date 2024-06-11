@@ -62,10 +62,13 @@ void TrendingTaskITSError::initialize(Trigger, framework::ServiceRegistryRef)
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<ReductorBinContent> reductor(root_class_factory::create<ReductorBinContent>(source.moduleName, source.reductorName));
-    reductor->setParams(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0);
+   if (source.name == "ChipErrorPlots")  
+      reductor->setParams(o2::itsmft::ChipStat::NErrorsDefined);
+    else reductor->setParams(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined);
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
+
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
@@ -140,15 +143,20 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   std::string name_Xaxis;
   long int numberOfEntries = mTrend->GetEntriesFast();
   // Define output graphs
+ TString plots[2] = {"LinkErrorPlots", "ChipErrorPlots"};
+  for (TString plotName: plots){
+
   TMultiGraph* multi_trend;
+  countplots=0;
 
   // Lane status summary plots
   for (const auto& plot : mConfig.plots) {
 
+    if (plot.varexp.find(plotName.Data()) == std::string::npos) continue;
     // Initialize MultiGraph and Legend
     if (countplots == 0) {
       multi_trend = new TMultiGraph();
-      SetGraphName(multi_trend, plot.name, "Trending plot of GTBLink decoding errors");
+      SetGraphName(multi_trend, plot.name, Form("Trending plot of %s",plotName.Data()));
 
       isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
       name_Xaxis = plot.selection.c_str();
@@ -166,7 +174,9 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Number of errors", !isRun);
 
   // Canvas settings
-  std::string name = "GTBLinkDecodingErrorsSummary_Trends";
+  std::string name;
+  if (plotName == "LinkErrorPlots") name = "GTBLinkDecodingErrorsSummary_Trends";
+     else name = "ChipDecodingErrorsSummary_Trends";
   TCanvas* canvas = new TCanvas(Form("%s", name.c_str()), Form("%s", name.c_str()));
   SetCanvasSettings(canvas);
 
@@ -183,7 +193,7 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
 
   TLegend* legend = (TLegend*)canvas->BuildLegend(0.77, 0.12, 1, 1);
-  SetLegendStyle(legend, "GTBLinkDecodingErrorsSummary_legend", isRun);
+  SetLegendStyle(legend, Form("%s_legend",plotName.Data()), isRun);
   legend->Draw("SAME");
 
   // Upload plots
