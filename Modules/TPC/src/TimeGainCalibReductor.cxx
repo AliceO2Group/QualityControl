@@ -81,7 +81,7 @@ bool TimeGainCalibReductor::update(ConditionRetriever& retriever)
         }
       }
 
-      double tgl = 1.;
+      const double tgl = 1.;
       // Gain averaged over all sectors for a stack type
       for (int iStack = 0; iStack < o2::tpc::GEMSTACKSPERSECTOR; iStack++) {
         auto stack = stacks[iStack];
