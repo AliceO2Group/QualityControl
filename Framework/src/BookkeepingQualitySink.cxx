@@ -33,9 +33,8 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
   auto bkpClient = o2::bkp::api::BkpClientFactory::create(grpcUri);
   auto& qcClient = bkpClient->qcFlag();
 
-  ILOG(Info, Support) << "Sending " << flags.size() << " flag collections" << ENDM;
-
-  for (const auto& [_, flagCollection] : flags) {
+  for (const auto& [detector, flagCollection] : flags) {
+    ILOG(Info, Support) << "Sending " << flags.size() << " flags for detector:  " << detector << ENDM;
 
     if (flagCollection->size() == 0) {
       continue;
@@ -58,15 +57,14 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
       switch (type) {
         case Provenance::SyncQC:
         case Provenance::AsyncQC:
-          qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), flagCollection->getDetector(), bkpQcFlags);
+          qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), detector, bkpQcFlags);
           break;
         case Provenance::MCQC:
-          qcClient->createForSimulationPass(flagCollection->getRunNumber(), flagCollection->getPeriodName(), flagCollection->getDetector(), bkpQcFlags);
+          qcClient->createForSimulationPass(flagCollection->getRunNumber(), flagCollection->getPeriodName(), detector, bkpQcFlags);
           break;
       }
     } catch (const std::runtime_error& err) {
-      ILOG(Error, Support) << "Failed to send flags for detector: " << flagCollection->getDetector()
-                           << " and pass: " << flagCollection->getPassName()
+      ILOG(Error, Support) << "Failed to send flags for detector: " << detector
                            << " with error: " << err.what() << ENDM;
     }
   }
@@ -94,22 +92,12 @@ auto collectionFromQualityObject(const QualityObject& qualityObject) -> std::uni
     qualityObject.getActivity().mProvenance);
 }
 
-auto to_key(const QualityObject& qualityObject) -> std::string
-{
-  std::string key;
-  key.reserve(qualityObject.getDetectorName().size() + std::size("||") + qualityObject.getCheckName().size());
-  key.append(qualityObject.getDetectorName());
-  key.append("||");
-  key.append(qualityObject.getCheckName());
-  return key;
-}
-
 void BookkeepingQualitySink::run(framework::ProcessingContext& context)
 {
   for (auto const& ref : framework::InputRecordWalker(context.inputs())) {
     try {
       auto qualityObject = framework::DataRefUtils::as<QualityObject>(ref);
-      auto [emplacedIt, _] = mQualityObjectsMap.emplace(to_key(*qualityObject), collectionFromQualityObject(*qualityObject));
+      auto [emplacedIt, _] = mQualityObjectsMap.emplace(qualityObject->getDetectorName(), collectionFromQualityObject(*qualityObject));
       emplacedIt->second = merge(std::move(emplacedIt->second), qualityObject);
     } catch (...) {
       ILOG(Warning, Support) << "Unexpected message received, QualityObject expected" << ENDM;
