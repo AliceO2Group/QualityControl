@@ -423,6 +423,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
   CheckRunnerFactory::customizeInfrastructure(policies);
   AggregatorRunnerFactory::customizeInfrastructure(policies);
   RootFileSink::customizeInfrastructure(policies);
+  BookkeepingQualitySink::customizeInfrastructure(policies);
 }
 
 void InfrastructureGenerator::printVersion()

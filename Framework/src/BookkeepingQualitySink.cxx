@@ -17,6 +17,8 @@
 #include "QualityControl/BookkeepingQualitySink.h"
 #include <Framework/DataRefUtils.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/DeviceSpec.h>
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/QualitiesToFlagCollectionConverter.h"
 #include "QualityControl/QualityObject.h"
@@ -27,6 +29,15 @@
 
 namespace o2::quality_control::core
 {
+
+void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
+{
+  using namespace o2::framework;
+  auto matcher = [label = BookkeepingQualitySink::getLabel()](auto const& device) {
+    return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
+  };
+  policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("BookkeepingQualitySinkCompletionPolicy", matcher));
+}
 
 void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance type)
 {

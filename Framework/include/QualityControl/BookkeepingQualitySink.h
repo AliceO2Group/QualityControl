@@ -18,6 +18,7 @@
 #define QUALITYCONTROL_BOOKKEEPINGQUALITYSINK_H
 
 #include <DataFormatsQualityControl/QualityControlFlagCollection.h>
+#include <Framework/CompletionPolicy.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/Task.h>
 #include "Provenance.h"
@@ -41,6 +42,8 @@ class BookkeepingQualitySink : public framework::Task
   void endOfStream(framework::EndOfStreamContext& context) override;
   void stop() override;
 
+  static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
+  static framework::DataProcessorLabel getLabel() { return { "BookkeepingQualitySink" }; }
   static void send(const std::string& grpcUri, const FlagsMap&, Provenance);
 
  private:
