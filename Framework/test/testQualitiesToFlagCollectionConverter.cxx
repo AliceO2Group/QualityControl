@@ -47,9 +47,13 @@ BOOST_AUTO_TEST_CASE(test_NoQOs)
 BOOST_AUTO_TEST_CASE(test_NoBeginning)
 {
   std::vector<QualityObject> qos{
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "50" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "50" }, { metadata_keys::validUntil, "120" } } }
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 10, 50 });
+  qos[1].setValidity({ 50, 120 });
+
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
@@ -75,8 +79,11 @@ BOOST_AUTO_TEST_CASE(test_NoBeginning)
 BOOST_AUTO_TEST_CASE(test_NoEnd)
 {
   std::vector<QualityObject> qos{
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "5" }, { metadata_keys::validUntil, "80" } } }
+    { Quality::Good, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 5, 80 });
+
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
@@ -95,12 +102,18 @@ BOOST_AUTO_TEST_CASE(test_NoEnd)
 BOOST_AUTO_TEST_CASE(test_WrongOrder)
 {
   std::vector<QualityObject> qos{
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "70" }, { metadata_keys::validUntil, "90" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "60" }, { metadata_keys::validUntil, "90" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "50" }, { metadata_keys::validUntil, "120" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "40" }, { metadata_keys::validUntil, "120" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "30" }, { metadata_keys::validUntil, "120" } } }
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 70, 90 });
+  qos[1].setValidity({ 60, 90 });
+  qos[2].setValidity({ 50, 120 });
+  qos[3].setValidity({ 40, 120 });
+  qos[4].setValidity({ 30, 120 });
 
   {
     // good to good
@@ -135,10 +148,14 @@ BOOST_AUTO_TEST_CASE(test_WrongOrder)
 BOOST_AUTO_TEST_CASE(test_MismatchingParameters)
 {
   std::vector<QualityObject> qos{
-    { Quality::Bad, "xyzCheck", "TPC", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "120" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "1000" }, { metadata_keys::validUntil, "10000" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "40" }, { metadata_keys::validUntil, "30" } } }
+    { Quality::Bad, "xyzCheck", "TPC" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 10, 120 });
+  qos[1].setValidity({ 1000, 10000 });
+  qos[2].setValidity({ 40, 30 });
 
   {
     // different detector
@@ -163,13 +180,21 @@ BOOST_AUTO_TEST_CASE(test_MismatchingParameters)
 BOOST_AUTO_TEST_CASE(test_OverlappingQOs)
 {
   std::vector<QualityObject> qos{
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "5" }, { metadata_keys::validUntil, "50" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "50" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "15" }, { metadata_keys::validUntil, "60" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "55" }, { metadata_keys::validUntil, "120" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "60" }, { metadata_keys::validUntil, "120" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "70" }, { metadata_keys::validUntil, "120" } } }
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 5, 50 });
+  qos[1].setValidity({ 10, 50 });
+  qos[2].setValidity({ 15, 60 });
+  qos[3].setValidity({ 55, 120 });
+  qos[4].setValidity({ 60, 120 });
+  qos[5].setValidity({ 70, 120 });
+
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
@@ -189,13 +214,21 @@ BOOST_AUTO_TEST_CASE(test_OverlappingQOs)
 BOOST_AUTO_TEST_CASE(test_AdjacentQOs)
 {
   std::vector<QualityObject> qos{
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "5" }, { metadata_keys::validUntil, "10" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "14" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "15" }, { metadata_keys::validUntil, "49" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "50" }, { metadata_keys::validUntil, "80" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "80" }, { metadata_keys::validUntil, "95" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "96" }, { metadata_keys::validUntil, "120" } } }
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 5, 10 });
+  qos[1].setValidity({ 10, 14 });
+  qos[2].setValidity({ 15, 49 });
+  qos[3].setValidity({ 50, 80 });
+  qos[4].setValidity({ 80, 95 });
+  qos[5].setValidity({ 96, 120 });
+
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
 
@@ -216,9 +249,13 @@ BOOST_AUTO_TEST_CASE(test_AdjacentQOs)
 BOOST_AUTO_TEST_CASE(test_UnexplainedMediumIsBad)
 {
   std::vector<QualityObject> qos{
-    { Quality::Medium, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "5" }, { metadata_keys::validUntil, "150" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "100" } } }
+    { Quality::Medium, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 5, 150 });
+  qos[1].setValidity({ 10, 100 });
+
   std::unique_ptr<QualityControlFlagCollection> qcfc{ new QualityControlFlagCollection("test1", "DET", { 5, 100 }) };
   QualitiesToFlagCollectionConverter converter(std::move(qcfc), "qc/DET/QO/xyzCheck");
   for (const auto& qo : qos) {
@@ -238,11 +275,17 @@ BOOST_AUTO_TEST_CASE(test_UnexplainedMediumIsBad)
 BOOST_AUTO_TEST_CASE(test_KnownFlags)
 {
   std::vector<QualityObject> qos{
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "5" }, { metadata_keys::validUntil, "10" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "40" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "30" }, { metadata_keys::validUntil, "80" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "50" }, { metadata_keys::validUntil, "100" } } }
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 5, 10 });
+  qos[1].setValidity({ 10, 40 });
+  qos[2].setValidity({ 30, 80 });
+  qos[3].setValidity({ 50, 100 });
+
   qos[1].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
   qos[2].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
   qos[2].addFlag(FlagTypeFactory::BadHadronPID(), "evil CERN scientists changed the proton mass");
@@ -275,11 +318,17 @@ BOOST_AUTO_TEST_CASE(test_KnownFlags)
 BOOST_AUTO_TEST_CASE(test_TheSameFlagsButSeparated)
 {
   std::vector<QualityObject> qos{
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "5" }, { metadata_keys::validUntil, "25" } } },
-    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "10" }, { metadata_keys::validUntil, "40" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "30" }, { metadata_keys::validUntil, "50" } } },
-    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { metadata_keys::validFrom, "80" }, { metadata_keys::validUntil, "100" } } }
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Good, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" },
+    { Quality::Bad, "xyzCheck", "DET" }
   };
+
+  qos[0].setValidity({ 5, 25 });
+  qos[1].setValidity({ 10, 40 });
+  qos[2].setValidity({ 30, 50 });
+  qos[3].setValidity({ 80, 100 });
+
   qos[0].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
   qos[2].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
   qos[3].addFlag(FlagTypeFactory::BadTracking(), "Bug in reco");
