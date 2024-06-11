@@ -31,6 +31,7 @@ fi
 # delete data
 curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/FunctionalTest${UNIQUE_ID}*
 curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FunctionalTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FunctionalTestAggregator${UNIQUE_ID}*
 
 # store data
 DIR="$(dirname "${BASH_SOURCE[0]}")"  # get the directory name
@@ -47,9 +48,19 @@ fi
 # try to check that we got a valid root object
 root -b -l -q -e 'TFile f("/tmp/output${UNIQUE_ID}.root"); f.Print();'
 
-# check QualityObject
+# check QualityObject created by the Check
 # first the return code must be 200
 code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/FunctionalTest${UNIQUE_ID}/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
+if (( $code != 200 )); then
+  echo "Error, data not found."
+  exit 2
+fi
+# try to check that we got a valid root object
+root -b -l -q -e 'TFile f("/tmp/output${UNIQUE_ID}.root"); f.Print();'
+
+# check QualityObject created by the Aggregator
+# first the return code must be 200
+code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/FunctionalTestAggregator${UNIQUE_ID}/newQuality/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, data not found."
   exit 2
@@ -60,3 +71,4 @@ root -b -l -q -e 'TFile f("/tmp/output${UNIQUE_ID}.root"); f.Print();'
 # delete the data
 curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/FunctionalTest${UNIQUE_ID}*
 curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FunctionalTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/FunctionalTestAggregator${UNIQUE_ID}*
