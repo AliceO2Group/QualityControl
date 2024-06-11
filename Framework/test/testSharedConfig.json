@@ -253,6 +253,7 @@
       },
       "someNumbersCheck": {
         "active": "true",
+        "exportToBookkeeping": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
@@ -316,6 +317,7 @@
       },
       "MyAggregatorD": {
         "active": "true",
+        "exportToBookkeeping": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
         "moduleName": "QcSkeleton",
         "policy": "OnAll",

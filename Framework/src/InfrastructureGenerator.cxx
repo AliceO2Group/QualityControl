@@ -103,9 +103,9 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
     }
   }
   generateCheckRunners(workflow, infrastructureSpec);
-  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -152,9 +152,9 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
-  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -322,9 +322,9 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
-  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -403,9 +403,9 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
-  generateBookkeepingQualitySink(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
