@@ -19,7 +19,8 @@ def parse_args():
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Update this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob)', required=True)
+                        help='Update this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob). '
+                             'It will correspond to the exact name of a folder.', required=True)
     parser.add_argument('--runs-csv-file', dest='runs_file', action='store', help='A csv file with a header and the '
                                                                                   'columns `runNumber` and `runType`',
                         required=True)
@@ -27,6 +28,10 @@ def parse_args():
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should be really careful with that.')
     parser.add_argument('--path-no-subdir', action='store_true', default=False, help='Set to true if the '
                           'path points to an object rather than a folder or if subdirectories must be ignored.')
+    parser.add_argument('--path-wildcard', action='store_true', default=False, help='Path to update, no initial '
+                                                                                    'slash, no .* at the end. It does'
+                                                                                    ' not need to match a full '
+                                                                                    'directory name.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -59,7 +64,9 @@ def run(args):
 
     # go through the versions and update them if possible
     path = args.path
-    if args.path_no_subdir is False:
+    if args.path_wildcard:
+        path += ".*"
+    elif args.path_no_subdir is False:
         path += "/.*"
     versions = ccdb.getVersionsList(path, "", "")
     logging.info(f"Number of versions found: {len(versions)}")

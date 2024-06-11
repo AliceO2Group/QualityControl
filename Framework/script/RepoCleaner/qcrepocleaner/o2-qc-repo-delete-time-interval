@@ -29,6 +29,8 @@ def parse_args():
                         help='Only print the list of objects that would be deleted')
     parser.add_argument('--metadata', dest='metadata', action='store', default="",
                         help='Delete only versions matching these metadata. Format: "[/key=value]*"')
+    parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
+
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -50,10 +52,11 @@ def run(args):
 
     logging.info(f"Number of items: {len(versions)}")
 
-    logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
-    answer = input("Yes/No \n  ")
-    if answer.lower() not in ["y", "yes"]:
-        exit(0)
+    if not args.yes:
+        logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
+        answer = input("Yes/No \n  ")
+        if answer.lower() not in ["y", "yes"]:
+            exit(0)
 
     for v in versions:
         logging.info(f"Ready to delete {v}")
