@@ -177,10 +177,12 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
   auto isWorse = [](Quality const& a, Quality const& b) {
     return a.isWorseThan(b) ? a : b;
   };
-  auto findWorst = [&]<typename T, typename... Args>(const T& first, Args... args)
-  {
+  // Somehow this is not accepted by the CI, although running git-clang-format locally accepts it
+  // clang-format off
+  auto findWorst = [&]<typename T, typename... Args>(const T& first, Args... args) {
     return isWorse(first, isWorse(args...));
   };
+  // clang-format on
   result.set(findWorst(ptQual, etaQual, phiQual));
 
   return result;
@@ -221,7 +223,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     l3->SetLineColor(kCyan - 7);
     auto* tt = new TText(xmaxT + 0.3, 1.02, "Checked Range");
     tt->SetTextSize(0.04);
-    auto* ttt = new TText(xmax - 5.0, mThresholdPt + 0.012, "Threshold");
+    auto* ttt = new TText(xmaxT + 0.3, mThresholdPt + 0.012, "Threshold");
     auto* aa = new TArrow(xminT + 0.01, 1.02, xmaxT - 0.01, 1.02, 0.02, "<|>");
     if (checkResult.getMetadata("checkPtQuality") == "good") {
       l1->SetLineColor(kCyan - 7);
@@ -244,7 +246,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     eff->GetListOfFunctions()->Add(aa);
 
     // Color Bins in Window
-    int cG{ 0 }, cB{ 0 };
+    int cG{ 0 }, cB{ 0 }, cTot{ 0 };
     auto* good = new TPolyMarker();
     good->SetMarkerColor(kGreen);
     good->SetMarkerStyle(25);
@@ -253,10 +255,6 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     bad->SetMarkerColor(kRed);
     bad->SetMarkerStyle(25);
     bad->SetMarkerSize(2);
-    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
-    leg->SetHeader("Threshold Checks");
-    leg->AddEntry(good, "Good", "P");
-    leg->AddEntry(bad, "Bad", "P");
     auto binLow = eff->FindFixBin(mMinPt), binUp = eff->FindFixBin(mMaxPt);
     for (int iBin = binLow; iBin <= binUp; ++iBin) {
       auto x = eff->GetBinCenter(iBin);
@@ -267,6 +265,11 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
         good->SetPoint(cG++, x, y);
       }
     }
+    cTot = cG + cB;
+    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
+    leg->SetHeader("Threshold Checks");
+    leg->AddEntry(good, Form("Good %d / %d", cG, cTot), "P");
+    leg->AddEntry(bad, Form("Bad %d / %d", cB, cTot), "P");
     eff->GetListOfFunctions()->Add(good);
     eff->GetListOfFunctions()->Add(bad);
     eff->GetListOfFunctions()->Add(leg);
@@ -328,7 +331,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     eff->GetListOfFunctions()->Add(aa);
 
     // Color Bins in Window
-    int cG{ 0 }, cB{ 0 };
+    int cG{ 0 }, cB{ 0 }, cTot{ 0 };
     auto* good = new TPolyMarker();
     good->SetMarkerColor(kGreen);
     good->SetMarkerStyle(25);
@@ -337,10 +340,6 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     bad->SetMarkerColor(kRed);
     bad->SetMarkerStyle(25);
     bad->SetMarkerSize(1);
-    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
-    leg->SetHeader("Threshold Checks");
-    leg->AddEntry(good, "Good", "P");
-    leg->AddEntry(bad, "Bad", "P");
     for (int iBin{ 1 }; iBin <= eff->GetNbinsX(); ++iBin) {
       auto x = eff->GetBinCenter(iBin);
       auto y = eff->GetBinContent(iBin);
@@ -350,6 +349,11 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
         good->SetPoint(cG++, x, y);
       }
     }
+    cTot = cG + cB;
+    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
+    leg->SetHeader("Threshold Checks");
+    leg->AddEntry(good, Form("Good %d / %d", cG, cTot), "P");
+    leg->AddEntry(bad, Form("Bad %d / %d", cB, cTot), "P");
     eff->GetListOfFunctions()->Add(good);
     eff->GetListOfFunctions()->Add(bad);
     eff->GetListOfFunctions()->Add(leg);
@@ -428,7 +432,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     eff->GetListOfFunctions()->Add(aa);
 
     // Color Bins in Window
-    int cG{ 0 }, cB{ 0 };
+    int cG{ 0 }, cB{ 0 }, cTot{ 0 };
     auto* good = new TPolyMarker();
     good->SetMarkerColor(kGreen);
     good->SetMarkerStyle(25);
@@ -437,10 +441,6 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     bad->SetMarkerColor(kRed);
     bad->SetMarkerStyle(25);
     bad->SetMarkerSize(1);
-    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
-    leg->SetHeader("Threshold Checks");
-    leg->AddEntry(good, "Good", "P");
-    leg->AddEntry(bad, "Bad", "P");
     auto binLow = eff->FindFixBin(mMinEta), binUp = eff->FindFixBin(mMaxEta);
     for (int iBin = binLow; iBin <= binUp; ++iBin) {
       auto x = eff->GetBinCenter(iBin);
@@ -451,6 +451,11 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
         good->SetPoint(cG++, x, y);
       }
     }
+    cTot = cG + cB;
+    auto* leg = new TLegend(0.7, 0.13, 0.89, 0.3);
+    leg->SetHeader("Threshold Checks");
+    leg->AddEntry(good, Form("Good %d / %d", cG, cTot), "P");
+    leg->AddEntry(bad, Form("Bad %d / %d", cB, cTot), "P");
     eff->GetListOfFunctions()->Add(good);
     eff->GetListOfFunctions()->Add(bad);
     eff->GetListOfFunctions()->Add(leg);
