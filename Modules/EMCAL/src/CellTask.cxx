@@ -132,11 +132,19 @@ void CellTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (hasConfigValue("thresholdTotalEnergy")) {
     mTaskSettings.mThresholdTotalEnergy = get_double(getConfigValue("thresholdTotalEnergy"));
   }
+  if (hasConfigValue("ThresholdAvEnergy")) {
+    mTaskSettings.mThresholdAvEnergy = get_double(getConfigValue("ThresholdAvEnergy"));
+  }
+  if (hasConfigValue("ThresholdAvTime")) {
+    mTaskSettings.mThresholdAvTime = get_double(getConfigValue("ThresholdAvTime"));
+  }
   ILOG(Info, Support) << "Apply energy calibration: " << (mTaskSettings.mCalibrateEnergy ? "yes" : "no") << ENDM;
   ILOG(Info, Support) << "Amplitude cut time histograms (PhysTrigger) " << mTaskSettings.mAmpThresholdTimePhys << ENDM;
   ILOG(Info, Support) << "Amplitude cut time histograms (CalibTrigger) " << mTaskSettings.mAmpThresholdTimeCalib << ENDM;
   ILOG(Info, Support) << "Amplitude cut occupancy histograms (PhysTrigger) " << mTaskSettings.mThresholdPHYS << ENDM;
   ILOG(Info, Support) << "Amplitude cut occupancy histograms (CalibTrigger) " << mTaskSettings.mThresholdCAL << ENDM;
+  ILOG(Info, Support) << "Energy threshold av. energy histogram (constrained) " << mTaskSettings.mThresholdAvEnergy << " GeV/c" << ENDM;
+  ILOG(Info, Support) << "Time threshold av. time histogram (constrained) " << mTaskSettings.mThresholdAvTime << " ns" << ENDM;
   ILOG(Info, Support) << "Multiplicity mode: " << (mTaskSettings.mIsHighMultiplicity ? "High multiplicity" : "Low multiplicity") << ENDM;
 
   mIgnoreTriggerTypes = get_bool(getConfigValue("ignoreTriggers"));
@@ -778,6 +786,8 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
     mCellThreshold = settings.mThresholdCAL;
     mAmplitudeThresholdTime = settings.mAmpThresholdTimeCalib;
   }
+  mThresholdAvTime = settings.mThresholdAvTime;
+  mThresholdAvEnergy = settings.mThresholdAvEnergy;
   auto histBuilder1D = [trigger](const std::string name, const std::string title, int nbinsx, double xmin, double xmax) -> TH1* {
     std::string histname = name + "_" + trigger,
                 histtitle = title + " " + trigger;
@@ -863,6 +873,16 @@ void CellTask::CellHistograms::initForTrigger(const std::string trigger, const T
   mAverageCellTime->GetYaxis()->SetTitle("row");
   mAverageCellTime->SetStats(false);
 
+  mAverageCellEnergyConstrained = histBuilder2D("averageCellEnergyConstrained", Form("Average cell energy (E > %.1f GeV/c)", settings.mThresholdAvEnergy), 96, -0.5, 95.5, 208, -0.5, 207.5, true);
+  mAverageCellEnergyConstrained->GetXaxis()->SetTitle("col");
+  mAverageCellEnergyConstrained->GetYaxis()->SetTitle("row");
+  mAverageCellEnergyConstrained->SetStats(false);
+
+  mAverageCellTimeConstrained = histBuilder2D("averageCellTimeConstrained", Form("Average cell time (|t| < %.1f ns)", settings.mThresholdAvTime), 96, -0.5, 95.5, 208, -0.5, 207.5, true);
+  mAverageCellTimeConstrained->GetXaxis()->SetTitle("col");
+  mAverageCellTimeConstrained->GetYaxis()->SetTitle("row");
+  mAverageCellTimeConstrained->SetStats(false);
+
   mIntegratedOccupancy = histBuilder2D("cellOccupancyInt", "Cell Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
@@ -937,7 +957,13 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     if (goodCell) {
       fillOptional2D(mCellOccupancyGood, col, row);
       fillOptional2D(mAverageCellEnergy, col, row, energy);
+      if (energy > mThresholdAvEnergy) {
+        fillOptional2D(mAverageCellEnergyConstrained, col, row, energy);
+      };
       fillOptional2D(mAverageCellTime, col, row, cell.getTimeStamp() - timecalib);
+      if (std::abs(cell.getTimeStamp()) < mThresholdAvTime) {
+        fillOptional2D(mAverageCellTimeConstrained, col, row, cell.getTimeStamp() - timecalib);
+      }
     } else {
       fillOptional2D(mCellOccupancyBad, col, row);
     }
@@ -1057,6 +1083,8 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   publishOptional(mIntegratedOccupancy);
   publishOptional(mAverageCellEnergy);
   publishOptional(mAverageCellTime);
+  publishOptional(mAverageCellEnergyConstrained);
+  publishOptional(mAverageCellTimeConstrained);
   publishOptional(mnumberEvents);
 
   for (auto histos : mCellTimeSupermoduleEMCAL_Gain) {
@@ -1110,6 +1138,8 @@ void CellTask::CellHistograms::reset()
   resetOptional(mIntegratedOccupancy);
   resetOptional(mAverageCellEnergy);
   resetOptional(mAverageCellTime);
+  resetOptional(mAverageCellEnergyConstrained);
+  resetOptional(mAverageCellTimeConstrained);
   resetOptional(mnumberEvents);
 
   for (auto histos : mCellTimeSupermoduleEMCAL_Gain) {
@@ -1157,6 +1187,8 @@ void CellTask::CellHistograms::clean()
   delete mIntegratedOccupancy;
   delete mAverageCellEnergy;
   delete mAverageCellTime;
+  delete mAverageCellEnergyConstrained;
+  delete mAverageCellTimeConstrained;
   delete mnumberEvents;
 
   mCellTime = nullptr;
@@ -1190,6 +1222,8 @@ void CellTask::CellHistograms::clean()
   mIntegratedOccupancy = nullptr;
   mAverageCellEnergy = nullptr;
   mAverageCellTime = nullptr;
+  mAverageCellEnergyConstrained = nullptr;
+  mAverageCellTimeConstrained = nullptr;
   mnumberEvents = nullptr;
 
   for (auto*& histos : mCellTimeSupermoduleEMCAL_Gain) {

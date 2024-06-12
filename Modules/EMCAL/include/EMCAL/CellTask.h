@@ -70,6 +70,8 @@ class CellTask final : public TaskInterface
     double mThresholdPHYS = 0.2;
     double mThresholdCAL = 0.5;
     double mThresholdTotalEnergy = 0.;
+    double mThresholdAvTime = 25.;
+    double mThresholdAvEnergy = 0.5;
 
     int mMultiplicityRange = 0;
     int mMultiplicityRangeDetector = 0;
@@ -85,6 +87,8 @@ class CellTask final : public TaskInterface
     o2::emcal::Geometry* mGeometry = nullptr;
     double mCellThreshold;
     double mAmplitudeThresholdTime;
+    double mThresholdAvTime;
+    double mThresholdAvEnergy;
     // std::array<TH2*, 2> mCellAmplitude = {};      ///< Cell amplitude
     TH2* mCellAmplitude = nullptr; ///< Cell amplitude
                                    //    std::array<TH2*, 2> mCellTime;           ///< Cell time
@@ -110,6 +114,8 @@ class CellTask final : public TaskInterface
     TH2* mIntegratedOccupancy = nullptr;                                       ///< Cell integrated occupancy
     TH2* mAverageCellEnergy = nullptr;                                         ///< Average cell energy
     TH2* mAverageCellTime = nullptr;                                           ///< Average cell time
+    TH2* mAverageCellEnergyConstrained = nullptr;                              ///< Average cell energy
+    TH2* mAverageCellTimeConstrained = nullptr;                                ///< Average cell time
     TH1* mCellAmplitude_tot = nullptr;                                         ///< Cell amplitude in EMCAL,DCAL
     TH1* mCellAmplitudeEMCAL = nullptr;                                        ///< Cell amplitude in EMCAL
     TH1* mCellAmplitudeDCAL = nullptr;                                         ///< Cell amplitude in DCAL
