@@ -1,0 +1,222 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "ccdb-test.cern.ch:8080",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable"
+        },
+        "Activity": {
+          "number": "",
+          "type": "",
+          "start": "", 
+          "end": ""
+        },
+        "monitoring": {
+          "url": "infologger:///debug?qc"
+        },
+        "consul": {
+          "url": ""
+        },
+        "conditionDB": {
+          "url": "ccdb-test.cern.ch:8080"
+        },
+        "postprocessing": {
+          "periodSeconds": "10"
+        }
+      },
+      "postprocessing": {
+        "CalibQC": {
+          "active": "true",
+          "resumeTrend": "false", 
+          "className": "o2::quality_control::postprocessing::TrendingTask",
+          "moduleName": "QualityControl",
+          "detectorName": "TPC",
+          "producePlotsOnUpdate": "true",
+          "dataSources": [
+            {
+              "type": "condition",
+              "path": "TPC/Calib/",
+              "names": [ "TimeGain" ],
+              "reductorName": "o2::quality_control_modules::tpc::TimeGainCalibReductor",
+              "moduleName": "QcTPC"
+            }
+          ],
+          "plots": [
+            {
+              "name": "Gain_QMax_IROC_Trend",
+              "title": "QMax mean gain over IROC vs time",
+              "varexp": "TimeGain.meanGain[0][0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QMax_OROC1_Trend",
+              "title": "QMax mean gain over OROC1 vs time",
+              "varexp": "TimeGain.meanGain[0][1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QMax_OROC2_Trend",
+              "title": "QMax mean gain over OROC2 vs time",
+              "varexp": "TimeGain.meanGain[0][2]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QMax_OROC3_Trend",
+              "title": "QMax mean gain over OROC3 vs time",
+              "varexp": "TimeGain.meanGain[0][3]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QMax_AllStacks_Trend",
+              "title": "QMax mean gain over all stacks vs time",
+              "varexp": "TimeGain.meanGain[0][4]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QTot_IROC_Trend",
+              "title": "QTot mean gain over IROC vs time",
+              "varexp": "TimeGain.meanGain[1][0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QTot_OROC1_Trend",
+              "title": "QTot mean gain over OROC1 vs time",
+              "varexp": "TimeGain.meanGain[1][1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QTot_OROC2_Trend",
+              "title": "QTot mean gain over OROC2 vs time",
+              "varexp": "TimeGain.meanGain[1][2]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QTot_OROC3_Trend",
+              "title": "QTot mean gain over OROC3 vs time",
+              "varexp": "TimeGain.meanGain[1][3]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "Gain_QTot_AllStacks_Trend",
+              "title": "QTot mean gain over all stacks vs time",
+              "varexp": "TimeGain.meanGain[1][4]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean gain:time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QMax_IROC_Trend",
+              "title": "QMax diff correction tgl(1) - tgl(0) over IROC vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[0][0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QMax_OROC1_Trend",
+              "title": "QMax diff correction tgl(1) - tgl(0) over OROC1 vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[0][1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QMax_OROC2_Trend",
+              "title": "QMax diff correction tgl(1) - tgl(0) over OROC2 vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[0][2]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QMax_OROC3_Trend",
+              "title": "QMax diff correction tgl(1) - tgl(0) over OROC3 vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[0][3]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QMax_AllStacks_Trend",
+              "title": "QMax diff correction tgl(1) - tgl(0) over all stacks vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[0][4]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QTot_IROC_Trend",
+              "title": "QTot diff correction tgl(1) - tgl(0) over IROC vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[1][0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QTot_OROC1_Trend",
+              "title": "QTot diff correction tgl(1) - tgl(0) over OROC1 vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[1][1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QTot_OROC2_Trend",
+              "title": "QTot diff correction tgl(1) - tgl(0) over OROC2 vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[1][2]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QTot_OROC3_Trend",
+              "title": "QTot diff correction tgl(1) - tgl(0) over OROC3 vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[1][3]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            },
+            {
+              "name": "DiffCorrectionTgl_QTot_AllStacks_Trend",
+              "title": "QTot diff correction tgl(1) - tgl(0) over all stacks vs time",
+              "varexp": "TimeGain.diffCorrectionTgl[1][4]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "diff correction tgl(1) - tgl(0):time"
+            }
+          ],
+          "initTrigger": [
+            "userorcontrol"
+          ],
+          "updateTrigger": [
+            "foreachobject:ccdb:TPC/Calib/TimeGain/"
+          ],
+          "stopTrigger": [
+            "userorcontrol"
+          ]
+        }
+      }
+    }
+  }
+  
