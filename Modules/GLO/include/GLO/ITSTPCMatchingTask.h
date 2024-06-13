@@ -20,7 +20,9 @@
 #include "QualityControl/TaskInterface.h"
 #include "GlobalTracking/MatchITSTPCQC.h"
 
-class TH1F;
+#include "TH1.h"
+
+#include <memory>
 
 using namespace o2::quality_control::core;
 
@@ -35,7 +37,7 @@ class ITSTPCMatchingTask final : public TaskInterface
   /// \brief Constructor
   ITSTPCMatchingTask() = default;
   /// Destructor
-  ~ITSTPCMatchingTask() override;
+  ~ITSTPCMatchingTask() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -48,6 +50,10 @@ class ITSTPCMatchingTask final : public TaskInterface
 
  private:
   o2::globaltracking::MatchITSTPCQC mMatchITSTPCQC;
+
+  std::unique_ptr<TH1> mHEffPt;
+  std::unique_ptr<TH1> mHEffEta;
+  std::unique_ptr<TH1> mHEffPhi;
 };
 
 } // namespace o2::quality_control_modules::glo
