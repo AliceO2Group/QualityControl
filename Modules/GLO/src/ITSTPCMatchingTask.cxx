@@ -128,6 +128,7 @@ void ITSTPCMatchingTask::endOfCycle()
   if (common::getFromConfig(mCustomParameters, "isSync", false)) {
     { // Pt
       auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(globaltracking::MatchITSTPCQC::ITS);
+      mHEffPt.reset();
       mHEffPt.reset(dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist")));
       if (mHEffPt) {
         mHEffPt->Divide(hEffPt->GetPassedHistogram(), hEffPt->GetTotalHistogram(), 1.0, 1.0, "B");
@@ -141,6 +142,7 @@ void ITSTPCMatchingTask::endOfCycle()
 
     { // Eta
       auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(globaltracking::MatchITSTPCQC::ITS);
+      mHEffEta.reset();
       mHEffEta.reset(dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist")));
       if (mHEffEta) {
         mHEffEta->Divide(hEffEta->GetPassedHistogram(), hEffEta->GetTotalHistogram(), 1.0, 1.0, "B");
@@ -153,6 +155,7 @@ void ITSTPCMatchingTask::endOfCycle()
 
     { // Phi
       auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(globaltracking::MatchITSTPCQC::ITS);
+      mHEffPhi.reset();
       mHEffPhi.reset(dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist")));
       if (mHEffPhi) {
         mHEffPhi->Divide(hEffPhi->GetPassedHistogram(), hEffPhi->GetTotalHistogram(), 1.0, 1.0, "B");
