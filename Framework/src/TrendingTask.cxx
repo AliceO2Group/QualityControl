@@ -17,7 +17,6 @@
 #include "QualityControl/TrendingTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/ReductorHelpers.h"
 #include "QualityControl/RootClassFactory.h"
@@ -25,12 +24,14 @@
 #include "QualityControl/ActivityHelpers.h"
 
 #include <TH1.h>
-#include <TH2F.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TGraphErrors.h>
 #include <TPoint.h>
+#include <TStyle.h>
+#include <TLegend.h>
 
+#include <boost/algorithm/string.hpp>
 #include <set>
 
 using namespace o2::quality_control;
@@ -198,6 +199,21 @@ void TrendingTask::setUserYAxisRange(TH1* hist, const std::string& graphYAxisRan
   hist->GetYaxis()->SetLimits(yMin, yMax);
 }
 
+void TrendingTask::formatRunNumberXAxis(TH1* background)
+{
+  background->GetXaxis()->SetNoExponent(true);
+}
+
+void TrendingTask::formatTimeXAxis(TH1* background)
+{
+  background->GetXaxis()->SetTimeDisplay(1);
+  // It deals with highly congested dates labels
+  background->GetXaxis()->SetNdivisions(505);
+  // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
+  background->GetXaxis()->SetTimeOffset(0.0);
+  background->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
+}
+
 void TrendingTask::generatePlots()
 {
   if (mTrend == nullptr) {
@@ -211,93 +227,174 @@ void TrendingTask::generatePlots()
   }
 
   ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
-
-  for (const auto& plot : mConfig.plots) {
+  for (const auto& plotConfig : mConfig.plots) {
 
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
-    if (mPlots.count(plot.name)) {
-      delete mPlots[plot.name];
-      mPlots[plot.name] = nullptr;
+    if (mPlots.count(plotConfig.name)) {
+      delete mPlots[plotConfig.name];
+      mPlots[plotConfig.name] = nullptr;
     }
+    auto c = drawPlot(plotConfig);
+    mPlots[plotConfig.name] = c;
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
+  }
+}
 
-    // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
-    const size_t plotOrder = std::count(plot.varexp.begin(), plot.varexp.end(), ':') + 1;
-    // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
+std::string TrendingTask::deduceGraphLegendOptions(const TrendingTaskConfig::Graph& graphConfig)
+{
+  // Looking at TGraphPainter documentation, the number of TGraph options is rather small,
+  // so we can try to be smart and deduce the corresponding legend options.
+  // I am not aware of any ROOT helper which can do this.
+  std::string options = graphConfig.option;
+  boost::algorithm::to_lower(options);
+  // these three options have only an influence on colours but not what is drawn and what not.
+  for (const auto& toRemove : { "pfc", "plc", "pmc" }) {
+    if (size_t pos = options.find(toRemove); pos != std::string::npos) {
+      options.erase(pos, 3);
+    }
+  }
+  auto optionsHave = [&](std::string_view seq) {
+    return options.find(seq) != std::string::npos;
+  };
+
+  std::string out;
+  if (optionsHave("l") || optionsHave("c")) {
+    out += "l"; // line
+  }
+  if (optionsHave("*") || optionsHave("p")) {
+    out += "p"; // point
+  }
+  if (optionsHave("f") || optionsHave("b")) {
+    out += "f"; // fill
+  }
+  if (!graphConfig.errors.empty()) {
+    out += "e"; // error bars
+  }
+  return out;
+}
+
+TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
+{
+  auto* c = new TCanvas();
+  auto* legend = new TLegend(0.3, 0.2);
+
+  if (plotConfig.colorPalette != 0) {
+    // this will work just once until we bump ROOT to a version which contains this commit:
+    // https://github.com/root-project/root/commit/0acdbd5be80494cec98ff60ba9a73cfe70a9a57a
+    // and enable the commented out line
+    // perhaps JSROOT >7.7.1 will allow us to retain the palette as well.
+    gStyle->SetPalette(plotConfig.colorPalette);
+    // This makes ROOT store the selected palette for each generated plot.
+    // TColor::DefinedColors(1); // TODO enable when available
+  } else {
+    // we set the default palette
+    gStyle->SetPalette();
+  }
+
+  // regardless whether we draw a graph or a histogram, a histogram is always used by TTree::Draw to draw axes and title
+  // we attempt to keep it to do some modifications later
+  TH1* background = nullptr;
+  bool firstGraphInPlot = true;
+  // by "graph" we consider anything we can draw, not necessarily TGraph, and we draw all on the same canvas
+  for (const auto& graphConfig : plotConfig.graphs) {
+    // we determine the order of the plotConfig, i.e. if it is a histogram (1), graphConfig (2), or any higher dimension.
+    const size_t plotOrder = std::count(graphConfig.varexp.begin(), graphConfig.varexp.end(), ':') + 1;
+
+    // having "SAME" at the first TTree::Draw() call will not work, we have to add it only in subsequent Draw calls
+    std::string option = firstGraphInPlot ? graphConfig.option : "SAME " + graphConfig.option;
+
+    mTrend->Draw(graphConfig.varexp.c_str(), graphConfig.selection.c_str(), option.c_str());
+
+    // For graphs, we allow to draw errors if they are specified.
     TGraphErrors* graphErrors = nullptr;
-
-    auto* c = new TCanvas();
-
-    mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
-
-    c->SetName(plot.name.c_str());
-    c->SetTitle(plot.title.c_str());
-
-    // For graphs we allow to draw errors if they are specified.
-    if (!plot.graphErrors.empty()) {
+    if (!graphConfig.errors.empty()) {
       if (plotOrder != 2) {
-        ILOG(Error, Support) << "Non empty graphErrors seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
+        ILOG(Error, Support) << "Non empty graphErrors seen for the plotConfig '" << plotConfig.name << "', which is not a graphConfig, ignoring." << ENDM;
       } else {
         // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
-        std::string varexpWithErrors(plot.varexp + ":" + plot.graphErrors);
-        mTrend->Draw(varexpWithErrors.c_str(), plot.selection.c_str(), "goff");
-        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
-        // We draw on the same plot as the main graph, but only error bars
+        std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
+        mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
+        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
+                                       mTrend->GetVal(2), mTrend->GetVal(3));
+        // We draw on the same plotConfig as the main graphConfig, but only error bars
         graphErrors->Draw("SAME E");
       }
     }
 
-    if (!plot.graphAxisLabel.empty()) {
-      if (auto histo = dynamic_cast<TH2F*>(c->GetPrimitive("htemp"))) {
-        setUserAxisLabel(histo->GetXaxis(), histo->GetYaxis(), plot.graphAxisLabel);
-      }
+    if (auto graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
+      graph->SetTitle(graphConfig.title.c_str());
+      graph->SetName(graphConfig.title.c_str());
+      legend->AddEntry(graph, graphConfig.title.c_str(), deduceGraphLegendOptions(graphConfig).c_str());
     }
-
-    // Postprocessing the plot - adding specified titles, configuring time-based plots, flushing buffers.
-    // Notice that axes and title are drawn using a histogram, even in the case of graphs.
-    if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
-      // The title of histogram is printed, not the title of canvas => we set it as well.
-      histo->SetTitle(plot.title.c_str());
-      // We have to update the canvas to make the title appear.
-      c->Update();
-
-      // After the update, the title has a different size and it is not in the center anymore. We have to fix that.
-      if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
-        title->SetBBoxCenterX(c->GetBBoxCenter().fX);
-        c->Modified();
-        c->Update();
+    if (auto htemp = dynamic_cast<TH1*>(c->FindObject("htemp"))) {
+      htemp->SetTitle(graphConfig.title.c_str());
+      htemp->SetName(graphConfig.title.c_str());
+      if (plotOrder == 1) {
+        legend->AddEntry(htemp, graphConfig.title.c_str(), "lpf");
       } else {
-        ILOG(Error, Devel) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
+        // htemp was used by TTree::Draw only to draw axes and title, not to plot data, no need to add it to legend
       }
-
-      // We have to explicitly configure showing time on x axis.
-      // I hope that looking for ":time" is enough here and someone doesn't come with an exotic use-case.
-      if (plot.varexp.find(":time") != std::string::npos) {
-        histo->GetXaxis()->SetTimeDisplay(1);
-        // It deals with highly congested dates labels
-        histo->GetXaxis()->SetNdivisions(505);
-        // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
-        histo->GetXaxis()->SetTimeOffset(0.0);
-        histo->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
-      } else if (plot.varexp.find(":meta.runNumber") != std::string::npos) {
-        histo->GetXaxis()->SetNoExponent(true);
-      }
-
-      // Set the user-defined range on the y axis if needed.
-      if (!plot.graphYRange.empty()) {
-        setUserYAxisRange(histo, plot.graphYRange);
-        c->Modified();
-        c->Update();
-      }
-
-      // QCG doesn't empty the buffers before visualizing the plot, nor does ROOT when saving the file,
+      // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
       // so we have to do it here.
-      histo->BufferEmpty();
-    } else {
-      ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
+      htemp->BufferEmpty();
+      // we keep the pointer to bg histogram for later postprocessing
+      if (background == nullptr) {
+        background = htemp;
+      }
     }
 
-    mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
+    firstGraphInPlot = false;
   }
+
+  c->SetName(plotConfig.name.c_str());
+  c->SetTitle(plotConfig.title.c_str());
+
+  // Postprocessing the plotConfig - adding specified titles, configuring time-based plots, flushing buffers.
+  // Notice that axes and title are drawn using a histogram, even in the case of graphs.
+  if (background) {
+    // The title of background histogram is printed, not the title of canvas => we set it as well.
+    background->SetTitle(plotConfig.title.c_str());
+    // We have to update the canvas to make the title appear and access it in the next step.
+    c->Update();
+
+    // After the update, the title has a different size and it is not in the center anymore. We have to fix that.
+    if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
+      title->SetBBoxCenterX(c->GetBBoxCenter().fX);
+      c->Modified();
+      c->Update();
+    } else {
+      ILOG(Error, Devel) << "Could not get the title TPaveText of the plotConfig '" << plotConfig.name << "'." << ENDM;
+    }
+
+    if (!plotConfig.graphAxisLabel.empty()) {
+      setUserAxisLabel(background->GetXaxis(), background->GetYaxis(), plotConfig.graphAxisLabel);
+    }
+
+    if (plotConfig.graphs.back().varexp.find(":time") != std::string::npos) {
+      // We have to explicitly configure showing time on x axis.
+      formatTimeXAxis(background);
+    } else if (plotConfig.graphs.back().varexp.find(":meta.runNumber") != std::string::npos) {
+      formatRunNumberXAxis(background);
+    }
+
+    // Set the user-defined range on the y axis if needed.
+    if (!plotConfig.graphYRange.empty()) {
+      setUserYAxisRange(background, plotConfig.graphYRange);
+      c->Modified();
+      c->Update();
+    }
+  } else {
+    ILOG(Error, Devel) << "Could not get the htemp histogram of the plotConfig '" << plotConfig.name << "'." << ENDM;
+  }
+
+  if (plotConfig.graphs.size() > 1) {
+    legend->Draw();
+  } else {
+    delete legend;
+  }
+  c->Modified();
+  c->Update();
+
+  return c;
 }
