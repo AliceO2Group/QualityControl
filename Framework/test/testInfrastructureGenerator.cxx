@@ -110,7 +110,8 @@ TEST_CASE("qc_factory_remote_test")
   // the infrastructure should consist of two proxies, mergers and checkers for 'skeletonTask' and 'recoTask'
   // (their taskRunner are declared to be local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
   // Post processing adds one process for the task and one for checks.
-  REQUIRE(workflow.size() == 15);
+  // BookkeepingSink is added with 2 inputs (one from Check and one from Aggregator)
+  REQUIRE(workflow.size() == 16);
 
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
@@ -208,6 +209,15 @@ TEST_CASE("qc_factory_remote_test")
              d.outputs.size() == 4;
     });
   CHECK(aggregator != workflow.end());
+
+  auto bookkeepingSink = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "BookkeepingSink" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 0;
+    });
+  CHECK(bookkeepingSink != workflow.end());
 }
 
 TEST_CASE("qc_factory_standalone_test")
@@ -217,8 +227,8 @@ TEST_CASE("qc_factory_standalone_test")
   auto configTree = configInterface->getRecursive();
   auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configTree);
 
-  // the infrastructure should consist of 4 TaskRunners, 1 PostProcessingRunner, 5 CheckRunners (including one for PP), 1 AggregatorRunner
-  REQUIRE(workflow.size() == 11);
+  // the infrastructure should consist of 4 TaskRunners, 1 PostProcessingRunner, 5 CheckRunners (including one for PP), 1 AggregatorRunner, 1 BookkeepingSink
+  REQUIRE(workflow.size() == 12);
 
   auto taskRunnerSkeleton = std::find_if(
     workflow.begin(), workflow.end(),
@@ -281,6 +291,15 @@ TEST_CASE("qc_factory_standalone_test")
              d.outputs.size() == 4;
     });
   CHECK(aggregator != workflow.end());
+
+  auto bookkeepingSink = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "BookkeepingSink" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 0;
+    });
+  CHECK(bookkeepingSink != workflow.end());
 }
 
 TEST_CASE("qc_factory_empty_config")
@@ -375,7 +394,7 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
   auto configTree = configInterface->getRecursive();
   auto workflow = InfrastructureGenerator::generateRemoteBatchInfrastructure(configTree, "file.root");
 
-  REQUIRE(workflow.size() == 9);
+  REQUIRE(workflow.size() == 10);
 
   auto fileReader = std::find_if(
     workflow.begin(), workflow.end(),
@@ -411,4 +430,13 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
              d.outputs.size() == 4;
     });
   CHECK(aggregator != workflow.end());
+
+  auto bookkeepingSink = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "BookkeepingSink" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 0;
+    });
+  CHECK(bookkeepingSink != workflow.end());
 }
