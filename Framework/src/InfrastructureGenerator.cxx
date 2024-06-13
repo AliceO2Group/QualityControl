@@ -848,7 +848,7 @@ void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workf
     .algorithm = adaptFromTask<quality_control::core::BookkeepingQualitySink>(
       infrastructureSpec.common.bookkeepingUrl,
       core::toEnum(infrastructureSpec.common.activityProvenance)),
-    .labels = { framework::DataProcessorLabel("resilient") }
+    .labels = { { "resilient" } }
   };
   workflow.emplace_back(std::move(sinkDataProcessor));
 }

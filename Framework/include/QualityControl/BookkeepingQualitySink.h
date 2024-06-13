@@ -48,7 +48,7 @@ class BookkeepingQualitySink : public framework::Task
 
  private:
   std::string mGrpcUri;
-  Provenance mType;
+  Provenance mProvenance;
   SendCallback mSendCallback;
   FlagsMap mQualityObjectsMap;
 

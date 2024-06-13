@@ -39,7 +39,7 @@ void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::Comp
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("BookkeepingQualitySinkCompletionPolicy", matcher));
 }
 
-void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance type)
+void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance provenance)
 {
   auto bkpClient = o2::bkp::api::BkpClientFactory::create(grpcUri);
   auto& qcClient = bkpClient->qcFlag();
@@ -65,8 +65,10 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
     }
 
     try {
-      switch (type) {
+      switch (provenance) {
         case Provenance::SyncQC:
+          // TODO: add a sync function call when Bookkeeping implements it.
+          break;
         case Provenance::AsyncQC:
           qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), detector, bkpQcFlags);
           break;
@@ -81,8 +83,8 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
   }
 }
 
-BookkeepingQualitySink::BookkeepingQualitySink(const std::string& grpcUri, Provenance type, SendCallback sendCallback)
-  : mGrpcUri{ grpcUri }, mType{ type }, mSendCallback{ sendCallback } {}
+BookkeepingQualitySink::BookkeepingQualitySink(const std::string& grpcUri, Provenance provenance, SendCallback sendCallback)
+  : mGrpcUri{ grpcUri }, mProvenance{ provenance }, mSendCallback{ sendCallback } {}
 
 auto merge(std::unique_ptr<QualityControlFlagCollection>&& collection, const std::unique_ptr<QualityObject>& qualityObject) -> std::unique_ptr<QualityControlFlagCollection>
 {
@@ -91,7 +93,7 @@ auto merge(std::unique_ptr<QualityControlFlagCollection>&& collection, const std
   return converter.getResult();
 }
 
-auto collectionFromQualityObject(const QualityObject& qualityObject) -> std::unique_ptr<QualityControlFlagCollection>
+auto collectionForQualityObject(const QualityObject& qualityObject) -> std::unique_ptr<QualityControlFlagCollection>
 {
   return std::make_unique<QualityControlFlagCollection>(
     qualityObject.getName(),
@@ -108,7 +110,7 @@ void BookkeepingQualitySink::run(framework::ProcessingContext& context)
   for (auto const& ref : framework::InputRecordWalker(context.inputs())) {
     try {
       auto qualityObject = framework::DataRefUtils::as<QualityObject>(ref);
-      auto [emplacedIt, _] = mQualityObjectsMap.emplace(qualityObject->getDetectorName(), collectionFromQualityObject(*qualityObject));
+      auto [emplacedIt, _] = mQualityObjectsMap.emplace(qualityObject->getDetectorName(), collectionForQualityObject(*qualityObject));
       emplacedIt->second = merge(std::move(emplacedIt->second), qualityObject);
     } catch (...) {
       ILOG(Warning, Support) << "Unexpected message received, QualityObject expected" << ENDM;
@@ -128,7 +130,7 @@ void BookkeepingQualitySink::stop()
 
 void BookkeepingQualitySink::sendAndClear()
 {
-  mSendCallback(mGrpcUri, mQualityObjectsMap, mType);
+  mSendCallback(mGrpcUri, mQualityObjectsMap, mProvenance);
   mQualityObjectsMap.clear();
 }
 
