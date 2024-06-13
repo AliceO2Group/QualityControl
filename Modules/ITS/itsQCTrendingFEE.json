@@ -34,16 +34,21 @@
             "paths": [ "ITS/MO/ITSFEE/LaneStatusSummary",
                        "ITS/MO/ITSFEE/LaneStatusSummary",
                        "ITS/MO/ITSFEE/LaneStatusSummary",
-                       "ITS/MO/ITSFEE/LaneStatusSummary",
-                       "ITS/MO/ITSFEE" ],
+                       "ITS/MO/ITSFEE/LaneStatusSummary"],
             "names": [ "LaneStatusSummaryIB",
                        "LaneStatusSummaryML",
                        "LaneStatusSummaryOL",
-                       "LaneStatusSummaryGlobal",
-                       "TriggerVsFeeid" ],
+                       "LaneStatusSummaryGlobal"],
             "reductorName": "o2::quality_control_modules::its::ReductorBinContent",
             "moduleName": "QcITS"
-          }
+          },
+          {
+            "type": "repository",
+            "paths": [ "ITS/MO/ITSFEE" ],
+            "names": ["TriggerVsFeeid" ],
+            "reductorName": "o2::quality_control_modules::its::ReductorIntegralContent",
+            "moduleName": "QcITS"
+          } 
         ],
         "plots": [
           {
@@ -226,7 +231,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "newobject:qcdb:ITS/MO/ITSFEE/TriggerVsFeeid"
         ],
         "stopTrigger": [
           "userorcontrol"

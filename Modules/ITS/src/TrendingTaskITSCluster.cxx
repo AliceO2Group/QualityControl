@@ -289,19 +289,16 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
         c[ilay * NTRENDSCLUSTER + id]->cd();
         c[ilay * NTRENDSCLUSTER + id]->SetTickx();
         c[ilay * NTRENDSCLUSTER + id]->SetTicky();
-        if (id != 2)
-          c[ilay * NTRENDSCLUSTER + id]->SetLogy();
 
         int npoints = (int)runlist.size();
         TH1F* hfake = new TH1F("hfake", "hfake", npoints, 0.5, (double)npoints + 0.5);
-        float max, min;
         max = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmax();
 
         if (id == 2)
           min = -0.5;
         else
           min = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmin();
-                float max, min;
+        float max, min;
         max = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmax();
 
         if (id == 2)
@@ -310,7 +307,7 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
           min = gTrends_layer[ilay * NTRENDSCLUSTER + id]->GetYaxis()->GetXmin();
         SetGraphNameAndAxes(hfake, "hfake",
                             Form("L%d - %s trends", ilay, trendtitles[id].c_str()),
-                            isrun ? "run" : "time", ytitles[id], min, max, runlist);   
+                            isrun ? "run" : "time", ytitles[id], min, max, runlist);
 
         hfake->SetStats(kFALSE);
         hfake->Draw();

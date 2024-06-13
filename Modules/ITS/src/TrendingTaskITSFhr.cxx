@@ -117,6 +117,7 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
     }
 
     if (dataSource.type == "repository") {
+
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "", timestamp, t.activity);
       if (mo == nullptr)
@@ -234,8 +235,6 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
         c[ilay * NTRENDSFHR + id]->cd();
         c[ilay * NTRENDSFHR + id]->SetTickx();
         c[ilay * NTRENDSFHR + id]->SetTicky();
-        if (id != 2)
-          c[ilay * NTRENDSFHR + id]->SetLogy();
 
         int npoints = (int)runlist.size();
         TH1F* hfake = new TH1F("hfake", "hfake", npoints, 0.5, (double)npoints + 0.5);

@@ -1400,7 +1400,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10 seconds"
+          "newobject:qcdb:ITS/MO/FHRTask/General/General_Occupancy"
         ],
         "stopTrigger": [
           "userorcontrol"

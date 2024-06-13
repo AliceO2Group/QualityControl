@@ -16,13 +16,15 @@
 #ifndef QUALITYCONTROL_REDUCTORINTEGRALCONTENT_H
 #define QUALITYCONTROL_REDUCTORINTEGRALCONTENT_H
 
-#include "QualityControl/Reductor.h"
+// #include "QualityControl/Reductor.h"
+#include "QualityControl/ReductorTObject.h"
 #include <vector>
 
 namespace o2::quality_control_modules::its
 {
 
-class ReductorIntegralContent : public quality_control::postprocessing::Reductor
+class ReductorIntegralContent : public quality_control::postprocessing::ReductorTObject
+
 {
  public:
   ReductorIntegralContent() = default;
@@ -39,7 +41,7 @@ class ReductorIntegralContent : public quality_control::postprocessing::Reductor
 
  private:
   int nBins = 13;
-  int FeeBoundary[10] = { 0, 35, 83, 143, 191, 251,293, 335, 383, 431 };
+  int FeeBoundary[10] = { 0, 35, 83, 143, 191, 251, 293, 335, 383, 431 };
   struct mystat {
     // std::vector<Double_t> binContent;  // Bin content in a specified slice
     Double_t integral[100];

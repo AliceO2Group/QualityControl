@@ -69,12 +69,6 @@ void TrendingTaskITSTracks::update(Trigger t, framework::ServiceRegistryRef serv
 
 void TrendingTaskITSTracks::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
-  auto& qcdb = services.get<repository::DatabaseInterface>();
-
-  trendValues(t, qcdb);
-
-  storePlots(qcdb);
-  storeTrend(qcdb);
 }
 
 void TrendingTaskITSTracks::storeTrend(repository::DatabaseInterface& qcdb)
@@ -157,8 +151,8 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
     if (plot.name.find("mean") != std::string::npos) {
       if (plot.name.find("NCluster") != std::string::npos) {
         class1 = 0;
-        ymin = 0.;
-        ymax = 15.;
+        ymin = 3;
+        ymax = 8.;
       } else if (plot.name.find("EtaDistribution") != std::string::npos) {
         class1 = 0;
         ymin = -1.5;
@@ -166,11 +160,11 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
       } else if (plot.name.find("PhiDistribution") != std::string::npos) {
         class1 = 0;
         ymin = 0.;
-        ymax = 2 * TMath::TwoPi();
+        ymax = TMath::TwoPi();
       } else if (plot.name.find("VertexZ") != std::string::npos) {
         class1 = 0;
-        ymin = -15.;
-        ymax = 15.;
+        ymin = -5.;
+        ymax = 5.;
       } else if (plot.name.find("NVertexContributors") != std::string::npos) {
         class1 = 0;
         ymin = 0.;
@@ -182,15 +176,15 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
       } else if (plot.name.find("Ntracks") != std::string::npos) {
         class1 = 0;
         ymin = 0.;
-        ymax = 100.;
+        ymax = 20.;
       } else if (plot.name.find("VertexX") != std::string::npos) {
         class1 = 0;
-        ymin = -1.;
-        ymax = 1.;
+        ymin = -0.1;
+        ymax = 0.1;
       } else if (plot.name.find("VertexY") != std::string::npos) {
         class1 = 2;
-        ymin = -1.;
-        ymax = 1.;
+        ymin = -0.1;
+        ymax = 0.1;
       }
 
     } else if (plot.name.find("stddev") != std::string::npos) {

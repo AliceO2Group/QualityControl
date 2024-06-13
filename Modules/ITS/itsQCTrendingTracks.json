@@ -124,7 +124,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "60 seconds"
+          "newobject:qcdb:ITS/MO/ITSTrackTask/AngularDistribution"
         ],
         "stopTrigger": [
           "userorcontrol"

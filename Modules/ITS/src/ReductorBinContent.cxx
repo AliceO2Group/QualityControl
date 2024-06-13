@@ -32,7 +32,7 @@ void* ReductorBinContent::getBranchAddress()
 
 const char* ReductorBinContent::getBranchLeafList()
 {
- return Form("binContent[%i]/D", nBins);
+  return Form("binContent[%i]/D", nBins);
 }
 
 void ReductorBinContent::update(TObject* obj)
@@ -43,7 +43,7 @@ void ReductorBinContent::update(TObject* obj)
     mStats.binContent[j] = -1.0;
   }
 
-   // Access the histograms embedded in 'obj'.
+  // Access the histograms embedded in 'obj'.
   std::string histoClass = obj->IsA()->GetName();
 
   if (histoClass.find("TH1") != std::string::npos) {
@@ -53,7 +53,7 @@ void ReductorBinContent::update(TObject* obj)
       mStats.binContent[j - 1] = histo->GetBinContent(j);
     }
     delete histo;
-  }  else {
+  } else {
     ILOG(Error, Support) << "Error: 'histo' not found." << ENDM;
   }
 }
