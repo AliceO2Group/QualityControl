@@ -53,81 +53,101 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
   // initialize histograms to be monitored as data member
   for (const auto& obj : mCalibObjects) {
     if (obj == "TimeCalibParams") {
-      mTimeCalibParamHisto = new TH1D("timeCalibCoeff", "Time Calib Coeff", 17644, -0.5, 17643.5); //
-      mTimeCalibParamHisto->GetXaxis()->SetTitle("Cell Id");
-      mTimeCalibParamHisto->GetYaxis()->SetTitle("Time (ns)");
-      mTimeCalibParamHisto->SetStats(false);
+      if (!mTimeCalibParamHisto) {
+        mTimeCalibParamHisto = new TH1D("timeCalibCoeff", "Time Calib Coeff", 17644, -0.5, 17643.5); //
+        mTimeCalibParamHisto->GetXaxis()->SetTitle("Cell Id");
+        mTimeCalibParamHisto->GetYaxis()->SetTitle("Time (ns)");
+        mTimeCalibParamHisto->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mTimeCalibParamHisto);
 
-      mTimeCalibParamPosition = new TH2D("timeCalibPosition", "Time Calib Coeff in 2D", 96, -0.5, 95.5, 208, -0.5, 207.5);
-      mTimeCalibParamPosition->GetXaxis()->SetTitle("column (#eta)");
-      mTimeCalibParamPosition->GetYaxis()->SetTitle("row (#phi)");
-      mTimeCalibParamPosition->SetStats(false);
+      if (!mTimeCalibParamPosition) {
+        mTimeCalibParamPosition = new TH2D("timeCalibPosition", "Time Calib Coeff in 2D", 96, -0.5, 95.5, 208, -0.5, 207.5);
+        mTimeCalibParamPosition->GetXaxis()->SetTitle("column (#eta)");
+        mTimeCalibParamPosition->GetYaxis()->SetTitle("row (#phi)");
+        mTimeCalibParamPosition->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mTimeCalibParamPosition);
     }
     if (obj == "BadChannelMap") {
-      mBadChannelMapHisto = new TH2D("badChannelMap", "Pos. of Bad Channel", 96, -0.5, 95.5, 208, -0.5, 207.5);
-      mBadChannelMapHisto->GetXaxis()->SetTitle("column (#eta)");
-      mBadChannelMapHisto->GetYaxis()->SetTitle("row (#phi)");
-      mBadChannelMapHisto->SetStats(false);
+      if (!mBadChannelMapHisto) {
+        mBadChannelMapHisto = new TH2D("badChannelMap", "Pos. of Bad Channel", 96, -0.5, 95.5, 208, -0.5, 207.5);
+        mBadChannelMapHisto->GetXaxis()->SetTitle("column (#eta)");
+        mBadChannelMapHisto->GetYaxis()->SetTitle("row (#phi)");
+        mBadChannelMapHisto->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mBadChannelMapHisto);
 
       // histogram for number of bad, dead, good channels in emcal only
-      mMaskStatsEMCALHisto = new TH1D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only", 3, -0.5, 2.5);
-      mMaskStatsEMCALHisto->GetXaxis()->SetTitle("channel status");
-      mMaskStatsEMCALHisto->GetYaxis()->SetTitle("Number of channels");
-      mMaskStatsEMCALHisto->GetXaxis()->SetBinLabel(1, "Good cells");
-      mMaskStatsEMCALHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
-      mMaskStatsEMCALHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
-      mMaskStatsEMCALHisto->SetStats(false);
+      if (!mMaskStatsEMCALHisto) {
+        mMaskStatsEMCALHisto = new TH1D("MaskStatsEMCALHisto", "Number of Good/Dead/Bad Channels in EMCAL Only", 3, -0.5, 2.5);
+        mMaskStatsEMCALHisto->GetXaxis()->SetTitle("channel status");
+        mMaskStatsEMCALHisto->GetYaxis()->SetTitle("Number of channels");
+        mMaskStatsEMCALHisto->GetXaxis()->SetBinLabel(1, "Good cells");
+        mMaskStatsEMCALHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
+        mMaskStatsEMCALHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
+        mMaskStatsEMCALHisto->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mMaskStatsEMCALHisto);
 
       // histogram for number of bad, dead, good channels in emcal only
-      mMaskStatsDCALHisto = new TH1D("MaskStatsDCALHisto", "Number of Good/Dead/Bad Channels in DCAL Only", 3, -0.5, 2.5);
-      mMaskStatsDCALHisto->GetXaxis()->SetTitle("channel status");
-      mMaskStatsDCALHisto->GetYaxis()->SetTitle("Number of channels");
-      mMaskStatsDCALHisto->GetXaxis()->SetBinLabel(1, "Good cells");
-      mMaskStatsDCALHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
-      mMaskStatsDCALHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
-      mMaskStatsDCALHisto->SetStats(false);
+      if (!mMaskStatsDCALHisto) {
+        mMaskStatsDCALHisto = new TH1D("MaskStatsDCALHisto", "Number of Good/Dead/Bad Channels in DCAL Only", 3, -0.5, 2.5);
+        mMaskStatsDCALHisto->GetXaxis()->SetTitle("channel status");
+        mMaskStatsDCALHisto->GetYaxis()->SetTitle("Number of channels");
+        mMaskStatsDCALHisto->GetXaxis()->SetBinLabel(1, "Good cells");
+        mMaskStatsDCALHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
+        mMaskStatsDCALHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
+        mMaskStatsDCALHisto->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mMaskStatsDCALHisto);
 
       // histogram for number of bad, dead, good channels in all
-      mMaskStatsAllHisto = new TH1D("MaskStatsAllHisto", "Number of Good/Dead/Bad Channels in EMCAL + DCAL", 3, -0.5, 2.5);
-      mMaskStatsAllHisto->GetXaxis()->SetTitle("channel status");
-      mMaskStatsAllHisto->GetYaxis()->SetTitle("Number of channels");
-      mMaskStatsAllHisto->GetXaxis()->SetBinLabel(1, "Good cells");
-      mMaskStatsAllHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
-      mMaskStatsAllHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
-      mMaskStatsAllHisto->SetStats(false);
+      if (!mMaskStatsAllHisto) {
+        mMaskStatsAllHisto = new TH1D("MaskStatsAllHisto", "Number of Good/Dead/Bad Channels in EMCAL + DCAL", 3, -0.5, 2.5);
+        mMaskStatsAllHisto->GetXaxis()->SetTitle("channel status");
+        mMaskStatsAllHisto->GetYaxis()->SetTitle("Number of channels");
+        mMaskStatsAllHisto->GetXaxis()->SetBinLabel(1, "Good cells");
+        mMaskStatsAllHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
+        mMaskStatsAllHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
+        mMaskStatsAllHisto->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mMaskStatsAllHisto);
 
       // histogram number of bad, good and dead channels per supermodule
-      mMaskStatsSupermoduleHisto = new TH2D("MaskStatsSupermoduleHisto", "Number of Good/Dead/Bad Channels per supermodule", 3, -0.5, 2.5, 20, -0.5, 19.5);
-      mMaskStatsSupermoduleHisto->GetXaxis()->SetTitle("channel status");
-      mMaskStatsSupermoduleHisto->GetYaxis()->SetTitle("Supermodule ID");
-      mMaskStatsSupermoduleHisto->GetXaxis()->SetBinLabel(1, "Good cells");
-      mMaskStatsSupermoduleHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
-      mMaskStatsSupermoduleHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
-      mMaskStatsSupermoduleHisto->SetStats(false);
+      if (!mMaskStatsSupermoduleHisto) {
+        mMaskStatsSupermoduleHisto = new TH2D("MaskStatsSupermoduleHisto", "Number of Good/Dead/Bad Channels per supermodule", 3, -0.5, 2.5, 20, -0.5, 19.5);
+        mMaskStatsSupermoduleHisto->GetXaxis()->SetTitle("channel status");
+        mMaskStatsSupermoduleHisto->GetYaxis()->SetTitle("Supermodule ID");
+        mMaskStatsSupermoduleHisto->GetXaxis()->SetBinLabel(1, "Good cells");
+        mMaskStatsSupermoduleHisto->GetXaxis()->SetBinLabel(2, "Bad cells");
+        mMaskStatsSupermoduleHisto->GetXaxis()->SetBinLabel(3, "Dead cells");
+        mMaskStatsSupermoduleHisto->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mMaskStatsSupermoduleHisto);
 
-      mNumberOfBadChannelsFEC = new TH2D("NumberBadChannelsFEC", "Number of bad channels per FEC", 40, -0.5, 39.5, 20., -0.5, 19.5);
-      mNumberOfBadChannelsFEC->GetXaxis()->SetTitle("FEC ID");
-      mNumberOfBadChannelsFEC->GetYaxis()->SetTitle("Supermodule ID");
-      mNumberOfBadChannelsFEC->SetStats(false);
+      if (!mNumberOfBadChannelsFEC) {
+        mNumberOfBadChannelsFEC = new TH2D("NumberBadChannelsFEC", "Number of bad channels per FEC", 40, -0.5, 39.5, 20., -0.5, 19.5);
+        mNumberOfBadChannelsFEC->GetXaxis()->SetTitle("FEC ID");
+        mNumberOfBadChannelsFEC->GetYaxis()->SetTitle("Supermodule ID");
+        mNumberOfBadChannelsFEC->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mNumberOfBadChannelsFEC);
 
-      mNumberOfDeadChannelsFEC = new TH2D("NumberDeadChannelsFEC", "Number of dead channels per FEC", 40, -0.5, 39.5, 20., -0.5, 19.5);
-      mNumberOfDeadChannelsFEC->GetXaxis()->SetTitle("FEC ID");
-      mNumberOfDeadChannelsFEC->GetYaxis()->SetTitle("Supermodule ID");
-      mNumberOfDeadChannelsFEC->SetStats(false);
+      if (!mNumberOfDeadChannelsFEC) {
+        mNumberOfDeadChannelsFEC = new TH2D("NumberDeadChannelsFEC", "Number of dead channels per FEC", 40, -0.5, 39.5, 20., -0.5, 19.5);
+        mNumberOfDeadChannelsFEC->GetXaxis()->SetTitle("FEC ID");
+        mNumberOfDeadChannelsFEC->GetYaxis()->SetTitle("Supermodule ID");
+        mNumberOfDeadChannelsFEC->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mNumberOfDeadChannelsFEC);
 
-      mNumberOfNonGoodChannelsFEC = new TH2D("NumberNonGoodChannelsFEC", "Number of dead+bad channels per FEC", 40, -0.5, 39.5, 20., -0.5, 19.5);
-      mNumberOfNonGoodChannelsFEC->GetXaxis()->SetTitle("FEC ID");
-      mNumberOfNonGoodChannelsFEC->GetYaxis()->SetTitle("Supermodule ID");
-      mNumberOfNonGoodChannelsFEC->SetStats(false);
+      if (!mNumberOfNonGoodChannelsFEC) {
+        mNumberOfNonGoodChannelsFEC = new TH2D("NumberNonGoodChannelsFEC", "Number of dead+bad channels per FEC", 40, -0.5, 39.5, 20., -0.5, 19.5);
+        mNumberOfNonGoodChannelsFEC->GetXaxis()->SetTitle("FEC ID");
+        mNumberOfNonGoodChannelsFEC->GetYaxis()->SetTitle("Supermodule ID");
+        mNumberOfNonGoodChannelsFEC->SetStats(false);
+      }
       getObjectsManager()->startPublishing(mNumberOfNonGoodChannelsFEC);
     }
   }
