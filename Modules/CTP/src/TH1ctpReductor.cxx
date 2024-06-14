@@ -27,7 +27,7 @@ void* TH1ctpReductor::getBranchAddress()
 
 const char* TH1ctpReductor::getBranchLeafList()
 {
-  return Form("mean/D:stddev:entries:inputs[%i]:classContentMTVX:classContentMVBA:classContentTVXDMC:classContentTVXEMC:classContentTVXPHO", nInputs);
+  return "mean/D:stddev:entries:classContentMinBias1:classContentMinBias2:classContentDMC:classContentEMC:classContentPHO:inputContentMinBias1:inputContentMinBias2:inputContentDMC:inputContentEMC:inputContentPHO";
 }
 
 void TH1ctpReductor::update(TObject* obj)
@@ -38,14 +38,18 @@ void TH1ctpReductor::update(TObject* obj)
     mStats.entries = histo->GetEntries();
     mStats.stddev = histo->GetStdDev();
     mStats.mean = histo->GetMean();
-    for (int i = 1; i < nInputs + 1; i++) {
-      mStats.inputs[i - 1] = histo->GetBinContent(i);
-    }
-    mStats.classContentMTVX = histo->GetBinContent(mMTVXIndex);
-    mStats.classContentMVBA = histo->GetBinContent(mMVBAIndex);
-    mStats.classContentTVXDMC = histo->GetBinContent(mTVXDCMIndex);
-    mStats.classContentTVXEMC = histo->GetBinContent(mTVXEMCIndex);
-    mStats.classContentTVXPHO = histo->GetBinContent(mTVXPHOIndex);
+
+    mStats.classContentMinBias1 = histo->GetBinContent(mMinBias1ClassIndex);
+    mStats.classContentMinBias2 = histo->GetBinContent(mMinBias2ClassIndex);
+    mStats.classContentDMC = histo->GetBinContent(mDMCClassIndex);
+    mStats.classContentEMC = histo->GetBinContent(mEMCClassIndex);
+    mStats.classContentPHO = histo->GetBinContent(mPH0ClassIndex);
+
+    mStats.inputContentMinBias1 = histo->GetBinContent(mMinBias1InputIndex);
+    mStats.inputContentMinBias2 = histo->GetBinContent(mMinBias2InputIndex);
+    mStats.inputContentDMC = histo->GetBinContent(mDMCInputIndex);
+    mStats.inputContentEMC = histo->GetBinContent(mEMCInputIndex);
+    mStats.inputContentPHO = histo->GetBinContent(mPHOInputIndex);
   }
 }
 } // namespace o2::quality_control_modules::ctp

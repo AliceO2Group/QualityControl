@@ -33,45 +33,100 @@ class TH1ctpReductor : public quality_control::postprocessing::ReductorTObject
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
   void update(TObject* obj) override;
-  void SetMTVXIndex(int in)
+
+  void SetClassIndexes(int inMB1, int inMB2, int inDMC, int inEMC, int inPHO)
   {
-    mMTVXIndex = in;
+    mMinBias1ClassIndex = inMB1;
+    mMinBias2ClassIndex = inMB2;
+    mPH0ClassIndex = inPHO;
+    mDMCClassIndex = inDMC;
+    mEMCClassIndex = inEMC;
   }
-  void SetMVBAIndex(int in)
+  void SetInputIndexes(int inMB1, int inMB2, int inDMC, int inEMC, int inPHO)
   {
-    mMVBAIndex = in;
+    mMinBias1InputIndex = inMB1;
+    mMinBias2InputIndex = inMB2;
+    mPH0ClassIndex = inPHO;
+    mDMCInputIndex = inDMC;
+    mEMCInputIndex = inEMC;
   }
-  void SetTVXDCMIndex(int in)
+  void SetMinBias1ClassIndex(int in)
   {
-    mTVXDCMIndex = in;
+    mMinBias1ClassIndex = in;
   }
-  void SetTVXPHOIndex(int in)
+  void SetMinBias2ClassIndex(int in)
   {
-    mTVXPHOIndex = in;
+    mMinBias2ClassIndex = in;
   }
-  void SetTVXEMCIndex(int in)
+  void SetDMCClassIndex(int in)
   {
-    mTVXEMCIndex = in;
+    mDMCClassIndex = in;
+  }
+  void SetPHOClassIndex(int in)
+  {
+    mPH0ClassIndex = in;
+  }
+  void SetEMCClassIndex(int in)
+  {
+    mEMCClassIndex = in;
+  }
+  void SetMinBias1InputIndex(int in)
+  {
+    mMinBias1InputIndex = in;
+  }
+  void SetMinBias2InputIndex(int in)
+  {
+    mMinBias2InputIndex = in;
+  }
+  void SetDMCInputIndex(int in)
+  {
+    mDMCInputIndex = in;
+  }
+  void SetPHOInputIndex(int in)
+  {
+    mPHOInputIndex = in;
+  }
+  void SetEMCInputIndex(int in)
+  {
+    mEMCInputIndex = in;
+  }
+
+  int GetMinBias1ClassIndex()
+  {
+    return mMinBias1ClassIndex;
+  }
+  int GetMinBias1InputIndex()
+  {
+    return mMinBias1InputIndex;
   }
 
  private:
   static constexpr int nInputs = 48;
-  int mMTVXIndex = 65;
-  int mMVBAIndex = 65;
-  int mTVXDCMIndex = 65;
-  int mTVXPHOIndex = 65;
-  int mTVXEMCIndex = 65;
+  int mMinBias1ClassIndex = 65;
+  int mMinBias2ClassIndex = 65;
+  int mDMCClassIndex = 65;
+  int mEMCClassIndex = 65;
+  int mPH0ClassIndex = 65;
+  int mMinBias1InputIndex = 49;
+  int mMinBias2InputIndex = 49;
+  int mDMCInputIndex = 49;
+  int mEMCInputIndex = 49;
+  int mPHOInputIndex = 49;
 
   struct {
     Double_t mean;
     Double_t stddev;
     Double_t entries;
-    Double_t inputs[nInputs];
-    Double_t classContentMTVX;
-    Double_t classContentMVBA;
-    Double_t classContentTVXDMC;
-    Double_t classContentTVXEMC;
-    Double_t classContentTVXPHO;
+    Double_t classContentMinBias1;
+    Double_t classContentMinBias2;
+    Double_t classContentDMC;
+    Double_t classContentEMC;
+    Double_t classContentPHO;
+    Double_t inputContentMinBias1;
+    Double_t inputContentMinBias2;
+    Double_t inputContentDMC;
+    Double_t inputContentEMC;
+    Double_t inputContentPHO;
   } mStats;
 };
 

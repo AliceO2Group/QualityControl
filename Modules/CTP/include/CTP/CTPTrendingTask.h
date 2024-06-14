@@ -64,10 +64,15 @@ class CTPTrendingTask : public PostProcessingInterface
   MetaData mMetaData;
   UInt_t mTime;
 
-  std::string mInputNames[5] = { "MTVX", "MVBA", "0DMC", "0EMC", "0PH0" };
-  std::string mClassNames[5] = { "CMTVX-B-NOPF", "CMVBA-B-NOPF", "CTVXDMC-B-NOPF-EMC", "CTVXEMC-B-NOPF-EMC", "CTVXPH0-B-NOPF-PHSCPV" };
+  std::string mInputNamesDefault[5] = { "TVX", "VBA", "DMC", "EMC", "PH0" };
+  std::string ctpinputs[49] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" };
+  std::string mClassNamesDefault[5] = { "CMTVX-B-NOPF", "CMVBA-B-NOPF", "CTVXDMC-B-NOPF-EMC", "CTVXEMC-B-NOPF-EMC", "CTVXPH0-B-NOPF-PHSCPV" };
+  std::string mClassNames[5] = { "", "", "", "", "" };
+  std::string mInputNames[5] = { "", "", "", "", "" };
   const int mNumOfClasses = 5;
+  const int mNumOfInputs = 5;
   int mClassIndex[5] = { 65, 65, 65, 65, 65 };
+  int mInputIndex[5] = { 49, 49, 49, 49, 49 };
 
   std::map<std::string, TObject*> mPlots;
 

@@ -56,6 +56,67 @@ void CTPTrendingTask::initCTP(Trigger& t)
     ILOG(Warning, Support) << "CTP Config not found for run:" << run << " timesamp " << t.timestamp << ENDM;
     return;
   }
+
+  try {
+    mClassNames[0] = std::stof(mCustomParameters.at("minBias1Class", "default"));
+  } catch (const std::exception& e) {
+    mClassNames[0] = mClassNamesDefault[0];
+  }
+
+  try {
+    mClassNames[1] = std::stof(mCustomParameters.at("minBias2Class", "default"));
+  } catch (const std::exception& e) {
+    mClassNames[1] = mClassNamesDefault[1];
+  }
+
+  try {
+    mClassNames[2] = std::stof(mCustomParameters.at("minBisDMCclass", "default"));
+  } catch (const std::exception& e) {
+    mClassNames[2] = mClassNamesDefault[2];
+  }
+
+  try {
+    mClassNames[3] = std::stof(mCustomParameters.at("minBiasEMCclass", "default"));
+  } catch (const std::exception& e) {
+    mClassNames[3] = mClassNamesDefault[3];
+  }
+
+  try {
+    mClassNames[4] = std::stof(mCustomParameters.at("minBiasPHOclass", "default"));
+  } catch (const std::exception& e) {
+    mClassNames[4] = mClassNamesDefault[4];
+  }
+
+  try {
+    mInputNames[0] = std::stof(mCustomParameters.at("minBias1Input", "default"));
+  } catch (const std::exception& e) {
+    mInputNames[0] = mInputNamesDefault[0];
+  }
+
+  try {
+    mInputNames[1] = std::stof(mCustomParameters.at("minBias2Input", "default"));
+  } catch (const std::exception& e) {
+    mInputNames[1] = mInputNamesDefault[1];
+  }
+
+  try {
+    mInputNames[2] = std::stof(mCustomParameters.at("minBisDMCInput", "default"));
+  } catch (const std::exception& e) {
+    mInputNames[2] = mInputNamesDefault[2];
+  }
+
+  try {
+    mInputNames[3] = std::stof(mCustomParameters.at("minBiasEMCInput", "default"));
+  } catch (const std::exception& e) {
+    mInputNames[3] = mInputNamesDefault[3];
+  }
+
+  try {
+    mInputNames[4] = std::stof(mCustomParameters.at("minBiasPHOInput", "default"));
+  } catch (const std::exception& e) {
+    mInputNames[4] = mInputNamesDefault[4];
+  }
+
   // get the indeces of the classes we want to trend
   std::vector<ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
   std::vector<int> clslist = mCTPconfig->getTriggerClassList();
@@ -63,6 +124,15 @@ void CTPTrendingTask::initCTP(Trigger& t)
     for (size_t j = 0; j < mNumOfClasses; j++) {
       if (ctpcls[i].name.find(mClassNames[j]) != std::string::npos) {
         mClassIndex[j] = ctpcls[i].descriptorIndex + 1;
+        break;
+      }
+    }
+  }
+
+  for (size_t i = 0; i < sizeof(ctpinputs) / sizeof(std::string); i++) {
+    for (size_t j = 0; j < mNumOfInputs; j++) {
+      if (ctpinputs[i].find(mInputNames[j]) != std::string::npos) {
+        mInputIndex[j] = i + 1;
         break;
       }
     }
@@ -77,20 +147,18 @@ void CTPTrendingTask::initCTP(Trigger& t)
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("time", &mTime);
   for (const auto& [sourceName, reductor] : mReductors) {
-    reductor->SetMTVXIndex(mClassIndex[0]);
-    reductor->SetMVBAIndex(mClassIndex[1]);
-    reductor->SetTVXDCMIndex(mClassIndex[2]);
-    reductor->SetTVXEMCIndex(mClassIndex[3]);
-    reductor->SetTVXPHOIndex(mClassIndex[4]);
+    reductor->SetClassIndexes(mClassIndex[0], mClassIndex[1], mClassIndex[2], mClassIndex[3], mClassIndex[4]);
+    reductor->SetInputIndexes(mInputIndex[0], mInputIndex[1], mInputIndex[2], mInputIndex[3], mInputIndex[4]);
     mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
   }
+
   getObjectsManager()->startPublishing(mTrend.get());
   ILOG(Debug, Devel) << "Trending run : " << run << ENDM;
 }
 void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
   // // read out the CTPConfiguration
-  // initCCTP(); - too eraly here ?
+  // initCTP(t); //- too eraly here ?
 }
 
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
@@ -169,8 +237,20 @@ void CTPTrendingTask::generatePlots()
       mPlots[plot.name] = nullptr;
     }
 
+    if (index < 5 mInputIndex[index] == 49) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+      ILOG(Info, Support) << "Input " << mInputNames[index] << " is not trended." << ENDM;
+      index++;
+      continue;
+    }
+
     if (index > 4 && index < 10 && mClassIndex[index - 5] == 65) { // if the class index == 65, this class is not defined in the config, so it won't be trended
       ILOG(Info, Support) << "Class " << mClassNames[index - 5] << " is not trended." << ENDM;
+      index++;
+      continue;
+    }
+
+    if (index > 9 && index < 14 && (mInputIndex[index - 9] == 49 || mInputIndex[0] == 65)) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+      ILOG(Info, Support) << "Input ratio " << mInputNames[index - 13] << " / " << mInputNames[0] << " is not trended." << ENDM;
       index++;
       continue;
     }
