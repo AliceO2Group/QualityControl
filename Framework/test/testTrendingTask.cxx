@@ -102,9 +102,11 @@ TEST_CASE("test_trending_task")
           {
             "name": "mean_of_histogram",
             "title": "Mean trend of the testHistoTrending histogram",
-            "varexp": "testHistoTrending.mean:time",
-            "selection": "",
-            "option": "*L"
+            "graphs": [{
+              "varexp": "testHistoTrending.mean:time",
+              "selection": "",
+              "option": "*L"
+            }]
           },
           {
             "name": "quality_histogram",
