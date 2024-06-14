@@ -29,10 +29,6 @@ using matchType = o2::globaltracking::MatchITSTPCQC::matchType;
 namespace o2::quality_control_modules::glo
 {
 
-ITSTPCMatchingTask::~ITSTPCMatchingTask()
-{
-  //  mMatchITSTPCQC.deleteHistograms();
-}
 void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize ITSTPCMatchingTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
@@ -132,11 +128,13 @@ void ITSTPCMatchingTask::endOfCycle()
   if (common::getFromConfig(mCustomParameters, "isSync", false)) {
     { // Pt
       auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(globaltracking::MatchITSTPCQC::ITS);
-      if (auto hEffPtHist = dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist")); hEffPtHist != nullptr) {
-        hEffPtHist->Divide(hEffPt->GetPassedHistogram(), hEffPt->GetTotalHistogram(), 1.0, 1.0, "B");
-        hEffPtHist->SetBit(TH1::EStatusBits::kNoStats);
-        getObjectsManager()->startPublishing(hEffPtHist);
-        getObjectsManager()->setDefaultDrawOptions(hEffPtHist->GetName(), "logx");
+      mHEffPt.reset();
+      mHEffPt.reset(dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist")));
+      if (mHEffPt) {
+        mHEffPt->Divide(hEffPt->GetPassedHistogram(), hEffPt->GetTotalHistogram(), 1.0, 1.0, "B");
+        mHEffPt->SetBit(TH1::EStatusBits::kNoStats);
+        getObjectsManager()->startPublishing(mHEffPt.get(), PublicationPolicy::Once);
+        getObjectsManager()->setDefaultDrawOptions(mHEffPt->GetName(), "logx");
       } else {
         ILOG(Error) << "Failed cast for hEffPtHist, will not publish!" << ENDM;
       }
@@ -144,10 +142,12 @@ void ITSTPCMatchingTask::endOfCycle()
 
     { // Eta
       auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(globaltracking::MatchITSTPCQC::ITS);
-      if (auto hEffEtaHist = dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist")); hEffEtaHist != nullptr) {
-        hEffEtaHist->Divide(hEffEta->GetPassedHistogram(), hEffEta->GetTotalHistogram(), 1.0, 1.0, "B");
-        hEffEtaHist->SetBit(TH1::EStatusBits::kNoStats);
-        getObjectsManager()->startPublishing(hEffEtaHist);
+      mHEffEta.reset();
+      mHEffEta.reset(dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist")));
+      if (mHEffEta) {
+        mHEffEta->Divide(hEffEta->GetPassedHistogram(), hEffEta->GetTotalHistogram(), 1.0, 1.0, "B");
+        mHEffEta->SetBit(TH1::EStatusBits::kNoStats);
+        getObjectsManager()->startPublishing(mHEffEta.get(), PublicationPolicy::Once);
       } else {
         ILOG(Error) << "Failed cast for hEffEtaHist, will not publish!" << ENDM;
       }
@@ -155,10 +155,12 @@ void ITSTPCMatchingTask::endOfCycle()
 
     { // Phi
       auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(globaltracking::MatchITSTPCQC::ITS);
-      if (auto hEffPhiHist = dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist")); hEffPhiHist != nullptr) {
-        hEffPhiHist->Divide(hEffPhi->GetPassedHistogram(), hEffPhi->GetTotalHistogram(), 1.0, 1.0, "B");
-        hEffPhiHist->SetBit(TH1::EStatusBits::kNoStats);
-        getObjectsManager()->startPublishing(hEffPhiHist);
+      mHEffPhi.reset();
+      mHEffPhi.reset(dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist")));
+      if (mHEffPhi) {
+        mHEffPhi->Divide(hEffPhi->GetPassedHistogram(), hEffPhi->GetTotalHistogram(), 1.0, 1.0, "B");
+        mHEffPhi->SetBit(TH1::EStatusBits::kNoStats);
+        getObjectsManager()->startPublishing(mHEffPhi.get(), PublicationPolicy::Once);
       } else {
         ILOG(Error) << "Failed cast for hEffPhiHist, will not publish!" << ENDM;
       }
