@@ -22,6 +22,7 @@ target_sources(O2QcCommon
                        src/CcdbInspectorTask.cxx
                        src/CcdbInspectorTaskConfig.cxx
                        src/CcdbInspectorCheck.cxx
+                       src/ObjectComparatorInterface.cxx
                        src/ObjectComparatorDeviation.cxx
                        src/ObjectComparatorChi2.cxx
                        src/ObjectComparatorKolmogorov.cxx

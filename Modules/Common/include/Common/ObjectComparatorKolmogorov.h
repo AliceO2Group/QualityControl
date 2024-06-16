@@ -34,7 +34,7 @@ class ObjectComparatorKolmogorov : public ObjectComparatorInterface
 
   /// \brief objects comparison function
   /// \return the quality resulting from the object comparison
-  o2::quality_control::core::Quality compare(TObject* obj, TObject* objRef, std::string& message) override;
+  o2::quality_control::core::Quality compare(TObject* object, TObject* referenceObject, std::string& message) override;
 };
 
 } // namespace o2::quality_control_modules::common

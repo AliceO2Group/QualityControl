@@ -21,7 +21,11 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/CustomParameters.h"
 #include "QualityControl/Activity.h"
+
+#include <tuple>
+
 class TObject;
+class TH1;
 
 namespace o2::quality_control_modules::common
 {
@@ -42,9 +46,13 @@ class ObjectComparatorInterface
   void setThreshold(double threshold) { mThreshold = threshold; }
   double getThreshold() { return mThreshold; }
 
+  /// perform a number of sanity checks on the input objects
+  /// \return a tuple containing pointers to the histogram, the reference histogram, and a boolean indicating the success of the checks
+  std::tuple<TH1*, TH1*, bool> checkInputObjects(TObject* object, TObject* referenceObject, std::string& message);
+
   /// \brief objects comparison function
   /// \return the quality resulting from the object comparison
-  virtual o2::quality_control::core::Quality compare(TObject* obj, TObject* objRef, std::string& message) = 0;
+  virtual o2::quality_control::core::Quality compare(TObject* object, TObject* referenceObject, std::string& message) = 0;
 
  private:
   /// the threshold to define the goodness of the comparison

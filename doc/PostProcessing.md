@@ -12,6 +12,8 @@
    * [Convenience classes](#convenience-classes)
       * [The TrendingTask class](#the-trendingtask-class)
       * [The SliceTrendingTask class](#the-slicetrendingtask-class)
+      * [The ReferenceComparatorTask class](#the-referencecomparatortask-class)
+      * [The CcdbInspectorTask class](#the-ccdbinspectortask-class)
       * [The QualityTask class](#the-qualitytask-class)
       * [The FlagCollectionTask class](#the-flagcollectiontask-class)
       * [The BigScreen class](#the-bigscreen-class)
@@ -440,7 +442,7 @@ The field `"graphErrors"` is set up as `"graphErrors":"Var1:Var2"` where `Var1` 
 
 ### The ReferenceComparatorTask class
 
-This task draws a given set of plots in comparison with their corresponding references, both as superimposed histograms and as current/reference ratio histograms.
+This post-processing task draws a given set of plots in comparison with their corresponding references, both as superimposed histograms and as current/reference ratio histograms.
 
 #### Configuration
 

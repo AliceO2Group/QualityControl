@@ -36,7 +36,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::common
 {
 
-static bool splitObjectPath(std::string fullPath, std::string& path, std::string& name)
+static bool splitObjectPath(const std::string& fullPath, std::string& path, std::string& name)
 {
   std::string delimiter = "/";
   std::string det;
@@ -53,7 +53,7 @@ static bool splitObjectPath(std::string fullPath, std::string& path, std::string
 //
 // Helper function for retrieving the last MonitorObject for a give run number
 
-static std::shared_ptr<MonitorObject> getMOFromRun(repository::DatabaseInterface* qcdb, std::string fullPath, uint32_t run, Activity activity)
+static std::shared_ptr<MonitorObject> getMOFromRun(repository::DatabaseInterface* qcdb, const std::string& fullPath, uint32_t run, Activity activity)
 {
   uint64_t timeStamp = 0;
   activity.mId = run;
@@ -82,7 +82,7 @@ static std::shared_ptr<MonitorObject> getMOFromRun(repository::DatabaseInterface
 // A non-null MO is returned in the first element of the pair if the MO is found in the QCDB
 // The second element of the pair is set to true if the MO has a time stamp more recent than a user-supplied threshold
 
-static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::DatabaseInterface& qcdb, std::string fullPath, Trigger trigger, long notOlderThan)
+static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::DatabaseInterface& qcdb, const std::string& fullPath, Trigger trigger, long notOlderThan)
 {
   // find the time-stamp of the most recent object matching the current activity
   // if ignoreActivity is true the activity matching criteria are not applied
@@ -121,9 +121,9 @@ static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::Databas
 //
 // Get the reference plot for a given MonitorObject path
 
-std::shared_ptr<MonitorObject> ReferenceComparatorTask::getRefPlot(repository::DatabaseInterface& qcdb, std::string fullPath, Activity activity)
+std::shared_ptr<MonitorObject> ReferenceComparatorTask::getReferencePlot(repository::DatabaseInterface& qcdb, std::string fullPath, Activity activity)
 {
-  return getMOFromRun(&qcdb, fullPath, mRefRun, activity);
+  return getMOFromRun(&qcdb, fullPath, mReferenceRun, activity);
 }
 
 //_________________________________________________________________________________________
@@ -139,12 +139,12 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
 {
   // reset all existing objects
   mPlotNames.clear();
-  mRefPlots.clear();
+  mReferencePlots.clear();
   mHistograms.clear();
 
   auto& qcdb = services.get<repository::DatabaseInterface>();
   mNotOlderThan = std::stoi(mCustomParameters.atOptional("notOlderThan").value_or("120"));
-  mRefRun = std::stoi(mCustomParameters.atOptional("referenceRun").value_or("0"));
+  mReferenceRun = std::stoi(mCustomParameters.atOptional("referenceRun").value_or("0"));
 
   // load and initialize the input groups
   for (auto group : mConfig.dataGroups) {
@@ -156,59 +156,36 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
       auto fullOutPath = group.outputPath + "/" + path;
 
       // retrieve the reference MO
-      auto refPlot = getRefPlot(qcdb, fullRefPath, t.activity);
-      if (!refPlot) {
+      auto referencePlot = getReferencePlot(qcdb, fullRefPath, t.activity);
+      if (!referencePlot) {
         continue;
       }
 
       // extract the reference histogram
-      TH1* refHist = dynamic_cast<TH1*>(refPlot->getObject());
-      if (!refHist) {
+      TH1* referenceHistogram = dynamic_cast<TH1*>(referencePlot->getObject());
+      if (!referenceHistogram) {
         continue;
       }
 
       // store the reference MO
-      mRefPlots[fullPath] = refPlot;
+      mReferencePlots[fullPath] = referencePlot;
 
       // fill an array with the full paths of the plots associated to this group
       plotVec.push_back(fullPath);
 
       // create and store the plotter object
-      mHistograms[fullPath] = std::make_shared<ReferenceComparatorPlot>(refHist, fullOutPath,
+      mHistograms[fullPath] = std::make_shared<ReferenceComparatorPlot>(referenceHistogram, fullOutPath,
                                                                         group.normalizeReference,
                                                                         group.drawRatioOnly,
                                                                         group.drawOption1D,
                                                                         group.drawOption2D);
-      auto* outObject = mHistograms[fullPath]->getObject();
+      auto* outObject = mHistograms[fullPath]->getMainCanvas();
       // publish the object created by the plotter
       if (outObject) {
         getObjectsManager()->startPublishing(outObject);
       }
     }
   }
-}
-
-//_________________________________________________________________________________________
-
-void ReferenceComparatorTask::updatePlot(std::string plotName, TObject* object)
-{
-  // make sure that the objects inherits from TH1
-  TH1* hist = dynamic_cast<TH1*>(object);
-  if (!hist) {
-    return;
-  }
-
-  // check if a corresponding output plot was initialized
-  auto iter = mHistograms.find(plotName);
-  if (iter == mHistograms.end()) {
-    return;
-  }
-
-  // update the plot ratios and the histigrams with superimposed reference
-  auto moRef = mRefPlots[plotName];
-  TH1* histRef = dynamic_cast<TH1*>(moRef->getObject());
-
-  iter->second->update(hist, histRef);
 }
 
 //_________________________________________________________________________________________
@@ -223,14 +200,27 @@ void ReferenceComparatorTask::update(quality_control::postprocessing::Trigger tr
       auto object = getMO(qcdb, plotName, trigger, mNotOlderThan * 1000);
 
       // skip objects that are not found or too old
-      if (!object.second) {
+      if (!object.first || !object.second) {
         continue;
       }
 
-      // if the object is valid, draw it together with the reference
-      if (object.first && object.first->getObject() && object.first->getObject()->InheritsFrom("TH1")) {
-        updatePlot(plotName, object.first->getObject());
+      // only process objects inheriting from TH1
+      auto* histogram = dynamic_cast<TH1*>(object.first->getObject());
+      if (!histogram) {
+        continue;
       }
+
+      // check if a corresponding output plot was initialized
+      auto iter = mHistograms.find(plotName);
+      if (iter == mHistograms.end()) {
+        continue;
+      }
+
+      // update the plot ratios and the histograms with superimposed reference
+      auto referenceMO = mReferencePlots[plotName];
+      TH1* referenceHistogram = dynamic_cast<TH1*>(referenceMO->getObject());
+
+      iter->second->update(histogram, referenceHistogram);
     }
   }
 }

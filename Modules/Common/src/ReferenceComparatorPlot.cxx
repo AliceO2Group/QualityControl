@@ -30,7 +30,7 @@
 namespace o2::quality_control_modules::common
 {
 
-static bool checkAxis(TH1* h1, TH1* h2)
+static bool isBinningIdentical(TH1* h1, TH1* h2)
 {
   // check consistency of X-axis binning
   if (h1->GetXaxis()->GetNbins() != h2->GetXaxis()->GetNbins()) {
@@ -70,28 +70,28 @@ static bool checkAxis(TH1* h1, TH1* h2)
 
 //_________________________________________________________________________________________
 
-static void copyAndScaleHistograms(TH1* histo, TH1* refHisto, TH1* outputHisto, TH1* outputRefHisto, bool scaleReference)
+static void copyAndScaleHistograms(TH1* histogram, TH1* referenceHistogram, TH1* outputHisto, TH1* outputRefHisto, bool scaleReference)
 {
-  if (!histo || !refHisto || !outputHisto || !outputRefHisto) {
+  if (!histogram || !referenceHistogram || !outputHisto || !outputRefHisto) {
     ILOG(Warning, Devel) << "histogram is nullptr" << ENDM;
     return;
   }
 
-  if (!checkAxis(histo, refHisto)) {
-    ILOG(Warning, Devel) << "mismatch in axis dimensions for '" << histo->GetName() << "'" << ENDM;
+  if (!isBinningIdentical(histogram, referenceHistogram)) {
+    ILOG(Warning, Devel) << "mismatch in axis dimensions for '" << histogram->GetName() << "'" << ENDM;
     return;
   }
 
   outputHisto->Reset();
-  outputHisto->Add(histo);
+  outputHisto->Add(histogram);
 
   outputRefHisto->Reset();
-  outputRefHisto->Add(refHisto);
+  outputRefHisto->Add(referenceHistogram);
 
   if (scaleReference) {
     // the reference histogram is scaled to match the integral of the current histogram
-    double integral = histo->Integral();
-    double integralRef = refHisto->Integral();
+    double integral = histogram->Integral();
+    double integralRef = referenceHistogram->Integral();
     if (integral != 0 && integralRef != 0) {
       outputRefHisto->Scale(integral / integralRef);
     }
@@ -103,44 +103,44 @@ static void copyAndScaleHistograms(TH1* histo, TH1* refHisto, TH1* outputHisto, 
 class ReferenceComparatorPlotImpl
 {
  public:
-  ReferenceComparatorPlotImpl(bool scaleRef)
-    : mScaleRef(scaleRef)
+  ReferenceComparatorPlotImpl(bool scaleReference)
+    : mScaleReference(scaleReference)
   {
   }
 
   virtual ~ReferenceComparatorPlotImpl() = default;
 
-  virtual TObject* init(TH1* refHist, std::string outputPath, bool scaleRef, bool drawRatioOnly, std::string drawOption)
+  virtual TObject* init(TH1* referenceHistogram, std::string outputPath, bool scaleReference, bool drawRatioOnly, std::string drawOption)
   {
     return nullptr;
   }
 
-  virtual TObject* getObject()
+  virtual TObject* getMainCanvas()
   {
     return nullptr;
   }
 
-  void setScaleRef(bool scaleRef)
+  void setScaleRef(bool scaleReference)
   {
-    mScaleRef = scaleRef;
+    mScaleReference = scaleReference;
   }
 
-  bool getScaleRef() { return mScaleRef; }
+  bool getScaleReference() { return mScaleReference; }
 
-  virtual void update(TH1* hist, TH1* histRef) = 0;
+  virtual void update(TH1* histogram, TH1* referenceHistogram) = 0;
 
  private:
-  bool mScaleRef{ true };
+  bool mScaleReference{ true };
 };
 
 template <class HIST>
 class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
 {
  public:
-  ReferenceComparatorPlotImpl1D(TH1* refHist, std::string outputPath, bool scaleRef, bool drawRatioOnly, std::string drawOption)
-    : ReferenceComparatorPlotImpl(scaleRef)
+  ReferenceComparatorPlotImpl1D(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption)
+    : ReferenceComparatorPlotImpl(scaleReference)
   {
-    if (!refHist) {
+    if (!referenceHistogram) {
       return;
     }
 
@@ -173,39 +173,39 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     // histogram from the current run
     mPadHist->cd();
     mPlot = std::make_shared<HIST>((canvasName + "_hist").c_str(),
-                                   refHist->GetTitle(),
-                                   refHist->GetXaxis()->GetNbins(),
-                                   refHist->GetXaxis()->GetXmin(),
-                                   refHist->GetXaxis()->GetXmax());
+                                   referenceHistogram->GetTitle(),
+                                   referenceHistogram->GetXaxis()->GetNbins(),
+                                   referenceHistogram->GetXaxis()->GetXmin(),
+                                   referenceHistogram->GetXaxis()->GetXmax());
     // hide the X-axis
     mPlot->GetXaxis()->SetTitle("");
     mPlot->GetXaxis()->SetLabelSize(0);
-    mPlot->GetYaxis()->SetTitle(refHist->GetYaxis()->GetTitle());
+    mPlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
     mPlot->SetLineColor(kBlack);
     mPlot->SetStats(0);
     mPlot->SetOption(drawOption.c_str());
     mPlot->Draw(drawOption.c_str());
 
     // histogram from the reference run
-    mRefPlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(),
-                                      refHist->GetTitle(),
-                                      refHist->GetXaxis()->GetNbins(),
-                                      refHist->GetXaxis()->GetXmin(),
-                                      refHist->GetXaxis()->GetXmax());
-    mRefPlot->SetLineColor(kBlue);
-    // mRefPlot->SetLineStyle(kDashed);
-    // mRefPlot->SetLineWidth(2);
-    mRefPlot->SetOption((drawOption + "SAME").c_str());
-    mRefPlot->Draw((drawOption + "SAME").c_str());
+    mReferencePlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(),
+                                            referenceHistogram->GetTitle(),
+                                            referenceHistogram->GetXaxis()->GetNbins(),
+                                            referenceHistogram->GetXaxis()->GetXmin(),
+                                            referenceHistogram->GetXaxis()->GetXmax());
+    mReferencePlot->SetLineColor(kBlue);
+    // mReferencePlot->SetLineStyle(kDashed);
+    // mReferencePlot->SetLineWidth(2);
+    mReferencePlot->SetOption((drawOption + "SAME").c_str());
+    mReferencePlot->Draw((drawOption + "SAME").c_str());
 
     // histogram with current/reference ratio
     mPadHistRatio->cd();
     mRatioPlot = std::make_shared<HIST>((canvasName + "_hist_ratio").c_str(),
-                                        refHist->GetTitle(),
-                                        refHist->GetXaxis()->GetNbins(),
-                                        refHist->GetXaxis()->GetXmin(),
-                                        refHist->GetXaxis()->GetXmax());
-    mRatioPlot->GetXaxis()->SetTitle(refHist->GetXaxis()->GetTitle());
+                                        referenceHistogram->GetTitle(),
+                                        referenceHistogram->GetXaxis()->GetNbins(),
+                                        referenceHistogram->GetXaxis()->GetXmin(),
+                                        referenceHistogram->GetXaxis()->GetXmax());
+    mRatioPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
     if (drawRatioOnly) {
       mRatioPlot->GetYaxis()->SetTitle("current / reference");
     } else {
@@ -250,22 +250,22 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     mQualityLabel->Draw();
   }
 
-  TObject* getObject()
+  TObject* getMainCanvas()
   {
     return mCanvas.get();
   }
 
-  void update(TH1* hist, TH1* histRef)
+  void update(TH1* hist, TH1* referenceHistogram)
   {
-    if (!hist || !histRef) {
+    if (!hist || !referenceHistogram) {
       return;
     }
 
-    copyAndScaleHistograms(hist, histRef, mPlot.get(), mRefPlot.get(), getScaleRef());
+    copyAndScaleHistograms(hist, referenceHistogram, mPlot.get(), mReferencePlot.get(), getScaleReference());
 
     mRatioPlot->Reset();
     mRatioPlot->Add(mPlot.get());
-    mRatioPlot->Divide(mRefPlot.get());
+    mRatioPlot->Divide(mReferencePlot.get());
     mRatioPlot->SetMinimum(0);
     mRatioPlot->SetMaximum(1.999);
   }
@@ -275,7 +275,7 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
   std::shared_ptr<TPad> mPadHist;
   std::shared_ptr<TPad> mPadHistRatio;
   std::shared_ptr<HIST> mPlot;
-  std::shared_ptr<HIST> mRefPlot;
+  std::shared_ptr<HIST> mReferencePlot;
   std::shared_ptr<HIST> mRatioPlot;
   std::shared_ptr<TLine> mBorderTop;
   std::shared_ptr<TLine> mBorderRight;
@@ -286,14 +286,12 @@ template <class HIST>
 class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
 {
  public:
-  ReferenceComparatorPlotImpl2D(TH1* refHist, std::string outputPath, bool scaleRef, bool drawRatioOnly, std::string drawOption)
-    : ReferenceComparatorPlotImpl(scaleRef)
+  ReferenceComparatorPlotImpl2D(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption)
+    : ReferenceComparatorPlotImpl(scaleReference)
   {
-    if (!refHist) {
+    if (!referenceHistogram) {
       return;
     }
-
-    setScaleRef(scaleRef);
 
     // full name of the main canvas
     std::string canvasName = outputPath;
@@ -345,47 +343,47 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
     // histogram from the current run
     mPadHist->cd();
     mPlot = std::make_shared<HIST>((canvasName + "_hist").c_str(),
-                                   refHist->GetTitle(),
-                                   refHist->GetXaxis()->GetNbins(),
-                                   refHist->GetXaxis()->GetXmin(),
-                                   refHist->GetXaxis()->GetXmax(),
-                                   refHist->GetYaxis()->GetNbins(),
-                                   refHist->GetYaxis()->GetXmin(),
-                                   refHist->GetYaxis()->GetXmax());
-    mPlot->GetXaxis()->SetTitle(refHist->GetXaxis()->GetTitle());
-    mPlot->GetYaxis()->SetTitle(refHist->GetYaxis()->GetTitle());
+                                   referenceHistogram->GetTitle(),
+                                   referenceHistogram->GetXaxis()->GetNbins(),
+                                   referenceHistogram->GetXaxis()->GetXmin(),
+                                   referenceHistogram->GetXaxis()->GetXmax(),
+                                   referenceHistogram->GetYaxis()->GetNbins(),
+                                   referenceHistogram->GetYaxis()->GetXmin(),
+                                   referenceHistogram->GetYaxis()->GetXmax());
+    mPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
+    mPlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
     mPlot->SetStats(0);
     mPlot->SetOption(drawOption.c_str());
     mPlot->Draw(drawOption.c_str());
 
     // histogram from the reference run
     mPadHistRef->cd();
-    mRefPlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(),
-                                      TString::Format("%s (reference)", refHist->GetTitle()),
-                                      refHist->GetXaxis()->GetNbins(),
-                                      refHist->GetXaxis()->GetXmin(),
-                                      refHist->GetXaxis()->GetXmax(),
-                                      refHist->GetYaxis()->GetNbins(),
-                                      refHist->GetYaxis()->GetXmin(),
-                                      refHist->GetYaxis()->GetXmax());
-    mRefPlot->GetXaxis()->SetTitle(refHist->GetXaxis()->GetTitle());
-    mRefPlot->GetYaxis()->SetTitle(refHist->GetYaxis()->GetTitle());
-    mRefPlot->SetStats(0);
-    mRefPlot->SetOption(drawOption.c_str());
-    mRefPlot->Draw(drawOption.c_str());
+    mReferencePlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(),
+                                            TString::Format("%s (reference)", referenceHistogram->GetTitle()),
+                                            referenceHistogram->GetXaxis()->GetNbins(),
+                                            referenceHistogram->GetXaxis()->GetXmin(),
+                                            referenceHistogram->GetXaxis()->GetXmax(),
+                                            referenceHistogram->GetYaxis()->GetNbins(),
+                                            referenceHistogram->GetYaxis()->GetXmin(),
+                                            referenceHistogram->GetYaxis()->GetXmax());
+    mReferencePlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
+    mReferencePlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
+    mReferencePlot->SetStats(0);
+    mReferencePlot->SetOption(drawOption.c_str());
+    mReferencePlot->Draw(drawOption.c_str());
 
     // histogram with current/reference ratio
     mPadHistRatio->cd();
     mRatioPlot = std::make_shared<HIST>((canvasName + "_hist_ratio").c_str(),
-                                        TString::Format("%s (ratio)", refHist->GetTitle()),
-                                        refHist->GetXaxis()->GetNbins(),
-                                        refHist->GetXaxis()->GetXmin(),
-                                        refHist->GetXaxis()->GetXmax(),
-                                        refHist->GetYaxis()->GetNbins(),
-                                        refHist->GetYaxis()->GetXmin(),
-                                        refHist->GetYaxis()->GetXmax());
-    mRatioPlot->GetXaxis()->SetTitle(refHist->GetXaxis()->GetTitle());
-    mRatioPlot->GetYaxis()->SetTitle(refHist->GetYaxis()->GetTitle());
+                                        TString::Format("%s (ratio)", referenceHistogram->GetTitle()),
+                                        referenceHistogram->GetXaxis()->GetNbins(),
+                                        referenceHistogram->GetXaxis()->GetXmin(),
+                                        referenceHistogram->GetXaxis()->GetXmax(),
+                                        referenceHistogram->GetYaxis()->GetNbins(),
+                                        referenceHistogram->GetYaxis()->GetXmin(),
+                                        referenceHistogram->GetYaxis()->GetXmax());
+    mRatioPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
+    mRatioPlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
     if (!drawRatioOnly) {
       mRatioPlot->GetZaxis()->SetTitle("ratio");
     } else {
@@ -408,22 +406,22 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
     mQualityLabel->Draw();
   }
 
-  TObject* getObject()
+  TObject* getMainCanvas()
   {
     return mCanvas.get();
   }
 
-  void update(TH1* hist, TH1* histRef)
+  void update(TH1* histogram, TH1* referenceHistogram)
   {
-    if (!hist || !histRef) {
+    if (!histogram || !referenceHistogram) {
       return;
     }
 
-    copyAndScaleHistograms(hist, histRef, mPlot.get(), mRefPlot.get(), getScaleRef());
+    copyAndScaleHistograms(histogram, referenceHistogram, mPlot.get(), mReferencePlot.get(), getScaleReference());
 
     mRatioPlot->Reset();
     mRatioPlot->Add(mPlot.get());
-    mRatioPlot->Divide(mRefPlot.get());
+    mRatioPlot->Divide(mReferencePlot.get());
     mRatioPlot->SetMinimum(0);
     mRatioPlot->SetMaximum(2);
   }
@@ -434,39 +432,39 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
   std::shared_ptr<TPad> mPadHistRef;
   std::shared_ptr<TPad> mPadHistRatio;
   std::shared_ptr<HIST> mPlot;
-  std::shared_ptr<HIST> mRefPlot;
+  std::shared_ptr<HIST> mReferencePlot;
   std::shared_ptr<HIST> mRatioPlot;
   std::shared_ptr<TPaveText> mQualityLabel;
 };
 
-ReferenceComparatorPlot::ReferenceComparatorPlot(TH1* refHist, std::string outputPath, bool scaleRef, bool drawRatioOnly, std::string drawOption1D, std::string drawOption2D)
+ReferenceComparatorPlot::ReferenceComparatorPlot(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption1D, const std::string& drawOption2D)
 {
-  if (refHist->IsA() == TClass::GetClass<TH1F>() || refHist->InheritsFrom("TH1F")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1F>>(refHist, outputPath, scaleRef, drawRatioOnly, drawOption1D);
+  if (referenceHistogram->IsA() == TClass::GetClass<TH1F>() || referenceHistogram->InheritsFrom("TH1F")) {
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1F>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption1D);
   }
 
-  if (refHist->IsA() == TClass::GetClass<TH1D>() || refHist->InheritsFrom("TH1D")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1D>>(refHist, outputPath, scaleRef, drawRatioOnly, drawOption1D);
+  if (referenceHistogram->IsA() == TClass::GetClass<TH1D>() || referenceHistogram->InheritsFrom("TH1D")) {
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1D>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption1D);
   }
 
-  if (refHist->IsA() == TClass::GetClass<TH2F>() || refHist->InheritsFrom("TH2F")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2F>>(refHist, outputPath, scaleRef, drawRatioOnly, drawOption2D);
+  if (referenceHistogram->IsA() == TClass::GetClass<TH2F>() || referenceHistogram->InheritsFrom("TH2F")) {
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2F>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption2D);
   }
 
-  if (refHist->IsA() == TClass::GetClass<TH2D>() || refHist->InheritsFrom("TH2D")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2D>>(refHist, outputPath, scaleRef, drawRatioOnly, drawOption2D);
+  if (referenceHistogram->IsA() == TClass::GetClass<TH2D>() || referenceHistogram->InheritsFrom("TH2D")) {
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2D>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption2D);
   }
 }
 
-TObject* ReferenceComparatorPlot::getObject()
+TObject* ReferenceComparatorPlot::getMainCanvas()
 {
-  return (mImplementation.get() ? mImplementation->getObject() : nullptr);
+  return (mImplementation.get() ? mImplementation->getMainCanvas() : nullptr);
 }
 
-void ReferenceComparatorPlot::update(TH1* hist, TH1* histRef)
+void ReferenceComparatorPlot::update(TH1* histogram, TH1* referenceHistogram)
 {
   if (mImplementation) {
-    mImplementation->update(hist, histRef);
+    mImplementation->update(histogram, referenceHistogram);
   }
 }
 

@@ -30,11 +30,18 @@ class ReferenceComparatorPlotImpl;
 class ReferenceComparatorPlot
 {
  public:
-  ReferenceComparatorPlot(TH1* refHist, std::string outputPath, bool scaleRef, bool drawRatioOnly, std::string drawOption1D, std::string drawOption2D);
+  /// ReferenceComparatorPlot constructor
+  /// \param referenceHistogram pointer to the reference histogram object, used to initialize the internal plots
+  /// \param outputPath QCDB path were the output canvas is stored
+  /// \param scaleReference if true the reference plot is sclaled such that its integral matches the one of the current histogram
+  /// \param drawRatioOnly if true only  the ratio between current and reference plot is draw, otherwise also the individual plots are drawn in addition
+  /// \param drawOption1D ROOT draw option to be used for 1-D plots
+  /// \param drawOption2D ROOT draw option to be used for 2-D plots
+  ReferenceComparatorPlot(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption1D, const std::string& drawOption2D);
   virtual ~ReferenceComparatorPlot() = default;
 
-  TObject* getObject();
-  void update(TH1* hist, TH1* histRef);
+  TObject* getMainCanvas();
+  void update(TH1* histogram, TH1* referenceHistogram);
 
  private:
   std::shared_ptr<ReferenceComparatorPlotImpl> mImplementation;

@@ -27,44 +27,22 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::common
 {
 
-Quality ObjectComparatorDeviation::compare(TObject* obj, TObject* objRef, std::string& message)
+Quality ObjectComparatorDeviation::compare(TObject* object, TObject* referenceObject, std::string& message)
 {
-  if (!obj || !objRef) {
-    message = "missing objects";
+  auto checkResult = checkInputObjects(object, referenceObject, message);
+  if (!std::get<2>(checkResult)) {
     return Quality::Null;
   }
 
-  // only consider objects that inherit from TH1
-  auto* hist = dynamic_cast<TH1*>(obj);
-  auto* histRef = dynamic_cast<TH1*>(objRef);
-
-  if (!hist || !histRef) {
-    message = "objects are not TH1";
-    return Quality::Null;
-  }
-
-  // the object and the reference must correspond to the same ROOT class
-  if (hist->IsA() != histRef->IsA()) {
-    message = "incompatible objects";
-    return Quality::Null;
-  }
-
-  if (histRef->GetEntries() < 1) {
-    message = "empty reference plot";
-    return Quality::Null;
-  }
-
-  if (hist->GetNcells() < 3 || hist->GetNcells() != histRef->GetNcells()) {
-    message = "incompatible number of bins";
-    return Quality::Null;
-  }
+  auto* histogram = std::get<0>(checkResult);
+  auto* referenceHistogram = std::get<1>(checkResult);
 
   // compute the average relative deviation between the bins
   double averageDeviation = 0;
-  int numberOfBins = hist->GetNcells() - 2;
+  int numberOfBins = histogram->GetNcells() - 2;
   for (int bin = 1; bin <= numberOfBins; bin++) {
-    double val = hist->GetBinContent(bin);
-    double refVal = histRef->GetBinContent(bin);
+    double val = histogram->GetBinContent(bin);
+    double refVal = referenceHistogram->GetBinContent(bin);
     averageDeviation += (refVal == 0) ? 0 : std::abs((val - refVal) / refVal);
   }
   averageDeviation /= numberOfBins;

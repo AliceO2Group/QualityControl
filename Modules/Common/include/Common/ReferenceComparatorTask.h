@@ -63,10 +63,9 @@ class ReferenceComparatorTask : public quality_control::postprocessing::PostProc
   };
 
  private:
-  std::shared_ptr<o2::quality_control::core::MonitorObject> getRefPlot(o2::quality_control::repository::DatabaseInterface& qcdb, std::string fullPath, o2::quality_control::core::Activity activity);
-  void updatePlot(std::string plotName, TObject* object);
+  std::shared_ptr<o2::quality_control::core::MonitorObject> getReferencePlot(o2::quality_control::repository::DatabaseInterface& qcdb, std::string fullPath, o2::quality_control::core::Activity activity);
 
-  int mRefRun{ 0 };
+  int mReferenceRun{ 0 };
   int mNotOlderThan{ 120 };
 
   /// \brief configuration parameters
@@ -74,7 +73,7 @@ class ReferenceComparatorTask : public quality_control::postprocessing::PostProc
   /// \brief list of plot names, separately for each group
   std::map<std::string, std::vector<std::string>> mPlotNames;
   /// \brief reference MOs
-  std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>> mRefPlots;
+  std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>> mReferencePlots;
   /// \brief histograms with comparison to reference
   std::map<std::string, std::shared_ptr<ReferenceComparatorPlot>> mHistograms;
 };
