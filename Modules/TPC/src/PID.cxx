@@ -60,8 +60,8 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs, runAsyncAndTurnOffSomeHistos);
   mQCPID.setCreateCanvas(createCanvas);
   mQCPID.initializeHistograms();
-  mSeparationPowerCanvas = mQCPID.getSeparationPowerCanvas();
-  getObjectsManager()->startPublishing(mSeparationPowerCanvas);
+  //mSeparationPowerCanvas = mQCPID.getSeparationPowerCanvas();
+  //getObjectsManager()->startPublishing(mSeparationPowerCanvas);
   // pass map of vectors of histograms to be beautified!
 
   o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
@@ -136,15 +136,16 @@ void PID::endOfCycle()
     }
   }
 
-  TProfile* pSeparationPower = new TProfile("pSeparationPower", "pSeparationPower", nPars, 0., (float)nPars);
+  pSeparationPower = new TProfile("pSeparationPower", "pSeparationPower", nPars, 0., (float)nPars);
+  getObjectsManager()->startPublishing(pSeparationPower);
   const TString binLabels[nPars] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
 
   for (int iPar = 0; iPar < nPars; iPar++) {
     pSeparationPower->GetXaxis()->SetBinLabel(iPar + 1, binLabels[iPar]);
     pSeparationPower->Fill((float)iPar + 0.5, mTrendingParameters[iPar]);
   }
-  mSeparationPowerCanvas->cd();
-  pSeparationPower->Draw();
+  //mSeparationPowerCanvas->cd();
+  //pSeparationPower->Draw();
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
