@@ -103,12 +103,11 @@ void PID::endOfCycle()
 {
   // ===| Fitting Histogram for separation Power |============================================================
   std::unique_ptr<TF1> fitFunc = std::make_unique<TF1>("fitFunc", "[0]*exp(-0.5*((x-[1])/[2])^2) + [3]*exp(-0.5*((x-[4])/[5])^2)", 0, 100);
-  
+
   const int nPars = 8; //6 fit parameters + 2 external (seperation power + chi²/ndf)
 
   for (auto const& pair : mQCPID.getMapOfHisto()) {
     for (auto& hist : pair.second) {
-      //      if (std::static_cast<string>(pair.first).compare("hdEdxMaxMIP") == 0) {
       if (pair.first.compare("hdEdxMaxMIP") == 0) {
         mTrendingParameters.clear();
         // Define fitting function: sum of two Gaussians with an offset
@@ -144,8 +143,6 @@ void PID::endOfCycle()
     pSeparationPower->GetXaxis()->SetBinLabel(iPar + 1, binLabels[iPar]);
     pSeparationPower->Fill((float)iPar + 0.5, mTrendingParameters[iPar]);
   }
-  //mSeparationPowerCanvas->cd();
-  //pSeparationPower->Draw();
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
