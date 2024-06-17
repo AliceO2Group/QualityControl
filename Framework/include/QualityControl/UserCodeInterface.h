@@ -23,6 +23,8 @@
 
 #include "QualityControl/ConditionAccess.h"
 #include "QualityControl/CustomParameters.h"
+#include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/MonitorObject.h"
 
 namespace o2::quality_control::core
 {
@@ -49,11 +51,17 @@ class UserCodeInterface : public ConditionAccess
   const std::string& getName() const;
   void setName(const std::string& name);
 
+  std::shared_ptr<MonitorObject> retrieveReference(string provenance, string detector, string taskName, string objectName, long timestamp,const core::Activity& activity = {},  map<string, string> metadataFilters = {});
+
+  const std::shared_ptr<o2::quality_control::repository::DatabaseInterface>& getDatabase() const;
+  void setDatabase(const std::shared_ptr<o2::quality_control::repository::DatabaseInterface>& mDatabase);
+
  protected:
   CustomParameters mCustomParameters;
   std::string mName;
+  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
 
-  ClassDef(UserCodeInterface, 3)
+  ClassDef(UserCodeInterface, 4)
 };
 
 } // namespace o2::quality_control::core

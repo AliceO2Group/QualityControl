@@ -82,10 +82,8 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   }
 
   // configuration of the database
-  mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
-  mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mRunnerConfig.database.at("implementation") << " / "
-                      << " Host : " << mRunnerConfig.database.at("host") << ENDM;
+  mDatabase = getDatabase(mRunnerConfig.database);
+  mTask->setDatabase(mDatabase);
 
   mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
   mObjectManager->setActivity(mActivity);

@@ -25,6 +25,7 @@
 #include <fairmq/Device.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/DatabaseInterface.h"
 
 namespace o2::quality_control::core
 {
@@ -83,6 +84,8 @@ std::string templateILDiscardFile(std::string& originalFile, framework::InitCont
 uint64_t getCurrentTimestamp();
 
 void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
+
+std::shared_ptr<o2::quality_control::repository::DatabaseInterface> getDatabase(std::unordered_map<std::string, std::string> databaseConfig);
 
 } // namespace o2::quality_control::core
 

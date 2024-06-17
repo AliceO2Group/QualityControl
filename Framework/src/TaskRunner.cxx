@@ -127,6 +127,8 @@ void TaskRunner::init(InitContext& iCtx)
   refreshConfig(iCtx);
   printTaskConfig();
   Bookkeeping::getInstance().init(mTaskConfig.bookkeepingUrl);
+  auto database = getDatabase(mTaskConfig.database);
+  mTask->setDatabase(database);
 
   // registering state machine callbacks
   try {

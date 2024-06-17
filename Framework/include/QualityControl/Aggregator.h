@@ -70,6 +70,10 @@ class Aggregator
    */
   void init();
 
+  AggregatorInterface* getAggregatorInterface() const {
+    return mAggregatorInterface;
+  }
+
   o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap, const core::Activity& defaultActivity = {});
 
   const std::string& getName() const;

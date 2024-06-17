@@ -162,7 +162,6 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
   handleStorageError(path, result);
 }
 
-// Monitor object
 void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
@@ -334,11 +333,13 @@ void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, cons
   return object;
 }
 
-std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName, long timestamp, const core::Activity& activity)
+std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName, long timestamp, const core::Activity& activity, const map<std::string, std::string>& filters) // activity has precendence over filters
 {
   string fullPath = activity.mProvenance + "/" + objectPath + "/" + objectName;
   map<string, string> headers;
   map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
+  metadata.insert(filters.begin(), filters.end());
+
   TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
 
   // no object found

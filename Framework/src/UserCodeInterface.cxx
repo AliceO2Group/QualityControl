@@ -15,6 +15,8 @@
 ///
 
 #include "QualityControl/UserCodeInterface.h"
+#include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/DatabaseFactory.h"
 
 using namespace o2::ccdb;
 
@@ -28,7 +30,23 @@ void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
 }
 
 const std::string& UserCodeInterface::getName() const { return mName; }
-
 void UserCodeInterface::setName(const std::string& name) { mName = name; }
+
+const std::shared_ptr<o2::quality_control::repository::DatabaseInterface>& UserCodeInterface::getDatabase() const
+{
+  return mDatabase;
+}
+void UserCodeInterface::setDatabase(const std::shared_ptr<o2::quality_control::repository::DatabaseInterface>& mDatabase)
+{
+  UserCodeInterface::mDatabase = mDatabase;
+}
+
+std::shared_ptr<MonitorObject> UserCodeInterface::retrieveReference(string provenance, string detector, string taskName, string objectName, long timestamp, const core::Activity& activity, map<string, string> metadataFilters) // we don't use Activity because users might have an object that applies to a wide range of activities and it would be very limiting
+{
+  // Get the reference object from <provenance>/<det>/REF
+  auto path = RepoPathUtils::getRefPath(detector, taskName, "", provenance, false);
+  auto refObject = mDatabase->retrieveMO(path, objectName, repository::DatabaseInterface::Timestamp::Current, activity, metadataFilters);
+  return refObject;
+}
 
 } // namespace o2::quality_control::core

@@ -77,7 +77,7 @@ class CcdbDatabase : public DatabaseInterface
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
   // retrieval - MO - deprecated
-  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = Timestamp::Current, const core::Activity& activity = {}) override;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = Timestamp::Current, const core::Activity& activity = {}, const std::map<std::string, std::string>& filters = {}) override;
   // retrieval - QO - deprecated
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current, const core::Activity& activity = {}) override;
   std::shared_ptr<o2::quality_control::QualityControlFlagCollection> retrieveQCFC(const std::string& name, const std::string& detector, int runNumber = 0,

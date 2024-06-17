@@ -43,6 +43,7 @@
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/WorkflowType.h"
 #include "QualityControl/HashDataDescription.h"
+#include "QualityControl/AggregatorInterface.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -282,9 +283,13 @@ void AggregatorRunner::send(const QualityObjectsWithAggregatorNameVector& qualit
 
 void AggregatorRunner::initDatabase()
 {
-  mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
-  mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mRunnerConfig.database.at("implementation") << " / Host : " << mRunnerConfig.database.at("host") << ENDM;
+  mDatabase = getDatabase(mRunnerConfig.database);
+  // provide the database to the aggregators to be passed to the user code
+  for ( auto& agg : mAggregators) {
+    if (agg->getAggregatorInterface()) {
+      agg->getAggregatorInterface()->setDatabase(mDatabase);
+    }
+  }
 }
 
 void AggregatorRunner::initMonitoring()

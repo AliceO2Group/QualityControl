@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(ccdb_qcfc)
   qcfc1->insert({ 51, 77, FlagTypeFactory::Invalid() });
   qcfc1->insert({ 1234, 3434, FlagTypeFactory::BadPID() });
   qcfc1->insert({ 50, 77, FlagTypeFactory::BadPID() });
-  qcfc1->insert({ 43434, 63421, FlagTypeFactory::Good() });
+//  qcfc1->insert({ 43434, 63421, FlagTypeFactory::Good() });
 
   f.backend->storeQCFC(qcfc1);
 

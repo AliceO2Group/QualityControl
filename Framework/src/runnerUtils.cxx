@@ -25,6 +25,7 @@
 #include <Common/Exceptions.h>
 #include <Framework/DeviceSpec.h>
 #include <Framework/ConfigParamRegistry.h>
+#include "QualityControl/DatabaseFactory.h"
 
 #include <chrono>
 #include <cstdint>
@@ -199,6 +200,14 @@ void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters inf
   if (!detectorName.empty()) {
     QcInfoLogger::setDetector(detectorName);
   }
+}
+
+std::shared_ptr<o2::quality_control::repository::DatabaseInterface> getDatabase(std::unordered_map<std::string, std::string> databaseConfig) // TODO check whether the implementation is in the map
+{
+  auto database = repository::DatabaseFactory::create(databaseConfig.at("implementation"));
+  database->connect(databaseConfig);
+  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << databaseConfig.at("implementation") << " / Host : " << databaseConfig.at("host") << ENDM;
+  return database;
 }
 
 } // namespace o2::quality_control::core

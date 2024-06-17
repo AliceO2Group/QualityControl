@@ -141,7 +141,7 @@ class DatabaseInterface
    * @param activity Activity of the object
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = Timestamp::Current, const core::Activity& activity = {}) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = Timestamp::Current, const core::Activity& activity = {}, const std::map<std::string, std::string>& metadata = {}) = 0;
   /**
    * \brief Look up a quality object and return it.
    * Look up a quality object and return it if found or nullptr if not.

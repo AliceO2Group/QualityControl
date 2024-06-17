@@ -92,6 +92,10 @@ class Check
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
   static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
 
+  CheckInterface* getCheckInterface() const {
+    return mCheckInterface;
+  }
+
  private:
   void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);
 

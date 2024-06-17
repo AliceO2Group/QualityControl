@@ -37,6 +37,7 @@
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/WorkflowType.h"
+#include "QualityControl/CheckInterface.h"
 
 #include <TSystem.h>
 
@@ -459,9 +460,17 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
 
 void CheckRunner::initDatabase()
 {
-  mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
-  mDatabase->connect(mConfig.database);
-  ILOG(Info, Devel) << "Database that is going to be used > Implementation : " << mConfig.database.at("implementation") << " / Host : " << mConfig.database.at("host") << ENDM;
+  mDatabase = getDatabase(mConfig.database);
+//  mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
+//  mDatabase->connect(mConfig.database);
+//  ILOG(Info, Devel) << "Database that is going to be used > Implementation : " << mConfig.database.at("implementation") << " / Host : " << mConfig.database.at("host") << ENDM;
+  // provide the database to the checks to be passed to the user code
+  for ( auto& [_, check] : mChecks) {
+    (void)_;
+    if (check.getCheckInterface()) {
+      check.getCheckInterface()->setDatabase(mDatabase);
+    }
+  }
 }
 
 void CheckRunner::initMonitoring()

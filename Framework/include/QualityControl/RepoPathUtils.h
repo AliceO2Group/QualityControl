@@ -50,6 +50,16 @@ class RepoPathUtils
     return path;
   }
 
+  static std::string getRefPath(const std::string& detectorCode,
+                               const std::string& taskName,
+                               const std::string& moName,
+                               const std::string& provenance = "qc",
+                               bool includeProvenance = true)
+  {
+    std::string path = (includeProvenance ? provenance + "/" : "") + detectorCode + "/REF/" + taskName + (moName.empty() ? "" : ("/" + moName));
+    return path;
+  }
+
   /**
    * Compute and return the path to the MonitorObject.
    * Current algorithm does <provenance(qc)>/<detectorCode>/MO/<taskName>/<moName>
