@@ -237,7 +237,7 @@ void CTPTrendingTask::generatePlots()
       mPlots[plot.name] = nullptr;
     }
 
-    if (index < 5 mInputIndex[index] == 49) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+    if (index < 5 && mInputIndex[index] == 49) { // if the class index == 65, this class is not defined in the config, so it won't be trended
       ILOG(Info, Support) << "Input " << mInputNames[index] << " is not trended." << ENDM;
       index++;
       continue;
@@ -249,7 +249,7 @@ void CTPTrendingTask::generatePlots()
       continue;
     }
 
-    if (index > 9 && index < 14 && (mInputIndex[index - 9] == 49 || mInputIndex[0] == 65)) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+    if (index > 9 && index < 14 && (mInputIndex[index - 9] == 49 || mInputIndex[0] == 49)) { // if the class index == 65, this class is not defined in the config, so it won't be trended
       ILOG(Info, Support) << "Input ratio " << mInputNames[index - 13] << " / " << mInputNames[0] << " is not trended." << ENDM;
       index++;
       continue;
