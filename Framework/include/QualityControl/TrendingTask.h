@@ -73,6 +73,7 @@ class TrendingTask : public PostProcessingInterface
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
   TCanvas* drawPlot(const TrendingTaskConfig::Plot& plotConfig);
+  void initializeTrend(repository::DatabaseInterface& qcdb);
   bool canContinueTrend(TTree* tree);
 
   TrendingTaskConfig mConfig;
