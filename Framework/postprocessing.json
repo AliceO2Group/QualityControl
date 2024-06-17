@@ -81,39 +81,59 @@
           {
             "name": "mean_of_histogram",
             "title": "Mean trend of the example histogram",
-            "varexp": "example.mean:time",
-            "selection": "",
-            "option": "*L",
-            "graphAxisLabel": "Mean X:time"
+            "graphAxisLabel": "Mean X:time",
+            "graphYRange": "0:10000",
+            "graphs" : [
+              {
+                "title": "mean trend",
+                "varexp": "example.mean:time",
+                "selection": "",
+                "option": "*L PLC PMC"
+              }, {
+                "title": "mean trend + 1000",
+                "varexp": "example.mean + 1000:time",
+                "selection": "",
+                "option": "* PMC",
+                "graphErrors": "1:200"
+              }
+            ]
           },
           {
             "name": "histogram_of_means",
             "title": "Distribution of mean values in the example histogram",
-            "varexp": "example.mean",
-            "selection": "",
-            "option": ""
+            "graphs" : [{
+                "varexp": "example.mean",
+                "selection": "",
+                "option": ""
+              }]
           },
           {
             "name": "correlation_mean_stddev",
             "title": "Correlation between the mean and stddev of the example histogram",
-            "varexp": "example.mean:example.stddev",
-            "selection": "",
-            "option": "*"
+            "graphs" : [{
+              "varexp": "example.mean:example.stddev",
+              "selection": "",
+              "option": "*"
+            }]
           },
           {
             "name": "correlation_stddev_entries",
             "title": "Correlation between the stddev and entries of the example histogram",
-            "varexp": "example.stddev:example.entries",
-            "selection": "",
-            "option": "*",
-            "graphAxisLabel": "stddev:entries"
+            "graphAxisLabel": "stddev:entries",
+            "graphs" : [{
+              "varexp": "example.stddev:example.entries",
+              "selection": "",
+              "option": "*"
+            }]
           },
           {
             "name": "example_quality",
             "title": "Trend of the example histogram's quality",
-            "varexp": "QcCheck.name:time",
-            "selection": "",
-            "option": "*"
+            "graphs" : [{
+              "varexp": "QcCheck.name:time",
+              "selection": "",
+              "option": "*"
+            }]
           }
         ],
         "initTrigger": [

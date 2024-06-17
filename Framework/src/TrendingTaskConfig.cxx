@@ -25,15 +25,31 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
 {
   producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + id + ".producePlotsOnUpdate", true);
   resumeTrend = config.get<bool>("qc.postprocessing." + id + ".resumeTrend", false);
-  for (const auto& plotConfig : config.get_child("qc.postprocessing." + id + ".plots")) {
-    plots.push_back({ plotConfig.second.get<std::string>("name"),
-                      plotConfig.second.get<std::string>("title", ""),
-                      plotConfig.second.get<std::string>("varexp"),
-                      plotConfig.second.get<std::string>("selection", ""),
-                      plotConfig.second.get<std::string>("option", ""),
-                      plotConfig.second.get<std::string>("graphErrors", ""),
-                      plotConfig.second.get<std::string>("graphAxisLabel", ""),
-                      plotConfig.second.get<std::string>("graphYRange", "") });
+  for (const auto& [_, plotConfig] : config.get_child("qc.postprocessing." + id + ".plots")) {
+    // since QC-1155 we allow for more than one graph in a single plot (canvas). we support both the new and old ways
+    // of configuring the expected plots.
+    std::vector<Graph> graphs;
+    if (const auto& graphsConfig = plotConfig.get_child_optional("graphs"); graphsConfig.has_value()) {
+      for (const auto& [_, graphConfig] : graphsConfig.value()) {
+        graphs.push_back({ graphConfig.get<std::string>("title", ""),
+                           graphConfig.get<std::string>("varexp"),
+                           graphConfig.get<std::string>("selection", ""),
+                           graphConfig.get<std::string>("option", ""),
+                           graphConfig.get<std::string>("graphErrors", "") });
+      }
+    } else {
+      graphs.push_back({ plotConfig.get<std::string>("title", ""),
+                         plotConfig.get<std::string>("varexp"),
+                         plotConfig.get<std::string>("selection", ""),
+                         plotConfig.get<std::string>("option", ""),
+                         plotConfig.get<std::string>("graphErrors", "") });
+    }
+    plots.push_back({ plotConfig.get<std::string>("name"),
+                      plotConfig.get<std::string>("title", ""),
+                      plotConfig.get<std::string>("graphAxisLabel", ""),
+                      plotConfig.get<std::string>("graphYRange", ""),
+                      plotConfig.get<int>("colorPalette", 0),
+                      graphs });
   }
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {

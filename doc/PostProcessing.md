@@ -242,7 +242,8 @@ Additionally added columns include a `time` branch and a `metadata` branch (now 
 
 The TTree is stored back to the **QC database** each time it is updated.
 In addition, the class exposes the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) interface, which allows to instantaneously generate **plots** with trends, correlations or histograms that are also sent to the QC database. 
- 
+Multiple graphs can be drawn on one plot, if needed.
+
 ![TrendingTask](images/trending-task.png)
 
 #### Configuration
@@ -311,7 +312,9 @@ The `"names"` array should point to one or more objects under a common `"path"` 
 ```
 
 Similarly, plots are defined by adding proper structures to the `"plots"` list, as shown below. The plot will be
- stored under the `"name"` value and it will have the `"title"` value shown on the top. The `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
+ stored under the `"name"` value and it will have the `"title"` value shown on the top.
+The `"graphs"` list can include one more objects, where the `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
+If there is more than one graph drawn on a plot, a legend will be automatically created.
 Optionally, one can use `"graphError"` to add x and y error bars to a graph, as in the first plot example.
 The `"name"` and `"varexp"` are the only compulsory arguments, others can be omitted to reduce configuration files size.
 `"graphAxisLabel"` allows the user to set axis labels in the form of `"Label Y axis: Label X axis"`. With `"graphYRange"` numerical values for fixed ranges of the y axis can be provided in the form of `"Min:Max"`.
@@ -322,26 +325,33 @@ The `"name"` and `"varexp"` are the only compulsory arguments, others can be omi
           {
             "name": "mean_of_histogram",
             "title": "Mean trend of the example histogram",
-            "varexp": "example.mean:time",
-            "selection": "",
-            "option": "*L",
-            "graphErrors": "5:example.stddev",
             "graphAxisLabel": "Mean X:time",
-            "graphYRange": "-2.3:6.7"
+            "graphYRange": "-2.3:6.7",
+            "graphs" : [{
+                "title": "mean trend",
+                "varexp": "example.mean:time",
+                "selection": "",
+                "option": "*L",
+                "graphErrors": "5:example.stddev"
+              }]
           },
           {
             "name": "histogram_of_means",
             "title": "Distribution of mean values in the example histogram",
-            "varexp": "example.mean",
-            "selection": "",
-            "option": ""
+            "graphs" : [{
+                "varexp": "example.mean",
+                "selection": "",
+                "option": "*L"
+              }]
           },
           {
             "name": "example_quality",
             "title": "Trend of the example histogram's quality",
-            "varexp": "QcCheck.name:time",
-            "selection": "",
-            "option": "*"
+            "graphs" : [{
+                "varexp": "QcCheck.name:time",
+                "selection": "",
+                "option": "*"
+              }]
           }
         ],
         ...
