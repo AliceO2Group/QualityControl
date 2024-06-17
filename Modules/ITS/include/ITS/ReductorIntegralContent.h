@@ -10,23 +10,25 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ReductorBinContent.h
+/// \file   ReductorIntegralContent.h
 /// \author Artem Kotliarov
 ///
-#ifndef QUALITYCONTROL_REDUCTORBINCONTENT_H
-#define QUALITYCONTROL_REDUCTORBINCONTENT_H
+#ifndef QUALITYCONTROL_REDUCTORINTEGRALCONTENT_H
+#define QUALITYCONTROL_REDUCTORINTEGRALCONTENT_H
 
+// #include "QualityControl/Reductor.h"
 #include "QualityControl/ReductorTObject.h"
 #include <vector>
 
 namespace o2::quality_control_modules::its
 {
 
-class ReductorBinContent : public quality_control::postprocessing::ReductorTObject
+class ReductorIntegralContent : public quality_control::postprocessing::ReductorTObject
+
 {
  public:
-  ReductorBinContent() = default;
-  virtual ~ReductorBinContent() = default;
+  ReductorIntegralContent() = default;
+  virtual ~ReductorIntegralContent() = default;
 
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
@@ -38,15 +40,15 @@ class ReductorBinContent : public quality_control::postprocessing::ReductorTObje
   }
 
  private:
-  int nBins = 3;
-
+  int nBins = 13;
+  int FeeBoundary[10] = { 0, 35, 83, 143, 191, 251, 293, 335, 383, 431 };
   struct mystat {
     // std::vector<Double_t> binContent;  // Bin content in a specified slice
-    Double_t binContent[100];
+    Double_t integral[100];
   };
 
   mystat mStats;
 };
 } // namespace o2::quality_control_modules::its
 
-#endif // QUALITYCONTROL_REDUCTORBINCONTENT_H
+#endif // QUALITYCONTROL_REDUCTORINTEGRALCONTENT_H

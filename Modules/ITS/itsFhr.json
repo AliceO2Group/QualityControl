@@ -35,7 +35,7 @@
                 },
                 "location": "remote",
                 "taskParameters": {
-                    "Layer": "3",
+                    "Layer": "4",
 		    "HitNumberCut": "0", 
                     "decoderThreads": "8",
                     "HitNumberCutForNoisyPixel": "0",
