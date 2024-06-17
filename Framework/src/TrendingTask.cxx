@@ -144,10 +144,6 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // removing leftovers from any previous runs
-  for (auto& [name, object] : mPlots) {
-    delete object;
-    object = nullptr;
-  }
   mPlots.clear();
 
   initializeTrend(services.get<repository::DatabaseInterface>());
@@ -257,11 +253,10 @@ void TrendingTask::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plotConfig.name)) {
-      delete mPlots[plotConfig.name];
-      mPlots[plotConfig.name] = nullptr;
+      mPlots[plotConfig.name].reset();
     }
     auto c = drawPlot(plotConfig);
-    mPlots[plotConfig.name] = c;
+    mPlots[plotConfig.name].reset(c);
     getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 }

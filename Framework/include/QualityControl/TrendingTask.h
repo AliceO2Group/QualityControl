@@ -79,7 +79,7 @@ class TrendingTask : public PostProcessingInterface
   TrendingTaskConfig mConfig;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
-  std::map<std::string, TObject*> mPlots;
+  std::map<std::string, std::unique_ptr<TObject>> mPlots;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 };
 
