@@ -169,16 +169,16 @@ void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
   mTrend->Fill();
 }
 
-void TrendingTask::setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel)
+void TrendingTask::setUserAxesLabels(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxesLabels)
 {
   // todo if we keep adding this method to pp classes we should move it up somewhere
-  if (std::count(graphAxisLabel.begin(), graphAxisLabel.end(), ':') != 1 && graphAxisLabel != "") {
-    ILOG(Error, Support) << "In setup of graphAxisLabel yLabel:xLabel should be divided by one ':'" << ENDM;
+  if (std::count(graphAxesLabels.begin(), graphAxesLabels.end(), ':') != 1 && graphAxesLabels != "") {
+    ILOG(Error, Support) << "In setup of graphAxesLabels yLabel:xLabel should be divided by one ':'" << ENDM;
     return;
   }
-  const std::size_t posDivider = graphAxisLabel.find(':');
-  const std::string yLabel(graphAxisLabel.substr(0, posDivider));
-  const std::string xLabel(graphAxisLabel.substr(posDivider + 1));
+  const std::size_t posDivider = graphAxesLabels.find(':');
+  const std::string yLabel(graphAxesLabels.substr(0, posDivider));
+  const std::string xLabel(graphAxesLabels.substr(posDivider + 1));
 
   xAxis->SetTitle(xLabel.data());
   yAxis->SetTitle(yLabel.data());
@@ -368,7 +368,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
     }
 
     if (!plotConfig.graphAxisLabel.empty()) {
-      setUserAxisLabel(background->GetXaxis(), background->GetYaxis(), plotConfig.graphAxisLabel);
+      setUserAxesLabels(background->GetXaxis(), background->GetYaxis(), plotConfig.graphAxisLabel);
     }
 
     if (plotConfig.graphs.back().varexp.find(":time") != std::string::npos) {

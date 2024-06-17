@@ -64,7 +64,7 @@ class TrendingTask : public PostProcessingInterface
     }
   } mMetaData;
 
-  static void setUserAxisLabel(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxisLabel);
+  static void setUserAxesLabels(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxesLabels);
   static void setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange);
   static void formatTimeXAxis(TH1* background);
   static void formatRunNumberXAxis(TH1* background);
