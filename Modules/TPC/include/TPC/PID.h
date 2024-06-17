@@ -23,6 +23,9 @@
 // QC includes
 #include "QualityControl/TaskInterface.h"
 
+//ROOT includes
+#include <TProfile.h>
+
 class TH1F;
 
 using namespace o2::quality_control::core;
@@ -52,7 +55,8 @@ class PID final : public TaskInterface
 
  private:
   o2::tpc::qc::PID mQCPID{};
-  TCanvas* mSeparationPowerCanvas;
+  //TCanvas* mSeparationPowerCanvas;
+  TProfile* pSeparationPower;
   std::vector<double> mTrendingParameters;
 };
 
