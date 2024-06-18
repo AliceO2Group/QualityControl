@@ -48,7 +48,8 @@
               "minBias2Input": "VBA",
               "minBisDMCInput": "DMC",
               "minBiasEMCInput": "EMC",
-              "minBiasPHOInput": "PH0"
+              "minBiasPHOInput": "PH0",
+              "ccdbName": "https://alice-ccdb.cern.ch"
             }
           }
         },

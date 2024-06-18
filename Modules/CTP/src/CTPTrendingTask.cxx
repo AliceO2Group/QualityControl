@@ -46,7 +46,13 @@ void CTPTrendingTask::initCTP(Trigger& t)
   std::string run = std::to_string(t.activity.mId);
   // CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
   // mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
-  std::string CCDBHost = "https://alice-ccdb.cern.ch";
+  std::string CCDBHost;
+  try {
+    CCDBHost = std::stof(mCustomParameters.at("ccdbName", "default"));
+  } catch (const std::exception& e) {
+    CCDBHost = "https://alice-ccdb.cern.ch";
+  }
+
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setURL(CCDBHost);
   map<string, string> metadata; // can be empty
