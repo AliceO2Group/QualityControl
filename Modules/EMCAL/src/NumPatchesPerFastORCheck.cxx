@@ -121,12 +121,14 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
             if (result != Quality::Bad) {
               result = Quality::Medium;
             }
-            FastORNoiseLevel cand{ static_cast<int>(h->GetBinContent(ib + 1)), static_cast<int>(h->GetXaxis()->GetBinCenter(ib + 1)) };
+            auto [posEta, posPhi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(h->GetXaxis()->GetBinCenter(ib + 1));
+            FastORNoiseLevel cand{ static_cast<int>(h->GetBinContent(ib + 1)), static_cast<int>(h->GetXaxis()->GetBinCenter(ib + 1)), static_cast<int>(posPhi), static_cast<int>(posEta), false };
             candMedFastORs.push_back(cand);
           }
           if (h->GetBinContent(ib + 1) > thresholdBad) {
             result = Quality::Bad;
-            FastORNoiseLevel cand{ static_cast<int>(h->GetBinContent(ib + 1)), static_cast<int>(h->GetXaxis()->GetBinCenter(ib + 1)) };
+            auto [posEta, posPhi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(h->GetXaxis()->GetBinCenter(ib + 1));
+            FastORNoiseLevel cand{ static_cast<int>(h->GetBinContent(ib + 1)), static_cast<int>(h->GetXaxis()->GetBinCenter(ib + 1)), static_cast<int>(posPhi), static_cast<int>(posEta), false };
             candBadFastORs.push_back(cand);
           }
         }
@@ -135,52 +137,40 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
         std::sort(candBadFastORs.begin(), candBadFastORs.end(), compareDescending);
         std::sort(candMedFastORs.begin(), candMedFastORs.end(), compareDescending);
 
-        // Iterate over the candidate Bad FastORs using a while loop to remove the smaller nearby FastORs to the noisy ones
-        std::vector<FastORNoiseLevel>::iterator itBad = candBadFastORs.begin();
-        while (itBad != candBadFastORs.end()) {
-          // Get all the information of the highest remaining FastOR
-          auto [high_truID, high_fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(itBad->mFastORID);
-          auto [high_truID1, high_posEta, high_posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(itBad->mFastORID);
-          FastORNoiseInfo high_obj{ static_cast<int>(high_truID), static_cast<int>(high_fastorTRU), static_cast<int>(high_posPhi), static_cast<int>(high_posEta) };
+        // Array to store whether eta,phi position should be removed
+        const int rows = 48;  // eta 0-47
+        const int cols = 104; // phi 0-103
+        bool bad_ignore[rows][cols] = { false };
+        bool med_ignore[rows][cols] = { false };
 
-          std::vector<FastORNoiseLevel> toErase; // Vector to store elements to be erased
+        // Loop over the candidate Bad FastORs to find the smaller nearby FastORs
+        for (std::vector<FastORNoiseLevel>::iterator i = candBadFastORs.begin(); i != candBadFastORs.end(); i++) {
 
-          // Loop over rest of candidate Bad FastORs to find the smaller nearby FastORs
-          for (std::vector<FastORNoiseLevel>::iterator i = itBad; i != candBadFastORs.end(); i++) {
-            // Get all the information of the next FastOR
-            auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(i->mFastORID);
-            auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(i->mFastORID);
-            FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+          if (i->mRejected) {
+            continue;
+          }
 
-            // Check if it is near the current highest FastOR
-            if ((high_posEta == posEta) || (high_posEta == posEta + 1) || (high_posEta == posEta - 1)) {
-              if ((high_posPhi == posPhi) || (high_posPhi == posPhi + 1) || (high_posPhi == posPhi - 1)) {
-                if (!((high_posEta == posEta) && (high_posPhi == posPhi))) {
-                  FastORNoiseLevel close{ i->mCounts, i->mFastORID };
-                  toErase.push_back(close); // Store the FastOR to be erased
-                }
+          // Check at the begining if the element's phi eta should be ignored and if so set rejected = true and skip it.
+          int high_posEta = i->mPosGlobalEta;
+          int high_posPhi = i->mPosGlobalPhi;
+
+          if (bad_ignore[high_posEta][high_posPhi] == true) {
+            i->mRejected = true;
+            continue;
+          }
+
+          // Ignore what is near the current highest FastOR
+          for (int eta = high_posEta - 1; eta <= high_posEta + 1; eta++) {
+            for (int phi = high_posPhi - 1; phi <= high_posPhi + 1; phi++) {
+              if (eta >= 0 && eta < rows && phi >= 0 && phi < cols && !(eta == high_posEta && phi == high_posPhi)) {
+                bad_ignore[eta][phi] = true;
               }
             }
           }
 
-          // Erase the smaller nearby FastORs
-          for (auto itErase : toErase) {
-            auto it = std::find(candBadFastORs.begin(), candBadFastORs.end(), itErase);
-            while (it != candBadFastORs.end()) {
-              candBadFastORs.erase(it);
-              it = std::find(candBadFastORs.begin(), candBadFastORs.end(), itErase);
-            }
-          }
-
-          // Clear the vector
-          toErase.clear();
-
-          // Save the high FastOR as bad
-          FastORNoiseLevel final{ itBad->mCounts, itBad->mFastORID };
+          // Save the final bad FastORs
+          FastORNoiseLevel final{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
           finalBadFastORs.push_back(final);
-
-          // Move to the next highest FastOR remaining in the vector
-          ++itBad;
         }
 
         // Save the positions of the final Bad FastORs and display the error message
@@ -196,52 +186,34 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
           mNoisyTRUPositions.insert(obj);
         }
 
-        // Iterate over the candidate Med FastORs using a while loop to remove the smaller nearby FastORs to the noisy ones
-        std::vector<FastORNoiseLevel>::iterator itMed = candMedFastORs.begin();
-        while (itMed != candMedFastORs.end()) {
-          // Get all the information of the highest remaining FastOR
-          auto [high_truID, high_fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(itMed->mFastORID);
-          auto [high_truID1, high_posEta, high_posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(itMed->mFastORID);
-          FastORNoiseInfo high_obj{ static_cast<int>(high_truID), static_cast<int>(high_fastorTRU), static_cast<int>(high_posPhi), static_cast<int>(high_posEta) };
+        // Loop over the candidate Med FastORs to find the smaller nearby FastORs
+        for (std::vector<FastORNoiseLevel>::iterator i = candMedFastORs.begin(); i != candMedFastORs.end(); i++) {
 
-          std::vector<FastORNoiseLevel> toErase; // Vector to store elements to be erased
+          if (i->mRejected) {
+            continue;
+          }
 
-          /// Loop over rest of candidate Med FastORs to find the smaller nearby FastORs
-          for (std::vector<FastORNoiseLevel>::iterator i = itMed; i != candMedFastORs.end(); i++) {
-            // Get all the information of the next FastOR
-            auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(i->mFastORID);
-            auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(i->mFastORID);
-            FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+          // Check at the begining if the element's phi eta should be ignored and if so set rejected = true and skip it.
+          int high_posEta = i->mPosGlobalEta;
+          int high_posPhi = i->mPosGlobalPhi;
 
-            // Check if it is near the current highest FastOR
-            if ((high_posEta == posEta) || (high_posEta == posEta + 1) || (high_posEta == posEta - 1)) {
-              if ((high_posPhi == posPhi) || (high_posPhi == posPhi + 1) || (high_posPhi == posPhi - 1)) {
-                if (!((high_posEta == posEta) && (high_posPhi == posPhi))) {
-                  FastORNoiseLevel close{ i->mCounts, i->mFastORID };
-                  toErase.push_back(close); // Store the FastOR to be erased
-                }
+          if (med_ignore[high_posEta][high_posPhi] == true) {
+            i->mRejected = true;
+            continue;
+          }
+
+          // Ignore what is near the current highest FastOR
+          for (int eta = high_posEta - 1; eta <= high_posEta + 1; eta++) {
+            for (int phi = high_posPhi - 1; phi <= high_posPhi + 1; phi++) {
+              if (eta >= 0 && eta < rows && phi >= 0 && phi < cols && !(eta == high_posEta && phi == high_posPhi)) {
+                med_ignore[eta][phi] = true;
               }
             }
           }
 
-          // Erase the smaller nearby FastORs
-          for (auto itErase : toErase) {
-            auto it = std::find(candMedFastORs.begin(), candMedFastORs.end(), itErase);
-            while (it != candMedFastORs.end()) {
-              candMedFastORs.erase(it);
-              it = std::find(candMedFastORs.begin(), candMedFastORs.end(), itErase);
-            }
-          }
-
-          // Clear the vector
-          toErase.clear();
-
-          // Save the high FastOR as medium
-          FastORNoiseLevel final{ itMed->mCounts, itMed->mFastORID };
+          // Save the final med FastORs
+          FastORNoiseLevel final{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
           finalMedFastORs.push_back(final);
-
-          // Move to the next highest FastOR remaining in the vector
-          ++itMed;
         }
 
         // Save the positions of the final Med FastORs and display the error message

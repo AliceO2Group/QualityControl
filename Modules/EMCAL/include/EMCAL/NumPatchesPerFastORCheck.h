@@ -67,6 +67,9 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
   struct FastORNoiseLevel {
     int mCounts;
     int mFastORID;
+    int mPosGlobalPhi;
+    int mPosGlobalEta;
+    bool mRejected;
 
     bool operator==(const FastORNoiseLevel& other) const
     {
