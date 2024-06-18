@@ -79,7 +79,7 @@ class TH1Ratio : public T, public o2::mergers::MergeInterface
   Bool_t mSumw2Enabled{ kTRUE };
   std::string mTreatMeAs{ T::Class_Name() };
 
-  ClassDefOverride(TH1Ratio, 1);
+  ClassDefOverride(TH1Ratio, 2);
 };
 
 typedef TH1Ratio<TH1F> TH1FRatio;
