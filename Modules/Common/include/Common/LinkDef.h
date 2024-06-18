@@ -19,6 +19,11 @@
 #pragma link C++ class o2::quality_control_modules::common::BigScreen + ;
 #pragma link C++ class o2::quality_control_modules::common::CcdbInspectorTask + ;
 #pragma link C++ class o2::quality_control_modules::common::CcdbInspectorCheck + ;
+#pragma link C++ class o2::quality_control_modules::common::ObjectComparatorDeviation + ;
+#pragma link C++ class o2::quality_control_modules::common::ObjectComparatorChi2 + ;
+#pragma link C++ class o2::quality_control_modules::common::ObjectComparatorKolmogorov + ;
+#pragma link C++ class o2::quality_control_modules::common::ReferenceComparatorTask + ;
+#pragma link C++ class o2::quality_control_modules::common::ReferenceComparatorCheck + ;
 #pragma link C++ class o2::quality_control_modules::common::WorstOfAllAggregator + ;
 #pragma link C++ class o2::quality_control_modules::common::IncreasingEntries + ;
 #pragma link C++ class o2::quality_control_modules::common::TH1SliceReductor + ;
