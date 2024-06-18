@@ -18,9 +18,8 @@
 #define QC_MODULE_CTP_CTPCOUNTERSQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "DataFormatsCTP/Configuration.h"
 #include "DataFormatsCTP/RunManager.h"
-#include "TH1.h"
+#include "TH1.h" // please favour forward definitions like you any ways did below
 
 class TH1F;
 class TH1D;
@@ -31,7 +30,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::ctp
 {
 
-struct runCTP2QC {
+struct runCTP2QC { // Classes and struct must start with an uppercase letter
   int mRunNumber;
   std::vector<int> mRunClasses;
   int mPositionInCounters;
@@ -55,10 +54,10 @@ class CTPCountersTask final : public TaskInterface
   void reset() override;
 
   // setters
-  void SetIsFirstCycle(bool isFirstCycle = true) { mIsFirstCycle = isFirstCycle; }
+  void SetIsFirstCycle(bool isFirstCycle = true) { mIsFirstCycle = isFirstCycle; } // methods must start with a lower case
   void SetFirstTimeStamp(double firstTimeStamp = 0) { mFirstTimeStamp = firstTimeStamp; }
   void SetPreviousTimeStamp(double previousTimeStamp = 0) { mPreviousTimeStamp = previousTimeStamp; }
-  void SetRateHisto(TH1D* h, double ofs)
+  void SetRateHisto(TH1D* h, double ofs) // Move this code to the .cxx (it will avoid the include and it will clean this file)
   {
     h->GetXaxis()->SetTimeDisplay(1);
     h->GetXaxis()->SetTimeOffset(ofs);
@@ -75,19 +74,22 @@ class CTPCountersTask final : public TaskInterface
   bool mIsFirstCycle = true;
   double mFirstTimeStamp = 0;
   double mPreviousTimeStamp = 0;
+  // give specific names and document the variables that might not be clear to the reader. For example "Time can be anything"
+  // and it is not clear to me why it is a vector. Below there are variables with the same name but with an "s" at the end making
+  // it very error prone and confusing. Consider renaming those as well.
   std::vector<double> mTime;
   std::vector<double> mPreviousTrgInput;
   std::vector<double> mPreviousTrgClass;
   std::vector<int> mPreviousRunNumbers;
   runCTP2QC mNewRun = { 0 };
   std::vector<double> mTimes[48];
-  std::vector<double> mClassTimes[64];
+//  std::vector<double> mClassTimes[64]; // remove unused variables
   std::vector<double> mInputRates[48];
   std::vector<double> mClassRates[64];
   TH1D* mInputCountsHist = nullptr;
   TH1D* mDummyCountsHist = nullptr;
-  TH1D* mInputRateHist = nullptr;
-  TH1D* mClassCountsHist = nullptr;
+//  TH1D* mInputRateHist = nullptr; // remove unused variables
+//  TH1D* mClassCountsHist = nullptr;
   TCanvas* mTCanvasInputs = nullptr;
   std::array<TH1D*, 48> mHistInputRate = { nullptr };
   TCanvas* mTCanvasClasses = nullptr;
@@ -97,14 +99,15 @@ class CTPCountersTask final : public TaskInterface
   std::array<TCanvas*, 16> mTCanvasClassRates = { nullptr };
 };
 
-class CTPQcRunManager : public o2::ctp::CTPRunManager
-{
- public:
-  /// \brief Constructor
-  CTPQcRunManager() = default;
-  /// Destructor
-  ~CTPQcRunManager(){};
-};
+// remove unused classes
+//class CTPQcRunManager : public o2::ctp::CTPRunManager
+//{
+// public:
+//  /// \brief Constructor
+//  CTPQcRunManager() = default;
+//  /// Destructor
+//  ~CTPQcRunManager(){};
+//};
 
 } // namespace o2::quality_control_modules::ctp
 

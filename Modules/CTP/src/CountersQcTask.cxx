@@ -14,20 +14,21 @@
 /// \author Marek Bombara
 ///
 
+// remove unused includes
 #include <TCanvas.h>
-#include <TPad.h>
+//#include <TPad.h>
 #include <TH1.h>
 
 #include "QualityControl/QcInfoLogger.h"
 
 #include "CTP/CountersQcTask.h"
-#include "DetectorsRaw/RDHUtils.h"
+//#include "DetectorsRaw/RDHUtils.h"
 #include "Headers/RAWDataHeader.h"
-#include "DPLUtils/DPLRawParser.h"
-#include "DataFormatsCTP/Digits.h"
+//#include "DPLUtils/DPLRawParser.h"
+//#include "DataFormatsCTP/Digits.h"
 #include "DataFormatsCTP/Configuration.h"
 #include <Framework/InputRecord.h>
-#include <Framework/InputRecordWalker.h>
+//#include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
 #include "CommonUtils/StringUtils.h"
 
@@ -36,6 +37,7 @@ namespace o2::quality_control_modules::ctp
 
 CTPCountersTask::~CTPCountersTask()
 {
+  // every object instantiated with "new" must be deleted. There are certainly more than 2.
   delete mDummyCountsHist;
   delete mInputCountsHist;
 }
@@ -45,7 +47,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize CountersQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mInputCountsHist = new TH1D("TriggerInputCounts", "Total Trigger Input Counts", 48, 0, 48);
-  //  gPad->SetLogy(mInputCountsHist->GetEntries()>0);
+  //  gPad->SetLogy(mInputCountsHist->GetEntries()>0); // remove commented code
   getObjectsManager()->startPublishing(mInputCountsHist);
 
   {
@@ -84,22 +86,10 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   {
     for (int j = 0; j < 16; j++) {
-      // auto name = std::string("Class rates in Run ") + std::to_string(mActiveRun[j]);
       auto name = std::string("Class_rates_in_Run_position_in_payload:") + std::to_string(j);
       mTCanvasClassRates[j] = new TCanvas(name.c_str(), name.c_str(), 2500, 2500);
       mTCanvasClassRates[j]->Clear();
-      /*mTCanvasClassRates[j]->Divide(mXPad[j], mXPad[j]);
-
-      for (size_t i = 0; i < mNumberOfClasses[j]; i++) {
-        int k = mActiveClassInRun[i];
-        auto name = std::string("Rate_of_class") + std::to_string(k);
-        //mHistClassRate[k] = new TH1D(name.c_str(), name.c_str(), 1, 0, 1);
-        //mHistClassRate[k]->GetXaxis()->SetTitle("Time");
-        //mHistClassRate[k]->GetYaxis()->SetTitle("Rate[Hz]");
-        mTCanvasClassRates[j]->cd(i + 1);
-        mHistClassRate[k]->Draw();
-        mHistClassRate[k]->SetBit(TObject::kCanDelete);
-      }*/
+      // remove commented out code
       getObjectsManager()->startPublishing(mTCanvasClassRates[j]);
     }
   }
@@ -111,6 +101,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 
     for (size_t i = 0; i < 6; i++) {
       auto name = std::string("Rate_of_classnew") + std::to_string(i);
+      // use a switch ?
       if (i == 0) {
         name = std::string("Trigger Class LMb Total Time Integrated Counts");
       }
@@ -142,11 +133,8 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void CTPCountersTask::startOfActivity(const Activity& activity)
 {
-  ILOG(Debug, Devel) << "Start of all activitites " << ENDM;
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mInputCountsHist->Reset();
-  // mInputRateHist->Reset();
-  // mClassCountsHist->Reset();
   if (mTCanvasInputs) {
     for (const auto member : mHistInputRate) {
       if (member) {
@@ -168,17 +156,7 @@ void CTPCountersTask::startOfActivity(const Activity& activity)
       }
     }
   }
-  /*
-  for (int j = 0; j < 16; j++) {
-    if (mTCanvasClassRates[j]) {
-      for (const auto member : mHistClassRate) {
-        if (member) {
-          member->Reset();
-        }
-      }
-    }
-  }
-  */
+
 }
 
 void CTPCountersTask::startOfCycle()
@@ -188,17 +166,16 @@ void CTPCountersTask::startOfCycle()
 
 void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // dummy publishing
-  // mDummyCountsHist = new TH1D("DummyCounts", "Dummy counts", 1, 0, 1);
-  // getObjectsManager()->startPublishing(mDummyCountsHist);
-  //  get the input
-  // std::cout << "before data reading ";
+  // remove commented out code
   o2::framework::InputRecord& inputs = ctx.inputs();
   o2::framework::DataRef ref = inputs.get("readout");
 
-  const char* pp = ref.payload;
+  // monitorData is usually called *a lot*. Thus one must refrain from logging anything to avoid
+  // flooding the infologger.
+
+  const char* pp = ref.payload; // use meaningful variable names.
   if (!pp) {
-    LOG(info) << "no payload pointer ";
+    LOG(info) << "no payload pointer "; // why don't you return from here ? or skip the whole block of code below ? Also, don't log.
   }
   // pyaload has 4 formats:
   // ctpconfig with rcfg, sox with counters+rcfg, pcp with counters and eox with counters
@@ -207,31 +184,32 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
   // std::cout << "the cout payload message: " << spp;
   std::vector<double> counter;
   // fill the tokens with counters or rcfg
-  std::vector<std::string> tokens = o2::utils::Str::tokenize(spp, ' ');
+  std::vector<std::string> tokens = o2::utils::Str::tokenize(spp, ' '); // what are these tokens ???
 
   // ctpconfig - add classes to newly loaded run
   if (tokens[0] == "ctpconfig") {
-    LOG(info) << "CTP run configuration:";
+//    LOG(info) << "CTP run configuration:";
     // we have to get a rid of the first substring - ctpconfig to gain rcfg message
     std::string subspp = "ctpconfig ";
     std::string::size_type posInSpp = spp.find(subspp);
-    if (posInSpp != std::string::npos)
+    if (posInSpp != std::string::npos) { // use curvy brackets, even for 1 line.
       spp.erase(posInSpp, subspp.length());
+    }
     std::string ctpConf = spp;
     // LOG(info) << "Rcfg message:";
-    LOG(info) << ctpConf;
+//    LOG(info) << ctpConf; //  log meaningful messages, this will just pollute the infologger.
     // get Trigger Class Mask for the run from the CTP configuration
     o2::ctp::CTPConfiguration activeConf;
     activeConf.loadConfigurationRun3(ctpConf);
-    activeConf.printStream(std::cout);
+//    activeConf.printStream(std::cout); // are you printing to cout? never do that please. Especially not in monitorData.
     uint64_t runClassMask = activeConf.getTriggerClassMask();
-    LOG(info) << "Class Mask Qc: " << runClassMask;
+//    LOG(info) << "Class Mask Qc: " << runClassMask;
     std::vector<int> runClassList = activeConf.getTriggerClassList();
-    std::cout << "size of runClassList: " << runClassList.size() << std::endl;
-    for (auto i : runClassList) {
-      std::cout << " print class list: " << i << " ";
-    }
-    uint32_t runNumber = activeConf.getRunNumber();
+//    std::cout << "size of runClassList: " << runClassList.size() << std::endl; // never user cout
+//    for (auto i : runClassList) {
+//      std::cout << " print class list: " << i << " ";
+//    }
+    uint32_t runNumber = activeConf.getRunNumber(); // what is this run number ? the run number is provided by the framework in `startActivity`
     // runCTPQC mNewRun;
     mNewRun.mRunNumber = runNumber;
     mNewRun.mRunClasses = runClassList;
@@ -243,55 +221,45 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
       std::string sCheck = tokens[i];
       bool notNumber = false;
       for (int j = 0; j < sCheck.length(); j++) {
-        if (!isdigit(sCheck[j]))
+        if (!isdigit(sCheck[j])) // curly braces please
           notNumber = true;
       }
-      if (notNumber)
+      if (notNumber) // curly braces please
         continue;
-      double tempCounter = std::stod(tokens[i]);
+      double tempCounter = std::stod(tokens[i]); // why a double ? you did not assess for a double in the check above
       counter.push_back(tempCounter);
     }
     for (int i = 0; i < 16; i++) {
       int isNewRun = counter[i] - mPreviousRunNumbers[i];
       if (isNewRun != 0) {
-        std::cout << "we have a new run!" << std::endl;
+//        std::cout << "we have a new run!" << std::endl; // no.
         mNewRun.mPositionInCounters = i;
-        // auto name = std::string("Class Rates For Run ") + std::to_string(mNewRun.mRunNumber);
-        // mTCanvasClassRates[i] = new TCanvas(name.c_str(), name.c_str(), 2500, 2500);
-        // mTCanvasClassRates[i]->Clear();
-        // mTCanvasClassRates[i]->SetTitle(name.c_str());
         int numberOfClasses = mNewRun.mRunClasses.size();
-        double numOfCl = numberOfClasses;
+        double numOfCl = numberOfClasses; // why double ? do you need a large decimal number ? Use full words in your variables names.
         double xpad = std::ceil(sqrt(numOfCl));
         mTCanvasClassRates[i]->Divide(xpad, xpad);
 
         for (size_t j = 0; j < numberOfClasses; j++) {
-          int k = mNewRun.mRunClasses[j];
+          int k = mNewRun.mRunClasses[j]; // single letter variables are reserved for loops, nothing more. What is k ?
           auto name = std::string("Run ") + std::to_string(mNewRun.mRunNumber) + std::string(" Rate_of_class") + std::to_string(k);
           mTCanvasClassRates[i]->cd(j + 1);
           mHistClassRate[k]->SetTitle(name.c_str());
           mHistClassRate[k]->Draw();
           mHistClassRate[k]->SetBit(TObject::kCanDelete);
         }
-        // std::cout << "before publishing" << std::endl;
-        // LOG(info) << "before publishing with LOG";
-        // getObjectsManager()->startPublishing(mTCanvasClassRates[i]);
-        // std::cout << "after publishing" << std::endl;
       }
       mPreviousRunNumbers.clear();
       mPreviousRunNumbers.push_back(counter[i]);
-      // LOG(info) << "Recent Runs = " << runNumbers[i] << " ";
     }
     mPreviousRunNumbers.clear();
     for (int i = 0; i < 16; i++) {
       mPreviousRunNumbers.push_back(counter[i]);
-      // LOG(info) << "Recent Runs = " << runNumbers[i] << " ";
     }
   }
 
   if (tokens[0] == "eox") {
     for (int i = 0; i < 16; i++) {
-      for (int i = 2; i < 1040; i++) {
+      for (int i = 2; i < 1040; i++) { // are you reusing i that you just used above ? the external loop will be called only once.
         // check if the received data are numbers
         std::string sCheck = tokens[i];
         bool notNumber = false;
@@ -305,7 +273,7 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
         counter.push_back(tempCounter);
       }
       int wasNewRun = counter[i] - mPreviousRunNumbers[i];
-      if (wasNewRun != 0) {
+      if (wasNewRun != 0) { // remove this block if it is not used
         // std::cout << "before stopping publishing" << std::endl;
         // getObjectsManager()->stopPublishing(mTCanvasClassRates[i]);
         // std::cout << "after stopping publishing and before deleting" << std::endl;
@@ -316,9 +284,10 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   if (tokens[0] == "pcp") {
-    // for (int i = 2; i < tokens.size(); i++) {
     for (int i = 2; i < 1040; i++) {
       // check if the received data are numbers
+      // that's the same piece of code as above, extract it and make a function
+      // all my remarks still apply
       std::string sCheck = tokens[i];
       bool notNumber = false;
       for (int j = 0; j < sCheck.length(); j++) {
@@ -331,14 +300,12 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
       counter.push_back(tempCounter);
     }
 
-    LOG(info) << "The topic is = " << tokens[0];
-
     double timeStamp = std::stod(tokens[1]);
     // LOG(info) << "Time stamp = " << timeStamp;
-    for (int i = 0; i < counter.size(); i++) {
+    for (int i = 0; i < counter.size(); i++) { // remove
       // std::cout << "i = " << i << " " << counter.at(i) << std::endl;
     }
-    int RunNumber = counter[0];
+    int runNumber = counter[0];
     std::vector<int> runNumbers;
     mPreviousRunNumbers.clear();
     for (int i = 0; i < 16; i++) {
@@ -447,6 +414,7 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (int i = 0; i < 48; i++) {
         recentInputs[i] = trgInput[i];
         previousInputs[i] = mPreviousTrgInput[i];
+        // if it must not be negative then it should be a size_t or UInt
         countInputDiffs[i] = recentInputs[i] - previousInputs[i]; // should not be negative - integration values
         mInputRates[i].push_back(countInputDiffs[i]);
       }
@@ -462,44 +430,37 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
         mTime.push_back(timeStamp);
       }
     }
-    SetIsFirstCycle(false);
+    SetIsFirstCycle(false); // why ? it is already set
     SetPreviousTimeStamp(timeStamp);
     mPreviousTrgInput.clear();
     for (int i = 0; i < 48; i++) {
       mPreviousTrgInput.push_back(trgInput[i]);
-      // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
     }
     mPreviousTrgClass.clear();
     for (int i = 0; i < 64; i++) {
       mPreviousTrgClass.push_back(trgClass[i]);
-      // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
     }
     mPreviousRunNumbers.clear();
     for (int i = 0; i < 16; i++) {
       mPreviousRunNumbers.push_back(runNumbers[i]);
-      // std::cout << "i = " << i << " trgInput = " << trgInput[i] << " prevrate = " << mPreviousTrgInput[i] << std::endl;
     }
     if (!firstCycle) {
       // time in seconds
       int nBinsTime = mTime.size();
       double xMinTime = mTime[0];
       double xMaxTime = mTime[nBinsTime - 1];
-      // std::cout << "nb = " << nBinsTime-1 << " xmin =" << xMinTime << " xmax =" << xMaxTime << std::endl;
       for (int i = 0; i < 48; i++) {
         mHistInputRate[i]->SetBins(nBinsTime - 1, 0, xMaxTime - xMinTime);
         for (int j = 1; j < nBinsTime; j++) {
           double tempInpRate = mInputRates[i][j];
-          // std::cout << "i = " << i << " j = " << j << " rate = " << tempInpRate << " nbins = " << nBinsTime << std::endl;
           mHistInputRate[i]->SetBinContent(j, tempInpRate);
           SetRateHisto(mHistInputRate[i], xMinTime);
         }
       }
-      // std::cout << "class rate histos.." << std::endl;
       for (int i = 0; i < 64; i++) {
         mHistClassRate[i]->SetBins(nBinsTime - 1, 0, xMaxTime - xMinTime);
         for (int j = 1; j < nBinsTime; j++) {
           double tempClassRate = mClassRates[i][j];
-          // std::cout << "i = " << i << " j = " << j  << " rate = " << tempClassRate << std::endl;
           mHistClassRate[i]->SetBinContent(j, tempClassRate);
           SetRateHisto(mHistClassRate[i], xMinTime);
         }
@@ -510,7 +471,7 @@ void CTPCountersTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void CTPCountersTask::endOfCycle()
 {
-  std::cout << "End of Cycle" << std::endl;
+  std::cout << "End of Cycle" << std::endl; // why ??
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
@@ -547,13 +508,4 @@ void CTPCountersTask::reset()
     }
   }
 }
-
-/*void SetRateHisto(TH1D* h, double timeOffset)
-{
-  h->GetXaxis()->SetTimeOffset(timeOffset);
-  h->GetXaxis()->SetTimeDisplay(1);
-  h->GetXaxis()->SetTimeFormat("%H:%M");
-  h->GetXaxis()->SetNdivisions(808);
-}
-*/
 } // namespace o2::quality_control_modules::ctp

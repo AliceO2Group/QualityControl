@@ -23,7 +23,7 @@
 #include "CTP/TH1ctpReductor.h"
 
 #include <string>
-#include <vector>
+// #include <vector> // remove unused includes
 #include <TTree.h>
 
 namespace o2::quality_control::repository
@@ -62,11 +62,11 @@ class CTPTrendingTask : public PostProcessingInterface
   o2::ctp::CTPConfiguration* mCTPconfig{ nullptr };
   TrendingConfigCTP mConfig;
   MetaData mMetaData;
-  UInt_t mTime;
+  UInt_t mTime; // time is a very unprecise variable name
 
   std::string mInputNames[5] = { "MTVX", "MVBA", "0DMC", "0EMC", "0PH0" };
   std::string mClassNames[5] = { "CMTVX-B-NOPF", "CMVBA-B-NOPF", "CTVXDMC-B-NOPF-EMC", "CTVXEMC-B-NOPF-EMC", "CTVXPH0-B-NOPF-PHSCPV" };
-  const int mNumOfClasses = 5;
+  const int mNumOfClasses = 5; // avoid using abbreviations
   int mClassIndex[5] = { 65, 65, 65, 65, 65 };
 
   std::map<std::string, TObject*> mPlots;

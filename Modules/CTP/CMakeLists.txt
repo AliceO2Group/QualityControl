@@ -4,7 +4,12 @@ add_library(O2QcCTP
             src/TrendingConfigCTP.cxx
             src/TH1ctpReductor.cxx )
 
-target_sources(O2QcCTP PRIVATE src/RawDataReaderCheck.cxx  src/CountersQcTask.cxx  src/RawDataQcTask.cxx  src/TH1ctpReductor.cxx  src/CTPTrendingTask.cxx)
+target_sources(O2QcCTP PRIVATE
+  src/RawDataReaderCheck.cxx
+  src/CountersQcTask.cxx
+  src/RawDataQcTask.cxx
+  src/TH1ctpReductor.cxx
+  src/CTPTrendingTask.cxx)
 
 target_include_directories(
   O2QcCTP
@@ -50,13 +55,15 @@ endforeach()
 
 # ---- Extra scripts ----
 
-install(FILES
-        src/ctpTrending.json
-        DESTINATION etc)
+# why do you install ctpTrending.json ? we use Consul in production. Consider removing it
+#install(FILES
+#        src/ctpTrending.json
+#        DESTINATION etc)
 
-get_property(dirs
-             DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-             PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+# if this is for debugging, please remove it
+#get_property(dirs
+#             DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#             PROPERTY INCLUDE_DIRECTORIES)
+#foreach(dir ${dirs})
+#  message(STATUS "dir='${dir}'")
+#endforeach()
