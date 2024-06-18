@@ -29,6 +29,9 @@
 #pragma link C++ class o2::quality_control_modules::emcal::TriggerTask + ;
 #pragma link C++ class o2::quality_control_modules::emcal::NumPatchesPerFastORCheck + ;
 #pragma link C++ class o2::quality_control_modules::emcal::PedestalChannelCheck + ;
+#pragma link C++ class o2::quality_control_modules::emcal::CellTimeCalibCheck + ;
+#pragma link C++ class o2::quality_control_modules::emcal::CellAmpCheck + ;
+#pragma link C++ class o2::quality_control_modules::emcal::TrendGraphCheck + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::RawErrorCheckAll + ;
 
