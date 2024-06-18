@@ -66,27 +66,36 @@ add_library(O2QualityControl
   src/AggregatorRunnerFactory.cxx
   src/CheckInterface.cxx
   src/AggregatorInterface.cxx
-  src/AggregatorRunner.cxx
-  src/AggregatorRunnerFactory.cxx
-  src/Bookkeeping.cxx
-  src/Calculators.cxx
-  src/CcdbDatabase.cxx
-  src/Check.cxx
-  src/CheckInterface.cxx
-  src/CheckRunner.cxx
-  src/CheckRunnerFactory.cxx
-  src/ConfigParamGlo.cxx
-  src/CustomParameters.cxx
-  src/DataProducer.cxx
-  src/DataProducerExample.cxx
-  src/DataSourceSpec.cxx
   src/DatabaseFactory.cxx
-  src/DummyDatabase.cxx
-  src/HashDataDescription.cxx
-  src/HistoProducer.cxx
+  src/CcdbDatabase.cxx
+  src/QcInfoLogger.cxx
+  src/TaskFactory.cxx
+  src/TaskRunner.cxx
+  src/TaskRunnerFactory.cxx
+  src/TaskInterface.cxx
+  src/UserCodeInterface.cxx
+  src/RepositoryBenchmark.cxx
+  src/RepoPathUtils.cxx
+  src/stringUtils.cxx
   src/InfrastructureGenerator.cxx
   src/InfrastructureSpecReader.cxx
-  src/KafkaConsumer.cxx
+  src/Check.cxx
+  src/Aggregator.cxx
+  src/HashDataDescription.cxx
+  src/ServiceDiscovery.cxx
+  src/Triggers.cxx
+  src/TriggerHelpers.cxx
+  src/PostProcessingRunner.cxx
+  src/PostProcessingFactory.cxx
+  src/PostProcessingConfig.cxx
+  src/PostProcessingInterface.cxx
+  src/PostProcessingDevice.cxx
+  src/TrendingTask.cxx
+  src/TrendingTaskConfig.cxx
+  src/DummyDatabase.cxx
+  src/DataProducer.cxx
+  src/HistoProducer.cxx
+  src/DataProducerExample.cxx
   src/MonitorObjectCollection.cxx
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
@@ -95,35 +104,30 @@ add_library(O2QualityControl
   src/DataSourceSpec.cxx
   src/RootFileSink.cxx
   src/RootFileSource.cxx
-  src/RootFileStorage.cxx
-  src/ServiceDiscovery.cxx
+  src/UpdatePolicyType.cxx
+  src/RootClassFactory.cxx
+  src/ConfigParamGlo.cxx
   src/SliceTrendingTask.cxx
   src/SliceTrendingTaskConfig.cxx
-  src/TaskFactory.cxx
-  src/TaskInterface.cxx
-  src/TaskRunner.cxx
-  src/TaskRunnerFactory.cxx
-  src/Timekeeper.cxx
-  src/TimekeeperAsynchronous.cxx
-  src/TimekeeperFactory.cxx
-  src/TimekeeperSynchronous.cxx
-  src/TrendingTask.cxx
-  src/TrendingTaskConfig.cxx
-  src/TriggerHelpers.cxx
-  src/Triggers.cxx
-  src/UpdatePolicyManager.cxx
-  src/UpdatePolicyType.cxx
-  src/UserCodeInterface.cxx
-  src/WorkflowType.cxx
+  src/Bookkeeping.cxx
+  src/CustomParameters.cxx
   src/runnerUtils.cxx
-  src/stringUtils.cxx)
+  src/Timekeeper.cxx
+  src/TimekeeperSynchronous.cxx
+  src/TimekeeperAsynchronous.cxx
+  src/WorkflowType.cxx
+  src/TimekeeperFactory.cxx
+  src/RootFileStorage.cxx
+  src/ReductorHelpers.cxx
+  src/KafkaConsumer.cxx)
 
 target_include_directories(
   O2QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  ${MODERNCPPKAFKA_ROOT})
 
 target_link_libraries(O2QualityControl
                       PUBLIC Boost::boost
@@ -148,7 +152,8 @@ target_link_libraries(O2QualityControl
                              O2::GlobalTracking
                              O2QualityControlKafkaProtos
                       PRIVATE Boost::system
-                              CURL::libcurl)
+                              CURL::libcurl
+                              RdKafka::rdkafka++)
 
 add_root_dictionary(O2QualityControl
   HEADERS
