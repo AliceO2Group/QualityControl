@@ -62,7 +62,10 @@ void TrendingTaskITSError::initialize(Trigger, framework::ServiceRegistryRef)
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<ReductorBinContent> reductor(root_class_factory::create<ReductorBinContent>(source.moduleName, source.reductorName));
-    reductor->setParams(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0);
+    if (source.name == "ChipErrorPlots")
+      reductor->setParams(o2::itsmft::ChipStat::NErrorsDefined);
+    else
+      reductor->setParams(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined);
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
@@ -140,61 +143,72 @@ void TrendingTaskITSError::storePlots(repository::DatabaseInterface& qcdb)
   std::string name_Xaxis;
   long int numberOfEntries = mTrend->GetEntriesFast();
   // Define output graphs
-  TMultiGraph* multi_trend;
+  TString plots[2] = { "LinkErrorPlots", "ChipErrorPlots" };
+  for (TString plotName : plots) {
 
-  // Lane status summary plots
-  for (const auto& plot : mConfig.plots) {
+    TMultiGraph* multi_trend;
+    countplots = 0;
 
-    // Initialize MultiGraph and Legend
-    if (countplots == 0) {
-      multi_trend = new TMultiGraph();
-      SetGraphName(multi_trend, plot.name, "Trending plot of GTBLink decoding errors");
+    // Lane status summary plots
+    for (const auto& plot : mConfig.plots) {
 
-      isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
-      name_Xaxis = plot.selection.c_str();
+      if (plot.varexp.find(plotName.Data()) == std::string::npos)
+        continue;
+      // Initialize MultiGraph and Legend
+      if (countplots == 0) {
+        multi_trend = new TMultiGraph();
+        SetGraphName(multi_trend, plot.name, Form("Trending plot of %s", plotName.Data()));
+
+        isRun = plot.selection.find("Entries") != std::string::npos ? true : false;
+        name_Xaxis = plot.selection.c_str();
+      }
+
+      // Retrieve data for trend plot
+      mTrend->Draw(Form("%s:%s", name_Xaxis.c_str(), plot.varexp.c_str()), "", "goff");
+      TGraph* trend_plot = new TGraph(numberOfEntries, mTrend->GetV1(), mTrend->GetV2());
+      SetGraphStyle(trend_plot, plot.name, Form("ID%d", countplots), colors[countplots], markers[countplots]);
+      multi_trend->Add((TGraph*)trend_plot->Clone(), plot.option.c_str());
+      delete trend_plot;
+      countplots++;
     }
 
-    // Retrieve data for trend plot
-    mTrend->Draw(Form("%s:%s", name_Xaxis.c_str(), plot.varexp.c_str()), "", "goff");
-    TGraph* trend_plot = new TGraph(numberOfEntries, mTrend->GetV1(), mTrend->GetV2());
-    SetGraphStyle(trend_plot, plot.name, Form("ID%d", countplots), colors[countplots], markers[countplots]);
-    multi_trend->Add((TGraph*)trend_plot->Clone(), plot.option.c_str());
-    delete trend_plot;
-    countplots++;
+    SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Number of errors", !isRun);
+
+    // Canvas settings
+    std::string name;
+    if (plotName == "LinkErrorPlots")
+      name = "GTBLinkDecodingErrorsSummary_Trends";
+    else
+      name = "ChipDecodingErrorsSummary_Trends";
+    TCanvas* canvas = new TCanvas(Form("%s", name.c_str()), Form("%s", name.c_str()));
+    SetCanvasSettings(canvas);
+
+    // Plot as a function of run number requires a dummy TH1 histogram
+    TH1D* hDummy = nullptr;
+    if (isRun) {
+      hDummy = new TH1D("hDummy", Form("%s; %s; %s", multi_trend->GetTitle(), multi_trend->GetXaxis()->GetTitle(), multi_trend->GetYaxis()->GetTitle()), numberOfEntries, 0.5, numberOfEntries + 0.5);
+      SetHistoAxes(hDummy, runlist, multi_trend->GetYaxis()->GetXmin(), multi_trend->GetYaxis()->GetXmax());
+    }
+
+    // Draw plots
+    if (hDummy)
+      hDummy->Draw();
+    multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
+
+    TLegend* legend = (TLegend*)canvas->BuildLegend(0.77, 0.12, 1, 1);
+    SetLegendStyle(legend, Form("%s_legend", plotName.Data()), isRun);
+    legend->Draw("SAME");
+
+    // Upload plots
+    auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSError", mConfig.detectorName, mMetaData.runNumber);
+    mo->setIsOwner(false);
+    qcdb.storeMO(mo);
+
+    delete legend;
+    delete canvas;
+    delete multi_trend; // All included plots are deleted automatically
+    delete hDummy;
   }
-
-  SetGraphAxes(multi_trend, Form("%s", isRun ? "Run" : "Time"), "Number of errors", !isRun);
-
-  // Canvas settings
-  std::string name = "GTBLinkDecodingErrorsSummary_Trends";
-  TCanvas* canvas = new TCanvas(Form("%s", name.c_str()), Form("%s", name.c_str()));
-  SetCanvasSettings(canvas);
-
-  // Plot as a function of run number requires a dummy TH1 histogram
-  TH1D* hDummy = nullptr;
-  if (isRun) {
-    hDummy = new TH1D("hDummy", Form("%s; %s; %s", multi_trend->GetTitle(), multi_trend->GetXaxis()->GetTitle(), multi_trend->GetYaxis()->GetTitle()), numberOfEntries, 0.5, numberOfEntries + 0.5);
-    SetHistoAxes(hDummy, runlist, multi_trend->GetYaxis()->GetXmin(), multi_trend->GetYaxis()->GetXmax());
-  }
-
-  // Draw plots
-  if (hDummy)
-    hDummy->Draw();
-  multi_trend->Draw(Form("%s", hDummy ? "" : "a"));
-
-  TLegend* legend = (TLegend*)canvas->BuildLegend(0.77, 0.12, 1, 1);
-  SetLegendStyle(legend, "GTBLinkDecodingErrorsSummary_legend", isRun);
-  legend->Draw("SAME");
-
-  // Upload plots
-  auto mo = std::make_shared<MonitorObject>(canvas, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSError", mConfig.detectorName, mMetaData.runNumber);
-  mo->setIsOwner(false);
-  qcdb.storeMO(mo);
-
-  delete legend;
-  delete canvas;
-  delete multi_trend; // All included plots are deleted automatically
-  delete hDummy;
 }
 void TrendingTaskITSError::SetLegendStyle(TLegend* legend, const std::string& name, bool isRun)
 {

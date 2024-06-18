@@ -42,6 +42,7 @@
 #pragma link C++ class o2::quality_control_modules::tpc::TrackClusters + ;
 #pragma link C++ class o2::quality_control_modules::tpc::VDriftCalibReductor + ;
 #pragma link C++ class o2::quality_control_modules::tpc::SeparationPowerReductor + ;
+#pragma link C++ class o2::quality_control_modules::tpc::TimeGainCalibReductor + ;
 
 #pragma link C++ function o2::quality_control_modules::tpc::addAndPublish + ;
 #pragma link C++ function o2::quality_control_modules::tpc::toVector + ;

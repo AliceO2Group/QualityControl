@@ -31,15 +31,23 @@ struct TrendingTaskConfig : PostProcessingConfig {
   TrendingTaskConfig(std::string name, const boost::property_tree::ptree& config);
   ~TrendingTaskConfig() = default;
 
-  struct Plot {
-    std::string name;
+  // this corresponds to one TTree::Draw() call, i.e. one graph or histogram drawing
+  struct Graph {
     std::string title;
     std::string varexp;
     std::string selection;
-    std::string option;
-    std::string graphErrors;
+    std::string option; // the list of possible options are documented in TGraphPainter and THistPainter
+    std::string errors;
+  };
+
+  // this corresponds to one canvas which can include multiple graphs
+  struct Plot {
+    std::string name;
+    std::string title;
     std::string graphAxisLabel;
     std::string graphYRange;
+    int colorPalette = 0;
+    std::vector<Graph> graphs;
   };
 
   struct DataSource {

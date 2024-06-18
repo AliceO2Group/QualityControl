@@ -70,6 +70,8 @@ class CellTask final : public TaskInterface
     double mThresholdPHYS = 0.2;
     double mThresholdCAL = 0.5;
     double mThresholdTotalEnergy = 0.;
+    double mThresholdAvTime = 25.;
+    double mThresholdAvEnergy = 0.5;
 
     int mMultiplicityRange = 0;
     int mMultiplicityRangeDetector = 0;
@@ -85,6 +87,8 @@ class CellTask final : public TaskInterface
     o2::emcal::Geometry* mGeometry = nullptr;
     double mCellThreshold;
     double mAmplitudeThresholdTime;
+    double mThresholdAvTime;
+    double mThresholdAvEnergy;
     // std::array<TH2*, 2> mCellAmplitude = {};      ///< Cell amplitude
     TH2* mCellAmplitude = nullptr; ///< Cell amplitude
                                    //    std::array<TH2*, 2> mCellTime;           ///< Cell time
@@ -110,6 +114,8 @@ class CellTask final : public TaskInterface
     TH2* mIntegratedOccupancy = nullptr;                                       ///< Cell integrated occupancy
     TH2* mAverageCellEnergy = nullptr;                                         ///< Average cell energy
     TH2* mAverageCellTime = nullptr;                                           ///< Average cell time
+    TH2* mAverageCellEnergyConstrained = nullptr;                              ///< Average cell energy
+    TH2* mAverageCellTimeConstrained = nullptr;                                ///< Average cell time
     TH1* mCellAmplitude_tot = nullptr;                                         ///< Cell amplitude in EMCAL,DCAL
     TH1* mCellAmplitudeEMCAL = nullptr;                                        ///< Cell amplitude in EMCAL
     TH1* mCellAmplitudeDCAL = nullptr;                                         ///< Cell amplitude in DCAL
@@ -149,6 +155,7 @@ class CellTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
   void reset() override;
+  void finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj) override;
 
   bool hasConfigValue(const std::string_view key);
   std::string getConfigValue(const std::string_view key);
@@ -181,16 +188,17 @@ class CellTask final : public TaskInterface
   };
   void parseMultiplicityRanges();
   void initDefaultMultiplicityRanges();
+  void loadCalibrationObjects(o2::framework::ProcessingContext& ctx);
 
   [[nodiscard]] std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
-  TaskSettings mTaskSettings;                                ///< Settings of the task steered via task parameters
-  Bool_t mIgnoreTriggerTypes = false;                        ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
-  std::map<std::string, CellHistograms> mHistogramContainer; ///< Container with histograms per trigger class
-  o2::emcal::Geometry* mGeometry = nullptr;                  ///< EMCAL geometry
-  o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
-  o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
-  o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calibration
-  int mTimeFramesPerCycles = 0;                              ///< TF per cycles
+  TaskSettings mTaskSettings;                                      ///< Settings of the task steered via task parameters
+  Bool_t mIgnoreTriggerTypes = false;                              ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
+  std::map<std::string, CellHistograms> mHistogramContainer;       ///< Container with histograms per trigger class
+  o2::emcal::Geometry* mGeometry = nullptr;                        ///< EMCAL geometry
+  const o2::emcal::BadChannelMap* mBadChannelMap = nullptr;        ///< EMCAL channel map
+  const o2::emcal::TimeCalibrationParams* mTimeCalib = nullptr;    ///< EMCAL time calib
+  const o2::emcal::GainCalibrationFactors* mEnergyCalib = nullptr; ///< EMCAL energy calibration
+  int mTimeFramesPerCycles = 0;                                    ///< TF per cycles
 
   TH1* mEvCounterTF = nullptr;      ///< Number of Events per timeframe
   TH1* mEvCounterTFPHYS = nullptr;  ///< Number of Events per timeframe per PHYS

@@ -19,7 +19,8 @@ def parse_args():
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Update this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob)', required=True)
+                        help='Update this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob). '
+                             'It will correspond to the exact name of a folder.', required=True)
     parser.add_argument('--runs-csv-file', dest='runs_file', action='store', help='A csv file with a header and the '
                                                                                   'columns `runNumber` and `runType`',
                         required=True)
@@ -27,6 +28,10 @@ def parse_args():
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should be really careful with that.')
     parser.add_argument('--path-no-subdir', action='store_true', default=False, help='Set to true if the '
                           'path points to an object rather than a folder or if subdirectories must be ignored.')
+    parser.add_argument('--path-wildcard', action='store_true', default=False, help='Path to update, no initial '
+                                                                                    'slash, no .* at the end. It does'
+                                                                                    ' not need to match a full '
+                                                                                    'directory name.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -51,7 +56,7 @@ def run(args):
             logging.fatal(f"Could not find columns `runNumber` and `runType` in {args.runs_file}, make sure the column headers are correct.")
             exit(1)
 
-        if run_type == "null":
+        if run_type == "null" or run_type == "":
             logging.debug(f"Skipping run {run_number} because its type is `null`")
             continue
         logging.debug(f"Run : {run_number} -> {run_type}")
@@ -59,19 +64,29 @@ def run(args):
 
     # go through the versions and update them if possible
     path = args.path
-    if args.path_no_subdir is False:
+    if args.path_wildcard:
+        path += ".*"
+    elif args.path_no_subdir is False:
         path += "/.*"
     versions = ccdb.getVersionsList(path, "", "")
     logging.info(f"Number of versions found: {len(versions)}")
     total_planned += len(versions)
     for version in versions:
+        if "RunNumber" not in version.metadata:
+            logging.debug(f"{version} misses metadata RunNumber")
+            continue
         run_number = version.metadata["RunNumber"]
         if version.metadata["RunNumber"] not in mapping_run_types:
-            logging.debug(f"No mapping run {version.metadata['RunNumber']}")
+            logging.debug(f"{version} : No mapping for run {version.metadata['RunNumber']}")
             continue
 
         run_type = mapping_run_types[run_number]
-        logging.info(f"Ready to update {version} : \"{version.metadata['RunType']}\" -> \"{run_type}\"")
+        old_run_type = version.metadata['RunType'] if 'RunType' in version.metadata else "null"
+        if old_run_type != run_type:
+            logging.info(f"Ready to update {version} : \"{old_run_type}\" -> \"{run_type}\"")
+        else:
+            logging.info(f"Won't update {version} : run type is already {run_type}")
+            continue
 
         if args.print_list:
             continue

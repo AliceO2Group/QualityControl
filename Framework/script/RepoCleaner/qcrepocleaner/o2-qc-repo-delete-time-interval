@@ -6,23 +6,31 @@ import dryable
 from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.binUtils import prepare_main_logger
 
-def parseArgs():
+
+def parse_args():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
     parser = argparse.ArgumentParser(description='Remove all the objects in a given time interval in a given path')
-    parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
+    parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://',
+                        required=True)
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--path', dest='path', action='store', default="",
-                        help='Delete this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
+                        help='Delete this path (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).',
+                        required=True)
     parser.add_argument('--from', dest='from_ts', action='store', help='From this timestamp.', required=True)
     parser.add_argument('--to', dest='to_ts', action='store', help='To this timestamp.', required=True)
-    parser.add_argument('--only-path-no-subdir', action='store_true', help='Do not process the subfolders, i.e. do not '
-                                                                 'add .* at the end of the path.')
+    parser.add_argument('--only-path-no-subdir', action='store_true',
+                        help='Do not process the subfolders, i.e. do not add .* at the end of the path.')
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
-    parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
+    parser.add_argument('--print-list', action='store_true',
+                        help='Only print the list of objects that would be deleted')
+    parser.add_argument('--metadata', dest='metadata', action='store', default="",
+                        help='Delete only versions matching these metadata. Format: "[/key=value]*"')
+    parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
+
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -32,7 +40,7 @@ def parseArgs():
 def run(args):
     ccdb = Ccdb(args.url)
     path = args.path+"/" if args.only_path_no_subdir else args.path + "/.*"
-    versions = ccdb.getVersionsList(path, args.from_ts, args.to_ts)
+    versions = ccdb.getVersionsList(path, args.from_ts, args.to_ts, metadata=args.metadata)
     logging.debug(versions)
     logging.info("Here are the objects that are going to be deleted: ")
 
@@ -44,10 +52,11 @@ def run(args):
 
     logging.info(f"Number of items: {len(versions)}")
 
-    logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
-    answer = input("Yes/No \n  ")
-    if answer.lower() not in ["y", "yes"]:
-        exit(0)
+    if not args.yes:
+        logging.warning("****** ARE YOU ABSOLUTELY SURE YOU WANT TO CONTINUE ? ******")
+        answer = input("Yes/No \n  ")
+        if answer.lower() not in ["y", "yes"]:
+            exit(0)
 
     for v in versions:
         logging.info(f"Ready to delete {v}")
@@ -73,7 +82,7 @@ def main():
     prepare_main_logger()
 
     # Parse arguments
-    args = parseArgs()
+    args = parse_args()
     logging.getLogger().setLevel(int(args.log_level))
 
     run(args)

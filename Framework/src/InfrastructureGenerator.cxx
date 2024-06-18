@@ -16,20 +16,24 @@
 
 #include "QualityControl/InfrastructureGenerator.h"
 
-#include "QualityControl/TaskRunner.h"
-#include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/Aggregator.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
+#include "QualityControl/BookkeepingQualitySink.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/InfrastructureSpec.h"
+#include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/PostProcessingDevice.h"
 #include "QualityControl/PostProcessingRunner.h"
-#include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/InfrastructureSpecReader.h"
-#include "QualityControl/InfrastructureSpec.h"
 #include "QualityControl/RootFileSink.h"
 #include "QualityControl/RootFileSource.h"
+#include "QualityControl/TaskRunner.h"
+#include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/Version.h"
 
+#include <Framework/DataProcessorSpec.h>
+#include <Framework/DataRefUtils.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -101,6 +105,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -149,6 +154,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -318,6 +324,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -398,6 +405,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -415,6 +423,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
   CheckRunnerFactory::customizeInfrastructure(policies);
   AggregatorRunnerFactory::customizeInfrastructure(policies);
   RootFileSink::customizeInfrastructure(policies);
+  BookkeepingQualitySink::customizeInfrastructure(policies);
 }
 
 void InfrastructureGenerator::printVersion()
@@ -798,6 +807,50 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
       workflow.emplace_back(std::move(dataProcessorSpec));
     }
   }
+}
+
+template <typename Type>
+auto createSinkInput(const std::string& detectorName, const std::string& name) -> framework::InputSpec
+{
+  const auto outputSpec = Type::createOutputSpec(detectorName, name);
+  auto input = DataSpecUtils::matchingInput(outputSpec);
+  input.binding = name;
+  return input;
+}
+
+void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
+{
+  framework::Inputs sinkInputs{};
+
+  for (const auto& checkSpec : infrastructureSpec.checks) {
+    if (checkSpec.active && checkSpec.exportToBookkeeping) {
+      ILOG(Debug, Support) << "Adding input to BookkeepingSink from check " << checkSpec.checkName << " and detector: " << checkSpec.detectorName << ENDM;
+      sinkInputs.emplace_back(createSinkInput<Check>(checkSpec.detectorName, checkSpec.checkName));
+    }
+  }
+
+  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
+    if (aggregatorSpec.active && aggregatorSpec.exportToBookkeeping) {
+      ILOG(Debug, Support) << "Adding input to BookkeepingSink from aggregator " << aggregatorSpec.aggregatorName << " and detector: " << aggregatorSpec.detectorName << ENDM;
+      sinkInputs.emplace_back(createSinkInput<Aggregator>(aggregatorSpec.detectorName, aggregatorSpec.aggregatorName));
+    }
+  }
+
+  if (sinkInputs.empty()) {
+    ILOG(Debug, Support) << "BookkeepingSink is not being created because we couldn't find any suitable inputs." << ENDM;
+    return;
+  }
+
+  DataProcessorSpec sinkDataProcessor{
+    .name = "BookkeepingSink",
+    .inputs = sinkInputs,
+    .outputs = Outputs{},
+    .algorithm = adaptFromTask<quality_control::core::BookkeepingQualitySink>(
+      infrastructureSpec.common.bookkeepingUrl,
+      core::toEnum(infrastructureSpec.common.activityProvenance)),
+    .labels = { { "resilient" } }
+  };
+  workflow.emplace_back(std::move(sinkDataProcessor));
 }
 
 } // namespace o2::quality_control::core

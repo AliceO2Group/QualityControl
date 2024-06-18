@@ -1194,7 +1194,7 @@ The following table gives the path in the config file and the name of the config
 | Task           | `qc.tasks.<task_id>.extendedTaskParameters`            |
 | Check          | `qc.checks.<check_id>.extendedCheckParameters`         |
 | Aggregator     | `qc.aggregators.<agg_id>.extendedAggregatorParameters` |
-| PostProcessing | `qc.postprocessing.<pp_id>.extendedTaskParameters`      |
+| PostProcessing | `qc.postprocessing.<pp_id>.extendedTaskParameters`     |
 
 The new syntax is
 ```json
@@ -1517,6 +1517,8 @@ the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDe
         "detectorName": "TST",        "": "3-letter code of the detector.",
         "policy": "OnAny",            "": ["Policy which determines when MOs should be checked. See the documentation",
                                            "of Checks for the list of available policies and their behaviour."],
+        "exportToBookkeeping": "true","": "Flag that toggles reporting of QcFlags created by this check into BKP via gRPC.",
+                                           "When not presented it equals to "false""
         "dataSource": [{              "": "List of data source of the Check.",
           "type": "Task",             "": "Type of the data source, \"Task\", \"ExternalTask\" or \"PostProcessing\"", 
           "name": "myTask_1",         "": "Name of the Task",
@@ -1549,6 +1551,8 @@ the "aggregators" path. Please also refer to [the Aggregators documentation](doc
         "moduleName": "QcCommon",           "": "Library name. It can be found in CMakeLists of the detector module.",
         "policy": "OnAny",                  "": ["Policy which determines when QOs should be aggregated. See the documentation",
                                                 "of Aggregators for the list of available policies and their behaviour."],
+        "exportToBookkeeping": "true",      "": "Flag that toggles reporting of QcFlags created by all of the sources into 
+                                                "the BKP via gRPC. "When not presented it equals to "false""
         "detectorName": "TST",              "": "3-letter code of the detector.",
         "dataSource": [{                    "": "List of data source of the Aggregator.",
           "type": "Check",,                 "": "Type of the data source: \"Check\" or \"Aggregator\"", 

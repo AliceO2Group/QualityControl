@@ -69,8 +69,9 @@ void QualitiesToFlagCollectionConverter::operator()(const QualityObject& newQO)
   // TODO support a scenario when at the beginning of run the data Quality is null, because it could not be judged,
   // but then it evolves to bad or good. Null quality should be probably removed.
 
-  uint64_t validFrom = strtoull(newQO.getMetadata(metadata_keys::validFrom).c_str(), nullptr, 10);
-  uint64_t validUntil = strtoull(newQO.getMetadata(metadata_keys::validUntil).c_str(), nullptr, 10);
+  const uint64_t validFrom = newQO.getValidity().getMin();
+  const uint64_t validUntil = newQO.getValidity().getMax();
+
   if (validFrom < mCurrentStartTime) {
     throw std::runtime_error("The currently provided QO is dated as earlier than the one before (" //
                              + std::to_string(validFrom) + " vs. " + std::to_string(mCurrentStartTime) +

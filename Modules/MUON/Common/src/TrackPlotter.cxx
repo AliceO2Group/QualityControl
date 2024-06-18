@@ -10,6 +10,7 @@
 // or submit itself to any jurisdiction.
 
 #include "MUONCommon/TrackPlotter.h"
+#include "MUONCommon/Helpers.h"
 
 #include "DetectorsBase/GRPGeomHelper.h"
 #include <DataFormatsITSMFT/ROFRecord.h>
@@ -137,9 +138,11 @@ std::unique_ptr<TH2DRatio> TrackPlotter::createHisto(const char* name, const cha
 
 void TrackPlotter::createTrackHistos(int maxTracksPerTF, int etaBins, int phiBins, int ptBins)
 {
-  mNofTracksPerTF[0] = createHisto<TH1D>(TString::Format("%sPositive/TracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame (+);Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, true, true, "logy");
-  mNofTracksPerTF[1] = createHisto<TH1D>(TString::Format("%sNegative/TracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame (-);Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, true, true, "logy");
-  mNofTracksPerTF[2] = createHisto<TH1D>(TString::Format("%sTracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame;Number of tracks per TF", maxTracksPerTF, 0, maxTracksPerTF, false, true, "logy");
+  int nbins = 100;
+  auto xLogBins = makeLogBinning(1, maxTracksPerTF, nbins);
+  mNofTracksPerTF[0] = createHisto<TH1D>(TString::Format("%sPositive/TracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame (+);Number of tracks per TF", nbins, xLogBins.data(), true, false, "logx");
+  mNofTracksPerTF[1] = createHisto<TH1D>(TString::Format("%sNegative/TracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame (-);Number of tracks per TF", nbins, xLogBins.data(), true, false, "logx");
+  mNofTracksPerTF[2] = createHisto<TH1D>(TString::Format("%sTracksPerTF", mPath.c_str()), "Number of tracks per TimeFrame;Number of tracks per TF", nbins, xLogBins.data(), false, false, "logx");
 
   mTrackChi2OverNDF[0] = createHisto<TH1DRatio>(TString::Format("%sPositive/TrackMCHChi2OverNDF", mPath.c_str()), "Track #chi^{2}/ndf (MCH +);#chi^{2}/ndf;entries/s", 500, 0, 50, true, false, "hist");
   mTrackChi2OverNDF[1] = createHisto<TH1DRatio>(TString::Format("%sNegative/TrackMCHChi2OverNDF", mPath.c_str()), "Track #chi^{2}/ndf (MCH -);#chi^{2}/ndf;entries/s", 500, 0, 50, true, false, "hist");

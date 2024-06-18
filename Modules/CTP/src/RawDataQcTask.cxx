@@ -44,19 +44,15 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   int ninps = o2::ctp::CTP_NINPUTS + 1;
   int nclasses = o2::ctp::CTP_NCLASSES + 1;
   int norbits = o2::constants::lhc::LHCMaxBunches;
-  mHistoInputs = std::make_unique<TH1FRatio>("inputs", "Input Rates; Index ; Rate [kHz]", ninps, 0, ninps, true);
-  mHistoInputs->SetCanExtend(TH1::kAllAxes);
+  mHistoInputs = std::make_unique<TH1FRatio>("inputs", "Input Rates; Input ; Rate [kHz]", ninps, 0, ninps, true);
   mHistoClasses = std::make_unique<TH1FRatio>("classes", "Class Rates; Index; Rate [kHz]", nclasses, 0, nclasses, true);
   mHistoInputs->SetStats(0);
   mHistoClasses->SetStats(0);
   mHistoMTVXBC = std::make_unique<TH1F>("bcMTVX", "BC position of MTVX", norbits, 0, norbits);
-  mHistoInputRatios = std::make_unique<TH1FRatio>("inputRatio", "Input Ratio to MTVX; Index; Ratio;", ninps, 0, ninps, true);
-  mHistoInputRatios->SetCanExtend(TH1::kAllAxes);
+  mHistoInputRatios = std::make_unique<TH1FRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
   mHistoClassRatios = std::make_unique<TH1FRatio>("classRatio", "Class Ratio to MB; Index; Ratio", nclasses, 0, nclasses, true);
   getObjectsManager()->startPublishing(mHistoInputs.get());
-  getObjectsManager()->setDisplayHint(mHistoInputs.get(), "hist");
   getObjectsManager()->startPublishing(mHistoClasses.get());
-  // getObjectsManager()->setDisplayHint(mHistoClasses.get(),"hist");
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
   getObjectsManager()->startPublishing(mHistoInputRatios.get());
   getObjectsManager()->startPublishing(mHistoMTVXBC.get());
@@ -73,18 +69,21 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoClassRatios->Reset();
   mHistoInputRatios->Reset();
   mHistoMTVXBC->Reset();
-  //
+
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
-  //
-  // mTimestamp = 1714315086649;
-  //
+
   std::string MBclassName = mCustomParameters["MBclassName"];
   if (MBclassName.empty()) {
     MBclassName = "CMTVX-B-NOPF";
   }
   std::string run = std::to_string(mRunNumber);
-  o2::ctp::CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
+  std::string ccdbName = mCustomParameters["ccdbName"];
+  if (ccdbName.empty()) {
+    ccdbName = "https://alice-ccdb.cern.ch";
+  }
+
+  o2::ctp::CTPRunManager::setCCDBHost(ccdbName);
   bool ok;
   o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
   if (ok) {
@@ -131,11 +130,11 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (digit.CTPInputMask.count()) {
       for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
-          mHistoInputs->getNum()->Fill(ctpinputs[i], 1);
-          mHistoInputRatios->getNum()->Fill(ctpinputs[i], 1);
+          mHistoInputs->getNum()->Fill(i);
+          mHistoInputRatios->getNum()->Fill(i);
           if (i == indexTvx - 1) {
             mHistoMTVXBC->Fill(bcid);
-            mHistoInputRatios->getDen()->Fill(ctpinputs[i], 1);
+            mHistoInputRatios->getDen()->Fill(0., 1);
           }
         }
       }

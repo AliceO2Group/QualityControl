@@ -57,6 +57,19 @@
           "MOs": ["example"]
         }]
       }
+    },
+    "aggregators": {
+      "FunctionalTestAggregator@UNIQUE_ID@": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check"                     , "": "for a check which produces a single result do it like that",
+          "name": "FunctionalTest@UNIQUE_ID@" , "": "no need to specify each object because there is only 1"
+        }]
+      }
     }
   },
   "dataSamplingPolicies": [

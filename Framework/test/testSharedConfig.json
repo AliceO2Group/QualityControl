@@ -253,6 +253,7 @@
       },
       "someNumbersCheck": {
         "active": "true",
+        "exportToBookkeeping": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
@@ -280,7 +281,21 @@
         ],
         "stopTrigger": [
           "once"
-        ]
+        ],
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey": "myOwnValue",
+              "myOwnKey2": "myOwnValue2"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            }
+          }
+        }
       }
     },
     "aggregators": {
@@ -302,6 +317,7 @@
       },
       "MyAggregatorD": {
         "active": "true",
+        "exportToBookkeeping": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
         "moduleName": "QcSkeleton",
         "policy": "OnAll",

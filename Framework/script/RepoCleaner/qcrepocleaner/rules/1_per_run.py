@@ -64,8 +64,10 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
 
     # if we should not touch the files with no runs, let's just remove them from the map
     if not delete_when_no_run:
-        del versions_buckets_dict['none']
-        del versions_buckets_dict['0']
+        if 'none' in versions_buckets_dict:
+            del versions_buckets_dict['none']
+        if '0' in versions_buckets_dict:
+            del versions_buckets_dict['0']
 
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():

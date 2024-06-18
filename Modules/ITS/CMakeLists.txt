@@ -11,6 +11,7 @@ add_library(O2QcITS
             src/TrendingTaskITSError.cxx
             src/TH2XlineReductor.cxx
 	          src/ReductorBinContent.cxx
+            src/ReductorIntegralContent.cxx 
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
@@ -27,8 +28,9 @@ add_library(O2QcITS
             src/ITSDecodingErrorCheck.cxx 
             )
 
-target_sources(O2QcITS PRIVATE
+target_sources(O2QcITS PRIVATE src/ITSChipStatusTask.cxx 
                src/TH2XlineReductor.cxx
+               src/ReductorIntegralContent.cxx
                src/ReductorBinContent.cxx)
 
 target_include_directories(
@@ -58,6 +60,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ITS
 
 add_root_dictionary(O2QcITS
                     HEADERS include/ITS/ITSRawTask.h
+  include/ITS/ITSChipStatusTask.h
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
 			    include/ITS/TrendingTaskITSFEE.h
@@ -66,6 +69,7 @@ add_root_dictionary(O2QcITS
                             include/ITS/TrendingTaskITSError.h
                             include/ITS/TH2XlineReductor.h
 			    include/ITS/ReductorBinContent.h
+                            include/ITS/ReductorIntegralContent.h
                             include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h

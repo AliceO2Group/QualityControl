@@ -43,7 +43,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& common
   DataProcessorSpec newAggregatorRunner{
     aggregatorRunner.getDeviceName(),
     aggregatorRunner.getInputs(),
-    Outputs{},
+    aggregatorRunner.getOutputs(),
     AlgorithmSpec{},
     aggRunnerConfig.options
   };

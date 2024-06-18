@@ -40,6 +40,7 @@ struct AggregatorConfig {
   std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var // fixme: duplicates "sources"
   bool allObjects = false;
   framework::Inputs inputSpecs{};
+  framework::OutputSpec qoSpec{ "XXX", "INVALID" };
   std::vector<AggregatorSource> sources;
   std::string conditionUrl{};
 };

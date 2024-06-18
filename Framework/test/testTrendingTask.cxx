@@ -102,9 +102,11 @@ TEST_CASE("test_trending_task")
           {
             "name": "mean_of_histogram",
             "title": "Mean trend of the testHistoTrending histogram",
-            "varexp": "testHistoTrending.mean:time",
-            "selection": "",
-            "option": "*L"
+            "graphs": [{
+              "varexp": "testHistoTrending.mean:time",
+              "selection": "",
+              "option": "*L"
+            }]
           },
           {
             "name": "quality_histogram",
@@ -210,6 +212,7 @@ TEST_CASE("test_trending_task")
   auto histo2 = dynamic_cast<TCanvas*>(histo2MO->getObject());
   REQUIRE(histo2 != nullptr);
   CHECK(std::strcmp(histo2->GetName(), "quality_histogram") == 0);
+  objectManager->stopPublishing(PublicationPolicy::Once);
 
   // test finalize()
   REQUIRE_NOTHROW(task.finalize({ TriggerType::UserOrControl, true }, services));

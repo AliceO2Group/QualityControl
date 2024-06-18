@@ -42,6 +42,7 @@ add_library(O2QualityControl
   src/ActivityHelpers.cxx
   src/ObjectsManager.cxx
   src/CheckRunner.cxx
+  src/BookkeepingQualitySink.cxx
   src/AggregatorRunner.cxx
   src/CheckRunnerFactory.cxx
   src/AggregatorRunnerFactory.cxx
@@ -282,7 +283,8 @@ set(TEST_SRCS
     test/testUserCodeInterface.cxx
     test/testStringUtils.cxx
     test/testRunnerUtils.cxx
-)
+    test/testBookkeepingQualitySink.cxx
+  )
 
 set(TEST_ARGS
     ""
@@ -298,6 +300,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""

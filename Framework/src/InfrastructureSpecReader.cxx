@@ -321,6 +321,8 @@ CheckSpec InfrastructureSpecReader::readSpecEntry<CheckSpec>(const std::string& 
   }
 
   cs.active = checkTree.get<bool>("active", cs.active);
+  cs.exportToBookkeeping = checkTree.get<bool>("exportToBookkeeping", cs.exportToBookkeeping);
+
   if (checkTree.count("extendedCheckParameters") > 0) {
     cs.customParameters.populateCustomParameters(checkTree.get_child("extendedCheckParameters"));
   }
@@ -355,6 +357,8 @@ AggregatorSpec InfrastructureSpecReader::readSpecEntry<AggregatorSpec>(const std
   }
 
   as.active = aggregatorTree.get<bool>("active", as.active);
+  as.exportToBookkeeping = aggregatorTree.get<bool>("exportToBookkeeping", as.exportToBookkeeping);
+
   if (aggregatorTree.count("extendedAggregatorParameters") > 0) {
     as.customParameters.populateCustomParameters(aggregatorTree.get_child("extendedAggregatorParameters"));
   }

@@ -1506,7 +1506,7 @@
           "usercontrol"
         ],
         "updateTrigger": [
-          "10sec"
+          "newobject:qcdb:ITS/MO/ITSClusterTask/EmptyLaneFractionGlobal"
         ],
         "stopTrigger": [
             "usercontrol"  

@@ -26,6 +26,7 @@
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
 
+#include <numeric>
 #include <utility>
 #include <TSystem.h>
 
@@ -66,6 +67,7 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
     mTotalNumberObjectsProduced(0)
 {
   prepareInputs();
+  prepareOutputs();
 }
 
 AggregatorRunner::~AggregatorRunner()
@@ -103,6 +105,9 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
       mInputs.clear();
       prepareInputs();
 
+      mOutputs.clear();
+      prepareOutputs();
+
       ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
     }
   } catch (std::invalid_argument& error) {
@@ -127,6 +132,13 @@ void AggregatorRunner::prepareInputs()
         mInputs.emplace_back(input);
       }
     }
+  }
+}
+
+void AggregatorRunner::prepareOutputs()
+{
+  for (const auto& aggConfig : mAggregatorsConfig) {
+    mOutputs.emplace_back(aggConfig.qoSpec);
   }
 }
 
@@ -193,17 +205,18 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
 
   auto qualityObjects = aggregate();
   store(qualityObjects);
+  send(qualityObjects, ctx.outputs());
 
   mUpdatePolicyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
 }
 
-QualityObjectsType AggregatorRunner::aggregate()
+AggregatorRunner::QualityObjectsWithAggregatorNameVector AggregatorRunner::aggregate()
 {
   ILOG(Debug, Trace) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
 
-  QualityObjectsType allQOs;
+  QualityObjectsWithAggregatorNameVector allQOs;
   for (auto const& aggregator : mAggregators) {
     string aggregatorName = aggregator->getName();
     ILOG(Info, Devel) << "Processing aggregator: " << aggregatorName << ENDM;
@@ -219,7 +232,8 @@ QualityObjectsType AggregatorRunner::aggregate()
         mUpdatePolicyManager.updateObjectRevision(qo->getName());
       }
 
-      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
+      allQOs.emplace_back(aggregatorName, newQOs);
+
       newQOs.clear();
 
       mUpdatePolicyManager.updateActorRevision(aggregatorName); // Was aggregated, update latest revision
@@ -230,20 +244,39 @@ QualityObjectsType AggregatorRunner::aggregate()
   return allQOs;
 }
 
-void AggregatorRunner::store(QualityObjectsType& qualityObjects)
+void AggregatorRunner::store(QualityObjectsWithAggregatorNameVector& qualityObjectsWithAggregatorNames)
 {
-  ILOG(Info, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  const auto objectCount = std::accumulate(qualityObjectsWithAggregatorNames.begin(), qualityObjectsWithAggregatorNames.end(), 0, [](size_t count, const auto& namedQualityObject) {
+    return namedQualityObject.second.size() + count;
+  });
+
+  ILOG(Info, Devel) << "Storing " << objectCount << " QualityObjects" << ENDM;
+
   auto validFrom = getCurrentTimestamp();
   try {
-    for (auto& qo : qualityObjects) {
-      mDatabase->storeQO(qo);
+    for (const auto& [_, qualityObjects] : qualityObjectsWithAggregatorNames) {
+      for (const auto& qo : qualityObjects) {
+        mDatabase->storeQO(qo);
+      }
     }
-    if (!qualityObjects.empty()) {
-      auto& qo = qualityObjects.at(0);
+
+    if (!qualityObjectsWithAggregatorNames.empty() && !qualityObjectsWithAggregatorNames.front().second.empty()) {
+      const auto& qo = qualityObjectsWithAggregatorNames.front().second.front();
       ILOG(Info, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
+
   } catch (boost::exception& e) {
     ILOG(Info, Devel) << "Unable to " << diagnostic_information(e) << ENDM;
+  }
+}
+
+void AggregatorRunner::send(const QualityObjectsWithAggregatorNameVector& qualityObjectsWithAggregatorNames, framework::DataAllocator& allocator)
+{
+  for (const auto& [aggregatorName, qualityObjects] : qualityObjectsWithAggregatorNames) {
+    const auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mAggregatorsMap.at(aggregatorName)->getConfig().qoSpec);
+    for (const auto& qualityObject : qualityObjects) {
+      allocator.snapshot(framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, *qualityObject);
+    }
   }
 }
 
@@ -291,6 +324,7 @@ void AggregatorRunner::initAggregators()
                                      aggregator->getAllObjectsOption(),
                                      false);
       mAggregators.push_back(aggregator);
+      mAggregatorsMap.emplace(aggregator->getName(), aggregator);
     } catch (...) {
       // catch the configuration exception and print it to avoid losing it
       ILOG(Error, Ops) << "Error creating aggregator '" << aggregatorConfig.name << "'"
@@ -375,6 +409,10 @@ void AggregatorRunner::reorderAggregators()
   }
   assert(results.size() == mAggregators.size());
   mAggregators = results;
+  mAggregatorsMap.clear();
+  for (const auto& aggregator : mAggregators) {
+    mAggregatorsMap.emplace(aggregator->getName(), aggregator);
+  }
 }
 
 void AggregatorRunner::sendPeriodicMonitoring()
