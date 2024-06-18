@@ -18,15 +18,15 @@
 #include "CTP/TH1ctpReductor.h"
 
 #include <QualityControl/DatabaseInterface.h>
-#include <QualityControl/MonitorObject.h>
+//#include <QualityControl/MonitorObject.h>
 #include <QualityControl/RootClassFactory.h>
 #include <QualityControl/QcInfoLogger.h>
 #include <QualityControl/ActivityHelpers.h>
-#include <QualityControl/RepoPathUtils.h>
-#include <QualityControl/UserCodeInterface.h>
+//#include <QualityControl/RepoPathUtils.h>
+//#include <QualityControl/UserCodeInterface.h>
 #include <CCDB/BasicCCDBManager.h>
 #include <DataFormatsCTP/Configuration.h>
-#include <DataFormatsCTP/RunManager.h>
+//#include <DataFormatsCTP/RunManager.h>
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -41,11 +41,14 @@ void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
 {
   mConfig = TrendingConfigCTP(getID(), config);
 }
+
 void CTPTrendingTask::initCTP(Trigger& t)
 {
   std::string run = std::to_string(t.activity.mId);
   // CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
   // mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
+  // there is an interface to access the CCDB : https://github.com/AliceO2Group/QualityControl/blob/master/doc/Advanced.md#accessing-objects-in-ccdb
+  // if possible use PostProcessingInterface::retrieveCondition()
   std::string CCDBHost = "https://alice-ccdb.cern.ch";
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
   mgr.setURL(CCDBHost);
@@ -56,7 +59,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
     ILOG(Warning, Support) << "CTP Config not found for run:" << run << " timesamp " << t.timestamp << ENDM;
     return;
   }
-  // get the indeces of the classes we want to trend
+  // get the indices of the classes we want to trend
   std::vector<ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
   std::vector<int> clslist = mCTPconfig->getTriggerClassList();
   for (size_t i = 0; i < clslist.size(); i++) {
@@ -89,8 +92,6 @@ void CTPTrendingTask::initCTP(Trigger& t)
 }
 void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
-  // // read out the CTPConfiguration
-  // initCCTP(); - too eraly here ?
 }
 
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
@@ -120,7 +121,6 @@ void CTPTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterfac
 
   ILOG(Info, Support) << "time stamp from activity " << t.timestamp << ENDM;
   ILOG(Info, Support) << "run number from activity " << t.activity.mId << ENDM;
-  // map<string, string> metadata; // can be empty
   bool inputMissing = false;
 
   for (auto& dataSource : mConfig.dataSources) {

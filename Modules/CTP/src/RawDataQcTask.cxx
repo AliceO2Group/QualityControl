@@ -22,14 +22,14 @@
 #include "CTP/RawDataQcTask.h"
 #include "DetectorsRaw/RDHUtils.h"
 #include "Headers/RAWDataHeader.h"
-#include "DPLUtils/DPLRawParser.h"
+//#include "DPLUtils/DPLRawParser.h"
 #include "DataFormatsCTP/Digits.h"
 #include "DataFormatsCTP/Configuration.h"
 #include "DataFormatsCTP/RunManager.h"
 #include <Framework/InputRecord.h>
-#include <Framework/InputRecordWalker.h>
+//#include <Framework/InputRecordWalker.h>
 #include "Framework/TimingInfo.h"
-#include <DetectorsBase/GRPGeomHelper.h>
+//#include <DetectorsBase/GRPGeomHelper.h>
 
 namespace o2::quality_control_modules::ctp
 {
@@ -78,6 +78,8 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     MBclassName = "CMTVX-B-NOPF";
   }
   std::string run = std::to_string(mRunNumber);
+  // there is an interface to access the CCDB : https://github.com/AliceO2Group/QualityControl/blob/master/doc/Advanced.md#accessing-objects-in-ccdb
+  // if possible use PostProcessingInterface::retrieveCondition()
   std::string ccdbName = mCustomParameters["ccdbName"];
   if (ccdbName.empty()) {
     ccdbName = "https://alice-ccdb.cern.ch";

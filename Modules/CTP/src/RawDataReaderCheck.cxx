@@ -36,6 +36,7 @@ namespace o2::quality_control_modules::ctp
 
 void RawDataReaderCheck::configure()
 {
+  // Consider using CustomParameter's methods : atOrDefaultValue or atOptional to avoid these try catch
   try {
     mThresholdRateBad = std::stof(mCustomParameters["thresholdRateBad"]);
   } catch (const std::exception& e) {
@@ -156,6 +157,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 
   return result;
 }
+
 int RawDataReaderCheck::checkChange(TH1F* fHist, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium)
 {
   float thrBad = mThresholdRateBad;
@@ -309,6 +311,7 @@ int RawDataReaderCheck::getNumberFilledBins(TH1F* hist)
   }
   return filledBins;
 }
+
 Quality RawDataReaderCheck::SetQualityResult(std::vector<int>& vBad, std::vector<int>& vMedium)
 {
 
@@ -323,6 +326,7 @@ Quality RawDataReaderCheck::SetQualityResult(std::vector<int>& vBad, std::vector
 
   return quality;
 }
+
 void RawDataReaderCheck::ClearIndexVectors()
 {
   vBadBC.clear();
@@ -331,6 +335,7 @@ void RawDataReaderCheck::ClearIndexVectors()
   vIndexBad.clear();
   vIndexMedium.clear();
 }
+
 void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
 {
   ILOG(Info, Support) << "RawDataReaderCheck::start : " << activity.mId << ENDM;
