@@ -58,6 +58,8 @@ void LevelCheck::configure()
   mThreshError = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "thresholdError", 0.8);
   mNameObjectToCheck = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "nameObjectToCheck", "CFD_efficiency");
 
+  mNelementsPerLine = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nElementsPerLine", 20);
+
   mIsInvertedThrsh = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "isInversedThresholds", false);
   mSignCheck = mIsInvertedThrsh ? std::string{ ">" } : std::string{ "<" };
 
@@ -145,27 +147,42 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
           vecWarnings.push_back(bin);
         }
       }
-      mNumErrors = vecWarnings.size();
-      mNumWarnings = vecErrors.size();
+      mNumErrors = vecErrors.size();
+      mNumWarnings = vecWarnings.size();
       auto funcInt2Str = [](std::string accum, int bin) { return std::move(accum) + ", " + std::to_string(bin); };
-      auto vecToStr = [&funcInt2Str](auto&& vec) -> std::string {
-        return vec.size() > 0 ? std::accumulate(std::next(vec.begin()), vec.end(), std::to_string(vec[0]), funcInt2Str) : "";
+      auto addFlag = [&funcInt2Str, &result](auto&& vec, auto&& messagePrefix) -> void {
+        if (vec.size() == 0) {
+          return;
+        }
+        const auto idxLine = vec.size() > 0 ? std::accumulate(std::next(vec.begin()), vec.end(), std::to_string(vec[0]), funcInt2Str) : "";
+        const std::string message = messagePrefix + idxLine;
+        result.addFlag(FlagTypeFactory::Unknown(), message);
+      };
+      auto addMultipleFlags = [&addFlag, this](auto&& vec, auto&& messagePrefix) -> void {
+        if (vec.size() == 0) {
+          return;
+        }
+        auto it = vec.begin();
+        int distance{ 0 };
+        do {
+          const auto itBegin = it;
+          std::advance(it, this->mNelementsPerLine);
+          distance = std::distance(it, vec.end());
+          const auto itEnd = distance > 0 ? it : vec.end();
+          addFlag(std::vector<int>(itBegin, itEnd), messagePrefix);
+        } while (distance > 0);
       };
       if (mNumErrors > 0) {
         if (result.isBetterThan(Quality::Bad)) {
           result.set(Quality::Bad);
         }
-        const std::string strErrors = vecToStr(vecErrors);
-        const std::string message = mMessagePrefixError + strErrors;
-        result.addFlag(FlagTypeFactory::Unknown(), message);
+        addMultipleFlags(vecErrors, mMessagePrefixError);
       }
       if (mNumWarnings > 0) {
         if (result.isBetterThan(Quality::Medium)) {
           result.set(Quality::Medium);
         }
-        const std::string strWarnings = vecToStr(vecErrors);
-        const std::string message = mMessagePrefixWarning + strWarnings;
-        result.addFlag(FlagTypeFactory::Unknown(), message);
+        addMultipleFlags(vecWarnings, mMessagePrefixWarning);
       }
     }
   }

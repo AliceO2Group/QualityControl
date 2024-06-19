@@ -49,6 +49,7 @@ class LevelCheck : public o2::quality_control::checker::CheckInterface
   std::string mMessagePrefixWarning{ "" };
   std::string mTimestampMetaField{ "timestampMetaField" };
   std::string mTimestampSource{ "" };
+  int mNelementsPerLine{ 20 };
   long long mTimestamp{ -1 }; // For fetching CCDB
   std::set<int> mBinsToIgnore{};
   bool mIsInvertedThrsh; // check if values should be upper
