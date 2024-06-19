@@ -297,7 +297,7 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     // Notify about found errors on the infoLogger:
     if (mNotifyInfologger) {
       for (const auto& flag : checkResult.getFlags()) {
-        ILOG(Warning, Support) << "Raw Error in " << mo->GetName() << " found: " << flag.second << ENDM;
+        ILOG(Warning, Devel) << "Raw Error in " << mo->GetName() << " found: " << flag.second << ENDM;
       }
     }
   }
