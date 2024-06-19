@@ -67,7 +67,7 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
     try {
       switch (provenance) {
         case Provenance::SyncQC:
-          // TODO: add a sync function call when Bookkeeping implements it.
+          qcClient->createForSynchronous(flagCollection->getRunNumber(), detector, bkpQcFlags);
           break;
         case Provenance::AsyncQC:
           qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), detector, bkpQcFlags);
