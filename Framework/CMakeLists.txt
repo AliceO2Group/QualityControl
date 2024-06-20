@@ -125,6 +125,7 @@ target_include_directories(
   O2QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  ${MODERNCPPKAFKA_ROOT}
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   ${MODERNCPPKAFKA_ROOT})
@@ -151,9 +152,10 @@ target_link_libraries(O2QualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
                              O2QualityControlKafkaProtos
+                             RdKafka::rdkafka++
                       PRIVATE Boost::system
                               CURL::libcurl
-                              RdKafka::rdkafka++)
+                              )
 
 add_root_dictionary(O2QualityControl
   HEADERS
@@ -272,6 +274,7 @@ add_executable(o2-qc-test-core
                test/testVersion.cxx
                test/testMonitorObjectCollection.cxx
                test/testTrendingTask.cxx
+               test/testKafkaConsumer.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
