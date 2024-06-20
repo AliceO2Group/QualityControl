@@ -8,11 +8,6 @@
         "password": "not_applicable",
         "name": "not_applicable"
       },
-      "Activity": {
-        "number": "536238",
-        "start" : "1683755568367",
-        "type": "2"
-      },
       "monitoring": {
         "url": "infologger:///debug?qc"
       },
@@ -41,130 +36,147 @@
             "moduleName": "QcCommon"
           }
         ],
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "minBias1Class": "CMTVX-B-NOPF",
+              "minBias2Class": "CMVBA-B-NOPF",
+              "minBisDMCclass": "CTVXDMC-B-NOPF-EMC",
+              "minBiasEMCclass": "CTVXEMC-B-NOPF-EMC",
+              "minBiasPHOclass": "CTVXPH0-B-NOPF-PHSCPV",
+              "minBias1Input": "TVX",
+              "minBias2Input": "VBA",
+              "minBisDMCInput": "DMC",
+              "minBiasEMCInput": "EMC",
+              "minBiasPHOInput": "PH0",
+              "ccdbName": "https://alice-ccdb.cern.ch"
+            }
+          }
+        },
         "plots": [
           {
-            "name": "L0_3_rate",
-            "title": "L0_3_rate",
-            "varexp": "inputs.inputs[2]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "MinBias1Input_rate",
+            "title": "MinBias1Input_rate",
+            "varexp": "inputs.inputContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_6_rate",
-            "title": "L0_6_rate",
-            "varexp": "inputs.inputs[5]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "MinBias2Input_rate",
+            "title": "MinBias2Input_rate",
+            "varexp": "inputs.inputContentMinBias2:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_14_rate",
-            "title": "L0_14_rate",
-            "varexp": "inputs.inputs[13]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "DMCInput_rate",
+            "title": "DMCInput_rate",
+            "varexp": "inputs.inputContentDMC:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_21_rate",
-            "title": "L0_21_rate",
-            "varexp": "inputs.inputs[20]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "EMCInput_rate",
+            "title": "EMCInput_rate",
+            "varexp": "inputs.inputContentEMC:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_22_rate",
-            "title": "L0_22_rate",
-            "varexp": "inputs.inputs[21]/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "PHOInput_rate",
+            "title": "PHOInput_rate",
+            "varexp": "inputs.inputContentPHO:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_MTVX_rate",
-            "title": "Class_MTVX_rate",
-            "varexp": "classes.classContentMTVX/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "Class_MinBias1_rate",
+            "title": "Class_MinBias1_rate",
+            "varexp": "classes.classContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_MVBA_rate",
-            "title": "Class_MVBA_rate",
-            "varexp": "classes.classContentMVBA/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "Class_MinBias2_rate",
+            "title": "Class_MinBias2_rate",
+            "varexp": "classes.classContentMinBias2:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_TVXDCM_rate",
-            "title": "Class_TVXDCM_rate",
-            "varexp": "classes.classContentTVXDMC/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "Class_DMC_rate",
+            "title": "Class_DMC_rate",
+            "varexp": "classes.classContentDMC:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_TVXEMC_rate",
-            "title": "Class_TVXEMC_rate",
-            "varexp": "classes.classContentTVXEMC/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "Class_EMC_rate",
+            "title": "Class_EMC_rate",
+            "varexp": "classes.classContentEMC:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_TVXPH0_rate",
-            "title": "Class_TVXPH0_rate",
-            "varexp": "classes.classContentTVXPHO/6:time", "":"the denominator is cycleDurationSeconds*fraction, as set in qc-ctp.json!",
+            "name": "Class_PHO_rate",
+            "title": "Class_PHO_rate",
+            "varexp": "classes.classContentPHO:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_6_rate_ratio",
-            "title": "L0_6_rate_ratio",
-            "varexp": "inputs.inputs[5]/inputs.inputs[2]:time",
+            "name": "Input_MinBias2_rate_ratio",
+            "title": "Input_MinBias2_rate_ratio",
+            "varexp": "inputs.inputContentMinBias2/inputs.inputContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_14_rate_ratio",
-            "title": "L0_14_rate_ratio",
-            "varexp": "inputs.inputs[13]/inputs.inputs[2]:time",
+            "name": "Input_DMC_rate_ratio",
+            "title": "Input_DMC_rate_ratio",
+            "varexp": "inputs.inputContentDMC/inputs.inputContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_21_rate_ratio",
-            "title": "L0_21_rate_ratio",
-            "varexp": "inputs.inputs[20]/inputs.inputs[2]:time",
+            "name": "Input_ECM_rate_ratio",
+            "title": "Input_ECM_rate_ratio",
+            "varexp": "inputs.inputContentEMC/inputs.inputContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "L0_22_rate_ratio",
-            "title": "L0_22_rate_ratio",
-            "varexp": "inputs.inputs[21]/inputs.inputs[2]:time",
+            "name": "Input_PHO_rate_ratio",
+            "title": "Input_PHO_rate_ratio",
+            "varexp": "inputs.inputContentPHO/inputs.inputContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_MVBA_MTVX_rate_ratio",
-            "title": "Class_MVBA_MTVX_rate_ratio",
-            "varexp": "classes.classContentMVBA/classes.classContentMTVX:time",
+            "name": "Class_minBias2_rate_ratio",
+            "title": "Class_minBias2_rate_ratio",
+            "varexp": "classes.classContentMinBias2/classes.classContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_TVXDCM_MTVX_rate_ratio",
-            "title": "Class_TVXDCM_MTVX_rate_ratio",
-            "varexp": "classes.classContentTVXDMC/classes.classContentMTVX:time",
+            "name": "Class_DMC_rate_ratio",
+            "title": "Class_DMC_rate_ratio",
+            "varexp": "classes.classContentDMC/classes.classContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_TVXEMC_MTVX_rate_ratio",
-            "title": "Class_TVXEMC_MTVX_rate_ratio",
-            "varexp": "classes.classContentTVXEMC/classes.classContentMTVX:time",
+            "name": "Class_EMC_rate_ratio",
+            "title": "Class_EMC_rate_ratio",
+            "varexp": "classes.classContentEMC/classes.classContentMinBias1:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "Class_TVXPH0_MTVX_rate_ratio",
-            "title": "Class_TVXPH0_MTVX_rate_ratio",
-            "varexp": "classes.classContentTVXPHO/classes.classContentMTVX:time",
+            "name": "Class_PHO_rate_ratio",
+            "title": "Class_PHO_rate_ratio",
+            "varexp": "classes.classContentPHO/classes.classContentMinBias1:time",
             "selection": "",
             "option": "*L"
           }
