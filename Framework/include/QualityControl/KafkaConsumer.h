@@ -17,12 +17,25 @@
 #define QC_CORE_KAFKA_CONSUMER_H
 
 #include <kafka/KafkaConsumer.h>
+#include <atomic>
 
 namespace o2::quality_control::core
 {
 
 class KafkaConsumer
 {
+ public:
+  /*
+   *
+   */
+  explicit KafkaConsumer(const std::string& brokers);
+
+  void consume(const std::string& topic);
+  void stop() noexcept;
+
+ private:
+  kafka::clients::consumer::KafkaConsumer mConsumer;
+  std::atomic_bool mRunning;
 };
 
 } // namespace o2::quality_control::core
