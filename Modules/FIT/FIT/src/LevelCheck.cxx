@@ -47,8 +47,14 @@ void LevelCheck::updateBinsToIgnoreWithDCM()
   }
 }
 
+void LevelCheck::startOfActivity(const Activity&)
+{
+  mIsFirstIter = true; // for SSS
+}
+
 void LevelCheck::configure()
 {
+  mIsFirstIter = true;
   mMessagePrefixWarning = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "messagePrefixWarning", "Warning in bin idxs: ");
   mMessagePrefixError = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "messagePrefixError", "Error in bin idxs: ");
   mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");
@@ -59,6 +65,8 @@ void LevelCheck::configure()
   mNameObjectToCheck = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "nameObjectToCheck", "CFD_efficiency");
 
   mNelementsPerLine = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nElementsPerLine", 20);
+  mUseBinLabels = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "useBinLabels", false);
+  mUseBinError = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "useBinError", false);
 
   mIsInvertedThrsh = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "isInversedThresholds", false);
   mSignCheck = mIsInvertedThrsh ? std::string{ ">" } : std::string{ "<" };
@@ -114,8 +122,8 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   for (const auto& entry : *moMap) {
     const auto& mo = entry.second;
     if (mo->getName() == mNameObjectToCheck) {
-      auto* h = dynamic_cast<TH1*>(mo->getObject());
-      if (h == nullptr) {
+      auto hist = dynamic_cast<TH1*>(mo->getObject());
+      if (hist == nullptr) {
         ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1* => Quality::Bad" << ENDM;
         result = Quality::Bad;
         result.addFlag(FlagTypeFactory::Unknown(), "Cannot get TH1 object from DB");
@@ -131,30 +139,33 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       }
 
       result = Quality::Good;
-      std::vector<int> vecWarnings{};
-      std::vector<int> vecErrors{};
-      for (int bin = 0; bin < h->GetNbinsX(); bin++) {
-        if (mBinsToIgnore.find(bin) != mBinsToIgnore.end()) {
+      std::vector<std::string> vecWarnings{};
+      std::vector<std::string> vecErrors{};
+      for (int binIdx = 0; binIdx < hist->GetNbinsX(); binIdx++) {
+        if (mBinsToIgnore.find(binIdx) != mBinsToIgnore.end()) {
           continue;
         }
-        const auto val = h->GetBinContent(bin + 1);
-        const bool isError = (val < mThreshError && !mIsInvertedThrsh) || (val > mThreshError && mIsInvertedThrsh);
+        const auto bin = binIdx + 1;
+        const auto val = hist->GetBinContent(bin);
+        const bool hasError = hist->GetBinError(bin) > 0; // for checking denomenator, if denominator == 0 error will be also zero
+        const bool isError = (val < mThreshError && !mIsInvertedThrsh) || (val > mThreshError && mIsInvertedThrsh) || (!hasError && mUseBinError);
         const bool isWarning = (val < mThreshWarning && !mIsInvertedThrsh) || (val > mThreshWarning && mIsInvertedThrsh);
+        const std::string binAsStr = mUseBinLabels ? hist->GetXaxis()->GetBinLabel(bin) : std::to_string(binIdx);
         if (isError) {
-          vecErrors.push_back(bin);
+          vecErrors.push_back(binAsStr);
           continue;
         } else if (isWarning) {
-          vecWarnings.push_back(bin);
+          vecWarnings.push_back(binAsStr);
         }
       }
       mNumErrors = vecErrors.size();
       mNumWarnings = vecWarnings.size();
-      auto funcInt2Str = [](std::string accum, int bin) { return std::move(accum) + ", " + std::to_string(bin); };
+      auto funcInt2Str = [](std::string accum, std::string bin) { return std::move(accum) + ", " + bin; };
       auto addFlag = [&funcInt2Str, &result](auto&& vec, auto&& messagePrefix) -> void {
         if (vec.size() == 0) {
           return;
         }
-        const auto idxLine = vec.size() > 0 ? std::accumulate(std::next(vec.begin()), vec.end(), std::to_string(vec[0]), funcInt2Str) : "";
+        const auto idxLine = vec.size() > 0 ? std::accumulate(std::next(vec.begin()), vec.end(), vec[0], funcInt2Str) : "";
         const std::string message = messagePrefix + idxLine;
         result.addFlag(FlagTypeFactory::Unknown(), message);
       };
@@ -165,11 +176,13 @@ Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
         auto it = vec.begin();
         int distance{ 0 };
         do {
+          const std::string msg = distance == 0 ? messagePrefix : ""; // first iteration, message prefix will be used only in first line
+          const int extraNelements = distance == 0 ? 0 : mNelementsPerLine;
           const auto itBegin = it;
-          std::advance(it, this->mNelementsPerLine);
+          std::advance(it, mNelementsPerLine + extraNelements);
           distance = std::distance(it, vec.end());
           const auto itEnd = distance > 0 ? it : vec.end();
-          addFlag(std::vector<int>(itBegin, itEnd), messagePrefix);
+          addFlag(std::vector<std::string>(itBegin, itEnd), msg);
         } while (distance > 0);
       };
       if (mNumErrors > 0) {

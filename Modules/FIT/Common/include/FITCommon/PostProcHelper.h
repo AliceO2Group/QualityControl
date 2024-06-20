@@ -98,7 +98,7 @@ class PostProcHelper
     // Getting sample length
     if (hMetadata) {
       mCurrSampleLengthTF = hMetadata->GetBinContent(1);
-      mCurrSampleLengthSec = mCurrSampleLengthTF * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS;
+      mCurrSampleLengthSec = mCurrSampleLengthTF * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS * 1e-9;
       mIsMetadataValid = true;
     } else {
       mCurrSampleLengthTF = 0;

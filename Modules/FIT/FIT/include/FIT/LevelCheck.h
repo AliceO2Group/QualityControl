@@ -36,6 +36,7 @@ class LevelCheck : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
+  void startOfActivity(const Activity& activity) override;
 
  private:
   void updateBinsToIgnoreWithDCM();
@@ -50,6 +51,8 @@ class LevelCheck : public o2::quality_control::checker::CheckInterface
   std::string mTimestampMetaField{ "timestampMetaField" };
   std::string mTimestampSource{ "" };
   int mNelementsPerLine{ 20 };
+  bool mUseBinLabels{ false };
+  bool mUseBinError{ false };
   long long mTimestamp{ -1 }; // For fetching CCDB
   std::set<int> mBinsToIgnore{};
   bool mIsInvertedThrsh; // check if values should be upper

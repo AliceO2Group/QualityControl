@@ -90,50 +90,11 @@ void DigitQcTask::rebinFromConfig()
     ILOG(Error) << "Cannot access the default custom parameters : " << oor.what() << ENDM;
   }
 }
-
-unsigned int DigitQcTask::getModeParameter(std::string paramName, unsigned int defaultVal, std::map<unsigned int, std::string> choices)
-{
-  if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
-    // if parameter was provided check which option was chosen
-    for (const auto& choice : choices) {
-      if (param->second == choice.second) {
-        ILOG(Debug, Support) << "setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
-        return choice.first;
-      }
-    }
-    // param value not allowed - use default but with warning
-    std::string allowedValues;
-    for (const auto& choice : choices) {
-      allowedValues += "\"";
-      allowedValues += choice.second;
-      allowedValues += "\", ";
-    }
-    ILOG(Warning, Support) << "Provided value (\"" << param->second << "\") for parameter \"" << paramName << "\" is not allowed. Allowed values are: " << allowedValues << " setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
-    return defaultVal;
-  } else {
-    // param not provided - use default
-    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
-    return defaultVal;
-  }
-}
-
-int DigitQcTask::getNumericalParameter(std::string paramName, int defaultVal)
-{
-  if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
-    float val = stoi(param->second);
-    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to: " << val << ENDM;
-    return val;
-  } else {
-    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: " << defaultVal << ENDM;
-    return defaultVal;
-  }
-}
-
 bool DigitQcTask::chIsVertexEvent(const o2::ft0::ChannelData chd)
 {
   return (chd.getFlag(o2::ft0::ChannelData::kIsCFDinADCgate) &&
           !(chd.getFlag(o2::ft0::ChannelData::kIsTimeInfoNOTvalid) || chd.getFlag(o2::ft0::ChannelData::kIsTimeInfoLate) || chd.getFlag(o2::ft0::ChannelData::kIsTimeInfoLost)) &&
-          std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgOrGate &&
+          std::abs(static_cast<Int_t>(chd.CFDTime)) < mTrgValidation.mTrgOrGate &&
           !chd.getFlag(o2::ft0::ChannelData::kIsAmpHigh));
 }
 
@@ -141,91 +102,24 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
-  mMapTrgSoftware.insert({ o2::fit::Triggers::bitA, false });
-  mMapTrgSoftware.insert({ o2::fit::Triggers::bitC, false });
-  mMapTrgSoftware.insert({ o2::fit::Triggers::bitVertex, false });
-  mMapTrgSoftware.insert({ o2::fit::Triggers::bitCen, false });
-  mMapTrgSoftware.insert({ o2::fit::Triggers::bitSCen, false });
+  mTrgValidation.configure(mCustomParameters);
+  mHistTime2Ch = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TimePerChannel", "Time vs Channel;Channel;Time", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4100, -2050, 2050);
+  mHistAmp2Ch = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
+  mHistBC = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
+  mHistChDataBits = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits);
 
-  mTrgModeThresholdVar = getModeParameter("trgModeThresholdVar",
-                                          TrgModeThresholdVar::kAmpl,
-                                          { { TrgModeThresholdVar::kAmpl, "Ampl" },
-                                            { TrgModeThresholdVar::kNchannels, "Nchannels" } });
-  mTrgModeSide = getModeParameter("trgModeSide",
-                                  TrgModeSide::kAplusC,
-                                  { { TrgModeSide::kAplusC, "A+C" },
-                                    { TrgModeSide::kAandC, "A&C" },
-                                    { TrgModeSide::kA, "A" },
-                                    { TrgModeSide::kC, "C" } });
-  mTrgOrGate = getNumericalParameter("trgOrGate", 153);
-  mTrgChargeLevelLow = getNumericalParameter("trgChargeLevelLow", 0);
-  mTrgChargeLevelHigh = getNumericalParameter("trgChargeLevelHigh", 4095);
-  mTrgThresholdTimeLow = getNumericalParameter("trgThresholdTimeLow", -192);
-  mTrgThresholdTimeHigh = getNumericalParameter("trgThresholdTimeHigh", 192);
-  if (mTrgModeSide == TrgModeSide::kAplusC) {
-    mTrgThresholdCenA = getNumericalParameter("trgThresholdCenA", 20);
-    mTrgThresholdSCenA = getNumericalParameter("trgThresholdSCenA", 10);
-  } else if (mTrgModeSide == TrgModeSide::kAandC) {
-    mTrgThresholdCenA = getNumericalParameter("trgThresholdCenA", 20);
-    mTrgThresholdCenC = getNumericalParameter("trgThresholdCenC", 20);
-    mTrgThresholdSCenA = getNumericalParameter("trgThresholdSCenA", 10);
-    mTrgThresholdSCenC = getNumericalParameter("trgThresholdSCenC", 10);
-  } else if (mTrgModeSide == TrgModeSide::kA) {
-    mTrgThresholdCenA = getNumericalParameter("trgThresholdCenA", 20);
-    mTrgThresholdSCenA = getNumericalParameter("trgThresholdSCenA", 10);
-  } else if (mTrgModeSide == TrgModeSide::kC) {
-    mTrgThresholdCenC = getNumericalParameter("trgThresholdCenC", 20);
-    mTrgThresholdSCenC = getNumericalParameter("trgThresholdSCenC", 10);
-  }
+  mHistOrbitVsTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapTechTrgBits);
+  mHistOrbit2BC = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "OrbitPerBC", "BC-Orbit map;Orbit;BC;", sOrbitsPerTF, 0, sOrbitsPerTF, sBCperOrbit, 0, sBCperOrbit);
+  mHistTriggersCorrelation = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersCorrelation", "Correlation of triggers from TCM", mMapTechTrgBits, mMapTechTrgBits);
+  mHistBCvsTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
+  mHistPmTcmNchA = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmNumChannelsA", "Comparison of num. channels A from PM and TCM;Number of channels(TCM), side A;PM - TCM", sNCHANNELS_A + 2, 0, sNCHANNELS_A + 2, 2 * sNCHANNELS_A + 1, -int(sNCHANNELS_A) - 0.5, int(sNCHANNELS_A) + 0.5);
+  mHistPmTcmSumAmpA = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmSumAmpA", "Comparison of sum of amplitudes A from PM and TCM;Sum of amplitudes(TCM), side A;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
+  mHistPmTcmAverageTimeA = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmAverageTimeA", "Comparison of average time A from PM and TCM;Average time(TCM), side A;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
+  mHistPmTcmNchC = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmNumChannelsC", "Comparison of num. channels C from PM and TCM;Number of channels(TCM), side C;PM - TCM", sNCHANNELS_C + 2, 0, sNCHANNELS_C + 2, 2 * sNCHANNELS_C + 1, -int(sNCHANNELS_C) - 0.5, int(sNCHANNELS_C) + 0.5);
+  mHistPmTcmSumAmpC = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmSumAmpC", "Comparison of sum of amplitudes C from PM and TCM;Sum of amplitudes(TCM), side C;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
+  mHistPmTcmAverageTimeC = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmAverageTimeC", "Comparison of average time C from PM and TCM;Average time(TCM), side C;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
 
-  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4100, -2050, 2050);
-  mHistTime2Ch->SetOption("colz");
-  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
-  mHistAmp2Ch->SetOption("colz");
-  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
-  mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits.size(), 0, mMapPMbits.size());
-  mHistChDataBits->SetOption("colz");
-  for (const auto& entry : mMapPMbits) {
-    mHistChDataBits->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-  }
-  mHistOrbitVsTrg = std::make_unique<TH2F>("OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
-  mHistOrbitVsTrg->SetOption("colz");
-  mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", sOrbitsPerTF, 0, sOrbitsPerTF, sBCperOrbit, 0, sBCperOrbit);
-  mHistOrbit2BC->SetOption("colz");
-  mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", sNCHANNELS_PM, 0, sNCHANNELS_PM, 10000, 0, 1e5);
-  mHistEventDensity2Ch->SetOption("colz");
-  mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size(), mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
-  mHistTriggersCorrelation->SetOption("colz");
-  mHistBCvsTrg = std::make_unique<TH2F>("BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
-  mHistBCvsTrg->SetOption("colz");
-  mHistPmTcmNchA = std::make_unique<TH2F>("PmTcmNumChannelsA", "Comparison of num. channels A from PM and TCM;Number of channels(TCM), side A;PM - TCM", sNCHANNELS_A + 2, 0, sNCHANNELS_A + 2, 2 * sNCHANNELS_A + 1, -int(sNCHANNELS_A) - 0.5, int(sNCHANNELS_A) + 0.5);
-  mHistPmTcmSumAmpA = std::make_unique<TH2F>("PmTcmSumAmpA", "Comparison of sum of amplitudes A from PM and TCM;Sum of amplitudes(TCM), side A;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
-  mHistPmTcmAverageTimeA = std::make_unique<TH2F>("PmTcmAverageTimeA", "Comparison of average time A from PM and TCM;Average time(TCM), side A;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
-  mHistPmTcmNchC = std::make_unique<TH2F>("PmTcmNumChannelsC", "Comparison of num. channels C from PM and TCM;Number of channels(TCM), side C;PM - TCM", sNCHANNELS_C + 2, 0, sNCHANNELS_C + 2, 2 * sNCHANNELS_C + 1, -int(sNCHANNELS_C) - 0.5, int(sNCHANNELS_C) + 0.5);
-  mHistPmTcmSumAmpC = std::make_unique<TH2F>("PmTcmSumAmpC", "Comparison of sum of amplitudes C from PM and TCM;Sum of amplitudes(TCM), side C;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
-  mHistPmTcmAverageTimeC = std::make_unique<TH2F>("PmTcmAverageTimeC", "Comparison of average time C from PM and TCM;Average time(TCM), side C;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
-  mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
-  // mHistTriggersSoftwareVsTCM = std::make_unique<TH2F>("TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size(), 4, 0, 4);
-  //  mHistTriggersSoftwareVsTCM->SetOption("colz");
-  // mHistTriggersSoftwareVsTCM->SetStats(0);
-  std::map<unsigned int, std::string> mapTrgValidationStatus = {
-    { TrgComparisonResult::kSWonly, "Sw only" },
-    { TrgComparisonResult::kTCMonly, "TCM only" },
-    { TrgComparisonResult::kNone, "neither TCM nor Sw" },
-    { TrgComparisonResult::kBoth, "both TCM and Sw" }
-  };
-
-  for (const auto& entry : mMapTechTrgBits) {
-    mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersSoftwareVsTCM", "Trigger validation", mMapTrgBits, mapTrgValidationStatus);
-    mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistBCvsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    mHistTriggersSw->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    //    mHistTriggersSoftwareVsTCM->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-  }
-  mHistTriggersSw->GetXaxis()->SetRange(1, 5);
-  //  mHistTriggersSoftwareVsTCM->GetXaxis()->SetRange(1, 5);
+  mHistTriggersSoftwareVsTCM = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersSoftwareVsTCM", "Trigger validation", mMapTrgBits, mTrgValidation.sMapTrgValidation);
 
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
@@ -247,7 +141,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
         mMapPMhash2isAside.insert({ binPos, false });
       binPos++;
     }
-    if (std::regex_match(strChID, std::regex("[[\\d]{1,3}"))) {
+    if (std::regex_match(strChID, std::regex("[\\d]{1,3}"))) {
       int chID = std::stoi(strChID);
       if (chID < sNCHANNELS_PM) {
         mChID2PMhash[chID] = mapFEE2hash[moduleName];
@@ -261,29 +155,25 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  mHistBCvsFEEmodules = std::make_unique<TH2F>("BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapFEE2hash.size(), 0, mapFEE2hash.size());
-  mHistOrbitVsFEEmodules = std::make_unique<TH2F>("OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapFEE2hash.size(), 0, mapFEE2hash.size());
-  for (const auto& entry : mapFEE2hash) {
-    mHistBCvsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
-    mHistOrbitVsFEEmodules->GetYaxis()->SetBinLabel(entry.second + 1, entry.first.c_str());
-  }
+  std::map<unsigned int, std::string> mapBin2ModuleName;
+  std::transform(mapFEE2hash.begin(), mapFEE2hash.end(), std::inserter(mapBin2ModuleName, std::end(mapBin2ModuleName)), [](const auto& entry) { return std::pair<unsigned int, std::string>{ static_cast<unsigned int>(entry.second), entry.first }; });
 
-  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 2000, -52.08, 52.08, 2000, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
+  mHistBCvsFEEmodules = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BCvsFEEmodules", "BC vs FEE module;BC;FEE", sBCperOrbit, 0, sBCperOrbit, mapBin2ModuleName);
+  mHistOrbitVsFEEmodules = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "OrbitVsFEEmodules", "Orbit vs FEE module;Orbit;FEE", sOrbitsPerTF, 0, sOrbitsPerTF, mapBin2ModuleName);
+
+  mHistTimeSum2Diff = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 2000, -52.08, 52.08, 2000, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistTimeSum2Diff->GetXaxis()->SetRangeUser(-5, 5);
   mHistTimeSum2Diff->GetYaxis()->SetRangeUser(-5, 5);
-  mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistNumCFD = std::make_unique<TH1F>("HistNumCFD", "HistNumCFD", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1e4, 0, 1e4);
-  mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1e4, 0, 1e4);
-  mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
-  mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
-  mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
-  mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
-  mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
+  mHistNchA = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistNchC = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistSumAmpA = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "SumAmpA", "Sum of amplitudes(TCM), side A;", 1e4, 0, 1e4);
+  mHistSumAmpC = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "SumAmpC", "Sum of amplitudes(TCM), side C;", 1e4, 0, 1e4);
+  mHistAverageTimeA = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
+  mHistAverageTimeC = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
+  mHistChannelID = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "StatChannelID", "ChannelID statistics;ChannelID", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mHistCycleDuration = helper::registerHist<TH1D>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
+  mHistCycleDurationNTF = helper::registerHist<TH1D>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
+  mHistCycleDurationRange = helper::registerHist<TH1D>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -333,57 +223,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   rebinFromConfig(); // after all histos are created
-  // 1-dim hists
-  getObjectsManager()->startPublishing(mHistCFDEff.get());
-  getObjectsManager()->startPublishing(mHistBC.get());
-  getObjectsManager()->startPublishing(mHistNchA.get());
-  getObjectsManager()->startPublishing(mHistNchC.get());
-  getObjectsManager()->startPublishing(mHistSumAmpA.get());
-  getObjectsManager()->startPublishing(mHistSumAmpC.get());
-  getObjectsManager()->startPublishing(mHistAverageTimeA.get());
-  getObjectsManager()->startPublishing(mHistAverageTimeC.get());
-  getObjectsManager()->startPublishing(mHistChannelID.get());
-  getObjectsManager()->startPublishing(mHistCycleDuration.get());
-  getObjectsManager()->startPublishing(mHistCycleDurationNTF.get());
-  getObjectsManager()->startPublishing(mHistCycleDurationRange.get());
-  getObjectsManager()->startPublishing(mHistTriggersSw.get());
-  // 2-dim hists
-  getObjectsManager()->startPublishing(mHistTime2Ch.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistTime2Ch.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistAmp2Ch.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistAmp2Ch.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBCvsFEEmodules.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistBCvsFEEmodules.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistOrbitVsTrg.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsTrg.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistOrbitVsFEEmodules.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistOrbitVsFEEmodules.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistChDataBits.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistChDataBits.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistTimeSum2Diff.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistTimeSum2Diff.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistOrbit2BC.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistOrbit2BC.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistBCvsTrg.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistBCvsTrg.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistEventDensity2Ch.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistEventDensity2Ch.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistPmTcmNchA.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistPmTcmNchA.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistPmTcmSumAmpA.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistPmTcmSumAmpA.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistPmTcmAverageTimeA.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistPmTcmAverageTimeA.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistPmTcmNchC.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistPmTcmNchC.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistPmTcmSumAmpC.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistPmTcmSumAmpC.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistPmTcmAverageTimeC.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistPmTcmAverageTimeC.get(), "COLZ");
-  getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
-  getObjectsManager()->setDefaultDrawOptions(mHistTriggersCorrelation.get(), "COLZ");
-  // getObjectsManager()->startPublishing(mHistTriggersSoftwareVsTCM.get());
-  // getObjectsManager()->setDefaultDrawOptions(mHistTriggersSoftwareVsTCM.get(), "COLZ");
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
@@ -409,9 +248,6 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
   mHistChDataBits->Reset();
-  mHistCFDEff->Reset();
-  mHistNumADC->Reset();
-  mHistNumCFD->Reset();
   mHistTimeSum2Diff->Reset();
   mHistBCvsFEEmodules->Reset();
   mHistOrbitVsTrg->Reset();
@@ -422,7 +258,6 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistCycleDurationRange->Reset();
   mHistBCvsTrg->Reset();
   mHistOrbit2BC->Reset();
-  mHistEventDensity2Ch->Reset();
   mHistNchA->Reset();
   mHistNchC->Reset();
   mHistSumAmpA->Reset();
@@ -436,7 +271,6 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistPmTcmNchC->Reset();
   mHistPmTcmSumAmpC->Reset();
   mHistPmTcmAverageTimeC->Reset();
-  mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
   mHistChIDperBC->Reset();
   for (auto& entry : mMapHistAmp1D) {
@@ -493,19 +327,15 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistBC->Fill(digit.getBC());
 
     std::set<uint8_t> setFEEmodules{};
-    // reset triggers
-    for (auto& entry : mMapTrgSoftware) {
-      mMapTrgSoftware[entry.first] = false;
-    }
 
-    Int_t pmSumAmplA = 0;
-    Int_t pmSumAmplC = 0;
-    Int_t pmNChanA = 0;
-    Int_t pmNChanC = 0;
-    Int_t pmSumTimeA = 0;
-    Int_t pmSumTimeC = 0;
-    Int_t pmAverTimeA = 0;
-    Int_t pmAverTimeC = 0;
+    int32_t pmSumAmplA = 0;
+    int32_t pmSumAmplC = 0;
+    uint8_t pmNChanA{ 0 };
+    uint8_t pmNChanC{ 0 };
+    int pmSumTimeA{ 0 };
+    int pmSumTimeC{ 0 };
+    int pmAverTimeA{ 0 };
+    int pmAverTimeC{ 0 };
 
     std::map<uint8_t, int> mapPMhash2sumAmpl;
     for (const auto& entry : mMapPMhash2isAside) {
@@ -514,13 +344,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
-      mHistEventDensity2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(digit.mIntRecord.differenceInBC(mStateLastIR2Ch[chData.ChId])));
       mStateLastIR2Ch[chData.ChId] = digit.mIntRecord;
       mHistChannelID->Fill(chData.ChId);
-      if (chData.QTCAmpl > 0) {
-        mHistNumADC->Fill(chData.ChId);
-      }
-      mHistNumCFD->Fill(chData.ChId);
       if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end()) {
         mMapHistAmp1D[chData.ChId]->Fill(chData.QTCAmpl);
         mMapHistTime1D[chData.ChId]->Fill(chData.CFDTime);
@@ -539,8 +364,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       setFEEmodules.insert(mChID2PMhash[chData.ChId]);
 
-      //      if (chIsVertexEvent(chData)) {
-      if (((chData.ChainQTC & mPMbitsToCheck_ChID) == mGoodPMbits_ChID) && std::abs(static_cast<Int_t>(chData.CFDTime)) < mTrgOrGate) {
+      if (((chData.ChainQTC & mPMbitsToCheck_ChID) == mGoodPMbits_ChID) && std::abs(static_cast<Int_t>(chData.CFDTime)) < mTrgValidation.mTrgOrGate) {
         if (!mMapPMhash2isAside[mChID2PMhash[static_cast<uint8_t>(chData.ChId)]]) {
           pmSumTimeC += chData.CFDTime;
           pmNChanC++;
@@ -562,8 +386,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         pmSumAmplC += (entry.second >> 3);
     }
 
-    auto pmNChan = pmNChanA + pmNChanC;
-    auto pmSumAmpl = pmSumAmplA + pmSumAmplC;
     if (isTCM) {
       if (pmNChanA > 1) {
         pmAverTimeA = std::floor((float)pmSumTimeA / pmNChanA);
@@ -579,15 +401,14 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       } else {
         pmAverTimeC = 0;
       }
+      setFEEmodules.insert(mTCMhash);
+
     } else {
       pmAverTimeA = o2::fit::Triggers::DEFAULT_TIME;
       pmAverTimeC = o2::fit::Triggers::DEFAULT_TIME;
     }
     auto vtxPos = (pmNChanA && pmNChanC) ? (pmAverTimeC - pmAverTimeA) / 2 : 0;
 
-    if (isTCM) {
-      setFEEmodules.insert(mTCMhash);
-    }
     for (const auto& feeHash : setFEEmodules) {
       mHistBCvsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().bc), static_cast<double>(feeHash));
       mHistOrbitVsFEEmodules->Fill(static_cast<double>(digit.getIntRecord().orbit % sOrbitsPerTF), static_cast<double>(feeHash));
@@ -621,111 +442,13 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    // triggers re-computation
-    mMapTrgSoftware[o2::ft0::Triggers::bitA] = pmNChanA > 0;
-    mMapTrgSoftware[o2::ft0::Triggers::bitC] = pmNChanC > 0;
-    const int meanTimeDiff = divHW_TCM(pmSumTimeC, pmNChanC) - divHW_TCM(pmSumTimeA, pmNChanA);
-    if (mTrgThresholdTimeLow < meanTimeDiff && meanTimeDiff < mTrgThresholdTimeHigh && pmNChanA > 0 && pmNChanC > 0)
-      mMapTrgSoftware[o2::ft0::Triggers::bitVertex] = true;
-
-    // Central/SemiCentral logic
-    switch (mTrgModeSide) {
-      case TrgModeSide::kAplusC:
-        if (mTrgModeThresholdVar == TrgModeThresholdVar::kAmpl) {
-          if (pmSumAmplA + pmSumAmplC > 2 * mTrgThresholdCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmSumAmplA + pmSumAmplC > 2 * mTrgThresholdSCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
-          if (pmNChanA + pmNChanC >= mTrgThresholdCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmNChanA + pmNChanC >= mTrgThresholdSCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        }
-        break;
-
-      case TrgModeSide::kAandC:
-        if (mTrgModeThresholdVar == TrgModeThresholdVar::kAmpl) {
-          if (pmSumAmplA >= 2 * mTrgThresholdCenA && pmSumAmplC >= 2 * mTrgThresholdCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmSumAmplA >= 2 * mTrgThresholdSCenA && pmSumAmplC >= 2 * mTrgThresholdSCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
-          if (pmNChanA >= mTrgThresholdCenA && pmNChanC >= mTrgThresholdCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmNChanA >= mTrgThresholdSCenA && pmNChanC >= mTrgThresholdSCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        }
-        break;
-
-      case TrgModeSide::kA:
-        if (mTrgModeThresholdVar == TrgModeThresholdVar::kAmpl) {
-          if (pmSumAmplA >= 2 * mTrgThresholdCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmSumAmplA >= 2 * mTrgThresholdSCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
-          if (pmNChanA >= 2 * mTrgThresholdCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmNChanA >= 2 * mTrgThresholdSCenA)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        }
-        break;
-
-      case TrgModeSide::kC:
-        if (mTrgModeThresholdVar == TrgModeThresholdVar::kAmpl) {
-          if (pmSumAmplC >= mTrgThresholdCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmSumAmplC >= mTrgThresholdSCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        } else if (mTrgModeThresholdVar == TrgModeThresholdVar::kNchannels) {
-          if (pmNChanC >= mTrgThresholdCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitCen] = true;
-          else if (pmNChanC >= mTrgThresholdSCenC)
-            mMapTrgSoftware[o2::ft0::Triggers::bitSCen] = true;
-        }
-        break;
-    }
-
-    for (const auto& entry : mMapTrgSoftware) {
-      if (entry.second)
-        mHistTriggersSw->Fill(entry.first);
-      bool isTCMFired = digit.mTriggers.getTriggersignals() & (1 << entry.first);
-      bool isSwFired = entry.second;
-      if (!isTCMFired && isSwFired)
-        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kSWonly);
-      else if (isTCMFired && !isSwFired)
-        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kTCMonly);
-      else if (!isTCMFired && !isSwFired)
-        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kNone);
-      else if (isTCMFired && isSwFired)
-        mHistTriggersSoftwareVsTCM->Fill(entry.first, TrgComparisonResult::kBoth);
-
-      if (isTCMFired != isSwFired) {
-        auto msg = Form(
-          "Software does not reproduce TCM decision! \n \
-                         trigger name: %s\n \
-                         TCM / SW: \n \
-                         hasFired   = %d / %d \n \
-                         nChannelsA = %d / %d \n \
-                         nChannelsC = %d / %d \n \
-                         sumAmplA   = %d / %d \n \
-                         sumAmplC   = %d / %d \n \
-                         timeA      = %d / %d \n \
-                         timeC      = %d / %d \n \
-                         vertexPos  = -- / %d \n \
-                         TCM bits   = %d / --",
-          mMapTechTrgBits[entry.first].c_str(),
-          isTCMFired, isSwFired,
-          digit.mTriggers.getNChanA(), pmNChanA,
-          digit.mTriggers.getNChanC(), pmNChanC,
-          digit.mTriggers.getAmplA(), pmSumAmplA,
-          digit.mTriggers.getAmplC(), pmSumAmplC,
-          digit.mTriggers.getTimeA(), pmAverTimeA,
-          digit.mTriggers.getTimeC(), pmAverTimeC, vtxPos,
-          digit.mTriggers.getTriggersignals());
-        ILOG(Debug, Support) << msg << ENDM;
-      }
+    // trigger emulation
+    DataTCM_t tcmEmu(pmSumAmplA, pmSumAmplC, pmSumTimeA, pmSumTimeC, pmNChanA, pmNChanC);
+    mTrgValidation.emulateTriggers(tcmEmu); // emulate trigger
+    const auto& trg = digit.mTriggers.getTriggersignals();
+    for (int iTrgBit = 0; iTrgBit < mMapTrgBits.size(); iTrgBit++) {
+      const auto status = mTrgValidation.getTrgValidationStatus(trg, tcmEmu.triggersignals, iTrgBit);
+      mHistTriggersSoftwareVsTCM->Fill(iTrgBit, status);
     }
     // end of triggers re-computation
   }
@@ -740,7 +463,6 @@ void DigitQcTask::endOfCycle()
 
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
-  mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());
   mHistCycleDurationRange->SetBinContent(1., mTimeMaxNS - mTimeMinNS);
   mHistCycleDurationRange->SetEntries(mTimeMaxNS - mTimeMinNS);
   mHistCycleDurationNTF->SetBinContent(1., mTfCounter);
@@ -762,12 +484,8 @@ void DigitQcTask::reset()
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
   mHistChDataBits->Reset();
-  mHistCFDEff->Reset();
-  mHistNumADC->Reset();
-  mHistNumCFD->Reset();
   mHistTimeSum2Diff->Reset();
   mHistOrbit2BC->Reset();
-  mHistEventDensity2Ch->Reset();
   mHistNchA->Reset();
   mHistNchC->Reset();
   mHistSumAmpA->Reset();
@@ -789,7 +507,6 @@ void DigitQcTask::reset()
   mHistPmTcmNchC->Reset();
   mHistPmTcmSumAmpC->Reset();
   mHistPmTcmAverageTimeC->Reset();
-  mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
   mHistChIDperBC->Reset();
   for (auto& entry : mMapHistAmp1D) {

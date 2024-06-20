@@ -94,7 +94,7 @@ void PostProcTask::initialize(Trigger trg, framework::ServiceRegistryRef service
 
   mHistChDataNOTbits = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "ChannelDataNegBits", "ChannelData NOT PM bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits);
   mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers", "Triggers from TCM", mMapTechTrgBits);
-  mHistTriggerRates = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TriggerRates", "Trigger rates; Triggers; Rate [kHz]", mMapTechTrgBits);
+  mHistTriggerRates = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "HIST", "TriggerRates", "Trigger rates; Triggers; Rate [kHz]", mMapTechTrgBits);
   mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
   mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
   mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
@@ -133,10 +133,9 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
   // Trigger rates
   mHistTriggerRates->Reset();
   if (mPostProcHelper.IsNonEmptySample()) {
-    mHistTriggerRates->Add(mHistTriggerRates.get());
-    // mHistTriggers->Copy(*mHistTriggerRates);
-    constexpr double factor = 1e3;                                                   // Hz -> kHz
-    const double samplePeriod = 1 / (factor * mPostProcHelper.mCurrSampleLengthSec); // in sec^-1 units
+    mHistTriggerRates->Add(mHistTriggers.get());
+    constexpr double factor = 1e3;                                                    // Hz -> kHz
+    const double samplePeriod = 1. / (factor * mPostProcHelper.mCurrSampleLengthSec); // in sec^-1 units
     mHistTriggerRates->Scale(samplePeriod);
   }
   // PM bits
@@ -220,16 +219,8 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }
   // Functor for in/out colliding BC fraction calculation
-  auto calcFraction = [&pattern = bcPattern](auto&& histSrc, auto&& histDst) {
-    TAxis* axisPtr = histSrc->GetYaxis();
-
-    const auto nBins = axisPtr->GetNbins();
-    const auto binLow = axisPtr->GetXmin();
-    const auto binUp = axisPtr->GetXmax();
-
-    auto projNom = std::make_unique<TH1D>("projNom", "projNom", nBins, binLow, binUp);
-    auto projDen = std::make_unique<TH1D>("projDen", "projDen", nBins, binLow, binUp);
-    for (int iBin = 0; iBin < nBins; iBin++) {
+  auto calcFraction = [&pattern = bcPattern](const auto& histSrc, auto& histDst) {
+    for (int iBin = 0; iBin < histSrc->GetYaxis()->GetNbins(); iBin++) {
       double cntInBC{ 0 };
       double cntOutOfBC{ 0 };
       const auto binPos = iBin + 1;
@@ -241,10 +232,9 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
           cntOutOfBC += proj->GetBinContent(iBC + 1);
         }
       }
-      projNom->Fill(iBin, cntInBC);
-      projDen->Fill(iBin, cntOutOfBC);
+      const auto val = cntInBC > 0 ? cntOutOfBC / cntInBC : 0;
+      histDst->SetBinContent(binPos, val);
     }
-    histDst->Divide(projNom.get(), projDen.get());
   };
 
   // New version for trigger fraction in non colliding BCa
@@ -279,17 +269,16 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
             cntOutOfBC += hChIDvsBC->GetBinContent(iBC + 1, iChID + 1);
           }
         }
-        hChID_InBC->Fill(iChID, cntInBC);
-        hChID_OutOfBC->Fill(iChID, cntOutOfBC);
+        const auto val = cntInBC > 0 ? cntOutOfBC / cntInBC : 0;
+        mHistChannelID_outOfBC->SetBinContent(iChID + 1, val);
       }
-      mHistChannelID_outOfBC->Divide(hChID_OutOfBC.get(), hChID_InBC.get());
     }
   }
 
   // Fraction for trigger validation
   auto hTriggersSoftwareVsTCM = mPostProcHelper.template getObject<TH2F>("TriggersSoftwareVsTCM");
   if (hTriggersSoftwareVsTCM) {
-    std::unique_ptr<TH1D> projOnlyHWorSW(hTriggersSoftwareVsTCM->ProjectionX("projOnlyHWorSW", 1, 2));
+    std::unique_ptr<TH1D> projOnlyHWorSW(hTriggersSoftwareVsTCM->ProjectionX("projOnlyHWorSW", 2, 3));
     std::unique_ptr<TH1D> projValidatedSWandHW(hTriggersSoftwareVsTCM->ProjectionX("projValidatedSWandHW", 4, 4));
     projOnlyHWorSW->LabelsDeflate();
     projValidatedSWandHW->LabelsDeflate();
