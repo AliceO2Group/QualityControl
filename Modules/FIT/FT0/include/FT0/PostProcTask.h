@@ -52,7 +52,6 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
-
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
   using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
