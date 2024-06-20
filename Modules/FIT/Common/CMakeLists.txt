@@ -3,7 +3,6 @@ set(MODULE_NAME "O2QcFITCommon")
 # ---- Files ----
 
 set(SRCS
-  src/DetectorFIT.cxx
   src/HelperCommon.cxx
   src/HelperFIT.cxx
   src/HelperHist.cxx
