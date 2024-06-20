@@ -25,23 +25,83 @@ namespace o2::quality_control_modules::mid
 {
 DigitsHelper::DigitsHelper()
 {
-  mStripsMap.clear();
-  mStripsInfo.clear();
+  initMaps();
+}
 
+void DigitsHelper::initMaps()
+{
   o2::mid::GlobalMapper gm;
   auto infos = gm.buildStripsInfo();
 
-  for (size_t idx = 0; idx < infos.size(); ++idx) {
-    mStripsMap[infos[idx].id] = idx;
-    StripInfo si;
-    si.deId = infos[idx].deId;
-    si.columnId = infos[idx].columnId;
-    si.lineId = infos[idx].lineId;
-    si.stripId = infos[idx].stripId;
-    si.cathode = infos[idx].cathode;
-    si.xwidth = std::abs(infos[idx].xwidth);
-    si.ywidth = infos[idx].ywidth;
-    mStripsInfo.emplace_back(si);
+  auto stripHistoB = makeStripMapHisto("templateStripB", "templateStripB", 0);
+  auto stripHistoNB = makeStripMapHisto("templateStripNB", "templateStripNB", 1);
+  auto boardHisto = makeBoardMapHisto("templateBoard", "templateBoard");
+
+  for (auto it = infos.begin(), end = infos.end(); it != end; ++it) {
+    auto stripIdx = std::distance(infos.begin(), it);
+
+    mStripsMap[it->id] = stripIdx;
+
+    int irpc = o2::mid::detparams::getRPCLine(it->deId);
+    bool isRightSide = o2::mid::detparams::isRightSide(it->deId);
+
+    int firstLine = gm.getMapping().getFirstBoardBP(it->columnId, it->deId);
+    int lastLine = gm.getMapping().getLastBoardBP(it->columnId, it->deId);
+
+    int xbinOffsetBoard = 7 - it->columnId;
+    if (isRightSide) {
+      xbinOffsetBoard = 15 - xbinOffsetBoard;
+    }
+    int ybinOffsetBoard = 4 * irpc + 1;
+
+    std::vector<int> stripMapBins;
+    std::vector<int> boardMapBins;
+
+    if (it->cathode == 0) {
+      // BP
+      int ybinOffsetStrip = 64 * irpc + 1;
+      int pitchB = it->ywidth;
+      int iline = it->lineId;
+      int istrip = it->stripId;
+      for (int ibin = 0; ibin < pitchB; ++ibin) {
+        stripMapBins.emplace_back(stripHistoB.GetBin(xbinOffsetBoard, ybinOffsetStrip + pitchB * (16 * iline + istrip) + ibin));
+      }
+      for (int ibin = 0; ibin < pitchB; ++ibin) {
+        boardMapBins.emplace_back(boardHisto.GetBin(xbinOffsetBoard, ybinOffsetBoard + pitchB * iline + ibin));
+      }
+    } else {
+      // NBP
+      int xbinOffsetStrip = 16 * (7 + it->columnId) + 1;
+      int pitchNB = std::abs(it->xwidth);
+      if (it->columnId == 6) {
+        pitchNB = 2;
+      }
+      if (o2::mid::geoparams::isShortRPC(it->deId) && it->columnId == 1) {
+        xbinOffsetStrip += 8;
+      }
+      if (lastLine != 2) {
+        lastLine = 3;
+      }
+      int binWidth = pitchNB / 2;
+      int istrip = it->stripId;
+      for (int iline = firstLine; iline <= lastLine; ++iline) {
+        for (int ibin = 0; ibin < binWidth; ++ibin) {
+          int xbinStrip = xbinOffsetStrip + binWidth * istrip + ibin;
+          if (!isRightSide) {
+            xbinStrip = stripHistoNB.GetNbinsX() - xbinStrip + 1;
+          }
+          stripMapBins.emplace_back(stripHistoNB.GetBin(xbinStrip, ybinOffsetBoard + iline));
+        }
+        boardMapBins.emplace_back(boardHisto.GetBin(xbinOffsetBoard, ybinOffsetBoard + iline));
+      }
+    }
+    MapInfo info;
+    info.cathode = it->cathode;
+    info.chamber = o2::mid::detparams::getChamber(it->deId);
+    info.bins = stripMapBins;
+    mStripIdxToStripMap.emplace_back(info);
+    info.bins = boardMapBins;
+    mStripIdxToBoardMap.emplace_back(info);
   }
 
   for (int ide = 0; ide < o2::mid::detparams::NDetectionElements; ++ide) {
@@ -56,9 +116,29 @@ DigitsHelper::DigitsHelper()
 
 TH1F DigitsHelper::makeStripHisto(const std::string name, const std::string title) const
 {
-  TH1F histo(name.c_str(), title.c_str(), mStripsInfo.size(), 0, mStripsInfo.size());
+  TH1F histo(name.c_str(), title.c_str(), mStripsMap.size(), 0, mStripsMap.size());
   histo.SetXTitle("Strip index");
   return histo;
+}
+
+std::array<std::unique_ptr<TH2F>, 4> DigitsHelper::makeStripMapHistos(std::string name, std::string title, int cathode) const
+{
+  std::array<std::unique_ptr<TH2F>, 4> out;
+  std::array<std::string, 4> chId{ "11", "12", "21", "22" };
+  for (int ich = 0; ich < 4; ++ich) {
+    out[ich] = std::make_unique<TH2F>(makeStripMapHisto(fmt::format("{}{}", name, chId[ich]), fmt::format("{} MT{}", title, chId[ich]), cathode));
+  }
+  return out;
+}
+
+std::array<std::unique_ptr<TH2F>, 4> DigitsHelper::makeBoardMapHistos(std::string name, std::string title) const
+{
+  std::array<std::unique_ptr<TH2F>, 4> out;
+  std::array<std::string, 4> chId{ "11", "12", "21", "22" };
+  for (int ich = 0; ich < 4; ++ich) {
+    out[ich] = std::make_unique<TH2F>(makeBoardMapHisto(fmt::format("{}{}", name, chId[ich]), fmt::format("{} MT{}", title, chId[ich])));
+  }
+  return out;
 }
 
 unsigned long DigitsHelper::countDigits(const o2::mid::ColumnData& col, int cathode) const
@@ -86,7 +166,7 @@ TH2F DigitsHelper::makeStripMapHisto(std::string name, std::string title, int ca
 {
   int nBinsX = (cathode == 0) ? 14 : 224;
   int nBinsY = (cathode == 0) ? 64 * o2::mid::detparams::NRPCLines : 4 * o2::mid::detparams::NRPCLines;
-  TH2F histo = TH2F(name.c_str(), title.c_str(), nBinsX, -7, 7, nBinsY, 0., 9.);
+  TH2F histo(name.c_str(), title.c_str(), nBinsX, -7, 7, nBinsY, 0., 9.);
   histo.SetXTitle("Column");
   histo.SetYTitle("Line");
   histo.SetOption("COLZ");
@@ -96,7 +176,7 @@ TH2F DigitsHelper::makeStripMapHisto(std::string name, std::string title, int ca
 
 TH2F DigitsHelper::makeBoardMapHisto(std::string name, std::string title) const
 {
-  TH2F histo = TH2F(name.c_str(), title.c_str(), 14, -7., 7., 4 * o2::mid::detparams::NRPCLines, 0., 9.);
+  TH2F histo(name.c_str(), title.c_str(), 14, -7., 7., 4 * o2::mid::detparams::NRPCLines, 0., 9.);
   histo.SetXTitle("Column");
   histo.SetYTitle("Line");
   histo.SetOption("COLZ");
@@ -104,100 +184,32 @@ TH2F DigitsHelper::makeBoardMapHisto(std::string name, std::string title) const
   return histo;
 }
 
-void DigitsHelper::fillMapHistos(const StripInfo& info, TH2* stripHistoB, TH2* stripHistoNB, TH2* boardHisto, int wgt) const
+void DigitsHelper::fillMapHistos(const TH1* histo, std::array<std::unique_ptr<TH2F>, 4>& histoMapB, std::array<std::unique_ptr<TH2F>, 4>& histoMapNB, const std::vector<MapInfo>& infoMap) const
 {
-  int irpc = o2::mid::detparams::getRPCLine(info.deId);
-  bool isRightSide = o2::mid::detparams::isRightSide(info.deId);
-
-  int idx = getColumnIdx(info.columnId, info.deId);
-
-  int firstLine = mColumnInfo[idx].firstLine;
-  int lastLine = mColumnInfo[idx].lastLine;
-
-  int xbinOffsetBoard = 7 - info.columnId;
-  if (isRightSide) {
-    xbinOffsetBoard = 15 - xbinOffsetBoard;
-  }
-  int ybinOffsetBoard = 4 * irpc + 1;
-
-  if (info.cathode == 0) {
-    // BP
-    int ybinOffsetStrip = 64 * irpc + 1;
-    int pitchB = info.ywidth;
-    int iline = info.lineId;
-    int istrip = info.stripId;
-    for (int ibin = 0; ibin < pitchB; ++ibin) {
-      stripHistoB->AddBinContent(stripHistoB->GetBin(xbinOffsetBoard, ybinOffsetStrip + pitchB * (16 * iline + istrip) + ibin), wgt);
-      stripHistoB->SetEntries(stripHistoB->GetEntries() + wgt);
-    }
-    if (boardHisto) {
-      for (int ibin = 0; ibin < pitchB; ++ibin) {
-        boardHisto->AddBinContent(boardHisto->GetBin(xbinOffsetBoard, ybinOffsetBoard + pitchB * iline + ibin), wgt);
-        boardHisto->SetEntries(boardHisto->GetEntries() + wgt);
-      }
-    }
-  } else {
-    // NBP
-    int xbinOffsetStrip = 16 * (xbinOffsetBoard - 1) + 1;
-    int pitchNB = info.xwidth;
-    if (info.columnId == 6) {
-      pitchNB = 2;
-    }
-    if (o2::mid::geoparams::isShortRPC(info.deId) && info.columnId == 1) {
-      if (isRightSide) {
-        xbinOffsetStrip += 8;
-      }
-    }
-    if (lastLine != 2) {
-      lastLine = 3;
-    }
-    int binWidth = pitchNB / 2;
-    int istrip = info.stripId;
-    for (int iline = firstLine; iline <= lastLine; ++iline) {
-      for (int ibin = 0; ibin < binWidth; ++ibin) {
-        stripHistoNB->AddBinContent(stripHistoNB->GetBin(xbinOffsetStrip + binWidth * istrip + ibin, ybinOffsetBoard + iline), wgt);
-        stripHistoNB->SetEntries(stripHistoNB->GetEntries() + wgt);
-      }
-      if (boardHisto) {
-        boardHisto->AddBinContent(boardHisto->GetBin(xbinOffsetBoard, ybinOffsetBoard + iline), wgt);
-        boardHisto->SetEntries(boardHisto->GetEntries() + wgt);
-      }
+  for (int ibin = 1, nBins = histo->GetNbinsX(); ibin <= nBins; ++ibin) {
+    auto idx = ibin - 1;
+    auto histoMap = infoMap[idx].cathode == 0 ? histoMapB[infoMap[idx].chamber].get() : histoMapNB[infoMap[idx].chamber].get();
+    auto wgt = histo->GetBinContent(ibin);
+    for (auto& ib : infoMap[idx].bins) {
+      FillBin(histoMap, ib, wgt);
     }
   }
 }
 
-void DigitsHelper::fillMapHistos(const TH1* stripHisto, std::array<std::unique_ptr<TH2F>, 4>& stripHistosB, std::array<std::unique_ptr<TH2F>, 4>& stripHistosNB, std::array<std::unique_ptr<TH2F>, 5>& boardHistos) const
+void DigitsHelper::fillStripMapHistos(const TH1* histo, std::array<std::unique_ptr<TH2F>, 4>& histosB, std::array<std::unique_ptr<TH2F>, 4>& histosNB) const
 {
-  for (int ibin = 1, nBins = stripHisto->GetNbinsX(); ibin <= nBins; ++ibin) {
-    auto& info = mStripsInfo[ibin - 1];
-    int ch = o2::mid::detparams::getChamber(info.deId);
-    fillMapHistos(info, stripHistosB[ch].get(), stripHistosNB[ch].get(), boardHistos[ch].get(), stripHisto->GetBinContent(ibin));
-  }
-  boardHistos[4]->Reset();
-  for (size_t ich = 0; ich < 4; ++ich) {
-    boardHistos[4]->Add(boardHistos[ich].get());
-  }
+  fillMapHistos(histo, histosB, histosNB, mStripIdxToStripMap);
 }
 
-void DigitsHelper::fillMapHistos(const TH1* stripHisto, std::array<std::unique_ptr<TH2F>, 4>& stripHistosB, std::array<std::unique_ptr<TH2F>, 4>& stripHistosNB) const
+void DigitsHelper::fillBoardMapHistosFromStrips(const TH1* histo, std::array<std::unique_ptr<TH2F>, 4>& histosB, std::array<std::unique_ptr<TH2F>, 4>& histosNB) const
 {
-  for (int ibin = 1, nBins = stripHisto->GetNbinsX(); ibin <= nBins; ++ibin) {
-    auto& info = mStripsInfo[ibin - 1];
-    int ch = o2::mid::detparams::getChamber(info.deId);
-    fillMapHistos(info, stripHistosB[ch].get(), stripHistosNB[ch].get(), nullptr, stripHisto->GetBinContent(ibin));
-  }
+  fillMapHistos(histo, histosB, histosNB, mStripIdxToBoardMap);
 }
 
-void DigitsHelper::fillMapHistos(const TH1* stripHisto, TH2* stripHistosB, TH2* stripHistosNB, TH2* boardHistos, int chamber) const
+void DigitsHelper::FillBin(TH1* histo, int ibin, double wgt) const
 {
-  for (int ibin = 1, nBins = stripHisto->GetNbinsX(); ibin <= nBins; ++ibin) {
-    auto& info = mStripsInfo[ibin - 1];
-    int ch = o2::mid::detparams::getChamber(info.deId);
-    if (ch != chamber) {
-      continue;
-    }
-    fillMapHistos(info, stripHistosB, stripHistosNB, boardHistos, stripHisto->GetBinContent(ibin));
-  }
+  histo->AddBinContent(ibin, wgt);
+  histo->SetEntries(histo->GetEntries() + wgt);
 }
 
 void DigitsHelper::fillStripHisto(const o2::mid::ColumnData& col, TH1* histo) const
@@ -211,8 +223,7 @@ void DigitsHelper::fillStripHisto(const o2::mid::ColumnData& col, TH1* histo) co
         auto found = mStripsMap.find(o2::mid::getStripId(col.deId, col.columnId, iline, istrip, 0));
         // The histogram bin corresponds to the strip index + 1
         // Since we know the bin, we can use AddBinContent instead of Fill to save time
-        histo->AddBinContent(found->second + 1);
-        histo->SetEntries(histo->GetEntries() + 1);
+        FillBin(histo, found->second + 1);
       }
     }
   }
@@ -222,8 +233,7 @@ void DigitsHelper::fillStripHisto(const o2::mid::ColumnData& col, TH1* histo) co
       auto found = mStripsMap.find(o2::mid::getStripId(col.deId, col.columnId, firstLine, istrip, 1));
       // The histogram bin corresponds to the strip index + 1
       // Since we know the bin, we can use AddBinContent instead of Fill to save time
-      histo->AddBinContent(found->second + 1);
-      histo->SetEntries(histo->GetEntries() + 1);
+      FillBin(histo, found->second + 1);
     }
   }
 }

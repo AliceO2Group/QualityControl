@@ -15,6 +15,7 @@
 #ifndef QC_MODULE_MID_DIGITSHELPER_H
 #define QC_MODULE_MID_DIGITSHELPER_H
 
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
@@ -50,11 +51,25 @@ class DigitsHelper
   /// @return Histogram 2D
   TH2F makeStripMapHisto(std::string name, std::string title, int cathode) const;
 
+  /// @brief Make 4 histograms with the 2D representation of the fired strips per chamber
+  /// @param name Base histogram name
+  /// @param title Base histogram title
+  /// @param cathode Bending (0) or Non-bending (1) plane
+  /// @return Array of unique pointer to histograms
+  std::array<std::unique_ptr<TH2F>, 4> makeStripMapHistos(std::string name, std::string title, int cathode) const;
+
   /// @brief Make the histogram with the 2D representation of the fired boards
   /// @param name Histogram name
   /// @param title Histogram title
   /// @return Histogram 2D
   TH2F makeBoardMapHisto(std::string name, std::string title) const;
+
+  /// @brief Make 4 histograms with the 2D representation of the fired boards per chamber
+  /// @param name Base histogram name
+  /// @param title Base histogram title
+  /// @param cathode Bending (0) or Non-bending (1) plane
+  /// @return Array of unique pointer to histograms
+  std::array<std::unique_ptr<TH2F>, 4> makeBoardMapHistos(std::string name, std::string title) const;
 
   /// @brief Count the number of fired strips
   /// @param col Column Data
@@ -67,48 +82,52 @@ class DigitsHelper
   /// @param histo Pointer to the histogram
   void fillStripHisto(const o2::mid::ColumnData& col, TH1* histo) const;
 
-  /// @brief Fill the 2D representation of the fired strips/boards from the 1D histogram
-  /// @param stripHisto Input 1D histogram
-  /// @param stripHistosB Array with the 2D representation of the fired strips in the bending plane per chamber
-  /// @param stripHistosNB Array with the 2D representation of the fired strips in the non-bending plane per chamber
-  /// @param boardHistos Array with the 2D representation of the fired boards per chamber. Last histogram is the sum of the previous four
-  void fillMapHistos(const TH1* stripHisto, std::array<std::unique_ptr<TH2F>, 4>& stripHistosB, std::array<std::unique_ptr<TH2F>, 4>& stripHistosNB, std::array<std::unique_ptr<TH2F>, 5>& boardHistos) const;
+  /// @brief Fill the 2D representation of the fired boards from the 1D strip histogram
+  /// @param histo Input 1D histogram with fired strips
+  /// @param histosB Array with the 2D representation of the fired boards per chamber. Last histogram is the sum of the previous four
+  void fillBoardMapHistosFromStrips(const TH1* histo, std::array<std::unique_ptr<TH2F>, 4>& histosB, std::array<std::unique_ptr<TH2F>, 4>& histosNB) const;
 
   /// @brief Fill the 2D representation of the fired strips from the 1D histogram
-  /// @param stripHisto Input 1D histogram
-  /// @param stripHistosB Array with the 2D representation of the fired strips in the bending plane per chamber
-  /// @param stripHistosNB Array with the 2D representation of the fired strips in the non-bending plane per chamber
-  void fillMapHistos(const TH1* stripHisto, std::array<std::unique_ptr<TH2F>, 4>& stripHistosB, std::array<std::unique_ptr<TH2F>, 4>& stripHistosNB) const;
+  /// @param histo Input 1D histogram with fired strips
+  /// @param histosB Array with the 2D representation of the fired strips in the bending plane per chamber
+  /// @param histosNB Array with the 2D representation of the fired strips in the non-bending plane per chamber
+  void fillStripMapHistos(const TH1* histo, std::array<std::unique_ptr<TH2F>, 4>& stripHistosB, std::array<std::unique_ptr<TH2F>, 4>& stripHistosNB) const;
 
-  /// @brief Fill the 2D representation of the fired strips/boards from the 1D histogram for a specific chamber
-  /// @param stripHisto Input 1D histogram
-  /// @param stripHistosB 2D representation of the fired strips in the bending plane
-  /// @param stripHistosNB 2D representation of the fired strips in the non-bending plane
-  /// @param boardHistos  2D representation of the fired boards per chamber
-  /// @param chamber Selected chamber
-  void fillMapHistos(const TH1* stripHisto, TH2* stripHistosB, TH2* stripHistosNB, TH2* boardHistos, int chamber) const;
-
-  struct StripInfo {
-    int deId;     ///< Detection element ID
-    int columnId; ///< Column ID
-    int lineId;   ///< Line ID
-    int stripId;  ///< Strip ID
-    int cathode;  ///< Bending (0) or Non-bending (1) plane
-    int xwidth;   ///< Width X
-    int ywidth;   ///< Width y
+  struct MapInfo {
+    int cathode = 0;         ///! Cathode
+    int chamber = 0;         ///! Chamber
+    std::vector<int> bins{}; ///! Bins in the 2D map histograms
   };
 
   struct ColumnInfo {
-    int firstLine; ///< First line in column
-    int lastLine;  ///< Last line in column
-    int nStripsNB; ///< Number of strips in the NB plane
+    int firstLine; ///! First line in column
+    int lastLine;  ///! Last line in column
+    int nStripsNB; ///! Number of strips in the NB plane
   };
 
  private:
-  std::unordered_map<int, int> mStripsMap{};  ///! Map from id to index
-  std::vector<StripInfo> mStripsInfo;         ///! Strips info
+  std::unordered_map<int, int> mStripsMap{}; ///! Strip id to strip idx
+
+  std::vector<MapInfo> mStripIdxToStripMap{}; ///! Strip index to strip map bins
+  std::vector<MapInfo> mStripIdxToBoardMap{}; ///! Strip index to board map bins
+
   std::array<ColumnInfo, 72 * 7> mColumnInfo; ///! Column info
-  void fillMapHistos(const StripInfo& info, TH2* stripHistoB, TH2* stripHistoNB, TH2* boardHisto, int wgt) const;
+
+  /// @brief Initializes inner maps
+  void initMaps();
+
+  /// @brief Fills one bin in a quick way
+  /// @param ibin Bin to fill
+  /// @param wgt Weight
+  /// @param histo Histogram to fill
+  void FillBin(TH1* histo, int ibin, double wgt = 1.) const;
+
+  /// @brief Fill the 2D map histogram from the 1D histogram
+  /// @param histo 1D histogram
+  /// @param histoMapB 2D map histogram for the bending plane
+  /// @param histoMapNB 2D map histogram for the non-bending plane
+  /// @param infoMap Correspondence between histogram bins
+  void fillMapHistos(const TH1* histo, std::array<std::unique_ptr<TH2F>, 4>& histoMapB, std::array<std::unique_ptr<TH2F>, 4>& histoMapNB, const std::vector<MapInfo>& infoMap) const;
 
   inline int getColumnIdx(int columnId, int deId) const { return 7 * deId + columnId; }
 };
