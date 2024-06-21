@@ -1139,8 +1139,15 @@ The same approach can be applied to other actors in the QC framework, like Check
 
 ## Templating config files
 
-> [!IMPORTANT]  
+> [!WARNING]  
 > Templating only works when using aliECS, i.e. in production and staging.
+
+The templating is provided by a template engine called `jinja`. You can use any of its feature. A couple are described below and should satisfy the vast majority of the needs. 
+
+### Preparation
+
+> [!IMPORTANT]
+> Workflows have already been migrated to apricot. This should not be needed anymore.
 
 To template a config file, modify the corresponding workflow in `ControlWorkflows`. This is needed because we won't use directly `Consul`  but instead go through `apricot` to template it. 
 
@@ -1161,9 +1168,49 @@ Make sure that you are able to run with the new workflow before actually templat
 
 ### Include a config file
 
-To include a config file (e.g. named `mch_digits`) add this line: `{% include "mch_digits" %}`
+To include a config file (e.g. named `mch_digits`) add this line : 
+```
+{% include "MCH/mch_digits" %}
+```
+The content of the file `mch_digits` is then copied into the config file. Thus make sure that you include all the commas and stuff. 
 
-What it does is very literally copy and paste the content of the file into the other one. Thus make sure that you include all the commas and stuff. 
+There is an example in Staging : components/qc/ANY/any/tpc-pulser-calib-qcmn
+
+#### Configuration files organisation
+
+Once you start including files, you must put the included files inside the corresponding detector subfolder (that have already been created for you).
+
+Common config files includes are provided in the `COMMON` subfolder.
+
+### Conditionals
+
+The `if` looks like
+```
+{% if [condition] %} …  {% endif %}
+```
+The condition probably requires some external info, such as the run type or a detectors list. Thus you must pass the info in the ControlWorkflows.
+
+It could look like this 
+```
+o2-qc --config apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/tpc-pulser-calib-qcmn?run_type={{ run_type }} ...
+```
+or 
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching?detectors={{ detectors }}' ...
+```
+
+Then use it like this:
+```
+{% if run_type == "PHYSICS" %}
+...
+{% endif %}
+```
+or like this respectively:
+```
+{% if "mch" in detectors|lower %}
+...
+{% endif %}
+```
 
 ## Definition and access of simple user-defined task configuration ("taskParameters")
 
