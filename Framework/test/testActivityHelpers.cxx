@@ -177,10 +177,10 @@ TEST_CASE("test_strictestMatchingActivity")
   {
     // just one
     std::vector<Activity> m{
-      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" }
+      { 300000, "TECHNICAL", "LHC22a", "spass", "qc", { 1, 10 }, "pp" }
     };
     auto result = activity_helpers::strictestMatchingActivity(m);
-    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" };
+    Activity expectation{ 300000, "TECHNICAL", "LHC22a", "spass", "qc", { 1, 10 }, "pp" };
     CHECK(result == expectation);
   }
   {
@@ -230,10 +230,10 @@ TEST_CASE("test_overlappingActivity")
   {
     // just one
     std::vector<Activity> m{
-      { 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" }
+      { 300000, "TECHNICAL", "LHC22a", "spass", "qc", { 1, 10 }, "pp" }
     };
     auto result = activity_helpers::overlappingActivity(m);
-    Activity expectation{ 300000, 1, "LHC22a", "spass", "qc", { 1, 10 }, "pp" };
+    Activity expectation{ 300000, "TECHNICAL", "LHC22a", "spass", "qc", { 1, 10 }, "pp" };
     CHECK(result == expectation);
   }
   {

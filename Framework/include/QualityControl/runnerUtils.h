@@ -42,8 +42,8 @@ std::string getFirstCheckName(const std::string& configurationSource);
 bool hasChecks(const std::string& configSource);
 
 template <typename T>
-  requires std::is_arithmetic_v<T>
-T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
+requires std::is_arithmetic_v<T>
+  T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   T result = 0;
 

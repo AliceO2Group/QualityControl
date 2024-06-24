@@ -29,13 +29,13 @@ namespace o2::quality_control::core::activity_helpers
 {
 
 template <typename Range>
-concept RangeOfActivities = requires(Range range) {
-                              requires std::same_as<std::ranges::range_value_t<Range>, Activity>;
-                            };
+concept RangeOfActivities = requires(Range range)
+{
+  requires std::same_as<std::ranges::range_value_t<Range>, Activity>;
+};
 
 namespace implementation
 {
-
 Activity commonActivityFields(const RangeOfActivities auto& activities);
 }
 
