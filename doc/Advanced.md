@@ -1212,6 +1212,11 @@ or like this respectively:
 {% endif %}
 ```
 
+### Test and debug 
+
+To see how a config file will look like once templated, simply open a browser at this address: `{{apricot_endpoint}}:32188/components/qc/ANY/any/tpc-pulser-calib-qcmn?process=true`
+Replace `{{apricot_endpoint}}` by the value you can find in Consul under `o2/runtime/aliecs/vars/apricot_endpoint` (it is different on staging and prod). 
+
 ## Definition and access of simple user-defined task configuration ("taskParameters")
 
 The new, extended, way of defining such parameters, not only in Tasks but also in Checks, Aggregators and PP tasks, 
