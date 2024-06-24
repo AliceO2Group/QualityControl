@@ -1174,8 +1174,6 @@ To include a config file (e.g. named `mch_digits`) add this line :
 ```
 The content of the file `mch_digits` is then copied into the config file. Thus make sure that you include all the commas and stuff. 
 
-There is an example in Staging : components/qc/ANY/any/tpc-pulser-calib-qcmn
-
 #### Configuration files organisation
 
 Once you start including files, you must put the included files inside the corresponding detector subfolder (that have already been created for you).
@@ -1214,8 +1212,48 @@ or like this respectively:
 
 ### Test and debug 
 
-To see how a config file will look like once templated, simply open a browser at this address: `{{apricot_endpoint}}:32188/components/qc/ANY/any/tpc-pulser-calib-qcmn?process=true`
-Replace `{{apricot_endpoint}}` by the value you can find in Consul under `o2/runtime/aliecs/vars/apricot_endpoint` (it is different on staging and prod). 
+To see how a config file will look like once templated, simply open a browser at this address: `{{apricot_endpoint}}/components/qc/ANY/any/tpc-pulser-calib-qcmn?process=true`
+Replace `{{apricot_endpoint}}` by the value you can find in Consul under `o2/runtime/aliecs/vars/apricot_endpoint` (it is different on staging and prod).
+*Note that there is no `o2` in the path!!!*
+
+### Example
+
+We are going to create in staging a small example to demonstrate the above. 
+First create 2 files if they don't exist yet: 
+
+**o2/components/qc/ANY/any/templating_demo**
+
+```
+{
+  "qc": {
+    "config": {% include "TST/templating_included" %}
+    {% if run_type == "PHYSICS" %} ,"aggregators": "included"  {% endif %}
+  }
+}
+```
+Here we simply include 1 file from a subfolder and add a piece if a certain condition is successful. 
+
+**o2/components/qc/ANY/any/TST/templating_included**
+
+```
+{
+  bookkeeping": {
+    "url": "alio2-cr1-hv-web01.cern.ch:4001"
+  }
+}
+```
+
+And now you can try it out: 
+```
+http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true
+```
+--> the file is included inside the other. 
+
+```
+[http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true](http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true&run_type=PHYSICS)
+```
+--> the file is included and the condition is true thus we have an extra line. 
+
 
 ## Definition and access of simple user-defined task configuration ("taskParameters")
 
