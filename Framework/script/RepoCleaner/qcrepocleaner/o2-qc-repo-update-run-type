@@ -32,6 +32,8 @@ def parse_args():
                                                                                     'slash, no .* at the end. It does'
                                                                                     ' not need to match a full '
                                                                                     'directory name.')
+    parser.add_argument('--from-timestamp', action='store', dest='from_timestamp', help='only modify versions created'
+                                                                                       'since this timestamp')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -68,7 +70,7 @@ def run(args):
         path += ".*"
     elif args.path_no_subdir is False:
         path += "/.*"
-    versions = ccdb.getVersionsList(path, "", "")
+    versions = ccdb.getVersionsList(path, args.from_timestamp, "")
     logging.info(f"Number of versions found: {len(versions)}")
     total_planned += len(versions)
     for version in versions:
