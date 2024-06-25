@@ -77,7 +77,7 @@ namespace triggers
 {
 
 /// \brief Triggers when it detects a Start Of Run during its uptime (once per each)
-TriggerFcn StartOfRun(const core::Activity& = {});
+TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const core::Activity& = {});
 /// \brief Triggers when it detects an End Of Run during its uptime (once per each)
 TriggerFcn EndOfRun(const core::Activity& = {});
 /// \brief Triggers when it detects Stable Beams during its uptime (once per each)
@@ -103,4 +103,4 @@ TriggerFcn Never(const core::Activity& = {});
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TRIGGERS_H
+#endif // QUALITYCONTROL_TRIGGERS_H

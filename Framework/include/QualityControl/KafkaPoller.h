@@ -10,32 +10,29 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// @file     KafkaConsumer.h
+/// @file     KafkaPoller.h
 /// @author   Michal Tichak
 
 #ifndef QC_CORE_KAFKA_CONSUMER_H
 #define QC_CORE_KAFKA_CONSUMER_H
 
 #include <kafka/KafkaConsumer.h>
-#include <atomic>
 
 namespace o2::quality_control::core
 {
 
-class KafkaConsumer
+class KafkaPoller
 {
  public:
-  /*
-   *
-   */
-  explicit KafkaConsumer(const std::string& brokers);
+  using KafkaRecords = std::vector<kafka::clients::consumer::ConsumerRecord>;
 
-  void consume(const std::string& topic);
-  void stop() noexcept;
+  explicit KafkaPoller(const std::string& brokers);
+
+  void subscribe(const std::string& topic);
+  auto poll() -> KafkaRecords;
 
  private:
   kafka::clients::consumer::KafkaConsumer mConsumer;
-  std::atomic_bool mRunning;
 };
 
 } // namespace o2::quality_control::core

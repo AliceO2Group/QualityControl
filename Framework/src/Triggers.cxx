@@ -19,6 +19,7 @@
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+#include "QualityControl/KafkaPoller.h"
 
 #include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>
@@ -57,9 +58,18 @@ TriggerFcn NotImplemented(std::string triggerName)
   };
 }
 
-TriggerFcn StartOfRun(const Activity&)
+TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const core::Activity& activity)
 {
-  return NotImplemented("StartOfRun");
+  auto returnedActivity = activity;
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers);
+  poller->subscribe(topic);
+  return [poller, returnedActivity]() mutable -> Trigger {
+    const auto records = poller->poll();
+    //TODO process records to detect SOR
+    return { TriggerType::StartOfRun, true, returnedActivity, Trigger::msSinceEpoch(), "sor" };
+  };
+
+  // return NotImplemented("StartOfRun");
 
   // FIXME: it has to be initialized before the SOR, to actually catch it. Is it a problem?
   //  bool runStarted = false; // runOngoing();

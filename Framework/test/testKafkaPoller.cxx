@@ -10,16 +10,25 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testKafkaConsumer.cxx
+/// \file    testKafkaPoller.cxx
 /// \author  Michal Tichak
 ///
 
 #include <catch_amalgamated.hpp>
-#include <QualityControl/KafkaConsumer.h>
+#include <chrono>
+#include <thread>
+#include <QualityControl/KafkaPoller.h>
 
-TEST_CASE("test_kafka_consumer")
+TEST_CASE("test_kafka_poller")
 {
-  o2::quality_control::core::KafkaConsumer consumer("mtichak-flp-1-27.cern.ch:9092");
+  using namespace o2::quality_control::core;
+  KafkaPoller kafkaPoller("mtichak-flp-1-27.cern.ch:9092");
+  kafkaPoller.subscribe("test");
 
-  consumer.consume("test");
+  while (true) {
+    std::ranges::for_each(kafkaPoller.poll(), [](const auto& record) {
+      std::cout << record.toString() << "\n";
+    });
+    std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
+  }
 }
