@@ -55,8 +55,8 @@ class PID final : public TaskInterface
 
  private:
   o2::tpc::qc::PID mQCPID{};
-  TProfile* pSeparationPower;
-  std::vector<double> mTrendingParameters;
+  TProfile* pSeparationPower{};
+  const int nPars = 8; //6 fit parameters + 2 external (seperation power + chi²/ndf)
 };
 
 } // namespace o2::quality_control_modules::tpc

@@ -60,8 +60,8 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs, runAsyncAndTurnOffSomeHistos);
   mQCPID.setCreateCanvas(createCanvas);
   mQCPID.initializeHistograms();
-  //mSeparationPowerCanvas = mQCPID.getSeparationPowerCanvas();
-  //getObjectsManager()->startPublishing(mSeparationPowerCanvas);
+  pSeparationPower = new TProfile("pSeparationPower", "pSeparationPower", nPars, 0., (float)nPars);
+  getObjectsManager()->startPublishing(pSeparationPower);
   // pass map of vectors of histograms to be beautified!
 
   o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
@@ -104,12 +104,9 @@ void PID::endOfCycle()
   // ===| Fitting Histogram for separation Power |============================================================
   std::unique_ptr<TF1> fitFunc = std::make_unique<TF1>("fitFunc", "[0]*exp(-0.5*((x-[1])/[2])^2) + [3]*exp(-0.5*((x-[4])/[5])^2)", 0, 100);
 
-  const int nPars = 8; //6 fit parameters + 2 external (seperation power + chi²/ndf)
-
   for (auto const& pair : mQCPID.getMapOfHisto()) {
     for (auto& hist : pair.second) {
       if (pair.first.compare("hdEdxMaxMIP") == 0) {
-        mTrendingParameters.clear();
         // Define fitting function: sum of two Gaussians with an offset
         // Set initial parameters for the fit
         fitFunc->SetParameter(0, 3000); // Amplitude of the first Gaussian
@@ -123,26 +120,24 @@ void PID::endOfCycle()
 
         // Fit the histogram with the fitting function
         hist->Fit(fitFunc.get(), "QRN");
+
+        const TString binLabels[nPars] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
+
         for (int iPar = 0; iPar < nPars - 2; iPar++) {
-          mTrendingParameters.emplace_back(fitFunc->GetParameter(iPar)); //save fit parameters
+          pSeparationPower->GetXaxis()->SetBinLabel(iPar + 1, binLabels[iPar]);
+          pSeparationPower->Fill((float)iPar + 0.5, fitFunc->GetParameter(iPar));
         }
         // Retrieve parameters of the fitted function
 
-        const double sepPow = (mTrendingParameters[4] - mTrendingParameters[1]) / (mTrendingParameters[2] / 2. + mTrendingParameters[5] / 2.); //separation power
-        mTrendingParameters.emplace_back(sepPow);
-        mTrendingParameters.emplace_back(fitFunc->GetChisquare() / fitFunc->GetNDF()); //chi²/ndf of fit
+        const double sepPow = (fitFunc->GetParameter(4) - fitFunc->GetParameter(1)) / (fitFunc->GetParameter(2) / 2. + fitFunc->GetParameter(5) / 2.); //separation power
+        pSeparationPower->GetXaxis()->SetBinLabel(7, binLabels[6]);
+        pSeparationPower->GetXaxis()->SetBinLabel(8, binLabels[7]);
+        pSeparationPower->Fill(6.5, sepPow);
+        pSeparationPower->Fill(7.5, fitFunc->GetChisquare() / fitFunc->GetNDF());
       }
     }
   }
 
-  pSeparationPower = new TProfile("pSeparationPower", "pSeparationPower", nPars, 0., (float)nPars);
-  getObjectsManager()->startPublishing(pSeparationPower);
-  const TString binLabels[nPars] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
-
-  for (int iPar = 0; iPar < nPars; iPar++) {
-    pSeparationPower->GetXaxis()->SetBinLabel(iPar + 1, binLabels[iPar]);
-    pSeparationPower->Fill((float)iPar + 0.5, mTrendingParameters[iPar]);
-  }
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
