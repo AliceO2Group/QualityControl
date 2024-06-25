@@ -23,7 +23,7 @@
 #include "Common/TH1Ratio.h"
 #include <memory>
 
-class TH1F;
+class TH1D;
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control_modules::common;
@@ -50,11 +50,11 @@ class CTPRawDataReaderTask final : public TaskInterface
 
  private:
   o2::ctp::RawDataDecoder mDecoder;
-  std::unique_ptr<TH1FRatio> mHistoInputs = nullptr;
-  std::unique_ptr<TH1FRatio> mHistoClasses = nullptr;
-  std::unique_ptr<TH1FRatio> mHistoInputRatios = nullptr;
-  std::unique_ptr<TH1FRatio> mHistoClassRatios = nullptr;
-  std::unique_ptr<TH1F> mHistoMTVXBC = nullptr;
+  std::unique_ptr<TH1DRatio> mHistoInputs = nullptr;
+  std::unique_ptr<TH1DRatio> mHistoClasses = nullptr;
+  std::unique_ptr<TH1DRatio> mHistoInputRatios = nullptr;
+  std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr;
+  std::unique_ptr<TH1D> mHistoMTVXBC = nullptr;
   int mRunNumber;
   long int mTimestamp;
   int mIndexMBclass = -1;

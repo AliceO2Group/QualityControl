@@ -44,13 +44,13 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   int ninps = o2::ctp::CTP_NINPUTS + 1;
   int nclasses = o2::ctp::CTP_NCLASSES + 1;
   int norbits = o2::constants::lhc::LHCMaxBunches;
-  mHistoInputs = std::make_unique<TH1FRatio>("inputs", "Input Rates; Input ; Rate [kHz]", ninps, 0, ninps, true);
-  mHistoClasses = std::make_unique<TH1FRatio>("classes", "Class Rates; Index; Rate [kHz]", nclasses, 0, nclasses, true);
+  mHistoInputs = std::make_unique<TH1DRatio>("inputs", "Input Rates; Input ; Rate [kHz]", ninps, 0, ninps, true);
+  mHistoClasses = std::make_unique<TH1DRatio>("classes", "Class Rates; Index; Rate [kHz]", nclasses, 0, nclasses, true);
   mHistoInputs->SetStats(0);
   mHistoClasses->SetStats(0);
-  mHistoMTVXBC = std::make_unique<TH1F>("bcMTVX", "BC position of MTVX", norbits, 0, norbits);
-  mHistoInputRatios = std::make_unique<TH1FRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
-  mHistoClassRatios = std::make_unique<TH1FRatio>("classRatio", "Class Ratio to MB; Index; Ratio", nclasses, 0, nclasses, true);
+  mHistoMTVXBC = std::make_unique<TH1D>("bcMTVX", "BC position of MTVX", norbits, 0, norbits);
+  mHistoInputRatios = std::make_unique<TH1DRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
+  mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Index; Ratio", nclasses, 0, nclasses, true);
   getObjectsManager()->startPublishing(mHistoInputs.get());
   getObjectsManager()->startPublishing(mHistoClasses.get());
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
