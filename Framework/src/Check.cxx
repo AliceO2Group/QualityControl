@@ -13,10 +13,8 @@
 
 #include <memory>
 #include <algorithm>
-// boost
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/algorithm/copy.hpp>
 #include <utility>
+#include <ranges>
 // O2
 #include <Common/Exceptions.h>
 // QC
@@ -122,12 +120,10 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
      *
      * Implementation: Copy to different map only required MOs.
      */
-    for (auto& key : mCheckConfig.objectNames) {
-      // don't create empty shared_ptr
-      if (moMap.count(key)) {
-        shadowMap.insert({ key, moMap[key] });
-      }
-    }
+    std::ranges::copy(mCheckConfig.objectNames |
+                        std::views::filter([&](const auto& key) { return moMap.count(key) > 0; }) |
+                        std::views::transform([&](const auto& key) { return std::pair{ key, moMap[key] }; }),
+                      std::inserter(shadowMap, shadowMap.end()));
   }
 
   // Prepare a vector of MO maps to be checked, each one will receive a separate Quality.
@@ -143,10 +139,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
 
   QualityObjectsType qualityObjects;
   for (auto& moMapToCheck : moMapsToCheck) {
-    std::vector<std::string> monitorObjectsNames;
-    boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
-
-    if (std::any_of(moMapToCheck.begin(), moMapToCheck.end(), [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) {
+    if (std::ranges::any_of(moMapToCheck, [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) {
           return item.second == nullptr || item.second->getObject() == nullptr;
         })) {
       ILOG(Warning, Devel) << "Some MOs in the map to check are nullptr, skipping check '" << mCheckInterface->getName() << "'" << ENDM;
@@ -163,13 +156,12 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       continue;
     }
     auto commonActivity = activity_helpers::strictestMatchingActivity(
-      moMapToCheck.begin(),
-      moMapToCheck.end(),
-      [](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) -> const Activity& {
+      moMapToCheck | std::views::transform([](const std::pair<std::string, std::shared_ptr<MonitorObject>>& item) {
         return item.second->getActivity();
-      });
-
+      }));
     ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
+    std::vector<std::string> monitorObjectsNames;
+    std::ranges::copy(moMapToCheck | std::views::keys, std::back_inserter(monitorObjectsNames));
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
