@@ -1139,8 +1139,15 @@ The same approach can be applied to other actors in the QC framework, like Check
 
 ## Templating config files
 
-> [!IMPORTANT]  
+> [!WARNING]  
 > Templating only works when using aliECS, i.e. in production and staging.
+
+The templating is provided by a template engine called `jinja`. You can use any of its feature. A couple are described below and should satisfy the vast majority of the needs. 
+
+### Preparation
+
+> [!IMPORTANT]
+> Workflows have already been migrated to apricot. This should not be needed anymore.
 
 To template a config file, modify the corresponding workflow in `ControlWorkflows`. This is needed because we won't use directly `Consul`  but instead go through `apricot` to template it. 
 
@@ -1161,9 +1168,92 @@ Make sure that you are able to run with the new workflow before actually templat
 
 ### Include a config file
 
-To include a config file (e.g. named `mch_digits`) add this line: `{% include "mch_digits" %}`
+To include a config file (e.g. named `mch_digits`) add this line : 
+```
+{% include "MCH/mch_digits" %}
+```
+The content of the file `mch_digits` is then copied into the config file. Thus make sure that you include all the commas and stuff. 
 
-What it does is very literally copy and paste the content of the file into the other one. Thus make sure that you include all the commas and stuff. 
+#### Configuration files organisation
+
+Once you start including files, you must put the included files inside the corresponding detector subfolder (that have already been created for you).
+
+Common config files includes are provided in the `COMMON` subfolder.
+
+### Conditionals
+
+The `if` looks like
+```
+{% if [condition] %} …  {% endif %}
+```
+The condition probably requires some external info, such as the run type or a detectors list. Thus you must pass the info in the ControlWorkflows.
+
+It could look like this 
+```
+o2-qc --config apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/tpc-pulser-calib-qcmn?run_type={{ run_type }} ...
+```
+or 
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching?detectors={{ detectors }}' ...
+```
+
+Then use it like this:
+```
+{% if run_type == "PHYSICS" %}
+...
+{% endif %}
+```
+or like this respectively:
+```
+{% if "mch" in detectors|lower %}
+...
+{% endif %}
+```
+
+### Test and debug 
+
+To see how a config file will look like once templated, simply open a browser at this address: `{{apricot_endpoint}}/components/qc/ANY/any/tpc-pulser-calib-qcmn?process=true`
+Replace `{{apricot_endpoint}}` by the value you can find in Consul under `o2/runtime/aliecs/vars/apricot_endpoint` (it is different on staging and prod).
+*Note that there is no `o2` in the path!!!*
+
+### Example
+
+We are going to create in staging a small example to demonstrate the above. 
+First create 2 files if they don't exist yet: 
+
+**o2/components/qc/ANY/any/templating_demo**
+
+```
+{
+  "qc": {
+    "config": {% include "TST/templating_included" %}
+    {% if run_type == "PHYSICS" %} ,"aggregators": "included"  {% endif %}
+  }
+}
+```
+Here we simply include 1 file from a subfolder and add a piece if a certain condition is successful. 
+
+**o2/components/qc/ANY/any/TST/templating_included**
+
+```
+{
+  bookkeeping": {
+    "url": "alio2-cr1-hv-web01.cern.ch:4001"
+  }
+}
+```
+
+And now you can try it out: 
+```
+http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true
+```
+--> the file is included inside the other. 
+
+```
+[http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true](http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true&run_type=PHYSICS)
+```
+--> the file is included and the condition is true thus we have an extra line. 
+
 
 ## Definition and access of simple user-defined task configuration ("taskParameters")
 
