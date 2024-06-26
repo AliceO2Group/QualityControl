@@ -1312,13 +1312,13 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 A reference object is an object from a previous run. It is usually used as a point of comparison. 
 
-### Get a reference plot
+### Get a reference plot in a check
 
 To retrieve a reference plot in your Check, use 
 ```
   std::shared_ptr<MonitorObject> retrieveReference(std::string path, int referenceRun, Activity activity);
 ```
-- `path` : the path of the object _without the provenance (e.g. `qc`)
+- `path` : the path of the object _without the provenance (e.g. `qc`)_
 - `referenceRun` : the run of reference
 - `activity` : the current activity
 
