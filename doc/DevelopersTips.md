@@ -143,6 +143,10 @@ firewall-cmd --reload
 10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
 11. Once the dashboard is ready, tell Adam.
 
+ALTERNATIVELY
+
+use http://alio2-bld4-mx-dev01-gpn:3000/?orgId=1 (admin and pwd like above)
+
 ### Monitoring setup for building the grafana dashboard with prod data
 
 1. Go to http://pcald24.cern.ch:3000/?orgId=1

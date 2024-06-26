@@ -94,7 +94,8 @@ class Check
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
   static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
 
-  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database) {
+  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database)
+  {
     mCheckInterface->setDatabase(database);
   }
 

@@ -83,7 +83,8 @@ class CheckInterface : public core::UserCodeInterface
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
   virtual void endOfActivity(const core::Activity& activity);   // not fully abstract because we don't want to change all the existing subclasses
 
-  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database) {
+  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database)
+  {
     mDatabase = database;
   }
 

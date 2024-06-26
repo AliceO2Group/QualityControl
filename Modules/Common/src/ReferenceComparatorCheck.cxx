@@ -133,7 +133,6 @@ static Quality compare(TCanvas* canvas, ObjectComparatorInterface* comparator, s
   return comparator->compare(plots.first, plots.second, message);
 }
 
-
 Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorObject> mo, std::string& message)
 {
   // retrieve the reference plot and compare
