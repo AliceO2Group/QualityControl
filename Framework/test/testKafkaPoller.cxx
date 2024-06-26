@@ -22,13 +22,32 @@
 TEST_CASE("test_kafka_poller")
 {
   using namespace o2::quality_control::core;
-  KafkaPoller kafkaPoller("mtichak-flp-1-27.cern.ch:9092");
-  kafkaPoller.subscribe("test");
+  KafkaPoller kafkaPoller("mtichak-flp-1-27.cern.ch:9092", "unitTestID");
+  kafkaPoller.subscribe("aliecs.run");
 
+  bool receivedSOR = false;
+  bool receivedEOR = false;
+
+  // while (runningSOR || runningEOR) {
   while (true) {
-    std::ranges::for_each(kafkaPoller.poll(), [](const auto& record) {
-      std::cout << record.toString() << "\n";
-    });
-    std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
+    std::this_thread::sleep_for(std::chrono::seconds{ 5 });
+    const auto records = kafkaPoller.poll();
+    std::cout << "parsing: " << records.size() << "\n";
+
+    for (const auto& record : records) {
+      if (proto_parser::isSOR(record.value())) {
+        std::cout << "receivedSOR!\n";
+        receivedSOR = true;
+      }
+
+      if (proto_parser::isEOR(record.value())) {
+        std::cout << "receivedEOR!\n";
+        receivedEOR = true;
+      }
+    }
+
+    if (receivedSOR && receivedEOR) {
+      break;
+    }
   }
 }

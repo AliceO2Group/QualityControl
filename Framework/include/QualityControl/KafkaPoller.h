@@ -21,12 +21,18 @@
 namespace o2::quality_control::core
 {
 
+namespace proto_parser
+{
+bool isSOR(const kafka::Value&, const std::optional<std::string> envId = {}, const std::optional<uint32_t> runNumber = {});
+bool isEOR(const kafka::Value&, const std::optional<std::string> envId = {}, const std::optional<uint32_t> runNumber = {});
+} // namespace proto_parser
+
 class KafkaPoller
 {
  public:
   using KafkaRecords = std::vector<kafka::clients::consumer::ConsumerRecord>;
 
-  explicit KafkaPoller(const std::string& brokers);
+  explicit KafkaPoller(const std::string& brokers, const std::string& groupId);
 
   void subscribe(const std::string& topic);
   auto poll() -> KafkaRecords;

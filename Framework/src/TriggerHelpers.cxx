@@ -95,9 +95,11 @@ TriggerFcn triggerFactory(const std::string& trigger, const PostProcessingConfig
   } else if (triggerLowerCase == "always") {
     return triggers::Always(activity);
   } else if (triggerLowerCase == "sor" || triggerLowerCase == "startofrun") {
+    // TODO add values from config
     return triggers::StartOfRun("", "", activity);
   } else if (triggerLowerCase == "eor" || triggerLowerCase == "endofrun") {
-    return triggers::EndOfRun(activity);
+    // TODO add values from config
+    return triggers::EndOfRun("", "", activity);
   } else if (triggerLowerCase == "sof" || triggerLowerCase == "startoffill") {
     return triggers::StartOfFill(activity);
   } else if (triggerLowerCase == "eof" || triggerLowerCase == "endoffill") {
