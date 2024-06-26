@@ -44,6 +44,7 @@ class QcMFTTrackCheck : public o2::quality_control::checker::CheckInterface
 
  private:
   // ROF check
+  bool mFirstCall;
   int mROF;
   int mOnlineQC;
   void readAlpideCCDB(std::shared_ptr<MonitorObject> mo);
