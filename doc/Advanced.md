@@ -1308,6 +1308,12 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 }
 ```
 
+## Reference data
+TODO
+- PP task -> pointer
+- Checker -> if PP -> pointer
+- Checker on TH1 -> describe here
+
 ## Configuration files details
 
 The QC requires a number of configuration items. An example config file is

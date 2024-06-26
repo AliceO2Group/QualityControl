@@ -17,8 +17,7 @@
 
 #include "Common/ReferenceComparatorTask.h"
 #include "Common/ReferenceComparatorPlot.h"
-#include "Common/TH1Ratio.h"
-#include "Common/TH2Ratio.h"
+#include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -26,8 +25,6 @@
 // ROOT
 #include <TClass.h>
 #include <TH1.h>
-#include <TH2.h>
-#include <TCanvas.h>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
@@ -35,47 +32,6 @@ using namespace o2::quality_control;
 
 namespace o2::quality_control_modules::common
 {
-
-static bool splitObjectPath(const std::string& fullPath, std::string& path, std::string& name)
-{
-  std::string delimiter = "/";
-  std::string det;
-  size_t pos = fullPath.rfind(delimiter);
-  if (pos == std::string::npos) {
-    return false;
-  }
-  path = fullPath.substr(0, pos);
-  name = fullPath.substr(pos + 1);
-  return true;
-}
-
-//_________________________________________________________________________________________
-//
-// Helper function for retrieving the last MonitorObject for a give run number
-
-static std::shared_ptr<MonitorObject> getMOFromRun(repository::DatabaseInterface* qcdb, const std::string& fullPath, uint32_t run, Activity activity)
-{
-  uint64_t timeStamp = 0;
-  activity.mId = run;
-  const auto filterMetadata = activity_helpers::asDatabaseMetadata(activity, false);
-  const auto objectValidity = qcdb->getLatestObjectValidity(activity.mProvenance + "/" + fullPath, filterMetadata);
-  if (objectValidity.isValid()) {
-    timeStamp = objectValidity.getMax() - 1;
-  } else {
-    ILOG(Warning, Devel) << "Could not find the object '" << fullPath << "' for run " << activity.mId << ENDM;
-    return nullptr;
-  }
-
-  std::string path;
-  std::string name;
-  if (!splitObjectPath(fullPath, path, name)) {
-    return nullptr;
-  }
-  // retrieve MO from CCDB
-  auto mo = qcdb->retrieveMO(path, name, timeStamp, activity);
-
-  return mo;
-}
 
 //_________________________________________________________________________________________
 // Helper function for retrieving a MonitorObject from the QCDB, in the form of a std::pair<std::shared_ptr<MonitorObject>, bool>
@@ -98,7 +54,7 @@ static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::Databas
 
   std::string path;
   std::string name;
-  if (!splitObjectPath(fullPath, path, name)) {
+  if (!o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath, path, name)) {
     return { nullptr, false };
   }
   // retrieve QO from CCDB - do not associate to trigger activity if ignoreActivity is true
@@ -115,15 +71,6 @@ static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::Databas
   }
 
   return { qo, true };
-}
-
-//_________________________________________________________________________________________
-//
-// Get the reference plot for a given MonitorObject path
-
-std::shared_ptr<MonitorObject> ReferenceComparatorTask::getReferencePlot(repository::DatabaseInterface& qcdb, std::string fullPath, Activity activity)
-{
-  return getMOFromRun(&qcdb, fullPath, mReferenceRun, activity);
 }
 
 //_________________________________________________________________________________________
@@ -156,7 +103,7 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
       auto fullOutPath = group.outputPath + "/" + path;
 
       // retrieve the reference MO
-      auto referencePlot = getReferencePlot(qcdb, fullRefPath, t.activity);
+      auto referencePlot = getReferencePlot(&qcdb, fullRefPath, mReferenceRun, t.activity);
       if (!referencePlot) {
         continue;
       }
