@@ -284,7 +284,6 @@ void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
     setQualityLabel(canvas, quality);
   }
   auto* th1 = dynamic_cast<TH1*>(mo->getObject());
-  std::cout << "th1 : " << th1 << std::endl;
   if (th1) {
     auto* qualityLabel = new TPaveText(0.75, 0.65, 0.98, 0.75, "brNDC");
     updateQualityLabel(qualityLabel, quality);
