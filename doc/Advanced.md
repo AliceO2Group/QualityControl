@@ -1322,13 +1322,11 @@ To retrieve a reference plot in your Check, use
 - `referenceRun` : the run of reference
 - `activity` : the current activity
 
-If the reference is not found it will return a `nullptr` and issue a warning. 
+If the reference is not found it will return a `nullptr` and the quality is `Null`.
 
 ### Compare to a reference plot
 
 The check `ReferenceComparatorCheck` in `Common` compares objects to their reference. 
-
-TODO beautify
 
 The configuration looks like 
 ```
@@ -1371,6 +1369,8 @@ Three comparator are provided:
 3. `o2::quality_control_modules::common::ObjectComparatorKolmogorov`: comparison based on a standard Kolmogorov test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed Kolmogorov probability
 
 Note that you can easily specify different reference runs for different run types and beam types. 
+
+The plot is beautified by the addition of a `TPaveText` containing the quality and the reason for the quality. 
 
 ### Generate a canvas combining both the current and reference ratio histogram
 
