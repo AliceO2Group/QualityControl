@@ -268,7 +268,6 @@ static void setQualityLabel(TCanvas* canvas, const Quality& quality)
 
 void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  std::cout << "beautify" << std::endl;
   // get the quality associated to the current MO
   auto moName = mo->getName();
   auto quality = mQualityFlags[moName];
