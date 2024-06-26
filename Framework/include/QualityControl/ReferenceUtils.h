@@ -50,10 +50,7 @@ static std::shared_ptr<quality_control::core::MonitorObject> getReferencePlot(qu
   if (!o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath, path, name)) {
     return nullptr;
   }
-  // retrieve MO from CCDB
-  auto mo = qcdb->retrieveMO(path, name, timeStamp, activity);
-
-  return mo;
+  return qcdb->retrieveMO(path, name, timeStamp, activity);
 }
 
 } // namespace o2::quality_control_modules::common

@@ -1309,10 +1309,73 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 ```
 
 ## Reference data
-TODO
-- PP task -> pointer
-- Checker -> if PP -> pointer
-- Checker on TH1 -> describe here
+
+A reference object is an object from a previous run. It is usually used as a point of comparison. 
+
+### Get a reference plot
+
+To retrieve a reference plot in your Check, use 
+```
+  std::shared_ptr<MonitorObject> retrieveReference(std::string path, int referenceRun, Activity activity);
+```
+- `path` : the path of the object _without the provenance (e.g. `qc`)
+- `referenceRun` : the run of reference
+- `activity` : the current activity
+
+If the reference is not found it will return a `nullptr` and issue a warning. 
+
+### Compare to a reference plot
+
+The check `ReferenceComparatorCheck` in `Common` compares objects to their reference. 
+
+TODO beautify
+
+The configuration looks like 
+```
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::ReferenceComparatorCheck",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }],
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "referenceRun" : "500",
+              "moduleName" : "QualityControl",
+              "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
+              "threshold" : "0.5"
+            }
+          },
+          "PHYSICS": {
+            "PROTON-PROTON": {
+              "referenceRun" : "551890"
+            }
+          }
+        }
+      }
+```
+The check needs the following parameters
+- `referenceRun` to specify what is the run of reference and retrieve the reference data. 
+- `comparatorName` to decide how to compare, see below for their descriptions.
+- `threshold` to specifie the value used to discriminate between good and bad matches between the histograms.
+
+Three comparator are provided:
+1. `o2::quality_control_modules::common::ObjectComparatorDeviation`: comparison based on the average relative deviation between the bins of the current and reference histograms; the `threshold` parameter represent in this case the maximum allowed deviation
+2. `o2::quality_control_modules::common::ObjectComparatorChi2`: comparison based on a standard chi2 test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed chi2 probability
+3. `o2::quality_control_modules::common::ObjectComparatorKolmogorov`: comparison based on a standard Kolmogorov test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed Kolmogorov probability
+
+Note that you can easily specify different reference runs for different run types and beam types. 
+
+### Generate a canvas combining both the current and reference ratio histogram
+
+The postprocessing task ReferenceComparatorTask draws a given set of plots in comparison with their corresponding references, both as superimposed histograms and as current/reference ratio histograms.
+See the details [here](https://github.com/AliceO2Group/QualityControl/blob/master/doc/PostProcessing.md#the-referencecomparatortask-class).
 
 ## Configuration files details
 

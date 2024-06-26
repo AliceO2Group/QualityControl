@@ -24,7 +24,6 @@
 #include <TH1.h>
 #include <TPad.h>
 #include <TCanvas.h>
-#include <TPaveText.h>
 #include <TText.h>
 #include <string>
 #include <map>
