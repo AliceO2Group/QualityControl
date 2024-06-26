@@ -75,12 +75,12 @@ void QcMFTTrackCheck::readAlpideCCDB(std::shared_ptr<MonitorObject> mo)
     long timestamp = o2::ccdb::getCurrentTimestamp();
     map<string, string> headers;
     map<std::string, std::string> filter;
-    auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::DPLAlpideParam<o2::detectors::DetID::MFT>>("MFT/Config/AlpideParam/", filter, timestamp);
-    if (calib == nullptr) {
-      ILOG(Error, Support) << "Could not retrieve Alpide CCDB info from CCDB." << ENDM;
+    auto alpideParam = UserCodeInterface::retrieveConditionAny<o2::itsmft::DPLAlpideParam<o2::detectors::DetID::MFT>>("MFT/Config/AlpideParam/", filter, timestamp);
+    if (alpideParam == nullptr) {
+      ILOG(Error, Support) << "Could not retrieve Alpide strobe length from CCDB." << ENDM;
       return;
     }
-    mROF = calib->roFrameLengthInBC;
+    mROF = alpideParam->roFrameLengthInBC;
   } else {
     o2::ccdb::CcdbApi api_ccdb;
     api_ccdb.init("alice-ccdb.cern.ch");
@@ -88,22 +88,20 @@ void QcMFTTrackCheck::readAlpideCCDB(std::shared_ptr<MonitorObject> mo)
     long timestamp = -1;
 
     map<string, string> hdRCT = api_ccdb.retrieveHeaders("RCT/Info/RunInformation", map<string, string>(), runNo);
-    const auto startRCT = hdRCT.find("SOR");
+    const auto startRCT = hdRCT.find("STF");
     if (startRCT != hdRCT.end()) {
       timestamp = stol(startRCT->second);
-      cout << "SOR found, timestamp: " << timestamp << "\n";
     } else {
-      cout << "SOR not found in headers!"
-           << "\n";
+      ILOG(Error, Support) << "STF not found in headers!" << ENDM;
     }
     map<string, string> headers;
     map<std::string, std::string> filter;
-    auto calib = UserCodeInterface::retrieveConditionAny<o2::itsmft::DPLAlpideParam<o2::detectors::DetID::MFT>>("MFT/Config/AlpideParam/", filter, timestamp);
-    if (calib == nullptr) {
-      ILOG(Error, Support) << "Could not retrieve Alpide CCDB info from CCDB." << ENDM;
+    auto alpideParam = UserCodeInterface::retrieveConditionAny<o2::itsmft::DPLAlpideParam<o2::detectors::DetID::MFT>>("MFT/Config/AlpideParam/", filter, timestamp);
+    if (alpideParam == nullptr) {
+      ILOG(Error, Support) << "Could not retrieve Alpide strobe length from CCDB." << ENDM;
       return;
     }
-    mROF = calib->roFrameLengthInBC;
+    mROF = alpideParam->roFrameLengthInBC;
   }
 }
 
