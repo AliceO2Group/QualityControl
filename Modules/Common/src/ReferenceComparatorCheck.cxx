@@ -148,12 +148,12 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 
   auto referencePlot = retrieveReference(path, referenceRun, mActivity);
   if (!referencePlot) {
-    ILOG(Warning, Ops) << "The reference plot is empty" << ENDM;
+    message = "The reference plot is empty";
     return Quality::Null;
   }
   auto* ref = dynamic_cast<TH1*>(referencePlot->getObject());
   if (!ref) {
-    ILOG(Warning, Ops) << "The reference plot is not a TH1" << ENDM;
+    message = "The reference plot is not a TH1";
     return Quality::Null;
   }
   return mComparator.get()->compare(th1, ref, message);
@@ -226,6 +226,23 @@ static int getQualityColor(const Quality& q)
   return 0;
 }
 
+static void updateQualityLabel(TPaveText* label, const Quality& quality)
+{
+  // draw the quality label with the text color corresponding to the quality level
+  label->SetTextColor(getQualityColor(quality));
+  label->AddText(quality.getName().c_str());
+
+  // add the first flag below the quality label, or an empty line if no flags are set
+  auto flags = quality.getFlags();
+  std::string message = flags.empty() ? "" : flags.front().second;
+  auto pos = message.find(" ");
+  if (pos != std::string::npos) {
+    message.erase(0, pos + 1);
+  }
+  auto* text = label->AddText(message.c_str());
+  text->SetTextColor(kGray + 1);
+}
+
 // Write the quality level and flags in the existing PaveText inside the canvas
 static void setQualityLabel(TCanvas* canvas, const Quality& quality)
 {
@@ -244,26 +261,14 @@ static void setQualityLabel(TCanvas* canvas, const Quality& quality)
       continue;
     }
 
-    // draw the quality label with the text color corresponding to the quality level
-    label->SetTextColor(getQualityColor(quality));
-    label->AddText(quality.getName().c_str());
-
-    // add the first flag below the quality label, or an empty line if no flags are set
-    auto flags = quality.getFlags();
-    std::string message = flags.empty() ? "" : flags.front().second;
-    auto pos = message.find(" ");
-    if (pos != std::string::npos) {
-      message.erase(0, pos + 1);
-    }
-    auto* text = label->AddText(message.c_str());
-    text->SetTextColor(kGray + 1);
-
+    updateQualityLabel(label, quality);
     break;
   }
 }
 
 void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  std::cout << "beautify" << std::endl;
   // get the quality associated to the current MO
   auto moName = mo->getName();
   auto quality = mQualityFlags[moName];
@@ -279,7 +284,13 @@ void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
     // draw the quality label on the plot
     setQualityLabel(canvas, quality);
   }
-  // TODO handle the case of simple MO
+  auto* th1 = dynamic_cast<TH1*>(mo->getObject());
+  std::cout << "th1 : " << th1 << std::endl;
+  if(th1) {
+    auto* qualityLabel = new TPaveText(0.75, 0.65, 0.98, 0.75, "brNDC");
+    updateQualityLabel(qualityLabel, quality);
+    th1->GetListOfFunctions()->Add(qualityLabel);
+  }
 }
 
 } // namespace o2::quality_control_modules::common
