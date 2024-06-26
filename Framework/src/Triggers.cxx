@@ -61,15 +61,16 @@ TriggerFcn NotImplemented(std::string triggerName)
 TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const core::Activity& activity)
 {
   auto returnedActivity = activity;
-  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers);
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, "SOR_postprocessing_group");
   poller->subscribe(topic);
   return [poller, returnedActivity]() mutable -> Trigger {
-    const auto records = poller->poll();
-    //TODO process records to detect SOR
-    return { TriggerType::StartOfRun, true, returnedActivity, Trigger::msSinceEpoch(), "sor" };
+    for (const auto& record : poller->poll()) {
+      if (proto_parser::isSOR(record.value())) {
+        return { TriggerType::StartOfRun, true, returnedActivity, static_cast<uint64_t>(record.timestamp().msSinceEpoch), "sor" };
+      }
+    }
+    return { TriggerType::No, true, returnedActivity, Trigger::msSinceEpoch(), "sor" };
   };
-
-  // return NotImplemented("StartOfRun");
 
   // FIXME: it has to be initialized before the SOR, to actually catch it. Is it a problem?
   //  bool runStarted = false; // runOngoing();
@@ -119,9 +120,19 @@ TriggerFcn Never(const Activity& activity)
   };
 }
 
-TriggerFcn EndOfRun(const Activity&)
+TriggerFcn EndOfRun(const std::string& kafkaBrokers, const std::string& topic, const Activity& activity)
 {
-  return NotImplemented("EndOfRun");
+  auto returnedActivity = activity;
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, "EOR_postprocessing_group");
+  poller->subscribe(topic);
+  return [poller, returnedActivity]() mutable -> Trigger {
+    for (const auto& record : poller->poll()) {
+      if (proto_parser::isEOR(record.value())) {
+        return { TriggerType::StartOfRun, true, returnedActivity, static_cast<uint64_t>(record.timestamp().msSinceEpoch), "eor" };
+      }
+    }
+    return { TriggerType::No, true, returnedActivity, Trigger::msSinceEpoch(), "eor" };
+  };
 }
 
 TriggerFcn StartOfFill(const Activity&)
