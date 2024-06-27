@@ -19,7 +19,7 @@
 #include <thread>
 #include <QualityControl/KafkaPoller.h>
 
-TEST_CASE("test_kafka_poller")
+TEST_CASE("test_kafka_poller", "[.manual]")
 {
   using namespace o2::quality_control::core;
   KafkaPoller kafkaPoller("mtichak-flp-1-27.cern.ch:9092", "unitTestID");
@@ -35,12 +35,12 @@ TEST_CASE("test_kafka_poller")
     std::cout << "parsing: " << records.size() << "\n";
 
     for (const auto& record : records) {
-      if (proto_parser::isSOR(record.value())) {
+      const auto event = proto::recordToEvent(record.value());
+      if (proto::start_of_run::check(event.value(), "", 0)) {
         std::cout << "receivedSOR!\n";
         receivedSOR = true;
       }
-
-      if (proto_parser::isEOR(record.value())) {
+      if (proto::end_of_run::check(event.value(), "", 0)) {
         std::cout << "receivedEOR!\n";
         receivedEOR = true;
       }
