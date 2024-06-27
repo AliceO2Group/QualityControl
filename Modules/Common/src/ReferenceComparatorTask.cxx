@@ -55,6 +55,7 @@ static bool splitObjectPath(const std::string& fullPath, std::string& path, std:
 
 static std::shared_ptr<MonitorObject> getMOFromRun(repository::DatabaseInterface* qcdb, const std::string& fullPath, uint32_t run, Activity activity)
 {
+  ILOG(Info, Devel) << "Loading object '" << fullPath << "' for reference run '" << run << "' and activity " << activity << ENDM;
   uint64_t timeStamp = 0;
   activity.mId = run;
   const auto filterMetadata = activity_helpers::asDatabaseMetadata(activity, false);
@@ -62,7 +63,7 @@ static std::shared_ptr<MonitorObject> getMOFromRun(repository::DatabaseInterface
   if (objectValidity.isValid()) {
     timeStamp = objectValidity.getMax() - 1;
   } else {
-    ILOG(Warning, Devel) << "Could not find the object '" << fullPath << "' for run " << activity.mId << ENDM;
+    ILOG(Warning, Devel) << "Could not find the object '" << fullPath << "' for reference run " << activity.mId << ENDM;
     return nullptr;
   }
 
