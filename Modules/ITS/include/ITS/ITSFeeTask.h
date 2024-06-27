@@ -191,6 +191,7 @@ class ITSFeeTask final : public TaskInterface
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
+  TH2I* mTriggerVsFeeId_reset;
   TH1I* mTrigger;
   TH2I* mFlag1Check;    // include transmission_timeout, packet_overflow, lane_starts_violation
   TH2I* mDecodingCheck; // summary of errors during custom decoding of specific bytes (see plot description)
@@ -199,6 +200,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mLaneStatus[NFlags];   // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU.
   // Misconfiguration plot
   TH2I* mTrailerCount;
+  TH2I* mTrailerCount_reset;
   // Calibration plots
   TH1I* mCalibrationWordCount;
   TH2I* mCalibStage;
