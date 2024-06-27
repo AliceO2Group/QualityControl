@@ -33,7 +33,7 @@
           {
             "type": "repository",
             "path": "TPC/MO/PID",
-            "name": "CSeparationPower",
+            "name": "pSeparationPower",
             "reductorName": "o2::quality_control_modules::tpc::SeparationPowerReductor",
             "moduleName": "QcTPC"
           }
@@ -42,23 +42,31 @@
           {
             "name": "sepPower_MeanPi",
             "title": "Trend of Separation Power Mean Pion",
-            "varexp": "CSeparationPower.meanPi:time",
+            "varexp": "pSeparationPower.meanPi:time",
             "selection": "",
             "option": "*L",
-            "graphErrors": ""
+            "graphErrors": "0:sigmaPi"
           },
           {
             "name": "sepPower_El",
             "title": "Trend of Separation Power Mean Electron",
-            "varexp": "CSeparationPower.meanEl:time",
+            "varexp": "pSeparationPower.meanEl:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:sigmaEl"
+          },
+          {
+            "name": "sepPower_SeparationPower",
+            "title": "Trend of SeparationPower",
+            "varexp": "pSeparationPower.separationPower:time",
             "selection": "",
             "option": "*L",
             "graphErrors": ""
           },
           {
-            "name": "sepPower_SeparationPower",
-            "title": "Trend of SeparationPower",
-            "varexp": "CSeparationPower.separationPower:time",
+            "name": "sepPower_ChiSquareOverNDF",
+            "title": "Trend of SeparationPower ChiSquare/NDF fit",
+            "varexp": "pSeparationPower.chiSquareOverNdf:time",
             "selection": "",
             "option": "*L",
             "graphErrors": ""
@@ -68,7 +76,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "foreachlatest:ccdb:qc/TPC/MO/PID/CSeparationPower"
+          "foreachlatest:ccdb:qc/TPC/MO/PID/pSeparationPower"
         ],
         "stopTrigger": [
           "userorcontrol"
