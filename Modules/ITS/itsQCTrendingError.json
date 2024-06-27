@@ -18,7 +18,7 @@
                    "number" :
                    "42",
                    "type" :
-                   "2"
+                   "NONE"
                  },
                  "monitoring" : {
                    "url" :
@@ -348,7 +348,7 @@
 
                                    ],
                                    "initTrigger" : ["userorcontrol"],
-                                                   "updateTrigger" : ["10 seconds"],
+                                                   "updateTrigger" : ["newobject:qcdb:ITS/MO/ITSDECODING/General/LinkErrorPlots"],
                                                                      "stopTrigger" : ["userorcontrol"]
       }
     }
