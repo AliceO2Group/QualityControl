@@ -19,6 +19,7 @@ target_link_libraries(O2QcGLO
   O2::DataFormatsITS
   O2::DataFormatsCalibration
   O2::GlobalTracking
+  O2::GLOQC
   O2QcCommon)
 
 install(TARGETS O2QcGLO
