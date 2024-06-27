@@ -40,6 +40,8 @@
 #include "FT0Base/Geometry.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
+#include "FITCommon/DetectorFIT.h"
+#include "FITCommon/HelperFIT.h"
 
 using namespace o2::quality_control::core;
 
@@ -67,6 +69,7 @@ class DigitQcTask final : public TaskInterface
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   constexpr static float sCFDChannel2NS = 0.01302; // CFD channel width in ns
+  using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
 
  private:
   // three ways of computing cycle duration:
@@ -83,8 +86,6 @@ class DigitQcTask final : public TaskInterface
   long mTFcreationTime = 0;
 
   void rebinFromConfig();
-  unsigned int getModeParameter(std::string, unsigned int, std::map<unsigned int, std::string>);
-  int getNumericalParameter(std::string, int);
   bool chIsVertexEvent(const o2::ft0::ChannelData);
 
   TList* mListHistGarbage;
@@ -94,53 +95,24 @@ class DigitQcTask final : public TaskInterface
   std::array<uint8_t, sNCHANNELS_PM> mChID2PMhash; // map chID->hashed PM value
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<uint8_t, bool> mMapPMhash2isAside;
-  std::map<unsigned int, std::string> mMapDigitTrgNames;
-  std::map<unsigned int, std::string> mMapChTrgNames;
-  std::map<unsigned int, std::string> mMapBasicTrgBits;
-  std::unique_ptr<TH1F> mHistNumADC;
-  std::unique_ptr<TH1F> mHistNumCFD;
-
-  std::map<int, bool> mMapTrgSoftware;
-  enum TrgModeSide { kAplusC,
-                     kAandC,
-                     kA,
-                     kC
-  };
-  enum TrgModeThresholdVar { kAmpl,
-                             kNchannels
-  };
-  enum TrgComparisonResult { kSWonly,
-                             kTCMonly,
-                             kNone,
-                             kBoth
-  };
-  // trigger parameters:
-  // - modes
-  unsigned int mTrgModeThresholdVar;
-  unsigned int mTrgModeSide;
-  // - time window for vertex trigger
-  int mTrgThresholdTimeLow;
-  int mTrgThresholdTimeHigh;
-  // - parameters for (Semi)Central triggers
-  //   same parameters re-used for both Ampl and Nchannels thresholds
-  int mTrgThresholdCenA;
-  int mTrgThresholdCenC;
-  int mTrgThresholdSCenA;
-  int mTrgThresholdSCenC;
-  int mTrgChargeLevelLow;
-  int mTrgChargeLevelHigh;
-  int mTrgOrGate;
+  typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
+  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
+  using DataTCM_t = o2::quality_control_modules::fit::DataTCM<typename Detector_t::Digit_t>;
+  using TrgValidation_t = o2::quality_control_modules::fit::TrgValidation<typename Detector_t::Digit_t>;
+  TrgValidation_t mTrgValidation;
 
   int mGoodPMbits_ChID;
   int mBadPMbits_ChID;
   int mPMbitsToCheck_ChID;
   int mLowTimeGate_ChID;
   int mUpTimeGate_ChID;
-
+  // Timestamp
+  std::string mMetaAnchorOutput{};
+  std::string mTimestampMetaField{};
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
-  std::unique_ptr<TH2F> mHistEventDensity2Ch;
   std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH1F> mHistBC;
@@ -152,7 +124,6 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
   std::unique_ptr<TH2F> mHistChIDperBC;
-  std::unique_ptr<TH1F> mHistCFDEff;
   std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;
@@ -172,14 +143,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistPmTcmNchC;
   std::unique_ptr<TH2F> mHistPmTcmSumAmpC;
   std::unique_ptr<TH2F> mHistPmTcmAverageTimeC;
-  std::unique_ptr<TH1F> mHistTriggersSw;
   std::unique_ptr<TH2F> mHistTriggersSoftwareVsTCM;
-
-  inline int divHW_TCM(int sumTime, int nChannels) const
-  {
-    constexpr std::array<int, 127> rom7x17{ 16383, 8192, 5461, 4096, 3277, 2731, 2341, 2048, 1820, 1638, 1489, 1365, 1260, 1170, 1092, 1024, 964, 910, 862, 819, 780, 745, 712, 683, 655, 630, 607, 585, 565, 546, 529, 512, 496, 482, 468, 455, 443, 431, 420, 410, 400, 390, 381, 372, 364, 356, 349, 341, 334, 328, 321, 315, 309, 303, 298, 293, 287, 282, 278, 273, 269, 264, 260, 256, 252, 248, 245, 241, 237, 234, 231, 228, 224, 221, 218, 216, 213, 210, 207, 205, 202, 200, 197, 195, 193, 191, 188, 186, 184, 182, 180, 178, 176, 174, 172, 171, 169, 167, 165, 164, 162, 161, 159, 158, 156, 155, 153, 152, 150, 149, 148, 146, 145, 144, 142, 141, 140, 139, 138, 137, 135, 134, 133, 132, 131, 130, 129 };
-    return nChannels ? (sumTime * rom7x17[nChannels - 1]) >> 14 : 0;
-  }
 
   // Hashed maps
   static const size_t mapSize = 256;

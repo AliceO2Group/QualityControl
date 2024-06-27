@@ -27,10 +27,10 @@
 #include "DataFormatsFDD/LookUpTable.h"
 #include "DataFormatsFDD/ChannelData.h"
 #include "DataFormatsFDD/Digit.h"
+#include "Common/Utils.h"
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
-#include "FITCommon/HelperFIT.h"
 
 namespace o2::quality_control_modules::fdd
 {
@@ -159,23 +159,6 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initialize DigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mStateLastIR2Ch = {};
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kNumberADC, "NumberADC" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsDoubleEvent, "IsDoubleEvent" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsCFDinADCgate, "IsCFDinADCgate" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsTimeInfoLate, "IsTimeInfoLate" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsAmpHigh, "IsAmpHigh" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsEventInTVDC, "IsEventInTVDC" });
-  mMapChTrgNames.insert({ o2::fdd::ChannelData::EEventDataBit::kIsTimeInfoLost, "IsTimeInfoLost" });
-
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitC, "OrC" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitVertex, "Vertex" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitCen, "Central" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitSCen, "SemiCentral" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
 
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitA, false });
   mMapTrgSoftware.insert({ o2::fit::Triggers::bitC, false });
@@ -228,20 +211,20 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
   mHistAmp2Ch->SetOption("colz");
   mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
-  mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
+  mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits.size(), 0, mMapPMbits.size());
   mHistChDataBits->SetOption("colz");
-  for (const auto& entry : mMapChTrgNames) {
+  for (const auto& entry : mMapPMbits) {
     mHistChDataBits->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
-  mHistOrbitVsTrg = std::make_unique<TH2F>("OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistOrbitVsTrg = std::make_unique<TH2F>("OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
   mHistOrbitVsTrg->SetOption("colz");
   mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", sOrbitsPerTF, 0, sOrbitsPerTF, sBCperOrbit, 0, sBCperOrbit);
   mHistOrbit2BC->SetOption("colz");
   mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", sNCHANNELS_PM, 0, sNCHANNELS_PM, 10000, 0, 1e5);
   mHistEventDensity2Ch->SetOption("colz");
-  mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size(), mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
   mHistTriggersCorrelation->SetOption("colz");
-  mHistBCvsTrg = std::make_unique<TH2F>("BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistBCvsTrg = std::make_unique<TH2F>("BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
   mHistBCvsTrg->SetOption("colz");
   mHistPmTcmNchA = std::make_unique<TH2F>("PmTcmNumChannelsA", "Comparison of num. channels A from PM and TCM;Number of channels(TCM), side A;PM - TCM", sNCHANNELS_A + 2, 0, sNCHANNELS_A + 2, 2 * sNCHANNELS_A + 1, -int(sNCHANNELS_A) - 0.5, int(sNCHANNELS_A) + 0.5);
   mHistPmTcmSumAmpA = std::make_unique<TH2F>("PmTcmSumAmpA", "Comparison of sum of amplitudes A from PM and TCM;Sum of amplitudes(TCM), side A;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
@@ -249,18 +232,17 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistPmTcmNchC = std::make_unique<TH2F>("PmTcmNumChannelsC", "Comparison of num. channels C from PM and TCM;Number of channels(TCM), side C;PM - TCM", sNCHANNELS_C + 2, 0, sNCHANNELS_C + 2, 2 * sNCHANNELS_C + 1, -int(sNCHANNELS_C) - 0.5, int(sNCHANNELS_C) + 0.5);
   mHistPmTcmSumAmpC = std::make_unique<TH2F>("PmTcmSumAmpC", "Comparison of sum of amplitudes C from PM and TCM;Sum of amplitudes(TCM), side C;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
   mHistPmTcmAverageTimeC = std::make_unique<TH2F>("PmTcmAverageTimeC", "Comparison of average time C from PM and TCM;Average time(TCM), side C;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
-  mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistTriggersSw = std::make_unique<TH1F>("TriggersSoftware", "Triggers from software", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
 
-  const auto mapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFDD;
   const std::map<unsigned int, std::string> mapTrgValidationStatus = {
     { TrgComparisonResult::kSWonly, "Sw only" },
     { TrgComparisonResult::kTCMonly, "TCM only" },
     { TrgComparisonResult::kNone, "neither TCM nor Sw" },
     { TrgComparisonResult::kBoth, "both TCM and Sw" }
   };
-  mHistTriggersSoftwareVsTCM = o2::quality_control_modules::fit::helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mapBasicTrgBits, mapTrgValidationStatus);
+  mHistTriggersSoftwareVsTCM = o2::quality_control_modules::fit::helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersSoftwareVsTCM", "Comparison of triggers from software and TCM;;Trigger name", mMapTrgBits, mapTrgValidationStatus);
 
-  for (const auto& entry : mMapDigitTrgNames) {
+  for (const auto& entry : mMapTechTrgBits) {
     mHistOrbitVsTrg->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -356,28 +338,10 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmp = mMapHistAmp1D.insert({ chID, new TH1F(Form("Amp_channel%i", chID), Form("Amplitude, channel %i", chID), 4200, -100, 4100) });
     auto pairHistAmpCoincidence = mMapHistAmp1DCoincidence.insert({ chID, new TH1F(Form("Amp_channelCoincidence%i", chID), Form("AmplitudeCoincidence, channel %i", chID), 4200, -100, 4100) });
-    auto pairHistTime = mMapHistTime1D.insert({ chID, new TH1F(Form("Time_channel%i", chID), Form("Time, channel %i", chID), 4100, -2050, 2050) });
-    auto pairHistBits = mMapHistPMbits.insert({ chID, new TH1F(Form("Bits_channel%i", chID), Form("Bits, channel %i", chID), mMapChTrgNames.size(), 0, mMapChTrgNames.size()) });
-    for (const auto& entry : mMapChTrgNames) {
-      pairHistBits.first->second->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
-    }
-    if (pairHistAmp.second) {
-      getObjectsManager()->startPublishing(pairHistAmp.first->second);
-      mListHistGarbage->Add(pairHistAmp.first->second);
-    }
     if (pairHistAmpCoincidence.second) {
       getObjectsManager()->startPublishing(pairHistAmpCoincidence.first->second);
       mListHistGarbage->Add(pairHistAmpCoincidence.first->second);
-    }
-    if (pairHistTime.second) {
-      mListHistGarbage->Add(pairHistTime.first->second);
-      getObjectsManager()->startPublishing(pairHistTime.first->second);
-    }
-    if (pairHistBits.second) {
-      mListHistGarbage->Add(pairHistBits.first->second);
-      getObjectsManager()->startPublishing(pairHistBits.first->second);
     }
   }
   for (const auto& chID : mSetAllowedChIDsAmpVsTime) {
@@ -449,6 +413,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
     obj->SetTitle((string("FDD ") + obj->GetTitle()).c_str());
   }
+  // Timestamp
+  mMetaAnchorOutput = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "metaAnchorOutput", "CycleDurationNTF");
+  mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");
 }
 
 void DigitQcTask::startOfActivity(const Activity& activity)
@@ -491,16 +458,7 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistPmTcmAverageTimeC->Reset();
   mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
-  for (auto& entry : mMapHistAmp1D) {
-    entry.second->Reset();
-  }
   for (auto& entry : mMapHistAmp1DCoincidence) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistTime1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistPMbits) {
     entry.second->Reset();
   }
   for (auto& entry : mMapHistAmpVsTime) {
@@ -600,14 +558,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       mHistNumCFD->Fill(chData.mPMNumber);
       if (mSetAllowedChIDs.size() != 0 && mSetAllowedChIDs.find(static_cast<unsigned int>(chData.mPMNumber)) != mSetAllowedChIDs.end()) {
-        mMapHistAmp1D[chData.mPMNumber]->Fill(chData.mChargeADC);
-        mMapHistTime1D[chData.mPMNumber]->Fill(chData.mTime);
-        for (const auto& entry : mMapChTrgNames) {
-          if ((chData.mFEEBits & (1 << entry.first))) {
-            mMapHistPMbits[chData.mPMNumber]->Fill(entry.first);
-          }
-        }
-
         if (static_cast<int>(chData.mPMNumber) == 0 && hasData[4]) {
           mMapHistAmp1DCoincidence[0]->Fill(chData.mChargeADC);
         }
@@ -864,7 +814,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                          timeC      = %d / %d \n \
                          vertexPos  = -- / %d \n \
                          TCM bits   = %d / --",
-          mMapDigitTrgNames[entry.first].c_str(),
+          mMapTechTrgBits[entry.first].c_str(),
           isTCMFired, isSwFired,
           digit.mTriggers.getNChanA(), pmNChanA,
           digit.mTriggers.getNChanC(), pmNChanC,
@@ -885,7 +835,7 @@ void DigitQcTask::endOfCycle()
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
   // add TF creation time for further match with filling scheme in PP in case of offline running
   ILOG(Debug, Support) << "adding last TF creation time: " << mTFcreationTime << ENDM;
-  getObjectsManager()->getMonitorObject(mHistBCvsTrg->GetName())->addOrUpdateMetadata("TFcreationTime", std::to_string(mTFcreationTime));
+  getObjectsManager()->getMonitorObject(mMetaAnchorOutput)->addOrUpdateMetadata(mTimestampMetaField, std::to_string(mTFcreationTime));
 
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
@@ -968,16 +918,7 @@ void DigitQcTask::reset()
   mHistPmTcmAverageTimeC->Reset();
   mHistTriggersSw->Reset();
   mHistTriggersSoftwareVsTCM->Reset();
-  for (auto& entry : mMapHistAmp1D) {
-    entry.second->Reset();
-  }
   for (auto& entry : mMapHistAmp1DCoincidence) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistTime1D) {
-    entry.second->Reset();
-  }
-  for (auto& entry : mMapHistPMbits) {
     entry.second->Reset();
   }
   for (auto& entry : mMapHistAmpVsTime) {

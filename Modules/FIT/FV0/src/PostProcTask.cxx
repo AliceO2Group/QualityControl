@@ -19,10 +19,10 @@
 #include "CommonConstants/LHCConstants.h"
 #include "DataFormatsParameters/GRPLHCIFData.h"
 #include "DataFormatsFV0/LookUpTable.h"
+#include "Common/Utils.h"
 
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
-#include "FITCommon/HelperFIT.h"
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -56,6 +56,9 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
   const char* configPath = Form("qc.postprocessing.%s", getID().c_str());
   const char* configCustom = Form("%s.custom", configPath);
   ILOG(Info, Support) << "configPath = " << configPath << ENDM;
+  auto cfgPath = [&configCustom](const std::string& entry) {
+    return Form("%s.%s", configCustom, entry.c_str());
+  };
 
   auto node = config.get_child_optional(Form("%s.custom.pathGrpLhcIf", configPath));
   if (node) {
@@ -112,6 +115,17 @@ void PostProcTask::configure(const boost::property_tree::ptree& config)
 
   mLowTimeThreshold = helper::getConfigFromPropertyTree<int>(config, Form("%s.lowTimeThreshold", configCustom), -192);
   mUpTimeThreshold = helper::getConfigFromPropertyTree<int>(config, Form("%s.upTimeThreshold", configCustom), 192);
+  mTimestampMetaField = helper::getConfigFromPropertyTree<std::string>(config, cfgPath("timestampMetaField"), "timestampTF");
+
+  // TO REMOVE
+  // VERY BAD SOLUTION, YOU SHOULDN'T USE IT
+  const std::string del = ",";
+  const std::string strChannelIDs = helper::getConfigFromPropertyTree<std::string>(config, cfgPath("channelIDs"), "");
+  const std::string strHistsToDecompose = helper::getConfigFromPropertyTree<std::string>(config, cfgPath("histsToDecompose"), "");
+  if (strChannelIDs.size() > 0 && strHistsToDecompose.size() > 0) {
+    mVecChannelIDs = helper::parseParameters<unsigned int>(strChannelIDs, del);
+    mVecHistsToDecompose = helper::parseParameters<std::string>(strHistsToDecompose, del);
+  }
 }
 
 void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -186,35 +200,18 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   mRateTrgCharge->SetLineColor(kBlue);
   mRateTrgNchan->SetLineColor(kOrange);
 
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kNumberADC, "NumberADC" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsDoubleEvent, "IsDoubleEvent" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoNOTvalid, "IsTimeInfoNOTvalid" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsCFDinADCgate, "IsCFDinADCgate" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLate, "IsTimeInfoLate" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsAmpHigh, "IsAmpHigh" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsEventInTVDC, "IsEventInTVDC" });
-  mMapChTrgNames.insert({ o2::fv0::ChannelData::kIsTimeInfoLost, "IsTimeInfoLost" });
-
-  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
-  for (const auto& entry : mMapChTrgNames) {
+  mHistChDataNegBits = std::make_unique<TH2F>("ChannelDataNegBits", "ChannelData negative bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits.size(), 0, mMapPMbits.size());
+  for (const auto& entry : mMapPMbits) {
     std::string stBitName = "! " + entry.second;
     mHistChDataNegBits->GetYaxis()->SetBinLabel(entry.first + 1, stBitName.c_str());
   }
   getObjectsManager()->startPublishing(mHistChDataNegBits.get(), quality_control::core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistChDataNegBits.get(), "COLZ");
 
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitA, "OrA" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAOut, "OrAOut" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitAIn, "OrAIn" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgCharge, "TrgCharge" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitTrgNchan, "TrgNChan" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitLaser, "Laser" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitOutputsAreBlocked, "OutputsAreBlocked" });
-  mMapDigitTrgNames.insert({ o2::fit::Triggers::bitDataIsValid, "DataIsValid" });
-  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
-  for (const auto& entry : mMapDigitTrgNames) {
+  mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
+  mHistBcPattern = std::make_unique<TH2F>("bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
+  mHistBcTrgOutOfBunchColl = std::make_unique<TH2F>("OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits.size(), 0, mMapTechTrgBits.size());
+  for (const auto& entry : mMapTechTrgBits) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcPattern->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistBcTrgOutOfBunchColl->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
@@ -310,8 +307,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
     }
   }
 
-  mMapBasicTrgBits = HelperTrgFIT::sMapBasicTrgBitsFV0;
-  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapBasicTrgBits);
+  mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "FV0 SW + HW only to validated triggers fraction", mMapTrgBits);
   mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TimeInWindowFraction", Form("FV0 Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "CFD_efficiency", "FV0 Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 }
@@ -691,7 +687,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 
   mHistBcPattern->Reset();
   for (int i = 0; i < sBCperOrbit + 1; i++) {
-    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+    for (int j = 0; j < mMapTechTrgBits.size() + 1; j++) {
       mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
   }
@@ -700,15 +696,15 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg, mHistBcPattern.get(), 1, -1 * vmax);
   for (int i = 0; i < sBCperOrbit + 1; i++) {
-    for (int j = 0; j < mMapDigitTrgNames.size() + 1; j++) {
+    for (int j = 0; j < mMapTechTrgBits.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
         mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0);
       }
     }
   }
 
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapDigitTrgNames.size()));
-  for (int iBin = 1; iBin < mMapDigitTrgNames.size() + 1; iBin++) {
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapTechTrgBits.size()));
+  for (int iBin = 1; iBin < mMapTechTrgBits.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
     const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, sBCperOrbit, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
@@ -723,6 +719,52 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     projOnlyHWorSW->LabelsDeflate();
     projValidatedSWandHW->LabelsDeflate();
     mHistTrgValidation->Divide(projOnlyHWorSW.get(), projValidatedSWandHW.get());
+  }
+  decomposeHists(t);
+  setTimestampToMOs(ts);
+}
+
+void PostProcTask::decomposeHists(Trigger trg)
+{
+  for (const auto& histName : mVecHistsToDecompose) {
+    auto insertedMap = mMapHistsToDecompose.insert({ histName, {} });
+    auto& mapHists = insertedMap.first->second;
+
+    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, histName, trg.timestamp, trg.activity);
+    auto histSrcPtr = mo ? dynamic_cast<TH2F*>(mo->getObject()) : nullptr;
+
+    if (histSrcPtr == nullptr) {
+      continue;
+    }
+    const auto bins = histSrcPtr->GetYaxis()->GetNbins();
+    const auto binLow = histSrcPtr->GetYaxis()->GetXmin();
+    const auto binUp = histSrcPtr->GetYaxis()->GetXmax();
+
+    for (const auto& chID : mVecChannelIDs) {
+      auto insertedHistDst = mapHists.insert({ chID, nullptr });
+      auto& histDstPtr = insertedHistDst.first->second;
+      auto isInserted = insertedHistDst.second;
+      if (isInserted == true) {
+        // creation in first iter
+        const std::string suffix = std::string{ Form("%03i", chID) };
+        const std::string newHistName = histName + std::string{ "_" } + suffix;
+        const std::string newHistTitle = histSrcPtr->GetTitle() + std::string{ " " } + suffix;
+        histDstPtr = std::make_shared<HistDecomposed_t>(newHistName.c_str(), newHistTitle.c_str(), bins, binLow, binUp);
+        getObjectsManager()->startPublishing(histDstPtr.get());
+      }
+      histDstPtr->Reset();
+      // making projection
+      const auto binPos = chID + 1;
+      const std::unique_ptr<TH1D> proj(histSrcPtr->ProjectionY("proj", binPos, binPos));
+      histDstPtr->Add(proj.get());
+    }
+  }
+}
+void PostProcTask::setTimestampToMOs(long long timestamp)
+{
+  for (int iObj = 0; iObj < getObjectsManager()->getNumberPublishedObjects(); iObj++) {
+    auto mo = getObjectsManager()->getMonitorObject(iObj);
+    mo->addOrUpdateMetadata(mTimestampMetaField, std::to_string(timestamp));
   }
 }
 

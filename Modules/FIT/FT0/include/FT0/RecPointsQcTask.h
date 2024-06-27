@@ -25,6 +25,7 @@
 #include <DataFormatsFT0/RecPoints.h>
 #include <DataFormatsFT0/ChannelData.h>
 #include "QualityControl/TaskInterface.h"
+#include "FITCommon/DetectorFIT.h"
 #include <memory>
 #include <regex>
 #include <set>
@@ -60,9 +61,9 @@ class RecPointsQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(const Activity& activity) override;
   void reset() override;
+  using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
 
  private:
-
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
   unsigned int mTrgPos_minBias;
@@ -82,7 +83,7 @@ class RecPointsQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistResCollTimeC;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
 
-  std::map<unsigned int, std::string> mMapTrgBits{};
+  typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
 };
 
 } // namespace o2::quality_control_modules::ft0
