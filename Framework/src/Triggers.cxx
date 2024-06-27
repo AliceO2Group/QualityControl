@@ -58,38 +58,33 @@ TriggerFcn NotImplemented(std::string triggerName)
   };
 }
 
-TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const core::Activity& activity)
+std::string createKafkaGroupId(std::string_view prefix, std::string_view detector, std::string_view taskName)
 {
-  auto returnedActivity = activity;
-  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, "SOR_postprocessing_group");
+  std::string groupId;
+  constexpr int numberOfUnderscores = 2;
+  groupId.reserve(prefix.size() + detector.size() + taskName.size() + numberOfUnderscores);
+  groupId.append(prefix).append("_").append(detector).append("_").append(taskName);
+
+  return groupId;
+}
+
+TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const std::string& detector, const std::string& taskName, const core::Activity& activity)
+{
+  auto copiedActivity = activity;
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, createKafkaGroupId("SOR_postprocessing", detector, taskName));
   poller->subscribe(topic);
-  return [poller, returnedActivity]() mutable -> Trigger {
+  return [poller, copiedActivity]() mutable -> Trigger {
     for (const auto& record : poller->poll()) {
-      if (proto_parser::isSOR(record.value())) {
-        return { TriggerType::StartOfRun, true, returnedActivity, static_cast<uint64_t>(record.timestamp().msSinceEpoch), "sor" };
+      if (auto event = proto::recordToEvent(record.value())) {
+        if (proto::end_of_run::check(*event, copiedActivity.mProvenance, copiedActivity.mId)) {
+          auto newActivityForTrigger = copiedActivity;
+          proto::end_of_run::fillActivity(*event, newActivityForTrigger);
+          return { TriggerType::StartOfRun, false, newActivityForTrigger, static_cast<uint64_t>(event->timestamp()), "sor" };
+        }
       }
     }
-    return { TriggerType::No, true, returnedActivity, Trigger::msSinceEpoch(), "sor" };
+    return { TriggerType::No, false, copiedActivity, Trigger::msSinceEpoch(), "sor" };
   };
-
-  // FIXME: it has to be initialized before the SOR, to actually catch it. Is it a problem?
-  //  bool runStarted = false; // runOngoing();
-  //  int runNumber = false;   // getRunNumber();
-  //
-  //  return [runStarted, runNumber]() mutable -> TriggerType {
-  //    bool trigger = false;
-
-  // trigger if:
-  // - previously the run was not started
-  //    trigger |= !runStarted && runOngoing();
-  // - previously there was a different run number (we missed a stop and start sequence)
-  //    trigger |= runOngoing() && runNumber != getRunNumber();
-
-  //    runStarted = runOngoing();
-  //    runNumber = getRunNumber();
-  //
-  //    return trigger ? TriggerType::StartOfRun : TriggerType::No;
-  //  };
 }
 
 TriggerFcn Once(const Activity& activity)
@@ -120,18 +115,22 @@ TriggerFcn Never(const Activity& activity)
   };
 }
 
-TriggerFcn EndOfRun(const std::string& kafkaBrokers, const std::string& topic, const Activity& activity)
+TriggerFcn EndOfRun(const std::string& kafkaBrokers, const std::string& topic, const std::string& detector, const std::string& taskName, const Activity& activity)
 {
-  auto returnedActivity = activity;
-  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, "EOR_postprocessing_group");
+  auto copiedActivity = activity;
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, createKafkaGroupId("EOR_postprocessing", detector, taskName));
   poller->subscribe(topic);
-  return [poller, returnedActivity]() mutable -> Trigger {
+  return [poller, copiedActivity]() mutable -> Trigger {
     for (const auto& record : poller->poll()) {
-      if (proto_parser::isEOR(record.value())) {
-        return { TriggerType::StartOfRun, true, returnedActivity, static_cast<uint64_t>(record.timestamp().msSinceEpoch), "eor" };
+      if (auto event = proto::recordToEvent(record.value())) {
+        if (proto::end_of_run::check(*event, copiedActivity.mProvenance, copiedActivity.mId)) {
+          auto newActivityForTrigger = copiedActivity;
+          proto::end_of_run::fillActivity(*event, newActivityForTrigger);
+          return { TriggerType::EndOfRun, false, newActivityForTrigger, static_cast<uint64_t>(event->timestamp()), "eor" };
+        }
       }
     }
-    return { TriggerType::No, true, returnedActivity, Trigger::msSinceEpoch(), "eor" };
+    return { TriggerType::No, false, copiedActivity, Trigger::msSinceEpoch(), "eor" };
   };
 }
 

@@ -9,38 +9,81 @@
 namespace o2::quality_control::core
 {
 
-namespace proto_parser
+namespace proto
 {
 
-bool contains(const events::Ev_RunEvent& runEvent, std::string_view state, events::OpStatus transitionStatus, std::optional<uint32_t> runNumber, std::optional<std::string_view> environmentID)
+bool isRunNumberSet(int runNumber)
+{
+  return runNumber != 0;
+}
+
+bool isEnvironmentIdSet(const std::string_view environmentID)
+{
+  return !environmentID.empty();
+}
+
+struct Ev_RunEventPartial {
+  std::string_view state;
+  events::OpStatus transitionStatus;
+  std::string_view environmentID;
+  int runNumber;
+};
+
+bool operator==(const events::Ev_RunEvent& runEvent, const Ev_RunEventPartial& runEvenPartial)
 {
   // TODO: Should we check whether the error is empty?
-  if (runEvent.state() != state ||
-      runEvent.transitionstatus() != transitionStatus) {
+  if (runEvent.state() != runEvenPartial.state ||
+      runEvent.transitionstatus() != runEvenPartial.transitionStatus) {
     return false;
   }
 
-  if (runNumber.has_value() && runEvent.runnumber() != runNumber.value()) {
+  if (isRunNumberSet(runEvenPartial.runNumber) && runEvent.runnumber() != runEvenPartial.runNumber) {
     return false;
   }
 
-  if (environmentID.has_value() && runEvent.environmentid() != environmentID.value()) {
+  if (isEnvironmentIdSet(runEvenPartial.environmentID) && runEvent.environmentid() != runEvenPartial.environmentID) {
     return false;
   }
 
   return true;
 }
 
-bool isSOR(const kafka::Value& kafkaMessage, const std::optional<std::string> envId, const std::optional<uint32_t> runNumber)
+auto recordToEvent(const kafka::Value& kafkaRecord) -> std::optional<events::Event>
 {
   events::Event event;
 
-  if (!event.ParseFromArray(kafkaMessage.data(), kafkaMessage.size())) {
+  if (!event.ParseFromArray(kafkaRecord.data(), kafkaRecord.size())) {
     ILOG(Error, Ops) << "Received wrong or inconsistent data in SOR parser" << ENDM;
-    return false;
+    return std::nullopt;
   }
 
-  if (event.Payload_case() != events::Event::PayloadCase::kRunEvent) {
+  return event;
+}
+
+void fillActivityWithoutTimestamp(const events::Event& event, Activity& activity)
+{
+  if (event.has_runevent()) {
+    auto& runEvent = event.runevent();
+
+    if (!isRunNumberSet(activity.mId)) {
+      activity.mId = runEvent.runnumber();
+    }
+
+    if (!isEnvironmentIdSet(activity.mProvenance)) {
+      activity.mProvenance = runEvent.environmentid();
+    }
+  }
+}
+
+void start_of_run::fillActivity(const events::Event& event, Activity& activity)
+{
+  fillActivityWithoutTimestamp(event, activity);
+  activity.mValidity.setMin(event.timestamp());
+}
+
+bool start_of_run::check(const events::Event& event, const std::string& environmentID, int runNumber)
+{
+  if (!event.has_runevent()) {
     return false;
   }
 
@@ -58,30 +101,22 @@ bool isSOR(const kafka::Value& kafkaMessage, const std::optional<std::string> en
   // std::cout << "envid: " << runEvent.environmentid() << "\n";
   // std::cout << "runnumber: " << runEvent.runnumber() << "\n";
 
-  return contains(runEvent, "CONFIGURED", events::OpStatus::STARTED, runNumber, envId);
-
-  return true;
+  return runEvent == Ev_RunEventPartial{ "CONFIGURED", events::OpStatus::STARTED, environmentID, runNumber };
 }
 
-bool isEOR(const kafka::Value& kafkaMessage, const std::optional<std::string> envId, const std::optional<uint32_t> runNumber)
+void end_of_run::fillActivity(const events::Event& event, Activity& activity)
 {
-  events::Event event;
+  fillActivityWithoutTimestamp(event, activity);
+  activity.mValidity.setMax(event.timestamp());
+}
 
-  if (!event.ParseFromArray(kafkaMessage.data(), kafkaMessage.size())) {
-    ILOG(Error, Ops) << "Received wrong or inconsistent data in EOR parser" << ENDM;
-    return false;
-  }
-
-  if (event.Payload_case() != events::Event::PayloadCase::kRunEvent) {
+bool end_of_run::check(const events::Event& event, const std::string& environmentID, int runNumber)
+{
+  if (!event.has_runevent()) {
     return false;
   }
 
   const auto& runEvent = event.runevent();
-
-  if (runEvent.transition() != "STOP_ACTIVITY" && runEvent.transition() != "TEARDOWN") {
-    return false;
-  }
-
   // std::cout << "EOR!!!\n";
   // std::cout << "transition: " << runEvent.transition() << "\n";
   // std::cout << "state: " << runEvent.state() << "\n";
@@ -90,10 +125,14 @@ bool isEOR(const kafka::Value& kafkaMessage, const std::optional<std::string> en
   // std::cout << "envid: " << runEvent.environmentid() << "\n";
   // std::cout << "runnumber: " << runEvent.runnumber() << "\n";
 
-  return contains(runEvent, "RUNNING", events::OpStatus::STARTED, runNumber, envId);
+  if (runEvent.transition() != "STOP_ACTIVITY" && runEvent.transition() != "TEARDOWN") {
+    return false;
+  }
+
+  return runEvent == Ev_RunEventPartial{ "RUNNING", events::OpStatus::STARTED, environmentID, runNumber };
 }
 
-} // namespace proto_parser
+} // namespace proto
 
 kafka::Properties createProperties(const std::string& brokers, const std::string& groupId)
 {

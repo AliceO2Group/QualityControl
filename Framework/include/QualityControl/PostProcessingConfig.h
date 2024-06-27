@@ -27,7 +27,7 @@
 namespace o2::quality_control::postprocessing
 {
 
-//todo pretty print
+// todo pretty print
 
 /// \brief  Post-processing configuration structure
 struct PostProcessingConfig {
@@ -45,6 +45,8 @@ struct PostProcessingConfig {
   std::string qcdbUrl;
   std::string ccdbUrl;
   std::string consulUrl;
+  std::string kafkaBrokersUrl;
+  std::string kafkaTopic;
   core::Activity activity;
   bool matchAnyRunNumber = false;
   bool critical;
@@ -53,4 +55,4 @@ struct PostProcessingConfig {
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_POSTPROCESSINGCONFIG_H
+#endif // QUALITYCONTROL_POSTPROCESSINGCONFIG_H

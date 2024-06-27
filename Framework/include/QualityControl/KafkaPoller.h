@@ -17,15 +17,30 @@
 #define QC_CORE_KAFKA_CONSUMER_H
 
 #include <kafka/KafkaConsumer.h>
+#include <proto/events.pb.h>
+#include "Activity.h"
 
 namespace o2::quality_control::core
 {
 
-namespace proto_parser
+namespace proto
 {
-bool isSOR(const kafka::Value&, const std::optional<std::string> envId = {}, const std::optional<uint32_t> runNumber = {});
-bool isEOR(const kafka::Value&, const std::optional<std::string> envId = {}, const std::optional<uint32_t> runNumber = {});
-} // namespace proto_parser
+
+auto recordToEvent(const kafka::Value&) -> std::optional<events::Event>;
+
+namespace start_of_run
+{
+void fillActivity(const events::Event& event, Activity& activity);
+bool check(const events::Event& event, const std::string& environmentID = "", int runNumber = 0);
+} // namespace start_of_run
+
+namespace end_of_run
+{
+void fillActivity(const events::Event& event, Activity& activity);
+bool check(const events::Event& event, const std::string& environmentID = "", int runNumber = 0);
+} // namespace end_of_run
+
+} // namespace proto
 
 class KafkaPoller
 {
