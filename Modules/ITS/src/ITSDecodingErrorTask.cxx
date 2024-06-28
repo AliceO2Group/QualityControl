@@ -50,6 +50,10 @@ void ITSDecodingErrorTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
   createDecodingPlots();
   setPlotsFormat();
+
+  for (int iFEE = 0; iFEE < NFees; iFEE++) {
+    DecErr_lastCycle[iFEE] = std::vector<int>(o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0);
+  }
 }
 
 void ITSDecodingErrorTask::createDecodingPlots()
@@ -125,11 +129,13 @@ void ITSDecodingErrorTask::startOfActivity(const Activity& activity)
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
-void ITSDecodingErrorTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
+void ITSDecodingErrorTask::startOfCycle()
+{
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+}
 
 void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
   auto linkErrors = ctx.inputs().get<gsl::span<o2::itsmft::GBTLinkDecodingStat>>("linkerrors");
   auto decErrors = ctx.inputs().get<gsl::span<o2::itsmft::ChipError>>("decerrors");
 
@@ -143,7 +149,10 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (le.errorCounts[ierror] <= 0) {
         continue;
       }
-      mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, le.errorCounts[ierror]);
+      if (isDoLinkErrorReset)
+        mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, le.errorCounts[ierror] - DecErr_lastCycle[ifee][ierror]);
+      else
+        mLinkErrorVsFeeid->SetBinContent(ifee + 1, ierror + 1, le.errorCounts[ierror]);
     }
   }
 
@@ -177,6 +186,7 @@ void ITSDecodingErrorTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSDecodingErrorTask::getParameters()
 {
   mBusyViolationLimit = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "mBusyViolationLimit", mBusyViolationLimit);
+  isDoLinkErrorReset = (bool)o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "isDoLinkErrorReset", isDoLinkErrorReset);
 }
 
 void ITSDecodingErrorTask::endOfCycle()
@@ -216,10 +226,17 @@ void ITSDecodingErrorTask::endOfActivity(const Activity& /*activity*/)
 void ITSDecodingErrorTask::resetGeneralPlots()
 {
   mTFCount++;
-  mLinkErrorVsFeeid->Reset();
-  mChipErrorVsFeeid->Reset();
-  mLinkErrorPlots->Reset();
   mChipErrorPlots->Reset();
+
+  if (isDoLinkErrorReset) {
+    for (int iFEE = 1; iFEE <= mLinkErrorVsFeeid->GetNbinsY(); iFEE++) {
+      for (int iError = 1; iError <= mLinkErrorVsFeeid->GetNbinsX(); iError++) {
+        DecErr_lastCycle[iFEE - 1][iError - 1] += mLinkErrorVsFeeid->GetBinContent(iFEE, iError);
+      }
+    }
+  }
+  mLinkErrorVsFeeid->Reset();
+  mLinkErrorPlots->Reset();
   for (int ilayer = 0; ilayer < 7; ilayer++) {
     mChipErrorVsChipid[ilayer]->Reset();
   }

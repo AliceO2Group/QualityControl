@@ -69,6 +69,8 @@ class ITSDecodingErrorTask final : public TaskInterface
   TH1D* hAlwaysBusy;
   TH1D* mChipErrorPlots;
   TH1D* mLinkErrorPlots;
+  bool isDoLinkErrorReset = true;
+  std::map<int, std::vector<int>> DecErr_lastCycle;
   TH2D* mChipErrorVsChipid[7]; // chip ErrorVsChipid
   TH2D* mLinkErrorVsFeeid;     // link ErrorVsFeeid
   TH2D* mChipErrorVsFeeid;     // chip ErrorVsFeeid
