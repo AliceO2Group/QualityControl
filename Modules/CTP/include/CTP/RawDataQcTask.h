@@ -23,14 +23,14 @@
 #include "Common/TH1Ratio.h"
 #include <memory>
 
-class TH1F;
+class TH1D;
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control_modules::common;
 namespace o2::quality_control_modules::ctp
 {
 
-/// \brief Task for reading the CTP inputs
+/// \brief Task for reading the CTP inputs and CTP classes
 class CTPRawDataReaderTask final : public TaskInterface
 {
  public:
@@ -49,16 +49,15 @@ class CTPRawDataReaderTask final : public TaskInterface
   void reset() override;
 
  private:
-  o2::ctp::RawDataDecoder mDecoder;
-  std::unique_ptr<TH1FRatio> mHistoInputs = nullptr;
-  std::unique_ptr<TH1FRatio> mHistoClasses = nullptr;
-  std::unique_ptr<TH1FRatio> mHistoInputRatios = nullptr;
-  std::unique_ptr<TH1FRatio> mHistoClassRatios = nullptr;
-  std::unique_ptr<TH1F> mHistoMTVXBC = nullptr;
+  o2::ctp::RawDataDecoder mDecoder;                       // ctp raw data decoder
+  std::unique_ptr<TH1DRatio> mHistoInputs = nullptr;      // histogram with ctp inputs
+  std::unique_ptr<TH1DRatio> mHistoClasses = nullptr;     // histogram with ctp classes
+  std::unique_ptr<TH1DRatio> mHistoInputRatios = nullptr; // histogram with ctp input ratios to MB
+  std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr; // histogram with ctp class ratios to MB
+  std::unique_ptr<TH1D> mHistoMTVXBC = nullptr;           // histogram of BC positions to check LHC filling scheme
   int mRunNumber;
   long int mTimestamp;
-  int mIndexMBclass = -1;
-  // const char* ctpinputs[o2::ctp::CTP_NINPUTS + 1] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" };
+  int mIndexMBclass = -1; // index for the MB ctp class, which is used as scaling for the ratios
 };
 
 } // namespace o2::quality_control_modules::ctp

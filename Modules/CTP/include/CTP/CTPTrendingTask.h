@@ -23,7 +23,6 @@
 #include "CTP/TH1ctpReductor.h"
 
 #include <string>
-#include <vector>
 #include <TTree.h>
 
 namespace o2::quality_control::repository
@@ -59,20 +58,20 @@ class CTPTrendingTask : public PostProcessingInterface
   void trendValues(const Trigger& t, quality_control::repository::DatabaseInterface& qcdb);
   void generatePlots();
 
-  o2::ctp::CTPConfiguration* mCTPconfig{ nullptr };
   TrendingConfigCTP mConfig;
   MetaData mMetaData;
-  UInt_t mTime;
+  UInt_t mTime; // this is not a specific time, used for x axis in trending plots, this name is used in all other modules, please suggest a new name if not appropriate
 
-  std::string mInputNamesDefault[5] = { "TVX", "VBA", "DMC", "EMC", "PH0" };
-  std::string ctpinputs[49] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" };
-  std::string mClassNamesDefault[5] = { "CMTVX-B-NOPF", "CMVBA-B-NOPF", "CTVXDMC-B-NOPF-EMC", "CTVXEMC-B-NOPF-EMC", "CTVXPH0-B-NOPF-PHSCPV" };
-  std::string mClassNames[5] = { "", "", "", "", "" };
-  std::string mInputNames[5] = { "", "", "", "", "" };
-  const int mNumOfClasses = 5;
-  const int mNumOfInputs = 5;
-  int mClassIndex[5] = { 65, 65, 65, 65, 65 };
-  int mInputIndex[5] = { 49, 49, 49, 49, 49 };
+  std::string mInputNamesDefault[5] = { "TVX", "VBA", "DMC", "EMC", "PH0" };                                                                                                                                                                                                                                                                                                             // ctp inputs to be trended by default, unless modified in config.json
+  std::string ctpinputs[49] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" }; // all ctp input names
+  std::string mClassNamesDefault[5] = { "CMTVX-B-NOPF", "CMVBA-B-NOPF", "CTVXDMC-B-NOPF-EMC", "CTVXEMC-B-NOPF-EMC", "CTVXPH0-B-NOPF-PHSCPV" };                                                                                                                                                                                                                                           // ctp classes to be trended by default, unless modified in config.json
+  std::string mClassNames[5] = { "", "", "", "", "" };                                                                                                                                                                                                                                                                                                                                   // the trended ctp classes will be filled in this array, either default or from config
+  std::string mInputNames[5] = { "", "", "", "", "" };                                                                                                                                                                                                                                                                                                                                   // the trended ctp inputs will be filled in this array, either default or from config
+  const int mNumberOfClasses = 5;                                                                                                                                                                                                                                                                                                                                                        // number of thrended ctp classes
+  const int mNumberOfInputs = 5;                                                                                                                                                                                                                                                                                                                                                         // number of thrended ctp inputs
+  int mClassIndex[5] = { 65, 65, 65, 65, 65 };                                                                                                                                                                                                                                                                                                                                           // indices of trended ctp classes, found in CTPconfig
+  int mInputIndex[5] = { 49, 49, 49, 49, 49 };                                                                                                                                                                                                                                                                                                                                           // indices of trended ctp inputs, found in CTPconfig
+  bool mCTPconfigFound = false;                                                                                                                                                                                                                                                                                                                                                          // bool telling whether the CTPconfing was already found
 
   std::map<std::string, TObject*> mPlots;
 
