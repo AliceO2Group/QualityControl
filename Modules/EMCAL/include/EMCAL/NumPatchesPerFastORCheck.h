@@ -64,16 +64,35 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
     }
   };
 
+  struct FastORNoiseLevel {
+    int mCounts;
+    int mFastORID;
+    int mPosGlobalPhi;
+    int mPosGlobalEta;
+    bool mRejected;
+
+    bool operator==(const FastORNoiseLevel& other) const
+    {
+      return (mCounts == other.mCounts && mFastORID == other.mFastORID);
+    }
+
+    bool operator<(const FastORNoiseLevel& other) const
+    {
+      if (mCounts == other.mCounts) {
+        return mFastORID < other.mFastORID;
+      }
+      return mCounts < other.mCounts;
+    }
+  };
+
  private:
   /************************************************
    * threshold cuts                               *
    ************************************************/
 
-  float mBadThresholdNumPatchesPerFastOR = 4.;    ///< Bad Threshold used in the Number of Patches Per FastOR check
-  float mMediumThresholdNumPatchesPerFastOR = 2.; ///< Bad Threshold used in the Number of Patches Per FastOR check
-  float mSigmaTSpectrum = 0.1;                    ///< TSpectrum parameter sigma
-  float mThreshTSpectrum = 0.01;                  ///< TSpectrum parameter threshold
-  int mLogLevelIL = 0;                            ///< Log level on InfoLogger
+  float mBadSigmaNumPatchesPerFastOR = 5.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean bad check
+  float mMedSigmaNumPatchesPerFastOR = 3.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean medium check
+  int mLogLevelIL = 0;                     ///< Log level on InfoLogger
 
   o2::emcal::Geometry* mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);                                  ///< Geometry for mapping position between SM and full EMCAL
   std::unique_ptr<o2::emcal::TriggerMappingV2> mTriggerMapping = std::make_unique<o2::emcal::TriggerMappingV2>(mGeometry); ///!<! Trigger mapping
