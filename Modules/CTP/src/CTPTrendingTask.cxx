@@ -18,15 +18,12 @@
 #include "CTP/TH1ctpReductor.h"
 
 #include <QualityControl/DatabaseInterface.h>
-#include <QualityControl/MonitorObject.h>
 #include <QualityControl/RootClassFactory.h>
 #include <QualityControl/QcInfoLogger.h>
 #include <QualityControl/ActivityHelpers.h>
-#include <QualityControl/RepoPathUtils.h>
-#include <QualityControl/UserCodeInterface.h>
 #include <CCDB/BasicCCDBManager.h>
 #include <DataFormatsCTP/Configuration.h>
-#include <DataFormatsCTP/RunManager.h>
+#include "DataFormatsCTP/RunManager.h"
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -41,11 +38,11 @@ void CTPTrendingTask::configure(const boost::property_tree::ptree& config)
 {
   mConfig = TrendingConfigCTP(getID(), config);
 }
+
+/// this function initialize all necessary parameters
 void CTPTrendingTask::initCTP(Trigger& t)
 {
   std::string run = std::to_string(t.activity.mId);
-  // CTPRunManager::setCCDBHost("https://alice-ccdb.cern.ch");
-  // mCTPconfig = CTPRunManager::getConfigFromCCDB(t.timestamp, run);
   std::string CCDBHost;
   try {
     CCDBHost = std::stof(mCustomParameters.at("ccdbName", "default"));
@@ -53,14 +50,16 @@ void CTPTrendingTask::initCTP(Trigger& t)
     CCDBHost = "https://alice-ccdb.cern.ch";
   }
 
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL(CCDBHost);
-  map<string, string> metadata; // can be empty
-  metadata["runNumber"] = run;
-  mCTPconfig = mgr.getSpecific<CTPConfiguration>(CCDBPathCTPConfig, t.timestamp, metadata);
-  if (mCTPconfig == nullptr) {
+  /// the reading of the ccdb from trending was already discussed and is related with the fact that CTPconfing may not be ready at the QC starts
+  o2::ctp::CTPRunManager::setCCDBHost(CCDBHost);
+  bool ok;
+  o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(t.timestamp, run, ok);
+
+  if (!ok) {
     ILOG(Warning, Support) << "CTP Config not found for run:" << run << " timesamp " << t.timestamp << ENDM;
     return;
+  } else {
+    mCTPconfigFound = true;
   }
 
   try {
@@ -123,11 +122,11 @@ void CTPTrendingTask::initCTP(Trigger& t)
     mInputNames[4] = mInputNamesDefault[4];
   }
 
-  // get the indeces of the classes we want to trend
-  std::vector<ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
-  std::vector<int> clslist = mCTPconfig->getTriggerClassList();
+  // get the indices of the classes we want to trend
+  std::vector<ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
+  std::vector<int> clslist = CTPconfig.getTriggerClassList();
   for (size_t i = 0; i < clslist.size(); i++) {
-    for (size_t j = 0; j < mNumOfClasses; j++) {
+    for (size_t j = 0; j < mNumberOfClasses; j++) {
       if (ctpcls[i].name.find(mClassNames[j]) != std::string::npos) {
         mClassIndex[j] = ctpcls[i].descriptorIndex + 1;
         break;
@@ -136,7 +135,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
   }
 
   for (size_t i = 0; i < sizeof(ctpinputs) / sizeof(std::string); i++) {
-    for (size_t j = 0; j < mNumOfInputs; j++) {
+    for (size_t j = 0; j < mNumberOfInputs; j++) {
       if (ctpinputs[i].find(mInputNames[j]) != std::string::npos) {
         mInputIndex[j] = i + 1;
         break;
@@ -159,20 +158,17 @@ void CTPTrendingTask::initCTP(Trigger& t)
   }
 
   getObjectsManager()->startPublishing(mTrend.get());
-  ILOG(Debug, Devel) << "Trending run : " << run << ENDM;
 }
 void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
-  // // read out the CTPConfiguration
-  // initCTP(t); //- too eraly here ?
 }
 
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  if (mCTPconfig == nullptr) {
+  if (mCTPconfigFound) {
     initCTP(t);
-    if (mCTPconfig == nullptr) {
+    if (mCTPconfigFound) {
       return;
     }
   }
@@ -192,9 +188,6 @@ void CTPTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterfac
             : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
 
-  ILOG(Info, Support) << "time stamp from activity " << t.timestamp << ENDM;
-  ILOG(Info, Support) << "run number from activity " << t.activity.mId << ENDM;
-  // map<string, string> metadata; // can be empty
   bool inputMissing = false;
 
   for (auto& dataSource : mConfig.dataSources) {
@@ -243,32 +236,31 @@ void CTPTrendingTask::generatePlots()
       mPlots[plot.name] = nullptr;
     }
 
-    if (index < 5 && mInputIndex[index] == 49) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+    if (index < 5 && mInputIndex[index] == 49) { // if the input index == 49, this input won't be trended
       ILOG(Info, Support) << "Input " << mInputNames[index] << " is not trended." << ENDM;
       index++;
       continue;
     }
 
-    if (index > 4 && index < 10 && mClassIndex[index - 5] == 65) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+    if (index > 4 && index < 10 && mClassIndex[index - 5] == 65) { // if the class index == 65, this ctp class is not defined in the CTPconfig, so it won't be trended
       ILOG(Info, Support) << "Class " << mClassNames[index - 5] << " is not trended." << ENDM;
       index++;
       continue;
     }
 
-    if (index > 9 && index < 14 && (mInputIndex[index - 9] == 49 || mInputIndex[0] == 49)) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+    if (index > 9 && index < 14 && (mInputIndex[index - 9] == 49 || mInputIndex[0] == 49)) { // if the input index == 49, this ctp input won't be trended
       ILOG(Info, Support) << "Input ratio " << mInputNames[index - 13] << " / " << mInputNames[0] << " is not trended." << ENDM;
       index++;
       continue;
     }
 
-    if (index > 13 && (mClassIndex[index - 13] == 65 || mClassIndex[0] == 65)) { // if the class index == 65, this class is not defined in the config, so it won't be trended
+    if (index > 13 && (mClassIndex[index - 13] == 65 || mClassIndex[0] == 65)) { // if the class index == 65, this ctp class is not defined in the CTPconfig, so it won't be trended
       ILOG(Info, Support) << "Class ratio " << mClassNames[index - 13] << " / " << mClassNames[0] << " is not trended." << ENDM;
       index++;
       continue;
     }
 
     auto* c = new TCanvas();
-    ILOG(Info, Support) << plot.varexp << " " << plot.selection << " " << plot.option << ENDM;
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
 
     c->SetName(plot.name.c_str());
