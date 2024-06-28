@@ -1,0 +1,356 @@
+{
+  "qc":
+  {
+    "config" : {
+                 "database" : {
+                   "implementation" :
+                   "CCDB",
+                   "host" :
+                   "ccdb-test.cern.ch:8080",
+                   "username" :
+                   "not_applicable",
+                   "password" :
+                   "not_applicable",
+                   "name" :
+                   "not_applicable"
+                 },
+                 "Activity" : {
+                   "number" :
+                   "42",
+                   "type" :
+                   "NONE"
+                 },
+                 "monitoring" : {
+                   "url" :
+                   "infologger:///debug?qc"
+                 },
+                 "consul" : {
+                   "url" :
+                   ""
+                 },
+                 "conditionDB" : {
+                   "url" :
+                   "ccdb-test.cern.ch:8080"
+                 }
+               },
+               "postprocessing":
+    {
+      "ITSqcTrendingError":
+      {
+        "active" :
+          "true",
+          "className" :
+          "o2::quality_control::postprocessing::TrendingTaskITSError",
+          "moduleName" :
+          "QualityControl",
+          "detectorName" :
+          "ITS",
+          "dataSources" : [{
+                             "type" :
+                             "repository",
+                             "paths" : [
+                                 "ITS/MO/ITSDECODING/General"],
+                             "names" : [
+                                 "LinkErrorPlots"],
+                             "reductorName" :
+                             "o2::quality_control_modules::its::ReductorBinContent",
+                             "moduleName" :
+                             "QcITS"
+                           }],
+                          "plots" :[
+                                     {
+                                       "names" : [
+                                           "# Error ID 0"],
+                                       "title" : [
+                                           "Number of errors with ID = 0"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[0]"],
+                                       "selection" :
+                                       "Time",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 1"],
+                                       "title" : [
+                                           "Number of errors with ID = 1"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[1]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 2"],
+                                       "title" : [
+                                           "Number of errors with ID = 2"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[2]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 3"],
+                                       "title" : [
+                                           "Number of errors with ID = 3"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[3]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 4"],
+                                       "title" : [
+                                           "Number of errors with ID = 4"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[4]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 5"],
+                                       "title" : [
+                                           "Number of errors with ID = 5"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[5]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 6"],
+                                       "title" : [
+                                           "Number of errors with ID = 6"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[6]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 7"],
+                                       "title" : [
+                                           "Number of errors with ID = 7"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[7]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 8"],
+                                       "title" : [
+                                           "Number of errors with ID = 8"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[8]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 9"],
+                                       "title" : [
+                                           "Number of errors with ID = 9"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[9]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 10"],
+                                       "title" : [
+                                           "Number of errors with ID = 10"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[10]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 11"],
+                                       "title" : [
+                                           "Number of errors with ID = 11"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[11]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 12"],
+                                       "title" : [
+                                           "Number of errors with ID = 12"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[12]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 13"],
+                                       "title" : [
+                                           "Number of errors with ID = 13"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[13]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 14"],
+                                       "title" : [
+                                           "Number of errors with ID = 14"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[14]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 15"],
+                                       "title" : [
+                                           "Number of errors with ID = 15"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[15]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 16"],
+                                       "title" : [
+                                           "Number of errors with ID = 16"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[16]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 17"],
+                                       "title" : [
+                                           "Number of errors with ID = 17"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[17]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 18"],
+                                       "title" : [
+                                           "Number of errors with ID = 18"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[18]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 19"],
+                                       "title" : [
+                                           "Number of errors with ID = 19"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[19]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 20"],
+                                       "title" : [
+                                           "Number of errors with ID = 20"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[20]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 21"],
+                                       "title" : [
+                                           "Number of errors with ID = 21"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[21]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },
+                                     {
+                                       "names" : [
+                                           "# Error ID 22"],
+                                       "title" : [
+                                           "Number of errors with ID = 22"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[22]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     },{
+                                       "names" : [
+                                           "# Error ID 23"],
+                                       "title" : [
+                                           "Number of errors with ID = 23"],
+                                       "varexp" : [
+                                           "LinkErrorPlots.binContent[23]"],
+                                       "selection" :
+                                       "",
+                                       "option" :
+                                       "PL"
+                                     }
+
+                                   ],
+                                   "initTrigger" : ["userorcontrol"],
+                                                   "updateTrigger" : ["10 seconds"],
+                                                                     "stopTrigger" : ["userorcontrol"]
+      }
+    }
+  }
+}

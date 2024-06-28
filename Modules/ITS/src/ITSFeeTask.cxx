@@ -40,6 +40,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mTFInfo;
   delete mTrigger;
   delete mTriggerVsFeeId;
+  delete mTriggerVsFeeId_reset;
   delete mFlag1Check;
   delete mDecodingCheck;
   delete mProcessingTime;
@@ -51,6 +52,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mRDHSummary;
   delete mRDHSummaryCumulative;
   delete mTrailerCount;
+  delete mTrailerCount_reset;
   delete mCalibrationWordCount;
   delete mCalibStage;
   delete mCalibLoop;
@@ -93,6 +95,9 @@ void ITSFeeTask::createFeePlots()
 
   mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, mTriggerType.size(), 0.5, mTriggerType.size() + 0.5);
   getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
+
+  mTriggerVsFeeId_reset = new TH2I("TriggerVsFeeid_reset", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, mTriggerType.size(), 0.5, mTriggerType.size() + 0.5);
+  getObjectsManager()->startPublishing(mTriggerVsFeeId_reset); // mTriggervsFeeId
 
   for (int i = 0; i < NFlags; i++) {
     mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag: %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
@@ -152,6 +157,9 @@ void ITSFeeTask::createFeePlots()
   mTrailerCount = new TH2I("TrailerCount", "Internal triggers per Orbit", NFees, 0, NFees, 21, -1, 20); // negative value if #ROF exceeds 20
   getObjectsManager()->startPublishing(mTrailerCount);
 
+  mTrailerCount_reset = new TH2I("TrailerCount_reset", "Internal triggers per Orbit for last TF", NFees, 0, NFees, 21, -1, 20); // negative value if #ROF exceeds 20
+  getObjectsManager()->startPublishing(mTrailerCount_reset);
+
   mActiveLanes = new TH2I("ActiveLanes", "Number of lanes enabled in IHW", NFees, 0, NFees, NLanesMax, 0, NLanesMax);
   getObjectsManager()->startPublishing(mActiveLanes);
 
@@ -210,6 +218,12 @@ void ITSFeeTask::setPlotsFormat()
     for (int i = 0; i < mTriggerType.size(); i++) {
       mTriggerVsFeeId->GetYaxis()->SetBinLabel(i + 1, mTriggerType.at(i).second);
     }
+    setAxisTitle(mTriggerVsFeeId_reset, "FeeID", "Trigger ID");
+    mTriggerVsFeeId_reset->SetMinimum(0);
+    mTriggerVsFeeId_reset->SetStats(0);
+    for (int i = 0; i < mTriggerType.size(); i++) {
+      mTriggerVsFeeId_reset->GetYaxis()->SetBinLabel(i + 1, mTriggerType.at(i).second);
+    }
   }
 
   if (mProcessingTime) {
@@ -247,6 +261,15 @@ void ITSFeeTask::setPlotsFormat()
     mTrailerCount->GetYaxis()->SetBinLabel(11, "101 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(15, "135 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(20, "202 kHz");
+
+    setAxisTitle(mTrailerCount_reset, "QC FEEId", "Estimated ROF frequenccy");
+    mTrailerCount_reset->SetStats(0);
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(3, "11 kHz");
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(6, "45 kHz");
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(8, "67 kHz");
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(11, "101 kHz");
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(15, "135 kHz");
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(20, "202 kHz");
   }
 
   if (mCalibrationWordCount) {
@@ -576,6 +599,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         if (!RampOngoing && !clockEvt) {
           mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
+          mTrailerCount_reset->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
         }
         TDTcounter[ifee] = 0;
       }
@@ -584,6 +608,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (((o2::raw::RDHUtils::getTriggerType(rdh)) >> mTriggerType.at(i).first & 1) == 1) {
           mTrigger->Fill(i + 1);
           mTriggerVsFeeId->Fill(ifee, i + 1);
+          mTriggerVsFeeId_reset->Fill(ifee, i + 1);
         }
       }
     }
@@ -729,6 +754,8 @@ void ITSFeeTask::resetLanePlotsAndCounters(bool isFullReset)
   if (mResetPayload || isFullReset) {
     mPayloadSize->Reset("ICES");
   }
+  mTrailerCount_reset->Reset();
+  mTriggerVsFeeId_reset->Reset();
 }
 
 void ITSFeeTask::reset()
