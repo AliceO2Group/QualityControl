@@ -1453,7 +1453,7 @@ The check needs the following parameters
 - `comparatorName` to decide how to compare, see below for their descriptions.
 - `threshold` to specifie the value used to discriminate between good and bad matches between the histograms.
 
-Three comparator are provided:
+Three comparators are provided:
 1. `o2::quality_control_modules::common::ObjectComparatorDeviation`: comparison based on the average relative deviation between the bins of the current and reference histograms; the `threshold` parameter represent in this case the maximum allowed deviation
 2. `o2::quality_control_modules::common::ObjectComparatorChi2`: comparison based on a standard chi2 test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed chi2 probability
 3. `o2::quality_control_modules::common::ObjectComparatorKolmogorov`: comparison based on a standard Kolmogorov test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed Kolmogorov probability
