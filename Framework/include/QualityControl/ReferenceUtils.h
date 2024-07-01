@@ -14,8 +14,8 @@
 /// \author Andrea Ferrero and Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_ReferenceComparatorUtils_H
-#define QUALITYCONTROL_ReferenceComparatorUtils_H
+#ifndef QUALITYCONTROL_ReferenceUtils_H
+#define QUALITYCONTROL_ReferenceUtils_H
 
 #include <memory>
 #include "QualityControl/MonitorObject.h"
@@ -53,6 +53,6 @@ static std::shared_ptr<quality_control::core::MonitorObject> getReferencePlot(qu
   return qcdb->retrieveMO(path, name, timeStamp, activity);
 }
 
-} // namespace o2::quality_control_modules::common
+} // namespace o2::quality_control::checker
 
-#endif // QUALITYCONTROL_ReferenceComparatorUtils_H
+#endif // QUALITYCONTROL_ReferenceUtils_H
