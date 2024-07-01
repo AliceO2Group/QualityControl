@@ -52,9 +52,8 @@ static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::Databas
     return { nullptr, false };
   }
 
-  std::string path;
-  std::string name;
-  if (!o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath, path, name)) {
+  auto [success, path, name] = o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath);
+  if (!success) {
     return { nullptr, false };
   }
   // retrieve QO from CCDB - do not associate to trigger activity if ignoreActivity is true
