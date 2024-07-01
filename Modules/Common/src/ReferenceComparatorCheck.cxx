@@ -27,6 +27,8 @@
 
 #include <Framework/ServiceRegistryRef.h>
 
+#include <TClass.h>
+
 // ROOT
 #include <TH1.h>
 #include <TCanvas.h>
