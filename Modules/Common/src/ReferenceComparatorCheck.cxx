@@ -181,7 +181,7 @@ Quality ReferenceComparatorCheck::check(std::map<std::string, std::shared_ptr<Mo
       // We got a plot, we have to find the reference before calling the comparator
       quality = getSinglePlotQuality(mo, message);
     } else {
-      ILOG(Warning, Ops) << "mo is not a TCanvas or a TH1" << ENDM;
+      ILOG(Warning, Ops) << "Compared Monitor Object '" << mo->getName() << "' is not a TCanvas or a TH1, the detector QC responsible should review the configuration" << ENDM;
       continue;
     }
 
