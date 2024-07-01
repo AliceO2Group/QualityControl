@@ -1,6 +1,7 @@
 #include "QualityControl/KafkaPoller.h"
 
 #include "QualityControl/QcInfoLogger.h"
+#include "kafka/KafkaException.h"
 #include "kafka/Properties.h"
 #include "proto/events.pb.h"
 #include <chrono>
@@ -19,7 +20,8 @@ bool isRunNumberSet(int runNumber)
 
 bool isEnvironmentIdSet(const std::string_view environmentID)
 {
-  return !environmentID.empty();
+  // qc is default value for Activity object so we need to check against it as well
+  return !environmentID.empty() && environmentID != "qc";
 }
 
 struct Ev_RunEventPartial {
@@ -53,7 +55,7 @@ auto recordToEvent(const kafka::Value& kafkaRecord) -> std::optional<events::Eve
   events::Event event;
 
   if (!event.ParseFromArray(kafkaRecord.data(), kafkaRecord.size())) {
-    ILOG(Error, Ops) << "Received wrong or inconsistent data in SOR parser" << ENDM;
+    ILOG(Error, Ops) << "Received wrong or inconsistent data while parser Event from kafka proto" << ENDM;
     return std::nullopt;
   }
 
@@ -93,14 +95,6 @@ bool start_of_run::check(const events::Event& event, const std::string& environm
     return false;
   }
 
-  // std::cout << "SOR!!!\n";
-  // std::cout << "transition: " << runEvent.transition() << "\n";
-  // std::cout << "state: " << runEvent.state() << "\n";
-  // std::cout << "error: " << runEvent.error() << "\n";
-  // std::cout << "transitionStatus: " << runEvent.transitionstatus() << "\n";
-  // std::cout << "envid: " << runEvent.environmentid() << "\n";
-  // std::cout << "runnumber: " << runEvent.runnumber() << "\n";
-
   return runEvent == Ev_RunEventPartial{ "CONFIGURED", events::OpStatus::STARTED, environmentID, runNumber };
 }
 
@@ -117,13 +111,6 @@ bool end_of_run::check(const events::Event& event, const std::string& environmen
   }
 
   const auto& runEvent = event.runevent();
-  // std::cout << "EOR!!!\n";
-  // std::cout << "transition: " << runEvent.transition() << "\n";
-  // std::cout << "state: " << runEvent.state() << "\n";
-  // std::cout << "error: " << runEvent.error() << "\n";
-  // std::cout << "transitionStatus: " << runEvent.transitionstatus() << "\n";
-  // std::cout << "envid: " << runEvent.environmentid() << "\n";
-  // std::cout << "runnumber: " << runEvent.runnumber() << "\n";
 
   if (runEvent.transition() != "STOP_ACTIVITY" && runEvent.transition() != "TEARDOWN") {
     return false;
@@ -138,7 +125,8 @@ kafka::Properties createProperties(const std::string& brokers, const std::string
 {
   return { { { "bootstrap.servers", { brokers } },
              { "group.id", { groupId } },
-             { "enable.auto.commit", { "true" } } } };
+             { "enable.auto.commit", { "true" } },
+             { "auto.offset.reset", { "latest" } } } };
 }
 
 KafkaPoller::KafkaPoller(const std::string& brokers, const std::string& groupId)
@@ -146,9 +134,23 @@ KafkaPoller::KafkaPoller(const std::string& brokers, const std::string& groupId)
 {
 }
 
-void KafkaPoller::subscribe(const std::string& topic)
+void KafkaPoller::subscribe(const std::string& topic, size_t numberOfRetries)
 {
-  mConsumer.subscribe({ topic });
+  for (size_t retryNumber = 0; retryNumber != numberOfRetries; ++retryNumber) {
+    try {
+      mConsumer.subscribe({ topic });
+      return;
+    } catch (const kafka::KafkaException& ex) {
+      // it sometimes happen that subscibe timeouts but another retry succeeds
+      if (ex.error().value() != RD_KAFKA_RESP_ERR__TIMED_OUT) {
+        throw;
+      } else {
+        ILOG(Warning, Ops) << "Failed to subscribe to kafka due to timeout " << retryNumber + 1 << "/" << numberOfRetries + 1 << " times, retrying..." << ENDM;
+      }
+    }
+  }
+
+  throw std::runtime_error(std::string{ "Kafka Poller failed to subscribe after " }.append(std::to_string(numberOfRetries)).append(" retries"));
 }
 
 auto KafkaPoller::poll() -> KafkaRecords
