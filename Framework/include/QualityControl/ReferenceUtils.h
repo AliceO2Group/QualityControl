@@ -25,7 +25,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/RepoPathUtils.h"
 
-namespace o2::quality_control_modules::common
+namespace o2::quality_control::checker
 {
 
 //_________________________________________________________________________________________
