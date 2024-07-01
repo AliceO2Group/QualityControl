@@ -22,6 +22,7 @@
 #include "Common/Utils.h"
 #include <FIT/RecoFITQcTask.h>
 #include <FITCommon/HelperHist.h>
+#include <FITCommon/DetectorFIT.h>
 #include <DataFormatsFDD/RecPoint.h>
 #include <DataFormatsFT0/RecPoints.h>
 #include <DataFormatsFV0/RecPoints.h>
@@ -34,8 +35,9 @@
 #include <vector>
 #include <set>
 #include <chrono>
-namespace o2::quality_control_modules::fit
-{
+
+using namespace o2::quality_control_modules::fit::detectorFIT;
+using namespace o2::quality_control_modules::fit;
 
 RecoFITQcTask::~RecoFITQcTask()
 {
@@ -60,17 +62,18 @@ void RecoFITQcTask::initialize(o2::framework::InitContext& ctx)
     mIsFV0 = true;
     LOG(debug) << "FV0 DPL channel is detected";
   }
-  const auto mapFDD_FT0 = helper::multiplyMaps({ { "FDD ", HelperTrgFIT::sMapBasicTrgBitsFDD, " && " }, { "FT0 ", HelperTrgFIT::sMapBasicTrgBitsFT0, "" } });
-  const auto mapFDD_FV0 = helper::multiplyMaps({ { "FDD ", HelperTrgFIT::sMapBasicTrgBitsFDD, " && " }, { "FV0 ", HelperTrgFIT::sMapBasicTrgBitsFV0, "" } });
-  const auto mapFT0_FV0 = helper::multiplyMaps({ { "FT0 ", HelperTrgFIT::sMapBasicTrgBitsFT0, " && " }, { "FV0 ", HelperTrgFIT::sMapBasicTrgBitsFV0, "" } });
+  const auto mapFDD_FT0 = helper::multiplyMaps({ { "FDD ", DetectorFDD::sMapTrgBits, " && " }, { "FT0 ", DetectorFT0::sMapTrgBits, "" } });
+  const auto mapFDD_FV0 = helper::multiplyMaps({ { "FDD ", DetectorFDD::sMapTrgBits, " && " }, { "FV0 ", DetectorFV0::sMapTrgBits, "" } });
+  const auto mapFT0_FV0 = helper::multiplyMaps({ { "FT0 ", DetectorFT0::sMapTrgBits, " && " }, { "FV0 ", DetectorFV0::sMapTrgBits, "" } });
 
-  const auto mapFDD_FT0_FV0 = helper::multiplyMaps({ { "FDD ", HelperTrgFIT::sMapBasicTrgBitsFDD, " && " }, { "FT0 ", HelperTrgFIT::sMapBasicTrgBitsFT0, " && " }, { "FV0 ", HelperTrgFIT::sMapBasicTrgBitsFV0, "" } });
-  mHistTrgCorrelationFDD_FT0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FT0", "Correlation between trigger signals: FDD & FT0;BC;Triggers", sNBC, 0, sNBC, mapFDD_FT0);
-  mHistTrgCorrelationFDD_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FV0", "Correlation between trigger signals: FDD & FV0;BC;Triggers", sNBC, 0, sNBC, mapFDD_FV0);
-  mHistTrgCorrelationFT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFT0_FV0", "Correlation between trigger signals: FT0 & FV0;BC;Triggers", sNBC, 0, sNBC, mapFT0_FV0);
+  const auto mapFDD_FT0_FV0 = helper::multiplyMaps({ { "FDD ", DetectorFDD::sMapTrgBits, " && " }, { "FT0 ", DetectorFT0::sMapTrgBits, " && " }, { "FV0 ", DetectorFV0::sMapTrgBits, "" } });
+  std::tuple<int, float, float> axisBC{ static_cast<int>(sNBC), 0., sNBC };
+  mHistTrgCorrelationFDD_FT0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FT0", "Correlation between trigger signals: FDD & FT0;BC;Triggers", axisBC, mapFDD_FT0);
+  mHistTrgCorrelationFDD_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FV0", "Correlation between trigger signals: FDD & FV0;BC;Triggers", axisBC, mapFDD_FV0);
+  mHistTrgCorrelationFT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFT0_FV0", "Correlation between trigger signals: FT0 & FV0;BC;Triggers", axisBC, mapFT0_FV0);
 
-  //  mHistTrgCorrelationFDD_FT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TrgCorrelationFDD_FT0_FV0","Correlation between trigger signals: FDD & FT0 & FV0;BC;Triggers",sNBC,0,sNBC,mapFDD_FT0_FV0);
-  for (const auto& enTrgFT0 : HelperTrgFIT::sMapBasicTrgBitsFT0) {
+  //  mHistTrgCorrelationFDD_FT0_FV0 = helper::registerHist<TH2F>(getObjectsManager(), "COLZ", "TrgCorrelationFDD_FT0_FV0","Correlation between trigger signals: FDD & FT0 & FV0;BC;Triggers",sNBC,0,sNBC,mapFDD_FT0_FV0);
+  for (const auto& enTrgFT0 : DetectorFT0::sMapTrgBits) {
     const std::string histName = "TrgCorrelation_FT0" + enTrgFT0.second + "_FDD_FV0";
     const std::string histTitle = "Correlation between trigger signals (FT0 " + enTrgFT0.second + "): FDD & FV0;BC;Triggers";
     mHistTrgCorrelationFT0_FDD_FV0[enTrgFT0.first] = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", histName, histTitle, sNBC, 0, sNBC, mapFDD_FV0);
@@ -109,21 +112,21 @@ void RecoFITQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     const auto trgFT0 = recPointsFT0.getTrigger().getTriggersignals() & allowedTrgBits;
     const auto trgFV0 = recPointsFV0.getTrigger().getTriggersignals() & allowedTrgBits;
     // Too many small nested loops(max size = 5) , better to find another way for correlation calc?
-    for (const auto trgBitFDD : HelperTrgFIT::sArrDecomposed1Byte[trgFDD]) {
-      for (const auto trgBitFT0 : HelperTrgFIT::sArrDecomposed1Byte[trgFT0]) {
+    for (const auto trgBitFDD : DetectorFDD::sArrDecomposed1Byte[trgFDD]) {
+      for (const auto trgBitFT0 : DetectorFT0::sArrDecomposed1Byte[trgFT0]) {
         const auto trgCorrStatusFDD_FT0 = mFuncTrgStatusFDD_FT0(trgBitFDD, trgBitFT0);
         mHistTrgCorrelationFDD_FT0->Fill(ir.bc, trgCorrStatusFDD_FT0);
       }
-      for (const auto trgBitFV0 : HelperTrgFIT::sArrDecomposed1Byte[trgFV0]) {
+      for (const auto trgBitFV0 : DetectorFV0::sArrDecomposed1Byte[trgFV0]) {
         const auto trgCorrStatusFDD_FV0 = mFuncTrgStatusFDD_FV0(trgBitFDD, trgBitFV0);
         mHistTrgCorrelationFDD_FV0->Fill(ir.bc, trgCorrStatusFDD_FV0);
-        for (const auto trgBitFT0 : HelperTrgFIT::sArrDecomposed1Byte[trgFT0]) {
+        for (const auto trgBitFT0 : DetectorFT0::sArrDecomposed1Byte[trgFT0]) {
           mHistTrgCorrelationFT0_FDD_FV0[trgBitFT0]->Fill(ir.bc, trgCorrStatusFDD_FV0);
         }
       }
     }
-    for (const auto trgBitFT0 : HelperTrgFIT::sArrDecomposed1Byte[trgFT0]) {
-      for (const auto trgBitFV0 : HelperTrgFIT::sArrDecomposed1Byte[trgFV0]) {
+    for (const auto trgBitFT0 : DetectorFT0::sArrDecomposed1Byte[trgFT0]) {
+      for (const auto trgBitFV0 : DetectorFV0::sArrDecomposed1Byte[trgFV0]) {
         const auto trgCorrStatusFT0_FV0 = mFuncTrgStatusFT0_FV0(trgBitFT0, trgBitFV0);
         mHistTrgCorrelationFT0_FV0->Fill(ir.bc, trgCorrStatusFT0_FV0);
       }
@@ -157,5 +160,3 @@ void RecoFITQcTask::reset()
     mHistTrgCorrelationFT0_FDD_FV0[iTrgBit]->Reset();
   }
 }
-
-} // namespace o2::quality_control_modules::fit

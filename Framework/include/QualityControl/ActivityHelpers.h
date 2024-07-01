@@ -22,64 +22,59 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <ranges>
 #include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::quality_control::core::activity_helpers
 {
 
+template <typename Range>
+concept RangeOfActivities = requires(Range range)
+{
+  requires std::same_as<std::ranges::range_value_t<Range>, Activity>;
+};
+
 namespace implementation
 {
-
-template <typename Iter, typename Accessor = const Activity& (*)(const Activity&)>
-void commonActivityFields(Iter begin, Iter end, Accessor accessor, Activity& result);
-
+Activity commonActivityFields(const RangeOfActivities auto& activities);
 }
 
 /// Produces the most constrained Activity which will match all the provided
-template <typename Iter, typename Accessor = const Activity& (*)(const Activity&)>
-Activity strictestMatchingActivity(
-  Iter begin, Iter end, Accessor accessor = [](const Activity& a) -> const Activity& { return a; })
+Activity strictestMatchingActivity(const RangeOfActivities auto& activities)
 {
-  if (begin == end) {
+  if (std::ranges::empty(activities)) {
     return {};
   }
-  if (std::next(begin) == end) {
-    return accessor(*begin);
+  if (std::ranges::size(activities) == 1) {
+    return *std::ranges::begin(activities);
   }
-  Activity result;
-  implementation::commonActivityFields(begin, end, accessor, result);
+  Activity result = implementation::commonActivityFields(activities);
 
-  result.mValidity = accessor(*begin).mValidity;
-  std::for_each(std::next(begin), end, [&](const auto& item) {
-    const auto& validity = accessor(item).mValidity;
+  result.mValidity = (*std::ranges::begin(activities)).mValidity;
+  for (const Activity& activity : activities | std::views::drop(1)) {
+    const auto& validity = activity.mValidity;
     result.mValidity.update(validity.getMin());
     result.mValidity.update(validity.getMax());
-  });
-
+  }
   return result;
 }
 
 /// Produces an Activity which matches all the provided, but the validity is a union.
 /// Be sure to check if the result validity is valid, it might not if the argument validities do not overlap
-template <typename Iter, typename Accessor = const Activity& (*)(const Activity&)>
-Activity overlappingActivity(
-  Iter begin, Iter end, Accessor accessor = [](const Activity& a) -> const Activity& { return a; })
+Activity overlappingActivity(const RangeOfActivities auto& activities)
 {
-  if (begin == end) {
+  if (std::ranges::empty(activities)) {
     return {};
   }
-  if (std::next(begin) == end) {
-    return accessor(*begin);
+  if (std::ranges::size(activities) == 1) {
+    return *std::ranges::begin(activities);
   }
 
-  Activity result;
-  implementation::commonActivityFields(begin, end, accessor, result);
-
-  result.mValidity = accessor(*begin).mValidity;
-  std::for_each(std::next(begin), end, [&](const auto& item) {
-    const auto& validity = accessor(item).mValidity;
-    result.mValidity = result.mValidity.getOverlap(validity);
-  });
+  Activity result = implementation::commonActivityFields(activities);
+  result.mValidity = (*std::ranges::begin(activities)).mValidity;
+  for (const Activity& activity : activities | std::views::drop(1)) {
+    result.mValidity = result.mValidity.getOverlap(activity.mValidity);
+  }
 
   return result;
 }
@@ -98,36 +93,31 @@ bool onNumericLimit(validity_time_t timestamp);
 
 namespace implementation
 {
-template <typename Iter, typename Accessor>
-void commonActivityFields(Iter begin, Iter end, Accessor accessor, Activity& result)
-{
-  const Activity& first = accessor(*begin);
 
-  // with enough effort (and maybe c++20), this could be further templated to avoid repetition
-  // (calculate structure field offset, reinterpret_cast shifted pointers to the deduced types)
-  if (std::all_of(std::next(begin), end, [&](const auto& item) { return first.mId == accessor(item).mId; })) {
-    result.mId = first.mId;
-  }
-  if (std::all_of(std::next(begin), end, [&](const auto& item) { return first.mType == accessor(item).mType; })) {
-    result.mType = first.mType;
-  }
-  if (std::all_of(std::next(begin), end,
-                  [&](const auto& item) { return first.mPassName == accessor(item).mPassName; })) {
-    result.mPassName = first.mPassName;
-  }
-  if (std::all_of(std::next(begin), end,
-                  [&](const auto& item) { return first.mPeriodName == accessor(item).mPeriodName; })) {
-    result.mPeriodName = first.mPeriodName;
-  }
-  if (std::all_of(std::next(begin), end,
-                  [&](const auto& item) { return first.mProvenance == accessor(item).mProvenance; })) {
-    result.mProvenance = first.mProvenance;
-  }
-  if (std::all_of(std::next(begin), end,
-                  [&](const auto& item) { return first.mBeamType == accessor(item).mBeamType; })) {
-    result.mBeamType = first.mBeamType;
+template <RangeOfActivities RangeType, typename FieldType>
+void setMemberIfCommon(Activity& result, const RangeType& activities, FieldType Activity::*memberPtr)
+{
+  const Activity& first = *std::ranges::begin(activities);
+  if (std::ranges::all_of(activities | std::views::drop(1), [&](const auto& other) { return first.*memberPtr == other.*memberPtr; })) {
+    result.*memberPtr = first.*memberPtr;
   }
 }
+
+Activity commonActivityFields(const RangeOfActivities auto& activities)
+{
+  Activity result;
+  setMemberIfCommon(result, activities, &Activity::mId);
+  setMemberIfCommon(result, activities, &Activity::mType);
+  setMemberIfCommon(result, activities, &Activity::mPassName);
+  setMemberIfCommon(result, activities, &Activity::mPeriodName);
+  setMemberIfCommon(result, activities, &Activity::mProvenance);
+  setMemberIfCommon(result, activities, &Activity::mValidity);
+  setMemberIfCommon(result, activities, &Activity::mBeamType);
+  setMemberIfCommon(result, activities, &Activity::mPartitionName);
+  setMemberIfCommon(result, activities, &Activity::mFillNumber);
+  return result;
+}
+
 } // namespace implementation
 } // namespace o2::quality_control::core
 

@@ -11,11 +11,13 @@ set(SRCS
 )
 
 set(HEADERS
+  include/FITCommon/DetectorFIT.h
   include/FITCommon/HelperCommon.h
   include/FITCommon/HelperFIT.h
   include/FITCommon/HelperHist.h
   include/FITCommon/HelperLUT.h
   include/FITCommon/DigitSync.h
+  include/FITCommon/PostProcHelper.h
 )
 
 # ---- Library ----

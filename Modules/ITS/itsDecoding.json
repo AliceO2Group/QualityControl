@@ -35,6 +35,7 @@
                 },
                 "location": "local",
                 "taskParameters": {
+	            "isDoLinkErrorReset": 0,
                     "mBusyViolationLimit": "0.75"
                 }
             }

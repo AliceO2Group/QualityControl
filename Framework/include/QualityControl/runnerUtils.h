@@ -19,6 +19,7 @@
 
 #include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <string>
+#include <concepts>
 #include <Framework/ServiceRegistryRef.h>
 #include <Framework/RawDeviceService.h>
 #include <ProgOptions.h>
@@ -40,8 +41,9 @@ std::string getFirstTaskName(const std::string& configurationSource);
 std::string getFirstCheckName(const std::string& configurationSource);
 bool hasChecks(const std::string& configSource);
 
-template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
-T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
+template <typename T>
+requires std::is_arithmetic_v<T>
+  T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   T result = 0;
 

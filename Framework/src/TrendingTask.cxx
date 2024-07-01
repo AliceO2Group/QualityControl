@@ -40,7 +40,16 @@ using namespace o2::quality_control::postprocessing;
 
 void TrendingTask::configure(const boost::property_tree::ptree& config)
 {
+  // we clear any existing objects, which would be there only in case of reconfiguration
+  // at the time of writing, this not even supported by ECS
+  mReductors.clear();
+  mTrend.reset();
+
+  // configuration
   mConfig = TrendingTaskConfig(getID(), config);
+  for (const auto& source : mConfig.dataSources) {
+    mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
+  }
 }
 
 bool TrendingTask::canContinueTrend(TTree* tree)
@@ -79,21 +88,22 @@ bool TrendingTask::canContinueTrend(TTree* tree)
   return true;
 }
 
-void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
+void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInterface& qcdb)
 {
-  // removing leftovers from any previous runs
-  mTrend.reset();
-  for (auto& [name, object] : mPlots) {
-    delete object;
-    object = nullptr;
+  // tree exists and we can reuse it
+  if (canContinueTrend(mTrend.get())) {
+    if (mConfig.resumeTrend == false) {
+      mTrend->Reset();
+    } else {
+      ILOG(Info, Support) << "Will continue the trend from the previous run." << ENDM;
+    }
+    return;
   }
-  mPlots.clear();
-  mReductors.clear();
 
-  // Preparing data structure of TTree
+  // tree is not reusable or does not exist => if we want to reuse the latest, we look for it in QCDB
+  mTrend.reset();
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
-    auto& qcdb = services.get<repository::DatabaseInterface>();
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
     auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
     if (mo && mo->getObject()) {
@@ -103,15 +113,23 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
         mo->setIsOwner(false);
       }
     } else {
-      ILOG(Warning, Support)
-        << "Could not retrieve an existing TTree for this task" << ENDM;
+      ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task" << ENDM;
+    }
+    if (canContinueTrend(mTrend.get())) {
+      mTrend->SetBranchAddress("meta", &mMetaData);
+      mTrend->SetBranchAddress("time", &mTime);
+      for (const auto& [sourceName, reductor] : mReductors) {
+        mTrend->SetBranchAddress(sourceName.c_str(), reductor->getBranchAddress());
+      }
+      ILOG(Info, Support) << "Will use the latest TTree from QCDB for this task to continue the trend." << ENDM;
+      return;
+    } else {
+      mTrend.reset();
     }
   }
-  for (const auto& source : mConfig.dataSources) {
-    mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
-  }
 
-  if (mTrend == nullptr || !canContinueTrend(mTrend.get())) {
+  // we could not reuse the tree or never had one => we create a new one
+  if (mTrend == nullptr) {
     mTrend = std::make_unique<TTree>();
     mTrend->SetName(PostProcessingInterface::getName().c_str());
 
@@ -120,13 +138,16 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
     for (const auto& [sourceName, reductor] : mReductors) {
       mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     }
-  } else {
-    mTrend->SetBranchAddress("meta", &mMetaData);
-    mTrend->SetBranchAddress("time", &mTime);
-    for (const auto& [sourceName, reductor] : mReductors) {
-      mTrend->SetBranchAddress(sourceName.c_str(), reductor->getBranchAddress());
-    }
   }
+}
+
+void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
+{
+  // removing leftovers from any previous runs
+  mPlots.clear();
+
+  initializeTrend(services.get<repository::DatabaseInterface>());
+
   if (mConfig.producePlotsOnUpdate) {
     getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
   }
@@ -232,11 +253,10 @@ void TrendingTask::generatePlots()
     // Before we generate any new plots, we have to delete existing under the same names.
     // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
     if (mPlots.count(plotConfig.name)) {
-      delete mPlots[plotConfig.name];
-      mPlots[plotConfig.name] = nullptr;
+      mPlots[plotConfig.name].reset();
     }
     auto c = drawPlot(plotConfig);
-    mPlots[plotConfig.name] = c;
+    mPlots[plotConfig.name].reset(c);
     getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 }

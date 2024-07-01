@@ -82,7 +82,22 @@ void ReferenceComparatorTask::configure(const boost::property_tree::ptree& confi
 
 //_________________________________________________________________________________________
 
-void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
+static std::string getCustomParameter(const o2::quality_control::core::CustomParameters& customParameters, const std::string& key, const Activity& activity, const std::string& defaultValue)
+{
+  std::string value;
+  auto valueOptional = customParameters.atOptional(key, activity);
+  if (valueOptional.has_value()) {
+    value = valueOptional.value();
+  } else {
+    value = customParameters.atOptional(key).value_or(defaultValue);
+  }
+
+  return value;
+}
+
+//_________________________________________________________________________________________
+
+void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigger trigger, framework::ServiceRegistryRef services)
 {
   // reset all existing objects
   mPlotNames.clear();
@@ -90,8 +105,10 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
   mHistograms.clear();
 
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  mNotOlderThan = std::stoi(mCustomParameters.atOptional("notOlderThan").value_or("120"));
-  mReferenceRun = std::stoi(mCustomParameters.atOptional("referenceRun").value_or("0"));
+  mNotOlderThan = std::stoi(getCustomParameter(mCustomParameters, "notOlderThan", trigger.activity, "120"));
+  mReferenceRun = std::stoi(getCustomParameter(mCustomParameters, "referenceRun", trigger.activity, "0"));
+
+  ILOG(Info, Devel) << "Reference run set to '" << mReferenceRun << "' for activity " << trigger.activity << ENDM;
 
   // load and initialize the input groups
   for (auto group : mConfig.dataGroups) {
@@ -103,7 +120,7 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
       auto fullOutPath = group.outputPath + "/" + path;
 
       // retrieve the reference MO
-      auto referencePlot = getReferencePlot(&qcdb, fullRefPath, mReferenceRun, t.activity);
+      auto referencePlot = getReferencePlot(&qcdb, fullRefPath, mReferenceRun, trigger.activity);
       if (!referencePlot) {
         continue;
       }

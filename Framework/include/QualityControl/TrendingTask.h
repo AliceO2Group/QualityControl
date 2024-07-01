@@ -73,12 +73,13 @@ class TrendingTask : public PostProcessingInterface
   void trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
   TCanvas* drawPlot(const TrendingTaskConfig::Plot& plotConfig);
+  void initializeTrend(repository::DatabaseInterface& qcdb);
   bool canContinueTrend(TTree* tree);
 
   TrendingTaskConfig mConfig;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
-  std::map<std::string, TObject*> mPlots;
+  std::map<std::string, std::unique_ptr<TObject>> mPlots;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 };
 

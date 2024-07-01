@@ -19,14 +19,17 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "FITCommon/PostProcHelper.h"
+#include "FITCommon/DetectorFIT.h"
+
 #include "CCDB/CcdbApi.h"
 #include "CommonConstants/LHCConstants.h"
-
 #include "FT0Base/Constants.h"
 #include "DataFormatsFT0/ChannelData.h"
 #include "DataFormatsFT0/Digit.h"
 
 #include <TH2.h>
+#include <TProfile.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 
@@ -49,52 +52,43 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
-
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
   constexpr static std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
+  using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
 
  private:
-  std::string mPathGrpLhcIf;
-  std::string mPathDigitQcTask;
-  std::string mCycleDurationMoName;
-  std::string mCcdbUrl;
-  std::string mTimestampSourceLhcIf;
-  int mNumOrbitsInTF;
-  const unsigned int mNumTriggers = 5;
-
-  std::map<unsigned int, std::string> mMapChTrgNames;
-  std::map<unsigned int, std::string> mMapDigitTrgNames;
-  std::map<unsigned int, std::string> mMapBasicTrgBits;
-  o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  o2::ccdb::CcdbApi mCcdbApi;
-
-  std::unique_ptr<TGraph> mRateOrA;
-  std::unique_ptr<TGraph> mRateOrC;
-  std::unique_ptr<TGraph> mRateVertex;
-  std::unique_ptr<TGraph> mRateCentral;
-  std::unique_ptr<TGraph> mRateSemiCentral;
-  std::unique_ptr<TH2F> mHistChDataNegBits;
+  o2::quality_control_modules::fit::PostProcHelper mPostProcHelper;
+  bool mIsFirstIter{ true };
+  typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
+  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
+  // MOs
+  std::unique_ptr<TH2F> mHistChDataNOTbits;
   std::unique_ptr<TH1F> mHistTriggers;
-
+  std::unique_ptr<TH1F> mHistTriggerRates;
   std::unique_ptr<TH1F> mHistTimeInWindow;
   std::unique_ptr<TH1F> mHistCFDEff;
-
   std::unique_ptr<TH1F> mHistChannelID_outOfBC;
+  std::unique_ptr<TH1F> mHistTrg_outOfBC;
   std::unique_ptr<TH1F> mHistTrgValidation;
-
-  std::unique_ptr<TCanvas> mRatesCanv;
-  TProfile* mAmpl = nullptr;
-  TProfile* mTime = nullptr;
-
-  // if storage size matters it can be replaced with TH1
-  // and TH2 can be created based on it on the fly, but only TH1 would be stored
   std::unique_ptr<TH2F> mHistBcPattern;
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
-
-  std::map<unsigned int, TH1D*> mMapTrgHistBC;
+  std::unique_ptr<TProfile> mAmpl;
+  std::unique_ptr<TProfile> mTime;
+  // Configurations
   int mLowTimeThreshold{ -192 };
   int mUpTimeThreshold{ 192 };
   std::string mAsynchChannelLogic{ "standard" };
+  //
+  void setTimestampToMOs();
+  // TO REMOVE
+  std::vector<unsigned int> mVecChannelIDs{};
+  std::vector<std::string> mVecHistsToDecompose{};
+  using HistDecomposed_t = TH1D;
+  using MapHistsDecomposed_t = std::map<std::string, std::map<unsigned int, std::shared_ptr<HistDecomposed_t>>>;
+  MapHistsDecomposed_t mMapHistsToDecompose{};
+  void decomposeHists();
+  void reset();
 };
 
 } // namespace o2::quality_control_modules::ft0

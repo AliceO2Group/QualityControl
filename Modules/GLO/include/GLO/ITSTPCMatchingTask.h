@@ -18,7 +18,7 @@
 #define QC_MODULE_GLO_ITSTPCMATCHINGTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "GlobalTracking/MatchITSTPCQC.h"
+#include "GLOQC/MatchITSTPCQC.h"
 
 #include "TH1.h"
 
@@ -49,7 +49,7 @@ class ITSTPCMatchingTask final : public TaskInterface
   void reset() override;
 
  private:
-  o2::globaltracking::MatchITSTPCQC mMatchITSTPCQC;
+  o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
   std::unique_ptr<TH1> mHEffPt;
   std::unique_ptr<TH1> mHEffEta;

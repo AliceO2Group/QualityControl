@@ -38,7 +38,7 @@ namespace o2::quality_control_modules::fit
 void LevelCheck::updateBinsToIgnoreWithDCM()
 {
   if (mPathDeadChannelMap.size() > 0) {
-    const auto deadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap);
+    const auto deadChannelMap = retrieveConditionAny<o2::fit::DeadChannelMap>(mPathDeadChannelMap, {}, mTimestamp);
     for (unsigned chID = 0; chID < deadChannelMap->map.size(); chID++) {
       if (!deadChannelMap->isChannelAlive(chID)) {
         mBinsToIgnore.insert(chID);
@@ -47,11 +47,26 @@ void LevelCheck::updateBinsToIgnoreWithDCM()
   }
 }
 
+void LevelCheck::startOfActivity(const Activity&)
+{
+  mIsFirstIter = true; // for SSS
+}
+
 void LevelCheck::configure()
 {
+  mIsFirstIter = true;
+  mMessagePrefixWarning = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "messagePrefixWarning", "Warning in bin idxs: ");
+  mMessagePrefixError = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "messagePrefixError", "Error in bin idxs: ");
+  mTimestampMetaField = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampMetaField", "timestampTF");
+  mTimestampSource = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "timestampSource", "metadata");
+
   mThreshWarning = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "thresholdWarning", 0.9);
   mThreshError = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "thresholdError", 0.8);
   mNameObjectToCheck = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "nameObjectToCheck", "CFD_efficiency");
+
+  mNelementsPerLine = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nElementsPerLine", 20);
+  mUseBinLabels = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "useBinLabels", false);
+  mUseBinError = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "useBinError", false);
 
   mIsInvertedThrsh = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "isInversedThresholds", false);
   mSignCheck = mIsInvertedThrsh ? std::string{ ">" } : std::string{ "<" };
@@ -78,49 +93,109 @@ void LevelCheck::configure()
   }
   // Automatic selection of bins to ignore
   // Dead channel map
-  updateBinsToIgnoreWithDCM();
   mBinsToIgnoreAsStr = std::to_string(mBinsToIgnore.size());
+}
+
+void LevelCheck::setTimestamp(const std::shared_ptr<MonitorObject>& moMetadata)
+{
+  // Getting timestamp
+  if (mTimestampSource == "metadata") {
+    const auto iterMetadata = moMetadata->getMetadataMap().find(mTimestampMetaField);
+    const bool isFound = iterMetadata != moMetadata->getMetadataMap().end();
+    if (isFound) {
+      mTimestamp = std::stoll(iterMetadata->second);
+    } else {
+      ILOG(Error) << "Cannot find timestamp metadata field " << mTimestampMetaField << " . Setting timestamp to -1" << ENDM;
+      mTimestamp = -1;
+    }
+  } else if (mTimestampSource == "current") {
+    mTimestamp = -1;
+  } else {
+    mTimestamp = -1;
+    ILOG(Error) << "Uknown timestamp source " << mTimestampSource << " . Setting timestamp to -1" << ENDM;
+  }
 }
 
 Quality LevelCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
-
   for (const auto& entry : *moMap) {
     const auto& mo = entry.second;
     if (mo->getName() == mNameObjectToCheck) {
-      auto* h = dynamic_cast<TH1*>(mo->getObject());
-      if (h == nullptr) {
+      auto hist = dynamic_cast<TH1*>(mo->getObject());
+      if (hist == nullptr) {
         ILOG(Warning, Devel) << "Could not cast " << mo->getName() << " to TH1* => Quality::Bad" << ENDM;
         result = Quality::Bad;
+        result.addFlag(FlagTypeFactory::Unknown(), "Cannot get TH1 object from DB");
         continue;
+      }
+      if (mIsFirstIter) {
+        setTimestamp(mo);
+        // Automatic selection of bins to ignore
+        // Dead channel map
+        updateBinsToIgnoreWithDCM();
+        mBinsToIgnoreAsStr = std::to_string(mBinsToIgnore.size());
+        mIsFirstIter = false;
       }
 
       result = Quality::Good;
-      mNumErrors = 0;
-      mNumWarnings = 0;
-      for (int bin = 0; bin < h->GetNbinsX(); bin++) {
-        if (mBinsToIgnore.find(bin) != mBinsToIgnore.end()) {
+      std::vector<std::string> vecWarnings{};
+      std::vector<std::string> vecErrors{};
+      for (int binIdx = 0; binIdx < hist->GetNbinsX(); binIdx++) {
+        if (mBinsToIgnore.find(binIdx) != mBinsToIgnore.end()) {
           continue;
         }
-        const auto val = h->GetBinContent(bin + 1);
-        const bool isError = (val < mThreshError && !mIsInvertedThrsh) || (val > mThreshError && mIsInvertedThrsh);
+        const auto bin = binIdx + 1;
+        const auto val = hist->GetBinContent(bin);
+        const bool hasError = hist->GetBinError(bin) > 0; // for checking denomenator, if denominator == 0 error will be also zero
+        const bool isError = (val < mThreshError && !mIsInvertedThrsh) || (val > mThreshError && mIsInvertedThrsh) || (!hasError && mUseBinError);
         const bool isWarning = (val < mThreshWarning && !mIsInvertedThrsh) || (val > mThreshWarning && mIsInvertedThrsh);
+        const std::string binAsStr = mUseBinLabels ? hist->GetXaxis()->GetBinLabel(bin) : std::to_string(binIdx);
         if (isError) {
-          if (result.isBetterThan(Quality::Bad)) {
-            result.set(Quality::Bad);
-          }
-          mNumErrors++;
-          const std::string message = "Ratio " + mSignCheck + "\"Error\" threshold in element " + std::to_string(bin);
-          result.addFlag(FlagTypeFactory::Unknown(), message);
+          vecErrors.push_back(binAsStr);
           continue;
         } else if (isWarning) {
-          if (result.isBetterThan(Quality::Medium))
-            result.set(Quality::Medium);
-          mNumWarnings++;
-          const std::string message = "Ratio " + mSignCheck + "\"Warning\" threshold in element " + std::to_string(bin);
-          result.addFlag(FlagTypeFactory::Unknown(), message);
+          vecWarnings.push_back(binAsStr);
         }
+      }
+      mNumErrors = vecErrors.size();
+      mNumWarnings = vecWarnings.size();
+      auto funcInt2Str = [](std::string accum, std::string bin) { return std::move(accum) + ", " + bin; };
+      auto addFlag = [&funcInt2Str, &result](auto&& vec, auto&& messagePrefix) -> void {
+        if (vec.size() == 0) {
+          return;
+        }
+        const auto idxLine = vec.size() > 0 ? std::accumulate(std::next(vec.begin()), vec.end(), vec[0], funcInt2Str) : "";
+        const std::string message = messagePrefix + idxLine;
+        result.addFlag(FlagTypeFactory::Unknown(), message);
+      };
+      auto addMultipleFlags = [&addFlag, this](auto&& vec, auto&& messagePrefix) -> void {
+        if (vec.size() == 0) {
+          return;
+        }
+        auto it = vec.begin();
+        int distance{ 0 };
+        do {
+          const std::string msg = distance == 0 ? messagePrefix : ""; // first iteration, message prefix will be used only in first line
+          const int extraNelements = distance == 0 ? 0 : mNelementsPerLine;
+          const auto itBegin = it;
+          std::advance(it, mNelementsPerLine + extraNelements);
+          distance = std::distance(it, vec.end());
+          const auto itEnd = distance > 0 ? it : vec.end();
+          addFlag(std::vector<std::string>(itBegin, itEnd), msg);
+        } while (distance > 0);
+      };
+      if (mNumErrors > 0) {
+        if (result.isBetterThan(Quality::Bad)) {
+          result.set(Quality::Bad);
+        }
+        addMultipleFlags(vecErrors, mMessagePrefixError);
+      }
+      if (mNumWarnings > 0) {
+        if (result.isBetterThan(Quality::Medium)) {
+          result.set(Quality::Medium);
+        }
+        addMultipleFlags(vecWarnings, mMessagePrefixWarning);
       }
     }
   }
