@@ -79,6 +79,7 @@ std::pair<std::string, std::string> parseDbTriggers(const std::string& trigger, 
 
   return { db, objPath };
 }
+
 TriggerFcn triggerFactory(const std::string& trigger, const PostProcessingConfig& config)
 {
   // todo: should we accept many versions of trigger names?
@@ -94,9 +95,9 @@ TriggerFcn triggerFactory(const std::string& trigger, const PostProcessingConfig
   } else if (triggerLowerCase == "always") {
     return triggers::Always(activity);
   } else if (triggerLowerCase == "sor" || triggerLowerCase == "startofrun") {
-    return triggers::StartOfRun(activity);
+    return triggers::StartOfRun(config.kafkaBrokersUrl, config.kafkaTopic, config.detectorName, config.taskName, activity);
   } else if (triggerLowerCase == "eor" || triggerLowerCase == "endofrun") {
-    return triggers::EndOfRun(activity);
+    return triggers::EndOfRun(config.kafkaBrokersUrl, config.kafkaTopic, config.detectorName, config.taskName, activity);
   } else if (triggerLowerCase == "sof" || triggerLowerCase == "startoffill") {
     return triggers::StartOfFill(activity);
   } else if (triggerLowerCase == "eof" || triggerLowerCase == "endoffill") {

@@ -103,6 +103,7 @@ find_package(FairMQ 1.4.41 REQUIRED)
 find_package(FairLogger REQUIRED)
 find_package(Occ REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)
+find_package(RdKafka REQUIRED)
 
 configure_file(getTestDataDirectory.cxx.in getTestDataDirectory.cxx)
 
