@@ -274,7 +274,7 @@ add_executable(o2-qc-test-core
                test/testVersion.cxx
                test/testMonitorObjectCollection.cxx
                test/testTrendingTask.cxx
-               test/testKafkaPoller.cxx
+               test/testKafkaTests.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

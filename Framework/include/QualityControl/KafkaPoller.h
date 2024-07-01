@@ -49,7 +49,7 @@ class KafkaPoller
 
   explicit KafkaPoller(const std::string& brokers, const std::string& groupId);
 
-  void subscribe(const std::string& topic);
+  void subscribe(const std::string& topic, size_t numberOfRetries = 5);
   auto poll() -> KafkaRecords;
 
  private:
