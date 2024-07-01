@@ -62,7 +62,7 @@ void CheckInterface::endOfActivity(const Activity& activity)
 
 shared_ptr<MonitorObject> CheckInterface::retrieveReference(std::string path, int referenceRun, Activity activity)
 {
-  return quality_control_modules::common::getReferencePlot(mDatabase.get(), path, referenceRun, activity);
+  return o2::quality_control::checker::getReferencePlot(mDatabase.get(), path, referenceRun, activity);
 }
 
 } // namespace o2::quality_control::checker

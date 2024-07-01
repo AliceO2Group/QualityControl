@@ -120,7 +120,7 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
       auto fullOutPath = group.outputPath + "/" + path;
 
       // retrieve the reference MO
-      auto referencePlot = getReferencePlot(&qcdb, fullRefPath, mReferenceRun, trigger.activity);
+      auto referencePlot = o2::quality_control::checker::getReferencePlot(&qcdb, fullRefPath, mReferenceRun, trigger.activity);
       if (!referencePlot) {
         continue;
       }
