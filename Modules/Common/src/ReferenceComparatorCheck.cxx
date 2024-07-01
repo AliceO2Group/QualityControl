@@ -137,6 +137,10 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 {
   // retrieve the reference plot and compare
   auto* th1 = dynamic_cast<TH1*>(mo->getObject());
+  if (th1 == nullptr) {
+    message = "The MonitorObject is not a TH1";
+    return Quality::Null;
+  }
   auto referenceRun = std::stoi(mCustomParameters.atOptional("referenceRun").value_or("0"));
 
   // get path of mo and ref (we have to remove the provenance)
