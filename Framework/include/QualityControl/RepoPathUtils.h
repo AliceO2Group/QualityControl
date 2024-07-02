@@ -128,6 +128,26 @@ class RepoPathUtils
 
   static constexpr auto allowedProvenancesMessage = R"(Allowed provenances are "qc" (real data processed synchronously), "qc_async" (real data processed asynchronously) and "qc_mc" (simulated data).)";
   static bool isProvenanceAllowed(const std::string& provenance);
+
+  /**
+   * Splits the provided path and returns both the base path and the object name.
+   * @param fullPath
+   * @return A tuple with 1. a boolean to specify if we succeeded (i.e. whether we found a `/`)
+   *                      2. the path
+   *                      3. the object name
+   */
+  static std::tuple<bool, std::string, std::string> splitObjectPath(const std::string& fullPath)
+  {
+    std::string delimiter = "/";
+    std::string det;
+    size_t pos = fullPath.rfind(delimiter);
+    if (pos == std::string::npos) {
+      return { false, "", "" };
+    }
+    std::string path = fullPath.substr(0, pos);
+    std::string name = fullPath.substr(pos + 1);
+    return { true, path, name };
+  }
 };
 } // namespace o2::quality_control::core
 

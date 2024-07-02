@@ -19,14 +19,11 @@
 #define QUALITYCONTROL_REFERENCECOMPARATORTASK_H
 
 #include "Common/ReferenceComparatorTaskConfig.h"
-#include "Common/BigScreenCanvas.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/Quality.h"
 #include <TH1.h>
 #include <TPad.h>
 #include <TCanvas.h>
-#include <TPaveText.h>
 #include <TText.h>
 #include <string>
 #include <map>
@@ -63,8 +60,6 @@ class ReferenceComparatorTask : public quality_control::postprocessing::PostProc
   };
 
  private:
-  std::shared_ptr<o2::quality_control::core::MonitorObject> getReferencePlot(o2::quality_control::repository::DatabaseInterface& qcdb, std::string fullPath, o2::quality_control::core::Activity activity);
-
   int mReferenceRun{ 0 };
   int mNotOlderThan{ 120 };
 

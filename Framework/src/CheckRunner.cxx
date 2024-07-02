@@ -231,6 +231,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
     updatePolicyManager.reset();
     for (auto& [checkName, check] : mChecks) {
       check.init();
+      check.setDatabase(mDatabase);
       updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
   } catch (...) {

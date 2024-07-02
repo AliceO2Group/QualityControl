@@ -19,8 +19,10 @@
 // O2
 #include <Framework/DataProcessorSpec.h>
 // QC
+#include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/CheckConfig.h"
+#include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control::core
 {
@@ -91,6 +93,11 @@ class Check
   // todo: probably make CheckFactory
   static CheckConfig extractConfig(const core::CommonSpec&, const CheckSpec&);
   static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& checkName);
+
+  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database)
+  {
+    mCheckInterface->setDatabase(database);
+  }
 
  private:
   void beautify(std::map<std::string, std::shared_ptr<core::MonitorObject>>& moMap, const core::Quality& quality);
