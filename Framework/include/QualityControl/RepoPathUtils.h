@@ -142,11 +142,11 @@ class RepoPathUtils
     std::string det;
     size_t pos = fullPath.rfind(delimiter);
     if (pos == std::string::npos) {
-      return {false, "", ""};
+      return { false, "", "" };
     }
     std::string path = fullPath.substr(0, pos);
     std::string name = fullPath.substr(pos + 1);
-    return {true, path, name};
+    return { true, path, name };
   }
 };
 } // namespace o2::quality_control::core
