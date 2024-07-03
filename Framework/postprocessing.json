@@ -85,11 +85,13 @@
             "graphYRange": "0:10000",
             "graphs" : [
               {
+                "name": "mean_trend",
                 "title": "mean trend",
                 "varexp": "example.mean:time",
                 "selection": "",
                 "option": "*L PLC PMC"
               }, {
+                "name": "mean_trend_1000",
                 "title": "mean trend + 1000",
                 "varexp": "example.mean + 1000:time",
                 "selection": "",

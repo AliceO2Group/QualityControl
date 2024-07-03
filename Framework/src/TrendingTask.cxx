@@ -337,22 +337,26 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
         mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
                                        mTrend->GetVal(2), mTrend->GetVal(3));
+        graphErrors->SetName((graphConfig.name + "_errors").c_str());
+        graphErrors->SetTitle((graphConfig.title + " errors").c_str());
         // We draw on the same plotConfig as the main graphConfig, but only error bars
         graphErrors->Draw("SAME E");
       }
     }
 
     if (auto graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
+      graph->SetName(graphConfig.name.c_str());
       graph->SetTitle(graphConfig.title.c_str());
-      graph->SetName(graphConfig.title.c_str());
       legend->AddEntry(graph, graphConfig.title.c_str(), deduceGraphLegendOptions(graphConfig).c_str());
     }
     if (auto htemp = dynamic_cast<TH1*>(c->FindObject("htemp"))) {
-      htemp->SetTitle(graphConfig.title.c_str());
-      htemp->SetName(graphConfig.title.c_str());
       if (plotOrder == 1) {
+        htemp->SetName(graphConfig.name.c_str());
+        htemp->SetTitle(graphConfig.title.c_str());
         legend->AddEntry(htemp, graphConfig.title.c_str(), "lpf");
       } else {
+        htemp->SetName("background");
+        htemp->SetTitle("background");
         // htemp was used by TTree::Draw only to draw axes and title, not to plot data, no need to add it to legend
       }
       // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
