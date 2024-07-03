@@ -15,6 +15,8 @@
 // QC includes
 #include "QualityControl/PostProcessingInterface.h"
 #include "EMCALCalib/CalibDB.h"
+#include "EMCALBase/TriggerMappingV2.h"
+#include "EMCALBase/Geometry.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -72,6 +74,10 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   void reset();
 
  private:
+  int GetTRUIndexFromSTUIndex(Int_t id, Int_t detector);
+  int GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm);
+  std::vector<int> GetAbsFastORIndexFromMask();
+
   std::vector<std::string> mCalibObjects;             ///< list of vectors of parm objects to be processed
   TH1* mTimeCalibParamHisto = nullptr;                ///< Monitor Time Calib Param
   TH2* mTimeCalibParamPosition = nullptr;             ///< Monitor time calib param as function of the position in EMCAL
@@ -83,10 +89,20 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   TH2* mNumberOfBadChannelsFEC = nullptr;             ///< Number of bad channels per FEC
   TH2* mNumberOfDeadChannelsFEC = nullptr;            ///< Number of dead channels per FEC
   TH2* mNumberOfNonGoodChannelsFEC = nullptr;         ///< Number of dead+bad channels per FEC
+  TH1* mSRUFirmwareVersion = nullptr;                 ///< The SRU Firmware version as function of supermodule ID
+  TH1* mActiveDDLs = nullptr;                         ///< Monitor which DDLs are active
+  TH1* mTRUThresholds = nullptr;                      ///< The L0 threshold vs TRU ID PHYS
+  TH1* mL0Algorithm = nullptr;                        ///< The L0 algorithm vs TRU ID
+  TH1* mRollbackSTU = nullptr;                        ///< The Rollback buffer vs TRU ID
+  TH1* mTRUMaskPosition = nullptr;                    ///< The FastOR Mask Position in Eta, Phi
   std::unique_ptr<o2::emcal::CalibDB> mCalibDB;       ///< EMCAL calibration DB handler
   std::unique_ptr<o2::emcal::MappingHandler> mMapper; ///< EMCAL mapper
   o2::emcal::BadChannelMap* mBadChannelMap;           ///< EMCAL channel map
   o2::emcal::TimeCalibrationParams* mTimeCalib;       ///< EMCAL time calib
+  o2::emcal::FeeDCS* mFeeDCS;                         ///< EMCAL FEE DCS
+
+  o2::emcal::Geometry* mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);                                  ///< Geometry for mapping position between SM and full EMCAL
+  std::unique_ptr<o2::emcal::TriggerMappingV2> mTriggerMapping = std::make_unique<o2::emcal::TriggerMappingV2>(mGeometry); ///!<! Trigger mapping
 
   //  std::vector<std::map<std::string, std::string>> mStoreMaps{};          ///< meta data to be stored with the output in the QCDB
 };

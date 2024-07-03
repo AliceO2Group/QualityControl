@@ -20,6 +20,7 @@
 #include "EMCALReconstruction/Channel.h"
 #include "EMCALCalib/BadChannelMap.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
+#include "EMCALCalib/FeeDCS.h"
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/CalibMonitoringTask.h"
@@ -36,6 +37,60 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::emcal
 {
+
+int CalibMonitoringTask::GetTRUIndexFromSTUIndex(Int_t id, Int_t detector)
+{
+  Int_t kEMCAL = 0;
+  Int_t kDCAL = 1;
+
+  if ((id > 31 && detector == kEMCAL) || (id > 13 && detector == kDCAL) || id < 0) {
+    return -1; // Error Condition
+  }
+
+  if (detector == kEMCAL) {
+    return id;
+  } else if (detector == kDCAL) {
+    return 32 + ((int)(id / 4) * 6) + ((id % 4 < 2) ? (id % 4) : (id % 4 + 2));
+  }
+  return -1;
+}
+
+int CalibMonitoringTask::GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm)
+{
+  if (onethirdsm)
+    return mask * 16 + bitnumber;
+  const int kChannelMap[6][16] = { { 8, 9, 10, 11, 20, 21, 22, 23, 32, 33, 34, 35, 44, 45, 46, 47 },     // Channels in mask0
+                                   { 56, 57, 58, 59, 68, 69, 70, 71, 80, 81, 82, 83, 92, 93, 94, 95 },   // Channels in mask1
+                                   { 4, 5, 6, 7, 16, 17, 18, 19, 28, 29, 30, 31, 40, 41, 42, 43 },       // Channels in mask2
+                                   { 52, 53, 54, 55, 64, 65, 66, 67, 76, 77, 78, 79, 88, 89, 90, 91 },   // Channels in mask3
+                                   { 0, 1, 2, 3, 12, 13, 14, 15, 24, 25, 26, 27, 36, 37, 38, 39 },       // Channels in mask4
+                                   { 48, 49, 50, 51, 60, 61, 62, 63, 72, 73, 74, 75, 84, 85, 86, 87 } }; // Channels in mask5
+  return kChannelMap[mask][bitnumber];
+}
+
+std::vector<int> CalibMonitoringTask::GetAbsFastORIndexFromMask()
+{
+  std::vector<int> maskedfastors;
+  int itru = 0;
+  for (Int_t i = 0; i < 46; i++) {
+    int localtru = itru % 32, detector = itru >= 32 ? 1 : 0,
+        globaltru = GetTRUIndexFromSTUIndex(localtru, detector);
+    bool onethirdsm = ((globaltru >= 30 && globaltru < 32) || (globaltru >= 50 && globaltru < 52));
+    for (int ipos = 0; ipos < 6; ipos++) {
+      auto regmask = mFeeDCS->getTRUDCS(i).getMaskReg(ipos);
+      std::bitset<16> bitsregmask(regmask);
+      for (int ibit = 0; ibit < 16; ibit++) {
+        if (bitsregmask.test(ibit)) {
+          auto channel = GetChannelForMaskRun2(ipos, ibit, onethirdsm);
+          int absfastor = mTriggerMapping->getAbsFastORIndexFromIndexInTRU(globaltru, channel);
+          maskedfastors.push_back(absfastor);
+        }
+      }
+    }
+    itru++;
+  }
+  return maskedfastors;
+}
 
 void CalibMonitoringTask::configure(const boost::property_tree::ptree& config)
 {
@@ -150,6 +205,55 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       }
       getObjectsManager()->startPublishing(mNumberOfNonGoodChannelsFEC);
     }
+    if (obj == "FeeDCS") {
+      if (!mSRUFirmwareVersion) {
+        mSRUFirmwareVersion = new TH1D("SRUFirmwareVersion", "SRUFirmwareVersion of Supermodule", 20., -0.5, 19.5);
+        mSRUFirmwareVersion->GetXaxis()->SetTitle("Supermodule ID");
+        mSRUFirmwareVersion->GetYaxis()->SetTitle("SRUFirmwareVersion");
+        mSRUFirmwareVersion->SetStats(false);
+      }
+      getObjectsManager()->startPublishing(mSRUFirmwareVersion);
+
+      if (!mActiveDDLs) {
+        mActiveDDLs = new TH1D("ActiveDDLs", "Active Status of DDLs", 46., -0.5, 45.5);
+        mActiveDDLs->GetXaxis()->SetTitle("DDL ID");
+        mActiveDDLs->GetYaxis()->SetTitle("Active Status");
+        mActiveDDLs->SetStats(false);
+      }
+      getObjectsManager()->startPublishing(mActiveDDLs);
+
+      if (!mTRUThresholds) {
+        mTRUThresholds = new TH1D("TRUThresholds", "L0 threshold of TRUs", 46., -0.5, 45.5);
+        mTRUThresholds->GetXaxis()->SetTitle("TRU ID");
+        mTRUThresholds->GetYaxis()->SetTitle("L0 threshold");
+        mTRUThresholds->SetStats(false);
+      }
+      getObjectsManager()->startPublishing(mTRUThresholds);
+
+      if (!mL0Algorithm) {
+        mL0Algorithm = new TH1D("L0Algorithm", "L0 algorithm of TRUs", 46., -0.5, 45.5);
+        mL0Algorithm->GetXaxis()->SetTitle("TRU ID");
+        mL0Algorithm->GetYaxis()->SetTitle("L0 algorithm");
+        mL0Algorithm->SetStats(false);
+      }
+      getObjectsManager()->startPublishing(mL0Algorithm);
+
+      if (!mRollbackSTU) {
+        mRollbackSTU = new TH1D("RollbackSTU", "Rollback Buffer of TRUs", 46., -0.5, 45.5);
+        mRollbackSTU->GetXaxis()->SetTitle("TRU ID");
+        mRollbackSTU->GetYaxis()->SetTitle("Rollback Buffer");
+        mRollbackSTU->SetStats(false);
+      }
+      getObjectsManager()->startPublishing(mRollbackSTU);
+
+      if (!mTRUMaskPosition) {
+        mTRUMaskPosition = new TH2D("TRUMaskPosition", "TRU Mask Position", 48., -0.5, 47.5, 104, -0.5, 103.5);
+        mTRUMaskPosition->GetXaxis()->SetTitle("FastOR Abs Eta");
+        mTRUMaskPosition->GetYaxis()->SetTitle("FastOR Abs Phi");
+        mTRUMaskPosition->SetStats(false);
+      }
+      getObjectsManager()->startPublishing(mTRUMaskPosition);
+    }
   }
   o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
   mMapper = std::make_unique<o2::emcal::MappingHandler>();
@@ -217,6 +321,36 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
         mTimeCalibParamPosition->SetBinContent(column + 1, row + 1, hist_temp->GetBinContent(i + 1));
       }
     }
+    if (obj == "FeeDCS") {
+      mFeeDCS = mCalibDB->readFeeDCSData(o2::ccdb::getCurrentTimestamp(), metadata);
+      if (!mFeeDCS) {
+        ILOG(Info, Support) << " No FEE DCS object " << ENDM;
+        continue;
+      }
+      for (Int_t i = 0; i < mSRUFirmwareVersion->GetNbinsX(); i++) {
+        mSRUFirmwareVersion->SetBinContent(i + 1, mFeeDCS->getSRUFWversion(i));
+      }
+      for (Int_t i = 0; i < mActiveDDLs->GetNbinsX(); i++) {
+        mActiveDDLs->SetBinContent(i + 1, mFeeDCS->isDDLactive(i));
+      }
+      for (Int_t i = 0; i < mTRUThresholds->GetNbinsX(); i++) {
+        mTRUThresholds->SetBinContent(i + 1, static_cast<double>(mFeeDCS->getTRUDCS(i).getGTHRL0()));
+      }
+      for (Int_t i = 0; i < mL0Algorithm->GetNbinsX(); i++) {
+        mL0Algorithm->SetBinContent(i + 1, mFeeDCS->getTRUDCS(i).getL0SEL());
+      }
+
+      for (Int_t i = 0; i < mRollbackSTU->GetNbinsX(); i++) {
+        mRollbackSTU->SetBinContent(i + 1, mFeeDCS->getTRUDCS(i).getRLBKSTU());
+      }
+
+      auto fastORs = GetAbsFastORIndexFromMask();
+
+      for (auto fastORID : fastORs) {
+        auto [eta, phi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(fastORID);
+        mTRUMaskPosition->SetBinContent(eta + 1, phi + 1, 1.);
+      }
+    }
   }
 }
 
@@ -236,6 +370,14 @@ void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistryRef)
     if (obj == "TimeCalibParams") {
       getObjectsManager()->stopPublishing(mTimeCalibParamHisto);
       getObjectsManager()->stopPublishing(mTimeCalibParamPosition);
+    }
+    if (obj == "FeeDCS") {
+      getObjectsManager()->stopPublishing(mSRUFirmwareVersion);
+      getObjectsManager()->stopPublishing(mActiveDDLs);
+      getObjectsManager()->stopPublishing(mTRUThresholds);
+      getObjectsManager()->stopPublishing(mL0Algorithm);
+      getObjectsManager()->stopPublishing(mRollbackSTU);
+      getObjectsManager()->stopPublishing(mTRUMaskPosition);
     }
   }
 }
@@ -270,6 +412,24 @@ void CalibMonitoringTask::reset()
   }
   if (mTimeCalibParamHisto) {
     mTimeCalibParamHisto->Reset();
+  }
+  if (mSRUFirmwareVersion) {
+    mSRUFirmwareVersion->Reset();
+  }
+  if (mActiveDDLs) {
+    mActiveDDLs->Reset();
+  }
+  if (mTRUThresholds) {
+    mTRUThresholds->Reset();
+  }
+  if (mL0Algorithm) {
+    mL0Algorithm->Reset();
+  }
+  if (mRollbackSTU) {
+    mRollbackSTU->Reset();
+  }
+  if (mTRUMaskPosition) {
+    mTRUMaskPosition->Reset();
   }
 }
 } // namespace o2::quality_control_modules::emcal
