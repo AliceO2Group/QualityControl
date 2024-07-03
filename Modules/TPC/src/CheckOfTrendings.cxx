@@ -139,7 +139,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     totalQuality.addMetadata(Quality::Null.getName(), "Canvas not found");
     return totalQuality;
   }
-  getGraphs(canv, graphs);
+  getGraphs(canv, graphs, mo->getName()); // GANESHA
 
   if (graphs.size() == 0) {
     ILOG(Error, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
@@ -390,7 +390,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   }
 
   std::vector<TGraph*> graphs;
-  getGraphs(canv, graphs);
+  getGraphs(canv, graphs, mo->getName());
 
   if (graphs.size() == 0) {
     ILOG(Error, Support) << "Could not retrieve any TGraph for CheckOfTrendings (beautify function)" << ENDM;
@@ -597,7 +597,7 @@ void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   } // for(size_t iGraph = 0; iGraph < graphs.size(); iGraph++)
 }
 
-void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
+void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs, const std::string moName)
 {
   if (mSliceTrend) {
     TList* padList = (TList*)canv->GetListOfPrimitives();
@@ -605,7 +605,7 @@ void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
     const int numberPads = padList->GetEntries();
     for (int iPad = 0; iPad < numberPads; iPad++) {
       auto pad = static_cast<TPad*>(padList->At(iPad));
-      graphs.push_back(static_cast<TGraph*>(pad->GetPrimitive("Graph")));
+      graphs.push_back(static_cast<TGraph*>(pad->GetPrimitive("Graph"))); // SliceTrendingTask saves things as Graph
     }
   } else {
     // If we have a standard trending with a TGraphErrors, then there will be a TGraph and a TGraphErrors with the same name ("Graph")
@@ -614,7 +614,10 @@ void CheckOfTrendings::getGraphs(TCanvas* canv, std::vector<TGraph*>& graphs)
     TGraph* g;
     int jList = canv->GetListOfPrimitives()->LastIndex();
     for (; jList > 0; jList--) {
-      if (!strcmp(canv->GetListOfPrimitives()->At(jList)->GetName(), "Graph")) {
+      if (!strcmp(canv->GetListOfPrimitives()->At(jList)->GetName(), (moName + "_errors").c_str())) { // Trending Task saves things under the MO name
+        g = (TGraph*)canv->GetListOfPrimitives()->At(jList);
+        break;
+      } else if (!strcmp(canv->GetListOfPrimitives()->At(jList)->GetName(), moName.c_str())) { // Trending Task saves things under the MO name
         g = (TGraph*)canv->GetListOfPrimitives()->At(jList);
         break;
       }
