@@ -148,6 +148,16 @@ class RepoPathUtils
     std::string name = fullPath.substr(pos + 1);
     return { true, path, name };
   }
+
+  static std::string getPathNoProvenance(std::shared_ptr<MonitorObject> mo)
+  {
+    std::string path = mo->getPath();
+    size_t pos = path.find('/');
+    if (pos != std::string::npos) {
+      path = path.substr(pos + 1);
+    }
+    return path;
+  }
 };
 } // namespace o2::quality_control::core
 

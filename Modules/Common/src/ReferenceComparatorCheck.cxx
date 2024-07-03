@@ -150,11 +150,7 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
   auto referenceRun = std::stoi(mCustomParameters.at("referenceRun"));
 
   // get path of mo and ref (we have to remove the provenance)
-  string path = mo->getPath();
-  size_t pos = path.find('/');
-  if (pos != std::string::npos) {
-    path = path.substr(pos + 1);
-  }
+  std::string path = RepoPathUtils::getPathNoProvenance(mo);
 
   auto referencePlot = retrieveReference(path, referenceRun, mActivity);
   if (!referencePlot) {
