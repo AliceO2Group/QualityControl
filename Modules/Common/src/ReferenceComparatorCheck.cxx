@@ -143,7 +143,11 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
     message = "The MonitorObject is not a TH1";
     return Quality::Null;
   }
-  auto referenceRun = std::stoi(mCustomParameters.atOptional("referenceRun").value_or("0"));
+  if (mCustomParameters.count("referenceRun") == 0) {
+    message = "No reference run provided";
+    return Quality::Null;
+  }
+  auto referenceRun = std::stoi(mCustomParameters.at("referenceRun"));
 
   // get path of mo and ref (we have to remove the provenance)
   string path = mo->getPath();
@@ -154,7 +158,7 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 
   auto referencePlot = retrieveReference(path, referenceRun, mActivity);
   if (!referencePlot) {
-    message = "The reference plot is empty";
+    message = "Reference plot not found";
     return Quality::Null;
   }
   auto* ref = dynamic_cast<TH1*>(referencePlot->getObject());
