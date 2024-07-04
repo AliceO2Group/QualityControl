@@ -24,7 +24,7 @@
 #include "Headers/RAWDataHeader.h"
 #include "DataFormatsCTP/Digits.h"
 #include "DataFormatsCTP/Configuration.h"
-#include "DataFormatsCTP/RunManager.h"
+//#include "DataFormatsCTP/RunManager.h"
 #include <Framework/InputRecord.h>
 #include "Framework/TimingInfo.h"
 
@@ -80,13 +80,27 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     ccdbName = "https://alice-ccdb.cern.ch";
   }
   /// the ccdb reading to be futher discussed
-  o2::ctp::CTPRunManager::setCCDBHost(ccdbName);
+  //o2::ctp::CTPRunManager::setCCDBHost(ccdbName);
   bool ok;
-  o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
+  //o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL(ccdbName);
+  map<string, string> metadata; // can be empty
+  metadata["runNumber"] = run;
+  auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, mTimestamp, metadata);
+  if (ctpconfigdb == nullptr) {
+    LOG(info) << "CTP config not in database, timestamp:" << mTimestamp;
+    ok = 0;
+  } else {
+    // ctpconfigdb->printStream(std::cout);
+    LOG(info) << "CTP config found. Run:" << run;
+    ok = 1;
+  }
   if (ok) {
     // get the index of the MB reference class
     ILOG(Info, Support) << "CTP config found, run:" << run << ENDM;
-    std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
+    //std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
+    std::vector<o2::ctp::CTPClass> ctpcls = ctpconfigdb->getCTPClasses();
     for (size_t i = 0; i < ctpcls.size(); i++) {
       if (ctpcls[i].name.find(MBclassName) != std::string::npos) {
         mIndexMBclass = ctpcls[i].getIndex() + 1;

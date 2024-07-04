@@ -18,7 +18,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "DataFormatsCTP/RunManager.h"
+//#include "DataFormatsCTP/RunManager.h"
 #include <DataFormatsCTP/Configuration.h>
 // ROOT
 #include <TH1.h>
