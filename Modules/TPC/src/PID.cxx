@@ -121,7 +121,7 @@ void PID::endOfCycle()
         // Fit the histogram with the fitting function
         hist->Fit(fitFunc.get(), "QRN");
 
-        const TString binLabels[nPars] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
+        const TString binLabels[8] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
 
         for (int iPar = 0; iPar < nPars - 2; iPar++) {
           pSeparationPower->GetXaxis()->SetBinLabel(iPar + 1, binLabels[iPar]);
