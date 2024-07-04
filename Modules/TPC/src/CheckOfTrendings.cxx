@@ -139,7 +139,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
     totalQuality.addMetadata(Quality::Null.getName(), "Canvas not found");
     return totalQuality;
   }
-  getGraphs(canv, graphs, mo->getName()); // GANESHA
+  getGraphs(canv, graphs, mo->getName());
 
   if (graphs.size() == 0) {
     ILOG(Error, Support) << "Could not retrieve any TGraph for CheckOfTrendings" << ENDM;
