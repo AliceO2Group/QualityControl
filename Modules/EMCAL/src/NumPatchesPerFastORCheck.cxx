@@ -31,7 +31,6 @@
 #include <TRobustEstimator.h>
 #include <TMath.h>
 #include <ROOT/TSeq.hxx>
-#include <TSpectrum.h>
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -41,43 +40,31 @@ using namespace std;
 namespace o2::quality_control_modules::emcal
 {
 
+bool compareDescending(const NumPatchesPerFastORCheck::FastORNoiseLevel& noise1, const NumPatchesPerFastORCheck::FastORNoiseLevel& noise2)
+{
+  if (noise1.mCounts == noise2.mCounts) {
+    return noise1.mFastORID > noise2.mFastORID; // Sort by mFastORID in descending order if mCounts are equal
+  }
+  return noise1.mCounts > noise2.mCounts; // Used to sort by count in descending order
+}
+
 void NumPatchesPerFastORCheck::configure()
 {
-  // configure threshold-based checkers for bad quality
-  auto nBadThresholdNumPatchesPerFastOR = mCustomParameters.find("BadThresholdNumPatchesPerFastOR");
-  if (nBadThresholdNumPatchesPerFastOR != mCustomParameters.end()) {
+  // configure nsigma-based checkers
+  auto nBadSigmaNumPatchesPerFastOR = mCustomParameters.find("BadSigmaNumPatchesPerFastOR");
+  if (nBadSigmaNumPatchesPerFastOR != mCustomParameters.end()) {
     try {
-      mBadThresholdNumPatchesPerFastOR = std::stof(nBadThresholdNumPatchesPerFastOR->second);
+      mBadSigmaNumPatchesPerFastOR = std::stof(nBadSigmaNumPatchesPerFastOR->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << "Value " << nBadThresholdNumPatchesPerFastOR->second.data() << " not a float" << ENDM;
+      ILOG(Error, Support) << "Value " << nBadSigmaNumPatchesPerFastOR->second << " not a float" << ENDM;
     }
   }
-
-  auto nMediumThresholdNumPatchesPerFastOR = mCustomParameters.find("MediumThresholdNumPatchesPerFastOR");
-  if (nMediumThresholdNumPatchesPerFastOR != mCustomParameters.end()) {
+  auto nMedSigmaNumPatchesPerFastOR = mCustomParameters.find("MedSigmaNumPatchesPerFastOR");
+  if (nMedSigmaNumPatchesPerFastOR != mCustomParameters.end()) {
     try {
-      mMediumThresholdNumPatchesPerFastOR = std::stof(nMediumThresholdNumPatchesPerFastOR->second);
+      mMedSigmaNumPatchesPerFastOR = std::stof(nMedSigmaNumPatchesPerFastOR->second);
     } catch (std::exception& e) {
-      ILOG(Error, Support) << "Value " << nMediumThresholdNumPatchesPerFastOR->second.data() << " not a float" << ENDM;
-    }
-  }
-
-  // configure TSpectrum parameters
-  auto nSigmaTSpectrum = mCustomParameters.find("TSpecSigma");
-  if (nSigmaTSpectrum != mCustomParameters.end()) {
-    try {
-      mSigmaTSpectrum = std::stof(nSigmaTSpectrum->second);
-    } catch (std::exception& e) {
-      ILOG(Error, Support) << "Value " << nSigmaTSpectrum->second.data() << " not a float" << ENDM;
-    }
-  }
-
-  auto nThreshTSpectrum = mCustomParameters.find("TSpecThresh");
-  if (nThreshTSpectrum != mCustomParameters.end()) {
-    try {
-      mThreshTSpectrum = std::stof(nThreshTSpectrum->second);
-    } catch (std::exception& e) {
-      ILOG(Error, Support) << "Value " << nThreshTSpectrum->second.data() << " not a float" << ENDM;
+      ILOG(Error, Support) << "Value " << nMedSigmaNumPatchesPerFastOR->second << " not a float" << ENDM;
     }
   }
 
@@ -96,13 +83,21 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
   mNoisyTRUPositions.clear();
+  mHighCountTRUPositions.clear();
   std::stringstream messagebuilder;
+
+  std::vector<FastORNoiseLevel> candBadFastORs;
+  std::vector<FastORNoiseLevel> finalBadFastORs;
+  std::vector<FastORNoiseLevel> candMedFastORs;
+  std::vector<FastORNoiseLevel> finalMedFastORs;
 
   if (mo->getName() == "NumberOfPatchesWithFastOR") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
     } else {
+
+      // Determine the threshold for bad and medium FastOR candidates
       std::vector<double> smcounts;
       for (auto ib : ROOT::TSeqI(0, h->GetXaxis()->GetNbins())) {
         auto countSM = h->GetBinContent(ib + 1);
@@ -117,43 +112,121 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
         double mean, sigma;
         meanfinder.EvaluateUni(smcounts.size(), smcounts.data(), mean, sigma);
 
-        TSpectrum peakfinder;
-        Int_t nfound = peakfinder.Search(h, mSigmaTSpectrum, "nobackground", mThreshTSpectrum); // Search for peaks //CHANGE - make config?
-        Double_t* xpeaks = peakfinder.GetPositionX();
-        Double_t* ypeaks = peakfinder.GetPositionY();
-        std::sort(ypeaks, ypeaks + nfound, std::greater<double>()); // sort peaks in descending order to easy pick the y value of max peak
-        double thresholdBad = mBadThresholdNumPatchesPerFastOR * mean,
-               thresholdMedium = mMediumThresholdNumPatchesPerFastOR * mean;
+        double thresholdBad = mean + mBadSigmaNumPatchesPerFastOR * sigma,
+               thresholdMedium = mean + mMedSigmaNumPatchesPerFastOR * sigma;
 
-        for (Int_t n_peak = 0; n_peak < nfound; n_peak++) {
-          Int_t bin = h->GetXaxis()->FindBin(xpeaks[n_peak]);
-          Double_t peak_val = h->GetBinContent(bin);
+        // Find the noisy FastOR candidates
+        for (auto ib : ROOT::TSeqI(0, h->GetXaxis()->GetNbins())) {
+          if (h->GetBinContent(ib + 1) > thresholdMedium) {
+            if (result != Quality::Bad) {
+              result = Quality::Medium;
+            }
+            auto [posEta, posPhi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(h->GetXaxis()->GetBinCenter(ib + 1));
+            FastORNoiseLevel cand{ static_cast<int>(h->GetBinContent(ib + 1)), static_cast<int>(h->GetXaxis()->GetBinCenter(ib + 1)), static_cast<int>(posPhi), static_cast<int>(posEta), false };
+            candMedFastORs.push_back(cand);
+          }
+          if (h->GetBinContent(ib + 1) > thresholdBad) {
+            result = Quality::Bad;
+            auto [posEta, posPhi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(h->GetXaxis()->GetBinCenter(ib + 1));
+            FastORNoiseLevel cand{ static_cast<int>(h->GetBinContent(ib + 1)), static_cast<int>(h->GetXaxis()->GetBinCenter(ib + 1)), static_cast<int>(posPhi), static_cast<int>(posEta), false };
+            candBadFastORs.push_back(cand);
+          }
+        }
 
-          if (peak_val > thresholdBad || peak_val > thresholdMedium) {
-            Double_t peak_pos = h->GetXaxis()->GetBinCenter(bin);
-            auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(peak_pos);
-            auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(peak_pos);
-            FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
-            if (peak_val > thresholdBad) {
-              result = Quality::Bad;
-              std::string errorMessage = "TRU " + std::to_string(truID) + " has a noisy FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
-              messagebuilder << errorMessage << std::endl;
-              if (mLogLevelIL > 1) {
-                ILOG(Error, Support) << errorMessage << ENDM;
-              }
-              mNoisyTRUPositions.insert(obj);
-            } else if (peak_val > thresholdMedium) {
-              if (result != Quality::Bad) {
-                result = Quality::Medium;
-                std::string errorMessage = "TRU " + std::to_string(truID) + " has a high rate in FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
-                messagebuilder << errorMessage << std::endl;
-                if (mLogLevelIL > 2) {
-                  ILOG(Warning, Support) << errorMessage << ENDM;
-                }
-                mHighCountTRUPositions.insert(obj);
+        // Sort the noisy FastOR candidates in descending counts order
+        std::sort(candBadFastORs.begin(), candBadFastORs.end(), compareDescending);
+        std::sort(candMedFastORs.begin(), candMedFastORs.end(), compareDescending);
+
+        // Array to store whether eta,phi position should be removed
+        const int rows = 48;  // eta 0-47
+        const int cols = 104; // phi 0-103
+        bool bad_ignore[rows][cols] = { false };
+        bool med_ignore[rows][cols] = { false };
+
+        // Loop over the candidate Bad FastORs to find the smaller nearby FastORs
+        for (std::vector<FastORNoiseLevel>::iterator i = candBadFastORs.begin(); i != candBadFastORs.end(); i++) {
+
+          if (i->mRejected) {
+            continue;
+          }
+
+          // Check at the begining if the element's phi eta should be ignored and if so set rejected = true and skip it.
+          int high_posEta = i->mPosGlobalEta;
+          int high_posPhi = i->mPosGlobalPhi;
+
+          if (bad_ignore[high_posEta][high_posPhi] == true) {
+            i->mRejected = true;
+            continue;
+          }
+
+          // Ignore what is near the current highest FastOR
+          for (int eta = high_posEta - 1; eta <= high_posEta + 1; eta++) {
+            for (int phi = high_posPhi - 1; phi <= high_posPhi + 1; phi++) {
+              if (eta >= 0 && eta < rows && phi >= 0 && phi < cols && !(eta == high_posEta && phi == high_posPhi)) {
+                bad_ignore[eta][phi] = true;
               }
             }
           }
+
+          // Save the final bad FastORs
+          FastORNoiseLevel final{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
+          finalBadFastORs.push_back(final);
+        }
+
+        // Save the positions of the final Bad FastORs and display the error message
+        for (std::vector<FastORNoiseLevel>::iterator itFinal = finalBadFastORs.begin(); itFinal != finalBadFastORs.end(); itFinal++) {
+          auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(itFinal->mFastORID);
+          auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(itFinal->mFastORID);
+          FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+          std::string errorMessage = "TRU " + std::to_string(truID) + " has a noisy FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
+          messagebuilder << errorMessage << std::endl;
+          if (mLogLevelIL > 1) {
+            ILOG(Error, Support) << errorMessage << ENDM;
+          }
+          mNoisyTRUPositions.insert(obj);
+        }
+
+        // Loop over the candidate Med FastORs to find the smaller nearby FastORs
+        for (std::vector<FastORNoiseLevel>::iterator i = candMedFastORs.begin(); i != candMedFastORs.end(); i++) {
+
+          if (i->mRejected) {
+            continue;
+          }
+
+          // Check at the begining if the element's phi eta should be ignored and if so set rejected = true and skip it.
+          int high_posEta = i->mPosGlobalEta;
+          int high_posPhi = i->mPosGlobalPhi;
+
+          if (med_ignore[high_posEta][high_posPhi] == true) {
+            i->mRejected = true;
+            continue;
+          }
+
+          // Ignore what is near the current highest FastOR
+          for (int eta = high_posEta - 1; eta <= high_posEta + 1; eta++) {
+            for (int phi = high_posPhi - 1; phi <= high_posPhi + 1; phi++) {
+              if (eta >= 0 && eta < rows && phi >= 0 && phi < cols && !(eta == high_posEta && phi == high_posPhi)) {
+                med_ignore[eta][phi] = true;
+              }
+            }
+          }
+
+          // Save the final med FastORs
+          FastORNoiseLevel final{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
+          finalMedFastORs.push_back(final);
+        }
+
+        // Save the positions of the final Med FastORs and display the error message
+        for (std::vector<FastORNoiseLevel>::iterator itFinal = finalMedFastORs.begin(); itFinal != finalMedFastORs.end(); itFinal++) {
+          auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(itFinal->mFastORID);
+          auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(itFinal->mFastORID);
+          FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+          std::string errorMessage = "TRU " + std::to_string(truID) + " has a high rate in FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
+          messagebuilder << errorMessage << std::endl;
+          if (mLogLevelIL > 2) {
+            ILOG(Warning, Support) << errorMessage << ENDM;
+          }
+          mHighCountTRUPositions.insert(obj);
         }
       }
     }
@@ -167,10 +240,17 @@ std::string NumPatchesPerFastORCheck::getAcceptedType() { return "TH1"; }
 
 void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // To do - good message
   if (mo->getName() == "NumberOfPatchesWithFastOR") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
-    if (checkResult == Quality::Bad) {
+    if (checkResult == Quality::Good) {
+      TPaveText* msg = new TPaveText(0.12, 0.84, 0.88, 0.94, "NDC");
+      h->GetListOfFunctions()->Add(msg);
+      msg->SetName(Form("%s_msg", mo->GetName()));
+      msg->Clear();
+      msg->AddText("Data OK: No Outlier Noisy FastORs");
+      msg->SetFillColor(kGreen);
+      msg->Draw();
+    } else if (checkResult == Quality::Bad) {
       TLatex* msg;
       msg = new TLatex(0.15, 0.84, "#color[2]{Error: Noisy TRU(s)}");
       msg->SetNDC();
@@ -197,7 +277,7 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
       }
       for (const auto& noiseinfo : mHighCountTRUPositions) {
         stringstream errorMessageIndiv;
-        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts" << std::endl;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts." << std::endl;
         msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -221,7 +301,7 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
       int iErr = 0;
       for (const auto& noiseinfo : mHighCountTRUPositions) {
         stringstream errorMessageIndiv;
-        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts" << std::endl;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts." << std::endl;
         msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
