@@ -33,6 +33,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
 
   // this corresponds to one TTree::Draw() call, i.e. one graph or histogram drawing
   struct Graph {
+    std::string name;
     std::string title;
     std::string varexp;
     std::string selection;

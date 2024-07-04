@@ -31,14 +31,18 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
     std::vector<Graph> graphs;
     if (const auto& graphsConfig = plotConfig.get_child_optional("graphs"); graphsConfig.has_value()) {
       for (const auto& [_, graphConfig] : graphsConfig.value()) {
-        graphs.push_back({ graphConfig.get<std::string>("title", ""),
+        // first we use name of the graph, if absent, we use graph title, if absent, we use plot (object) name.
+        const auto& name = graphConfig.get<std::string>("name", graphConfig.get<std::string>("title", plotConfig.get<std::string>("name")));
+        graphs.push_back({ name,
+                           graphConfig.get<std::string>("title", ""),
                            graphConfig.get<std::string>("varexp"),
                            graphConfig.get<std::string>("selection", ""),
                            graphConfig.get<std::string>("option", ""),
                            graphConfig.get<std::string>("graphErrors", "") });
       }
     } else {
-      graphs.push_back({ plotConfig.get<std::string>("title", ""),
+      graphs.push_back({ plotConfig.get<std::string>("name", ""),
+                         plotConfig.get<std::string>("title", ""),
                          plotConfig.get<std::string>("varexp"),
                          plotConfig.get<std::string>("selection", ""),
                          plotConfig.get<std::string>("option", ""),
