@@ -77,6 +77,7 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   int GetTRUIndexFromSTUIndex(Int_t id, Int_t detector);
   int GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm);
   std::vector<int> GetAbsFastORIndexFromMask();
+  void DrawTRUGrid();
 
   std::vector<std::string> mCalibObjects;             ///< list of vectors of parm objects to be processed
   TH1* mTimeCalibParamHisto = nullptr;                ///< Monitor Time Calib Param
@@ -94,7 +95,8 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   TH1* mTRUThresholds = nullptr;                      ///< The L0 threshold vs TRU ID PHYS
   TH1* mL0Algorithm = nullptr;                        ///< The L0 algorithm vs TRU ID
   TH1* mRollbackSTU = nullptr;                        ///< The Rollback buffer vs TRU ID
-  TH1* mTRUMaskPosition = nullptr;                    ///< The FastOR Mask Position in Eta, Phi
+  TCanvas* mTRUMaskPositionCanvas = nullptr;          ///< The FastOR Mask Position in Eta, Phi Canvas
+  TH2* mTRUMaskPositionHisto = nullptr;               ///< The FastOR Mask Position in Eta, Phi Histogram
   std::unique_ptr<o2::emcal::CalibDB> mCalibDB;       ///< EMCAL calibration DB handler
   std::unique_ptr<o2::emcal::MappingHandler> mMapper; ///< EMCAL mapper
   o2::emcal::BadChannelMap* mBadChannelMap;           ///< EMCAL channel map

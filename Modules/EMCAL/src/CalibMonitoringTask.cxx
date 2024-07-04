@@ -30,6 +30,7 @@
 #include "TPaveText.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TLine.h"
 #include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::postprocessing;
@@ -90,6 +91,90 @@ std::vector<int> CalibMonitoringTask::GetAbsFastORIndexFromMask()
     itru++;
   }
   return maskedfastors;
+}
+
+void CalibMonitoringTask::DrawTRUGrid()
+{
+  // EMCAL
+  for (int iphi = 1; iphi < 64; iphi++) {
+    auto fastorLine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    fastorLine->Draw("same");
+  }
+  for (int ieta = 1; ieta < 48; ieta++) {
+    auto fastorLine = new TLine(static_cast<double>(ieta) - 0.5, -0.5, static_cast<double>(ieta) - 0.5, 63.5);
+    fastorLine->Draw("same");
+  }
+  for (int side = 0; side < 2; side++) {
+    int sideoffset = 24 * side;
+    for (int itru = 0; itru < 2; itru++) {
+      int truoffset = sideoffset + (itru + 1) * 8;
+      auto truline = new TLine(static_cast<int>(truoffset) - 0.5, -0.5, static_cast<int>(truoffset) - 0.5, 59.5);
+      truline->SetLineWidth(2);
+      truline->Draw("same");
+    }
+  }
+  for (int iside = 0; iside <= 48; iside += 24) {
+    auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 63.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for (int iphi = 0; iphi < 60; iphi += 12) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for (auto iphi = 60; iphi <= 64; iphi += 4) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+
+  // DCAL
+  for (int side = 0; side < 2; side++) {
+    int sideoffset = (side == 0) ? 0 : 32;
+    for (int ieta = 0; ieta <= 16; ieta++) {
+      int etaoffset = sideoffset + ieta;
+      auto fastorline = new TLine(static_cast<double>(etaoffset - 0.5), 63.5, static_cast<double>(etaoffset) - 0.5, 99.5);
+      fastorline->Draw("same");
+    }
+    for (int iphi = 0; iphi <= 36; iphi++) {
+      int phioffset = iphi + 64;
+      auto fastorline = new TLine(static_cast<double>(sideoffset - 0.5), static_cast<double>(phioffset - 0.5), static_cast<double>(sideoffset + 16) - 0.5, static_cast<double>(phioffset) - 0.5);
+      fastorline->Draw("same");
+    }
+    for (int isepeta = 0; isepeta < 2; isepeta++) {
+      int etaoffset = sideoffset + isepeta * 16;
+      auto smline = new TLine(static_cast<double>(etaoffset) - 0.5, 63.5, static_cast<double>(etaoffset) - 0.5, 99.5);
+      smline->SetLineWidth(3);
+      smline->Draw("same");
+    }
+    for (auto iphi = 76; iphi <= 88; iphi += 12) {
+      auto smline = new TLine(static_cast<double>(sideoffset) - 0.5, static_cast<double>(iphi) - 0.5, static_cast<double>(sideoffset + 16) - 0.5, static_cast<double>(iphi) - 0.5);
+      smline->SetLineWidth(3);
+      smline->Draw("same");
+    }
+    auto truseparator = new TLine(static_cast<double>(sideoffset + 8) - 0.5, 63.5, static_cast<double>(sideoffset + 8) - 0.5, 99.5);
+    truseparator->SetLineWidth(2);
+    truseparator->Draw("same");
+  }
+  for (auto ieta = 1; ieta < 48; ieta++) {
+    auto etaline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
+    etaline->Draw("same");
+  }
+  for (auto iphi = 101; iphi <= 103; iphi++) {
+    auto philine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
+    philine->Draw("same");
+  }
+  for (auto iphi = 100; iphi <= 104; iphi += 4) {
+    auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
+  for (auto ieta = 0; ieta <= 48; ieta += 24) {
+    auto smline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
+    smline->SetLineWidth(3);
+    smline->Draw("same");
+  }
 }
 
 void CalibMonitoringTask::configure(const boost::property_tree::ptree& config)
@@ -246,13 +331,10 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       }
       getObjectsManager()->startPublishing(mRollbackSTU);
 
-      if (!mTRUMaskPosition) {
-        mTRUMaskPosition = new TH2D("TRUMaskPosition", "TRU Mask Position", 48., -0.5, 47.5, 104, -0.5, 103.5);
-        mTRUMaskPosition->GetXaxis()->SetTitle("FastOR Abs Eta");
-        mTRUMaskPosition->GetYaxis()->SetTitle("FastOR Abs Phi");
-        mTRUMaskPosition->SetStats(false);
+      if (!mTRUMaskPositionCanvas) {
+        mTRUMaskPositionCanvas = new TCanvas("TRUMaskPositionCanvas", "TRU Mask Position Canvas", 800, 600);
       }
-      getObjectsManager()->startPublishing(mTRUMaskPosition);
+      getObjectsManager()->startPublishing(mTRUMaskPositionCanvas);
     }
   }
   o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
@@ -346,10 +428,24 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
 
       auto fastORs = GetAbsFastORIndexFromMask();
 
+      if (mTRUMaskPositionHisto != nullptr) {
+        delete mTRUMaskPositionHisto;
+      }
+
+      mTRUMaskPositionHisto = new TH2D("mTRUMaskPositionHisto", "TRU Mask Position Histogram", 48., -0.5, 47.5, 104, -0.5, 103.5);
+      mTRUMaskPositionHisto->GetXaxis()->SetTitle("FastOR Abs Eta");
+      mTRUMaskPositionHisto->GetYaxis()->SetTitle("FastOR Abs Phi");
+      mTRUMaskPositionHisto->SetStats(false);
+
       for (auto fastORID : fastORs) {
         auto [eta, phi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(fastORID);
-        mTRUMaskPosition->SetBinContent(eta + 1, phi + 1, 1.);
+        mTRUMaskPositionHisto->SetBinContent(eta + 1, phi + 1, 1.);
       }
+
+      mTRUMaskPositionCanvas->Clear();
+      mTRUMaskPositionCanvas->cd();
+      mTRUMaskPositionHisto->Draw("colz");
+      DrawTRUGrid();
     }
   }
 }
@@ -377,7 +473,9 @@ void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistryRef)
       getObjectsManager()->stopPublishing(mTRUThresholds);
       getObjectsManager()->stopPublishing(mL0Algorithm);
       getObjectsManager()->stopPublishing(mRollbackSTU);
-      getObjectsManager()->stopPublishing(mTRUMaskPosition);
+      getObjectsManager()->stopPublishing(mTRUMaskPositionCanvas);
+      delete mTRUMaskPositionCanvas;
+      mTRUMaskPositionCanvas = nullptr;
     }
   }
 }
@@ -427,9 +525,6 @@ void CalibMonitoringTask::reset()
   }
   if (mRollbackSTU) {
     mRollbackSTU->Reset();
-  }
-  if (mTRUMaskPosition) {
-    mTRUMaskPosition->Reset();
   }
 }
 } // namespace o2::quality_control_modules::emcal
