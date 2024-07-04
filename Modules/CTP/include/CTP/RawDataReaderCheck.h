@@ -21,12 +21,13 @@
 #include "CommonConstants/LHCConstants.h"
 #include "DetectorsBase/GRPGeomHelper.h"
 #include <bitset>
-class TH1F;
+class TH1D;
 
 namespace o2::quality_control_modules::ctp
 {
 
 /// \brief  This class is checking the expected BC filling scheme
+/// \brief This class is checking the relative change of ctp input and ctp class rates and ratios to MB
 /// \author Lucia Anna Tarasovicova
 class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
 {
@@ -44,35 +45,33 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   void startOfActivity(const Activity& activity) override;
   const double_t nofOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
   const double_t TimeTF = nofOrbitsPerTF * o2::constants::lhc::LHCOrbitMUS / 1e6; // in seconds
-  ClassDefOverride(RawDataReaderCheck, 5);
 
  private:
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
-  int getNumberFilledBins(TH1F* hist);
-  int checkChange(TH1F* fHist, TH1F* fHistPrev, std::vector<int>& vIndexBad, std::vector<int>& vIndexMedium);
-  Quality SetQualityResult(std::vector<int>& vBad, std::vector<int>& vMedium);
-  void ClearIndexVectors();
+  int checkChange(TH1D* mHist, TH1D* mHistPrev);
+  Quality setQualityResult(std::vector<int>& vBad, std::vector<int>& vMedium);
+  void clearIndexVectors();
   long int mTimestamp;
-  float mThreshold = -1;
-  float mThresholdRateBad;
-  float mThresholdRateMedium;
-  float mThresholdRateRatioBad;
-  float mThresholdRateRatioMedium;
-  float mFraction;
-  int mCycleDuration;
-  bool flagRatio = false;
-  bool flagInput = false;
-  TH1F* fHistInputPrevious = nullptr;
-  TH1F* fHistClassesPrevious = nullptr;
-  TH1F* fHistInputRatioPrevious = nullptr;
-  TH1F* fHistClassRatioPrevious = nullptr;
-  std::vector<int> vGoodBC;
-  std::vector<int> vMediumBC;
-  std::vector<int> vBadBC;
-  std::vector<int> vIndexBad;
-  std::vector<int> vIndexMedium;
-  std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs;
-  const char* ctpinputs[49] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" };
+  float mThreshold = -1;                                                                                                                                                                                                                                                                                                                                                                 // threshold for BCs
+  float mThresholdRateBad;                                                                                                                                                                                                                                                                                                                                                               // threshold for the relative change in ctp input and class rates
+  float mThresholdRateMedium;                                                                                                                                                                                                                                                                                                                                                            // threshold for the relative change in ctp input and class rates
+  float mThresholdRateRatioBad;                                                                                                                                                                                                                                                                                                                                                          // threshold for the relative change in ctp input and class ratios
+  float mThresholdRateRatioMedium;                                                                                                                                                                                                                                                                                                                                                       // threshold for the relative change in ctp input and class ratios
+  bool mFlagRatio = false;                                                                                                                                                                                                                                                                                                                                                               // flag that a ratio plot is checked
+  bool mFlagInput = false;                                                                                                                                                                                                                                                                                                                                                               // flag that an input plot is checked
+  TH1D* mHistInputPrevious = nullptr;                                                                                                                                                                                                                                                                                                                                                    // histogram storing ctp input rates from previous cycle
+  TH1D* mHistClassesPrevious = nullptr;                                                                                                                                                                                                                                                                                                                                                  // histogram storing ctp class rates from previous cycle
+  TH1D* mHistInputRatioPrevious = nullptr;                                                                                                                                                                                                                                                                                                                                               // histogram storing ctp input ratios to MB from previous cycle
+  TH1D* mHistClassRatioPrevious = nullptr;                                                                                                                                                                                                                                                                                                                                               // histogram storing ctp class ratios to MB from previous cycle
+  std::vector<int> mVecGoodBC;                                                                                                                                                                                                                                                                                                                                                           // vector of good BC positions
+  std::vector<int> mVecMediumBC;                                                                                                                                                                                                                                                                                                                                                         // vector of medium BC positions, we expect a BC at this position, but inputs are below mThreshold
+  std::vector<int> mVecBadBC;                                                                                                                                                                                                                                                                                                                                                            // vector of bad BC positions, we don't expect a BC at this position, but inputs are abow mThreshold
+  std::vector<int> mVecIndexBad;                                                                                                                                                                                                                                                                                                                                                         // vector of ctp input and class indices, which had a big relative change
+  std::vector<int> mVecIndexMedium;                                                                                                                                                                                                                                                                                                                                                      // vector of ctp input and class indices, which had a relative change
+  std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs;                                                                                                                                                                                                                                                                                                                                // LHC filling scheme
+  const char* ctpinputs[49] = { " T0A", " T0C", " TVX", " TSC", " TCE", " VBA", " VOR", " VIR", " VNC", " VCH", "11", "12", " UCE", "DMC", " USC", " UVX", " U0C", " U0A", "COS", "LAS", "EMC", " PH0", "23", "24", "ZED", "ZNC", "PHL", "PHH", "PHM", "30", "31", "32", "33", "34", "35", "36", "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DG1", "DJ2", "DG2", "45", "46", "47", "48", "49" }; // ctp input names
+
+  ClassDefOverride(RawDataReaderCheck, 6);
 };
 
 } // namespace o2::quality_control_modules::ctp
