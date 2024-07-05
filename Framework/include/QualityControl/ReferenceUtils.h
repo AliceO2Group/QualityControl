@@ -33,24 +33,13 @@ namespace o2::quality_control::checker
 // Get the reference plot for a given MonitorObject path
 
 static std::shared_ptr<quality_control::core::MonitorObject> getReferencePlot(quality_control::repository::DatabaseInterface* qcdb, std::string& fullPath,
-                                                                              int referenceRun, quality_control::core::Activity activity)
+                                                                              size_t referenceRun, core::Activity activity)
 {
-  uint64_t timeStamp = 0;
-  activity.mId = referenceRun;
-  const auto filterMetadata = quality_control::core::activity_helpers::asDatabaseMetadata(activity, false);
-  const auto objectValidity = qcdb->getLatestObjectValidity(activity.mProvenance + "/" + fullPath, filterMetadata);
-  if (objectValidity.isValid()) {
-    timeStamp = objectValidity.getMax() - 1;
-  } else {
-    ILOG(Warning, Devel) << "Could not find the object '" << fullPath << "' for run " << activity.mId << ENDM;
-    return nullptr;
-  }
-
   auto [success, path, name] = o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath);
   if (!success) {
     return nullptr;
   }
-  return qcdb->retrieveMO(path, name, timeStamp, activity);
+  return qcdb->retrieveMO(path, name, repository::DatabaseInterface::Timestamp::Latest, activity);
 }
 
 } // namespace o2::quality_control::checker

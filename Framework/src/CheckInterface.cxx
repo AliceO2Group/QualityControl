@@ -60,7 +60,7 @@ void CheckInterface::endOfActivity(const Activity& activity)
   // noop, override it if you want.
 }
 
-shared_ptr<MonitorObject> CheckInterface::retrieveReference(std::string path, int referenceRun, Activity activity)
+shared_ptr<MonitorObject> CheckInterface::retrieveReference(std::string path, size_t referenceRun, Activity activity)
 {
   return o2::quality_control::checker::getReferencePlot(mDatabase.get(), path, referenceRun, activity);
 }

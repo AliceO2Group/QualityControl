@@ -94,7 +94,12 @@ class CheckInterface : public core::UserCodeInterface
 
   /// \brief Retrieve a reference plot at the provided path, matching the give activity and for the provided run.
   /// the activity is the current one, while the run number is the reference run.
-  std::shared_ptr<MonitorObject> retrieveReference(std::string path, int referenceRun, Activity activity);
+  ///
+  /// \param path path to the object (no provenance)
+  /// \param referenceRun Run number of the reference data
+  /// \param activity Current activity (necessary for the provenance and the pass)
+  /// \return
+  std::shared_ptr<MonitorObject> retrieveReference(std::string path, size_t referenceRun, Activity activity);
 
  private:
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
