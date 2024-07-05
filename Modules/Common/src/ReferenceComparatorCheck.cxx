@@ -46,9 +46,10 @@ void ReferenceComparatorCheck::configure()
 
 void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
 {
-  auto moduleName = mCustomParameters.atOptional("moduleName").value_or("");
-  auto comparatorName = mCustomParameters.atOptional("comparatorName").value_or("");
-  double threshold = std::stof(mCustomParameters.atOptional("threshold").value_or("0"));
+  auto moduleName = mCustomParameters.atOptional("moduleName", activity).value_or("");
+  auto comparatorName = mCustomParameters.atOptional("comparatorName", activity).value_or("");
+  double threshold = std::stof(mCustomParameters.atOptional("threshold", activity).value_or("0"));
+  mReferenceRun = std::stoi(mCustomParameters.atOptional("referenceRun", activity).value_or("0"));
 
   mComparator.reset();
   if (!moduleName.empty() && !comparatorName.empty()) {
@@ -143,16 +144,11 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
     message = "The MonitorObject is not a TH1";
     return Quality::Null;
   }
-  if (mCustomParameters.count("referenceRun") == 0) {
-    message = "No reference run provided";
-    return Quality::Null;
-  }
-  auto referenceRun = std::stoi(mCustomParameters.at("referenceRun"));
 
   // get path of mo and ref (we have to remove the provenance)
   std::string path = RepoPathUtils::getPathNoProvenance(mo);
 
-  auto referencePlot = retrieveReference(path, referenceRun, mActivity);
+  auto referencePlot = retrieveReference(path, mReferenceRun, mActivity);
   if (!referencePlot) {
     message = "Reference plot not found";
     return Quality::Null;
@@ -172,7 +168,13 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 
 Quality ReferenceComparatorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Good;
+  Quality result = Quality::Null;
+
+  if (mReferenceRun == 0) {
+    result.addFlag(FlagTypeFactory::Unknown(), "No reference run provided");
+    return result;
+  }
+
   for (auto& [key, mo] : *moMap) {
     auto moName = mo->getName();
     Quality quality;

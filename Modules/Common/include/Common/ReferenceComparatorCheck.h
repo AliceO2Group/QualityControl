@@ -55,6 +55,7 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
   std::map<std::string, Quality> mQualityFlags;
   std::map<std::string, std::shared_ptr<TPaveText>> mQualityLabels;
   quality_control::core::Activity mActivity;
+  size_t mReferenceRun;
 };
 
 } // namespace o2::quality_control_modules::common
