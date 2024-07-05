@@ -96,10 +96,9 @@ class CheckInterface : public core::UserCodeInterface
   /// the activity is the current one, while the run number is the reference run.
   ///
   /// \param path path to the object (no provenance)
-  /// \param referenceRun Run number of the reference data
-  /// \param activity Current activity (necessary for the provenance and the pass)
+  /// \param referenceActivity Reference activity (usually a copy of the current activity with a different run number)
   /// \return
-  std::shared_ptr<MonitorObject> retrieveReference(std::string path, size_t referenceRun, Activity activity);
+  std::shared_ptr<MonitorObject> retrieveReference(std::string path, Activity referenceActivity);
 
  private:
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

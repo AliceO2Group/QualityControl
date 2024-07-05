@@ -33,13 +33,13 @@ namespace o2::quality_control::checker
 // Get the reference plot for a given MonitorObject path
 
 static std::shared_ptr<quality_control::core::MonitorObject> getReferencePlot(quality_control::repository::DatabaseInterface* qcdb, std::string& fullPath,
-                                                                              size_t referenceRun, core::Activity activity)
+                                                                              core::Activity referenceActivity)
 {
   auto [success, path, name] = o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath);
   if (!success) {
     return nullptr;
   }
-  return qcdb->retrieveMO(path, name, repository::DatabaseInterface::Timestamp::Latest, activity);
+  return qcdb->retrieveMO(path, name, repository::DatabaseInterface::Timestamp::Latest, referenceActivity);
 }
 
 } // namespace o2::quality_control::checker

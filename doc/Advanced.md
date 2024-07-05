@@ -1406,11 +1406,10 @@ A reference object is an object from a previous run. It is usually used as a poi
 
 To retrieve a reference plot in your Check, use 
 ```
-  std::shared_ptr<MonitorObject> CheckInterface::retrieveReference(std::string path, int referenceRun, Activity activity);
+  std::shared_ptr<MonitorObject> CheckInterface::retrieveReference(std::string path, Activity referenceActivity);
 ```
 - `path` : the path of the object _without the provenance (e.g. `qc`)_
-- `referenceRun` : the run of reference
-- `activity` : the current activity
+- `referenceActivity` : the activity of reference (usually the current activity with a different run number)
 
 If the reference is not found it will return a `nullptr` and the quality is `Null`.
 
