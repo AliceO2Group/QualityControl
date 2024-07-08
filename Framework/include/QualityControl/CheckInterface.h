@@ -17,6 +17,7 @@
 #ifndef QC_CHECKER_CHECKINTERFACE_H
 #define QC_CHECKER_CHECKINTERFACE_H
 
+#include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Activity.h"
@@ -82,9 +83,25 @@ class CheckInterface : public core::UserCodeInterface
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
   virtual void endOfActivity(const core::Activity& activity);   // not fully abstract because we don't want to change all the existing subclasses
 
+  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database)
+  {
+    mDatabase = database;
+  }
+
  protected:
   /// \brief Called each time mCustomParameters is updated.
   virtual void configure() override;
+
+  /// \brief Retrieve a reference plot at the provided path, matching the give activity and for the provided run.
+  /// the activity is the current one, while the run number is the reference run.
+  ///
+  /// \param path path to the object (no provenance)
+  /// \param referenceActivity Reference activity (usually a copy of the current activity with a different run number)
+  /// \return
+  std::shared_ptr<MonitorObject> retrieveReference(std::string path, Activity referenceActivity);
+
+ private:
+  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
 
   ClassDef(CheckInterface, 6)
 };

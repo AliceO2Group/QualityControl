@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/MonitorObject.h"
 
 #include <TClass.h>
@@ -57,6 +58,11 @@ void CheckInterface::startOfActivity(const Activity& activity)
 void CheckInterface::endOfActivity(const Activity& activity)
 {
   // noop, override it if you want.
+}
+
+shared_ptr<MonitorObject> CheckInterface::retrieveReference(std::string path, Activity referenceActivity)
+{
+  return o2::quality_control::checker::getReferencePlot(mDatabase.get(), path, referenceActivity);
 }
 
 } // namespace o2::quality_control::checker

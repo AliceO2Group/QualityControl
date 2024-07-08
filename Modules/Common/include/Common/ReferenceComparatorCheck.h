@@ -49,9 +49,13 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
   void endOfActivity(const Activity& activity) override;
 
  private:
+  Quality getSinglePlotQuality(std::shared_ptr<MonitorObject> mo, std::string& message);
+
   std::unique_ptr<ObjectComparatorInterface> mComparator;
   std::map<std::string, Quality> mQualityFlags;
   std::map<std::string, std::shared_ptr<TPaveText>> mQualityLabels;
+  quality_control::core::Activity mActivity /*current*/, mReferenceActivity;
+  size_t mReferenceRun;
 };
 
 } // namespace o2::quality_control_modules::common

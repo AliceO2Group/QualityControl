@@ -15,8 +15,8 @@
 ///
 
 #include "Common/ReferenceComparatorCheck.h"
+#include "QualityControl/ReferenceUtils.h"
 #include "Common/TH1Ratio.h"
-#include "Common/TH2Ratio.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -24,6 +24,10 @@
 
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
+
+#include <Framework/ServiceRegistryRef.h>
+
+#include <TClass.h>
 
 // ROOT
 #include <TH1.h>
@@ -42,9 +46,10 @@ void ReferenceComparatorCheck::configure()
 
 void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
 {
-  auto moduleName = mCustomParameters.atOptional("moduleName").value_or("");
-  auto comparatorName = mCustomParameters.atOptional("comparatorName").value_or("");
-  double threshold = std::stof(mCustomParameters.atOptional("threshold").value_or("0"));
+  auto moduleName = mCustomParameters.atOptional("moduleName", activity).value_or("");
+  auto comparatorName = mCustomParameters.atOptional("comparatorName", activity).value_or("");
+  double threshold = std::stof(mCustomParameters.atOptional("threshold", activity).value_or("0"));
+  mReferenceRun = std::stoi(mCustomParameters.atOptional("referenceRun", activity).value_or("0"));
 
   mComparator.reset();
   if (!moduleName.empty() && !comparatorName.empty()) {
@@ -54,6 +59,10 @@ void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
   if (mComparator) {
     mComparator->setThreshold(threshold);
   }
+
+  mActivity = activity;
+  mReferenceActivity = activity;
+  mReferenceActivity.mId = mReferenceRun;
 }
 
 void ReferenceComparatorCheck::endOfActivity(const Activity& activity)
@@ -129,6 +138,31 @@ static Quality compare(TCanvas* canvas, ObjectComparatorInterface* comparator, s
   return comparator->compare(plots.first, plots.second, message);
 }
 
+Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorObject> mo, std::string& message)
+{
+  // retrieve the reference plot and compare
+  auto* th1 = dynamic_cast<TH1*>(mo->getObject());
+  if (th1 == nullptr) {
+    message = "The MonitorObject is not a TH1";
+    return Quality::Null;
+  }
+
+  // get path of mo and ref (we have to remove the provenance)
+  std::string path = RepoPathUtils::getPathNoProvenance(mo);
+  // todo we could cache the reference plot within a run
+  auto referencePlot = retrieveReference(path, mReferenceActivity);
+  if (!referencePlot) {
+    message = "Reference plot not found";
+    return Quality::Null;
+  }
+  auto* ref = dynamic_cast<TH1*>(referencePlot->getObject());
+  if (!ref) {
+    message = "The reference plot is not a TH1";
+    return Quality::Null;
+  }
+  return mComparator.get()->compare(th1, ref, message);
+}
+
 //_________________________________________________________________________________________
 //
 // Loop over all the input MOs and compare each of them with the corresponding MO from the reference run
@@ -136,19 +170,30 @@ static Quality compare(TCanvas* canvas, ObjectComparatorInterface* comparator, s
 
 Quality ReferenceComparatorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Good;
+  Quality result = Quality::Null;
+
+  if (mReferenceRun == 0) {
+    result.addFlag(FlagTypeFactory::Unknown(), "No reference run provided");
+    return result;
+  }
+
   for (auto& [key, mo] : *moMap) {
     auto moName = mo->getName();
-
-    auto* canvas = dynamic_cast<TCanvas*>(mo->getObject());
-    if (!canvas) {
-      continue;
-    }
-
-    // run the comparison algorithm
     Quality quality;
     std::string message;
-    quality = compare(canvas, mComparator.get(), message);
+
+    // run the comparison algorithm
+    if (mo->getObject()->IsA() == TClass::GetClass<TCanvas>()) {
+      // We got a canvas. It contains the plot and its reference.
+      auto* canvas = dynamic_cast<TCanvas*>(mo->getObject());
+      quality = compare(canvas, mComparator.get(), message);
+    } else if (mo->getObject()->InheritsFrom(TH1::Class())) {
+      // We got a plot, we have to find the reference before calling the comparator
+      quality = getSinglePlotQuality(mo, message);
+    } else {
+      ILOG(Warning, Ops) << "Compared Monitor Object '" << mo->getName() << "' is not a TCanvas or a TH1, the detector QC responsible should review the configuration" << ENDM;
+      continue;
+    }
 
     // update the overall quality
     if (quality.isWorseThan(result)) {
@@ -191,6 +236,23 @@ static int getQualityColor(const Quality& q)
   return 0;
 }
 
+static void updateQualityLabel(TPaveText* label, const Quality& quality)
+{
+  // draw the quality label with the text color corresponding to the quality level
+  label->SetTextColor(getQualityColor(quality));
+  label->AddText(quality.getName().c_str());
+
+  // add the first flag below the quality label, or an empty line if no flags are set
+  auto flags = quality.getFlags();
+  std::string message = flags.empty() ? "" : flags.front().second;
+  auto pos = message.find(" ");
+  if (pos != std::string::npos) {
+    message.erase(0, pos + 1);
+  }
+  auto* text = label->AddText(message.c_str());
+  text->SetTextColor(kGray + 1);
+}
+
 // Write the quality level and flags in the existing PaveText inside the canvas
 static void setQualityLabel(TCanvas* canvas, const Quality& quality)
 {
@@ -209,43 +271,34 @@ static void setQualityLabel(TCanvas* canvas, const Quality& quality)
       continue;
     }
 
-    // draw the quality label with the text color corresponding to the quality level
-    label->SetTextColor(getQualityColor(quality));
-    label->AddText(quality.getName().c_str());
-
-    // add the first flag below the quality label, or an empty line if no flags are set
-    auto flags = quality.getFlags();
-    std::string message = flags.empty() ? "" : flags.front().second;
-    auto pos = message.find(" ");
-    if (pos != std::string::npos) {
-      message.erase(0, pos + 1);
-    }
-    auto* text = label->AddText(message.c_str());
-    text->SetTextColor(kGray + 1);
-
+    updateQualityLabel(label, quality);
     break;
   }
 }
 
 void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* canvas = dynamic_cast<TCanvas*>(mo->getObject());
-  if (!canvas) {
-    return;
-  }
-
   // get the quality associated to the current MO
   auto moName = mo->getName();
   auto quality = mQualityFlags[moName];
 
-  // retrieve the reference plot from the canvas and set the line color according to the quality
-  auto plots = getPlotsFromCanvas(canvas);
-  if (plots.second) {
-    plots.second->SetLineColor(getQualityColor(quality));
-  }
+  auto* canvas = dynamic_cast<TCanvas*>(mo->getObject());
+  if (canvas) {
+    // retrieve the reference plot from the canvas and set the line color according to the quality
+    auto plots = getPlotsFromCanvas(canvas);
+    if (plots.second) {
+      plots.second->SetLineColor(getQualityColor(quality));
+    }
 
-  // draw the quality label on the plot
-  setQualityLabel(canvas, quality);
+    // draw the quality label on the plot
+    setQualityLabel(canvas, quality);
+  }
+  auto* th1 = dynamic_cast<TH1*>(mo->getObject());
+  if (th1) {
+    auto* qualityLabel = new TPaveText(0.75, 0.65, 0.98, 0.75, "brNDC");
+    updateQualityLabel(qualityLabel, quality);
+    th1->GetListOfFunctions()->Add(qualityLabel);
+  }
 }
 
 } // namespace o2::quality_control_modules::common
