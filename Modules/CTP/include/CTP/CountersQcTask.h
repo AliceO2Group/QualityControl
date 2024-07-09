@@ -26,6 +26,9 @@ class TH1D;
 class TCanvas;
 
 using namespace o2::quality_control::core;
+//
+// Fake class to compile. If the task CTPCounterTask will beused it will be fixed or the whole task shall be removed.
+//
 class CTPRunManager
 {
 };
