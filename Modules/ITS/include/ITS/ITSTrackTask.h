@@ -70,7 +70,7 @@ class ITSTrackTask : public TaskInterface
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
 
   std::vector<TObject*> mPublishedObjects;
-  std::unique_ptr<TH1FRatio> hNClusters;
+  std::unique_ptr<TH1DRatio> hNClusters;
   std::unique_ptr<TH1FRatio> hTrackEta;
   std::unique_ptr<TH1FRatio> hTrackPhi;
   TH1F* hVerticesRof;

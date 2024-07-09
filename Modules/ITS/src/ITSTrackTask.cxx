@@ -453,7 +453,7 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hAngularDistribution.get(), "#eta", "#phi", 1, 1.10);
   hAngularDistribution->SetStats(0);
 
-  hNClusters = std::make_unique<TH1FRatio>("NClusters", "NClusters", 15, -0.5, 14.5, true);
+  hNClusters = std::make_unique<TH1DRatio>("NClusters", "NClusters", 15, -0.5, 14.5, true);
   hNClusters->SetTitle("hNClusters");
   addObject(hNClusters.get());
   formatAxes(hNClusters.get(), "Number of clusters per Track", Form("Counts %s", titleNorm.c_str()), 1, 1.10);
