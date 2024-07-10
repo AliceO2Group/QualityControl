@@ -169,8 +169,8 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
           }
 
           // Save the final bad FastORs
-          FastORNoiseLevel final{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
-          finalBadFastORs.push_back(final);
+          FastORNoiseLevel finalFastOR{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
+          finalBadFastORs.push_back(finalFastOR);
         }
 
         // Save the positions of the final Bad FastORs and display the error message
@@ -212,8 +212,8 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
           }
 
           // Save the final med FastORs
-          FastORNoiseLevel final{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
-          finalMedFastORs.push_back(final);
+          FastORNoiseLevel finalFastOR{ i->mCounts, i->mFastORID, i->mPosGlobalPhi, i->mPosGlobalEta, i->mRejected };
+          finalMedFastORs.push_back(finalFastOR);
         }
 
         // Save the positions of the final Med FastORs and display the error message
