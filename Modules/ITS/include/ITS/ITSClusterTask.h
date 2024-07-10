@@ -78,38 +78,38 @@ class ITSClusterTask : public TaskInterface
   std::vector<TObject*> mPublishedObjects;
 
   // Inner barrel
-  TH1F* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
-  TH1F* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
+  TH1D* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
+  TH1D* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
 
-  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryIB[NLayer];
-  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryIB[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryIB[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryIB[NLayer];
 
   // Outer barrel
-  TH1F* hGroupedClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
-  TH1F* hClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
-  TH1F* hClusterTopologySummaryOB[NLayer][48] = { { nullptr } };
+  TH1D* hGroupedClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
+  TH1D* hClusterSizeSummaryOB[NLayer][48] = { { nullptr } };
+  TH1D* hClusterTopologySummaryOB[NLayer][48] = { { nullptr } };
 
-  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryOB[NLayer];
-  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryOB[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryOB[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryOB[NLayer];
 
   // Layer synnary
-  TH1F* hClusterSizeLayerSummary[NLayer] = { nullptr };
-  TH1F* hClusterTopologyLayerSummary[NLayer] = { nullptr };
-  TH1F* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
+  TH1D* hClusterSizeLayerSummary[NLayer] = { nullptr };
+  TH1D* hClusterTopologyLayerSummary[NLayer] = { nullptr };
+  TH1D* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
 
   // General
-  TH2F* hClusterVsBunchCrossing = nullptr;
-  std::unique_ptr<TH2FRatio> mGeneralOccupancy = nullptr;
+  TH2D* hClusterVsBunchCrossing = nullptr;
+  std::unique_ptr<TH2DRatio> mGeneralOccupancy = nullptr;
 
   // Fine checks
 
-  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryFine[NLayer];
-  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryFine[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryFine[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryFine[NLayer];
 
-  std::shared_ptr<TH2FRatio> hAverageClusterOccupancySummaryZPhi[NLayer];
-  std::shared_ptr<TH2FRatio> hAverageClusterSizeSummaryZPhi[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryZPhi[NLayer];
+  std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryZPhi[NLayer];
 
-  TH1F* hEmptyLaneFractionGlobal;
+  TH1D* hEmptyLaneFractionGlobal;
 
   // Edges of space binning within chips (local frame coordinates)
   std::vector<float> vRphiBinsIB;

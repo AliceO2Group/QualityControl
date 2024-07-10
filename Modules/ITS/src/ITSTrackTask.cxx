@@ -447,7 +447,7 @@ void ITSTrackTask::createAllHistos()
 {
   std::string titleNorm = mDoNorm == 1 ? "/ n_vertices" : mDoNorm == 2 ? "/ n_rofs"
                                                                        : "";
-  hAngularDistribution = std::make_unique<TH2FRatio>("AngularDistribution", "AngularDistribution", 40, -2.0, 2.0, 60, 0, TMath::TwoPi(), true);
+  hAngularDistribution = std::make_unique<TH2DRatio>("AngularDistribution", "AngularDistribution", 40, -2.0, 2.0, 60, 0, TMath::TwoPi(), true);
   hAngularDistribution->SetTitle("AngularDistribution");
   addObject(hAngularDistribution.get());
   formatAxes(hAngularDistribution.get(), "#eta", "#phi", 1, 1.10);
@@ -460,109 +460,109 @@ void ITSTrackTask::createAllHistos()
   hNClusters->SetStats(0);
   hNClusters->SetOption("HIST");
 
-  hTrackEta = std::make_unique<TH1FRatio>("EtaDistribution", "EtaDistribution", 40, -2.0, 2.0, true);
+  hTrackEta = std::make_unique<TH1DRatio>("EtaDistribution", "EtaDistribution", 40, -2.0, 2.0, true);
   hTrackEta->SetTitle(Form("Eta Distribution of tracks %s ", titleNorm.c_str()));
   hTrackEta->SetMinimum(0);
   addObject(hTrackEta.get());
   formatAxes(hTrackEta.get(), "#eta", Form("Counts %s", titleNorm.c_str()), 1, 1.10);
   hTrackEta->SetStats(0);
 
-  hTrackPhi = std::make_unique<TH1FRatio>("PhiDistribution", "PhiDistribution", 65, -0.1, TMath::TwoPi(), true);
+  hTrackPhi = std::make_unique<TH1DRatio>("PhiDistribution", "PhiDistribution", 65, -0.1, TMath::TwoPi(), true);
   hTrackPhi->SetTitle(Form("Phi Distribution of tracks %s", titleNorm.c_str()));
   hTrackPhi->SetMinimum(0);
   addObject(hTrackPhi.get());
   formatAxes(hTrackPhi.get(), "#phi", Form("Counts %s", titleNorm.c_str()), 1, 1.10);
   hTrackPhi->SetStats(0);
 
-  hVerticesRof = new TH1F("VerticesRof", "VerticesRof", 101, -0.5, 100.5);
+  hVerticesRof = new TH1D("VerticesRof", "VerticesRof", 101, -0.5, 100.5);
   hVerticesRof->SetTitle("Distribution n_vertices / ROF");
   addObject(hVerticesRof);
   formatAxes(hVerticesRof, "vertices / ROF", "Counts", 1, 1.10);
 
-  hVertexCoordinates = new TH2F("VertexCoordinates", "VertexCoordinates", (int)(mVertexXYsize * 2 / 0.01), -1. * mVertexXYsize, mVertexXYsize, (int)(mVertexXYsize * 2 / 0.01), -1 * mVertexXYsize, mVertexXYsize);
+  hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates", (int)(mVertexXYsize * 2 / 0.01), -1. * mVertexXYsize, mVertexXYsize, (int)(mVertexXYsize * 2 / 0.01), -1 * mVertexXYsize, mVertexXYsize);
   hVertexCoordinates->SetTitle("Coordinates of track vertex");
   addObject(hVertexCoordinates);
   formatAxes(hVertexCoordinates, "X coordinate (cm)", "Y coordinate (cm)", 1, 1.10);
   hVertexCoordinates->SetStats(0);
 
-  hVertexRvsZ = new TH2F("VertexRvsZ", "VertexRvsZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize, (int)(mVertexRsize / 0.01), 0, mVertexRsize);
+  hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize, (int)(mVertexRsize / 0.01), 0, mVertexRsize);
   hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
   addObject(hVertexRvsZ);
   formatAxes(hVertexRvsZ, "Z coordinate (cm)", "R (cm)", 1, 1.10);
 
-  hVertexZ = new TH1F("VertexZ", "VertexZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
+  hVertexZ = new TH1D("VertexZ", "VertexZ", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
   addObject(hVertexZ);
   formatAxes(hVertexZ, "Z coordinate (cm)", "counts", 1, 1.10);
   hVertexZ->SetStats(0);
 
-  hVertexContributors = new TH1F("NVertexContributors", "NVertexContributors", 500, 0, 500);
+  hVertexContributors = new TH1D("NVertexContributors", "NVertexContributors", 500, 0, 500);
   hVertexContributors->SetTitle("NVertexContributors");
   addObject(hVertexContributors);
   formatAxes(hVertexContributors, "Number of contributors for vertex", "Counts", 1, 1.10);
   hVertexContributors->SetStats(0);
 
-  hAssociatedClusterFraction = new TH1F("AssociatedClusterFraction", "AssociatedClusterFraction", 100, 0, 1);
+  hAssociatedClusterFraction = new TH1D("AssociatedClusterFraction", "AssociatedClusterFraction", 100, 0, 1);
   hAssociatedClusterFraction->SetTitle("The fraction of clusters into tracks event by event");
   addObject(hAssociatedClusterFraction);
   formatAxes(hAssociatedClusterFraction, "Clusters in tracks / All clusters", "Counts", 1, 1.10);
   hAssociatedClusterFraction->SetStats(0);
 
-  hNtracks = new TH1F("Ntracks", "Ntracks", (int)mNtracksMAX, 0, mNtracksMAX);
+  hNtracks = new TH1D("Ntracks", "Ntracks", (int)mNtracksMAX, 0, mNtracksMAX);
   hNtracks->SetTitle("The number of tracks event by event");
   addObject(hNtracks);
   formatAxes(hNtracks, "# tracks", "Counts", 1, 1.10);
   hNtracks->SetStats(0);
 
-  hNClustersPerTrackEta = std::make_unique<TH2FRatio>("NClustersPerTrackEta", "NClustersPerTrackEta", 400, -2.0, 2.0, 15, -0.5, 14.5, true);
+  hNClustersPerTrackEta = std::make_unique<TH2DRatio>("NClustersPerTrackEta", "NClustersPerTrackEta", 400, -2.0, 2.0, 15, -0.5, 14.5, true);
   hNClustersPerTrackEta->SetTitle("Eta vs NClusters Per Track");
   addObject(hNClustersPerTrackEta.get());
   formatAxes(hNClustersPerTrackEta.get(), "#eta", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackEta->SetStats(0);
 
-  hNClustersPerTrackPhi = std::make_unique<TH2FRatio>("NClustersPerTrackPhi", "NClustersPerTrackPhi", 65, 0, TMath::TwoPi(), 15, -0.5, 14.5, true);
+  hNClustersPerTrackPhi = std::make_unique<TH2DRatio>("NClustersPerTrackPhi", "NClustersPerTrackPhi", 65, 0, TMath::TwoPi(), 15, -0.5, 14.5, true);
   hNClustersPerTrackPhi->SetTitle("Phi vs NClusters Per Track");
   addObject(hNClustersPerTrackPhi.get());
   formatAxes(hNClustersPerTrackPhi.get(), "#phi", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackPhi->SetStats(0);
 
-  hNClustersPerTrackPt = std::make_unique<TH2FRatio>("NClustersPerTrackPt", "NClustersPerTrackPt", 150, 0, 10, 15, -0.5, 14.5, true);
+  hNClustersPerTrackPt = std::make_unique<TH2DRatio>("NClustersPerTrackPt", "NClustersPerTrackPt", 150, 0, 10, 15, -0.5, 14.5, true);
   hNClustersPerTrackPt->SetTitle("#it{p_{T}} vs NClusters Per Track");
   addObject(hNClustersPerTrackPt.get());
   formatAxes(hNClustersPerTrackPt.get(), "#it{p_{T}} (GeV/c)", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackPt->SetStats(0);
 
-  hHitFirstLayerPhiAll = std::make_unique<TH2FRatio>("HitFirstLayerAll", "HitFirstLayerPhiAll", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
+  hHitFirstLayerPhiAll = std::make_unique<TH2DRatio>("HitFirstLayerAll", "HitFirstLayerPhiAll", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
   hHitFirstLayerPhiAll->SetTitle("Layer with 1st track hit vs Phi - all tracks");
   addObject(hHitFirstLayerPhiAll.get());
   formatAxes(hHitFirstLayerPhiAll.get(), "#phi", "Layer with 1st hit", 1, 1.10);
   hHitFirstLayerPhiAll->SetStats(0);
 
-  hHitFirstLayerPhi4cls = std::make_unique<TH2FRatio>("HitFirstLayer4cls", "HitFirstLayerPhi4cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
+  hHitFirstLayerPhi4cls = std::make_unique<TH2DRatio>("HitFirstLayer4cls", "HitFirstLayerPhi4cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
   hHitFirstLayerPhi4cls->SetTitle("Layer with 1st track hit vs Phi - 4 cls tracks");
   addObject(hHitFirstLayerPhi4cls.get());
   formatAxes(hHitFirstLayerPhi4cls.get(), "#phi", "Layer with 1st hit", 1, 1.10);
   hHitFirstLayerPhi4cls->SetStats(0);
 
-  hHitFirstLayerPhi5cls = std::make_unique<TH2FRatio>("HitFirstLayer5cls", "HitFirstLayerPhi5cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
+  hHitFirstLayerPhi5cls = std::make_unique<TH2DRatio>("HitFirstLayer5cls", "HitFirstLayerPhi5cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
   hHitFirstLayerPhi5cls->SetTitle("Layer with 1st track hit vs Phi - 5 cls tracks");
   addObject(hHitFirstLayerPhi5cls.get());
   formatAxes(hHitFirstLayerPhi5cls.get(), "#phi", "Layer with 1st hit", 1, 1.10);
   hHitFirstLayerPhi5cls->SetStats(0);
 
-  hHitFirstLayerPhi6cls = std::make_unique<TH2FRatio>("HitFirstLayer6cls", "HitFirstLayerPhi6cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
+  hHitFirstLayerPhi6cls = std::make_unique<TH2DRatio>("HitFirstLayer6cls", "HitFirstLayerPhi6cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
   hHitFirstLayerPhi6cls->SetTitle("Layer with 1st track hit vs Phi - 6 cls tracks");
   addObject(hHitFirstLayerPhi6cls.get());
   formatAxes(hHitFirstLayerPhi6cls.get(), "#phi", "Layer with 1st hit", 1, 1.10);
   hHitFirstLayerPhi6cls->SetStats(0);
 
-  hHitFirstLayerPhi7cls = std::make_unique<TH2FRatio>("HitFirstLayer7cls", "HitFirstLayerPhi7cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
+  hHitFirstLayerPhi7cls = std::make_unique<TH2DRatio>("HitFirstLayer7cls", "HitFirstLayerPhi7cls", 65, -0.1, TMath::TwoPi(), 4, -0.5, 3.5, true);
   hHitFirstLayerPhi7cls->SetTitle("Layer with 1st track hit vs Phi - 7 cls tracks");
   addObject(hHitFirstLayerPhi7cls.get());
   formatAxes(hHitFirstLayerPhi7cls.get(), "#phi", "Layer with 1st hit", 1, 1.10);
   hHitFirstLayerPhi7cls->SetStats(0);
 
-  hClusterVsBunchCrossing = new TH2F("BunchCrossingIDvsClusterRatio", "BunchCrossingIDvsClusterRatio", nBCbins, 0, 4095, 100, 0, 1);
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterRatio", "BunchCrossingIDvsClusterRatio", nBCbins, 0, 4095, 100, 0, 1);
   hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Ratio");
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Fraction of clusters in tracks", 1, 1.10);
@@ -585,7 +585,7 @@ void ITSTrackTask::createAllHistos()
   }
 
   if (mPublishMore) {
-    hNClusterVsChipITS = new TH2F(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), 2124, mChipBins, 24, mCoslBins);
+    hNClusterVsChipITS = new TH2D(Form("NClusterVsChipITS"), Form("NClusterVsChipITS"), 2124, mChipBins, 24, mCoslBins);
     hNClusterVsChipITS->SetTitle(Form("Corrected cluster size for track clusters vs Chip Full Detector"));
     hNClusterVsChipITS->SetBit(TH1::kIsAverage);
     addObject(hNClusterVsChipITS);
@@ -601,30 +601,30 @@ void ITSTrackTask::createAllHistos()
   }
 
   // Invariant mass K0s, Lambda, LambdaBar
-  hInvMassK0s = new TH1F("hInvMassK0s", "K0s invariant mass", 160, 0.0, 1.0);
+  hInvMassK0s = new TH1D("hInvMassK0s", "K0s invariant mass", 160, 0.0, 1.0);
   hInvMassK0s->SetTitle(Form("Invariant mass of K0s"));
   addObject(hInvMassK0s);
   formatAxes(hInvMassK0s, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassK0s->SetStats(0);
 
-  hInvMassLambda = new TH1F("hInvMassLambda", "Lambda invariant mass", 400, 1.0, 2.0);
+  hInvMassLambda = new TH1D("hInvMassLambda", "Lambda invariant mass", 400, 1.0, 2.0);
   hInvMassLambda->SetTitle(Form("Invariant mass of Lambda"));
   addObject(hInvMassLambda);
   formatAxes(hInvMassLambda, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassLambda->SetStats(0);
 
-  hInvMassLambdaBar = new TH1F("hInvMassLambdaBar", "LambdaBar invariant mass", 400, 1.0, 2.0);
+  hInvMassLambdaBar = new TH1D("hInvMassLambdaBar", "LambdaBar invariant mass", 400, 1.0, 2.0);
   hInvMassLambdaBar->SetTitle(Form("Invariant mass of LambdaBar"));
   addObject(hInvMassLambdaBar);
   formatAxes(hInvMassLambdaBar, "m_{inv} (Gev/c)", "Counts", 1, 1.10);
   hInvMassLambdaBar->SetStats(0);
 
-  hTrackPtVsEta = new TH2F("hTrackPtVsEta", "Track #it{p}_{T} Vs #eta", 150, 0, 15, 40, -2.0, 2.0);
+  hTrackPtVsEta = new TH2D("hTrackPtVsEta", "Track #it{p}_{T} Vs #eta", 150, 0, 15, 40, -2.0, 2.0);
   addObject(hTrackPtVsEta);
   formatAxes(hTrackPtVsEta, "#it{p}_{T} (GeV/#it{c})", "#eta", 1, 1.10);
   hTrackPtVsEta->SetStats(0);
 
-  hTrackPtVsPhi = new TH2F("hTrackPtVsPhi", "Track #it{p}_{T} Vs #phi", 150, 0, 15, 65, 0, TMath::TwoPi());
+  hTrackPtVsPhi = new TH2D("hTrackPtVsPhi", "Track #it{p}_{T} Vs #phi", 150, 0, 15, 65, 0, TMath::TwoPi());
   addObject(hTrackPtVsPhi);
   formatAxes(hTrackPtVsPhi, "#it{p}_{T} (GeV/#it{c})", "#phi", 1, 1.10);
   hTrackPtVsPhi->SetStats(0);

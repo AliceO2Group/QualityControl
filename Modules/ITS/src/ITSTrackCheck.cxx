@@ -85,18 +85,18 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
 
     if (iter->second->getName() == "AngularDistribution") {
-      auto* hAngular = dynamic_cast<TH2F*>(iter->second->getObject());
+      auto* hAngular = dynamic_cast<TH2D*>(iter->second->getObject());
       if (hAngular == nullptr) {
-        ILOG(Error, Support) << "could not cast AngularDistribution to TH2F*" << ENDM;
+        ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
         continue;
       }
       result.set(Quality::Good);
       result.addMetadata("CheckAngEmpty", "good");
       result.addMetadata("CheckAsymmEta", "good");
       result.addMetadata("CheckAsymmPhi", "good");
-      TH1F* projectEta = (TH1F*)hAngular->ProjectionX();
+      TH1D* projectEta = (TH1D*)hAngular->ProjectionX();
       Double_t ratioEta = abs(1. - (projectEta->Integral(1, projectEta->FindBin(0)) / projectEta->Integral(projectEta->FindBin(0), projectEta->GetNbinsX())));
-      TH1F* projectPhi = (TH1F*)hAngular->ProjectionY();
+      TH1D* projectPhi = (TH1D*)hAngular->ProjectionY();
       Double_t ratioPhi = abs(projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) / projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi())) - 1);
       if (hAngular->GetEntries() < 1e-15) {
         result.updateMetadata("CheckAngEmpty", "bad");
@@ -116,9 +116,9 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
 
     if (iter->second->getName() == "VertexCoordinates") {
-      auto* h = dynamic_cast<TH2F*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       if (h == nullptr) {
-        ILOG(Error, Support) << "could not cast VertexCoordinates to TH2F*" << ENDM;
+        ILOG(Error, Support) << "could not cast VertexCoordinates to TH2D*" << ENDM;
         continue;
       }
       result.set(Quality::Good);
@@ -150,14 +150,14 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
 
     if (iter->second->getName() == "VertexRvsZ") {
-      auto* h = dynamic_cast<TH2F*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       if (h == nullptr) {
-        ILOG(Error, Support) << "could not cast VertexRvsZ to TH2F*" << ENDM;
+        ILOG(Error, Support) << "could not cast VertexRvsZ to TH2D*" << ENDM;
         continue;
       }
       result.set(Quality::Good);
       result.addMetadata("CheckRZVertexZDisplacedBad", "good");
-      TH1F* projectZ = (TH1F*)h->ProjectionY();
+      TH1D* projectZ = (TH1D*)h->ProjectionY();
       if ((projectZ->Integral(1, projectZ->FindBin(-10)) > 0) || (projectZ->Integral(projectZ->FindBin(10), projectZ->GetNbinsX()) > 0)) {
         result.updateMetadata("CheckRZVertexZDisplacedBad", "bad");
         result.set(Quality::Bad);
@@ -165,9 +165,9 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
 
     if (iter->second->getName() == "VertexZ") {
-      auto* h = dynamic_cast<TH1F*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h == nullptr) {
-        ILOG(Error, Support) << "could not cast VertexZ to TH1F*" << ENDM;
+        ILOG(Error, Support) << "could not cast VertexZ to TH1D*" << ENDM;
         continue;
       }
       result.set(Quality::Good);
@@ -196,7 +196,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string ITSTrackCheck::getAcceptedType() { return "TH1F"; }
+std::string ITSTrackCheck::getAcceptedType() { return "TH1D"; }
 
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
@@ -301,9 +301,9 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   }
 
   if (mo->getName() == "AngularDistribution") {
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast AngularDistribution to TH2F*" << ENDM;
+      ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {
@@ -350,10 +350,10 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
   if (mo->getName() == "VertexCoordinates") {
     Double_t positionX, positionY;
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
 
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast TVertexCoordinates to TH2F*" << ENDM;
+      ILOG(Error, Support) << "could not cast TVertexCoordinates to TH2D*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {
@@ -424,9 +424,9 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   }
 
   if (mo->getName() == "VertexRvsZ") {
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast VertexRvsZ to TH2F*" << ENDM;
+      ILOG(Error, Support) << "could not cast VertexRvsZ to TH2D*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {
@@ -456,9 +456,9 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   }
 
   if (mo->getName() == "VertexZ") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast VertexZ to TH1F*" << ENDM;
+      ILOG(Error, Support) << "could not cast VertexZ to TH1D*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {
