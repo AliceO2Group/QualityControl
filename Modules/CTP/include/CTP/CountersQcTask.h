@@ -19,7 +19,6 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "DataFormatsCTP/Configuration.h"
-#include "DataFormatsCTP/RunManager.h"
 #include "TH1.h"
 
 class TH1F;
@@ -27,7 +26,12 @@ class TH1D;
 class TCanvas;
 
 using namespace o2::quality_control::core;
-
+//
+// Fake class to compile. If the task CTPCounterTask will beused it will be fixed or the whole task shall be removed.
+//
+class CTPRunManager
+{
+};
 namespace o2::quality_control_modules::ctp
 {
 
@@ -97,7 +101,7 @@ class CTPCountersTask final : public TaskInterface
   std::array<TCanvas*, 16> mTCanvasClassRates = { nullptr };
 };
 
-class CTPQcRunManager : public o2::ctp::CTPRunManager
+class CTPQcRunManager : public CTPRunManager
 {
  public:
   /// \brief Constructor

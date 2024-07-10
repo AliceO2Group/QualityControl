@@ -23,7 +23,7 @@
 #include <QualityControl/ActivityHelpers.h>
 #include <CCDB/BasicCCDBManager.h>
 #include <DataFormatsCTP/Configuration.h>
-#include "DataFormatsCTP/RunManager.h"
+// #include "DataFormatsCTP/RunManager.h"
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -51,10 +51,22 @@ void CTPTrendingTask::initCTP(Trigger& t)
   }
 
   /// the reading of the ccdb from trending was already discussed and is related with the fact that CTPconfing may not be ready at the QC starts
-  o2::ctp::CTPRunManager::setCCDBHost(CCDBHost);
+  // o2::ctp::CTPRunManager::setCCDBHost(CCDBHost);
   bool ok;
-  o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(t.timestamp, run, ok);
-
+  // o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(t.timestamp, run, ok);
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL(CCDBHost);
+  map<string, string> metadata; // can be empty
+  metadata["runNumber"] = run;
+  auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, t.timestamp, metadata);
+  if (ctpconfigdb == nullptr) {
+    LOG(info) << "CTP config not in database, timestamp:" << t.timestamp;
+    ok = 0;
+  } else {
+    // ctpconfigdb->printStream(std::cout);
+    LOG(info) << "CTP config found. Run:" << run;
+    ok = 1;
+  }
   if (!ok) {
     ILOG(Warning, Support) << "CTP Config not found for run:" << run << " timesamp " << t.timestamp << ENDM;
     return;
@@ -123,8 +135,10 @@ void CTPTrendingTask::initCTP(Trigger& t)
   }
 
   // get the indices of the classes we want to trend
-  std::vector<ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
-  std::vector<int> clslist = CTPconfig.getTriggerClassList();
+  // std::vector<ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
+  // std::vector<int> clslist = CTPconfig.getTriggerClassList();
+  std::vector<ctp::CTPClass> ctpcls = ctpconfigdb->getCTPClasses();
+  std::vector<int> clslist = ctpconfigdb->getTriggerClassList();
   for (size_t i = 0; i < clslist.size(); i++) {
     for (size_t j = 0; j < mNumberOfClasses; j++) {
       if (ctpcls[i].name.find(mClassNames[j]) != std::string::npos) {
