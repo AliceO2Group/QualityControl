@@ -29,7 +29,8 @@ struct PostProcessingRunnerConfig {
   std::string id;
   std::string taskName;
   std::string detectorName;
-  std::unordered_map<std::string, std::string> database;
+  std::unordered_map<std::string, std::string> sourceDatabase;
+  std::unordered_map<std::string, std::string> destinationDatabase;
   std::string consulUrl{};
   std::string bookkeepingUrl{};
   core::LogDiscardParameters infologgerDiscardParameters;

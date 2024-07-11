@@ -66,6 +66,16 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config, core:
   init(PostProcessingRunner::extractConfig(specs.common, *ppTaskSpec), PostProcessingConfig{ mID, config });
 }
 
+std::unique_ptr<DatabaseInterface> PostProcessingRunner::configureDatabase(std::unordered_map<std::string, std::string>& dbConfig, const std::string& name)
+{
+  auto database = DatabaseFactory::create(dbConfig.at("implementation"));
+  database->connect(dbConfig);
+  ILOG(Info, Support) << name << " database that is going to be used > Implementation : " << dbConfig.at("implementation") << " / "
+                      << " Host : " << dbConfig.at("host") << ENDM;
+  return database;
+}
+
+
 void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig)
 {
   QcInfoLogger::init(("post/" + taskConfig.taskName).substr(0, QcInfoLogger::maxFacilityLength), runnerConfig.infologgerDiscardParameters);
@@ -82,16 +92,14 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   }
 
   // configuration of the database
-  mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
-  mDatabase->connect(mRunnerConfig.database);
-  ILOG(Info, Support) << "Database that is going to be used > Implementation : " << mRunnerConfig.database.at("implementation") << " / "
-                      << " Host : " << mRunnerConfig.database.at("host") << ENDM;
+  mSourceDatabase = configureDatabase(mRunnerConfig.sourceDatabase, "Source");
+  mDestinationDatabase = configureDatabase(mRunnerConfig.destinationDatabase, "Destination");
 
   mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
   mObjectManager->setActivity(mActivity);
-  mServices.registerService<DatabaseInterface>(mDatabase.get());
+  mServices.registerService<DatabaseInterface>(mSourceDatabase.get());
   if (mPublicationCallback == nullptr) {
-    mPublicationCallback = publishToRepository(*mDatabase);
+    mPublicationCallback = publishToRepository(*mDestinationDatabase);
   }
   Bookkeeping::getInstance().init(runnerConfig.bookkeepingUrl);
 
@@ -232,7 +240,8 @@ void PostProcessingRunner::reset()
   mTaskState = TaskState::INVALID;
 
   mTask.reset();
-  mDatabase.reset();
+  mSourceDatabase.reset();
+  mDestinationDatabase.reset();
   mServices = framework::ServiceRegistry();
   mObjectManager.reset();
 
@@ -327,11 +336,15 @@ const std::string& PostProcessingRunner::getID() const
 
 PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec)
 {
+  auto sourceDatabase = ppTaskSpec.sourceDatabase.empty() ? commonSpec.database : ppTaskSpec.sourceDatabase;
+  auto destinationDatabase = ppTaskSpec.destinationDatabase.empty() ? commonSpec.database : ppTaskSpec.destinationDatabase;
+
   return {
     ppTaskSpec.id,
     ppTaskSpec.taskName,
     ppTaskSpec.detectorName,
-    commonSpec.database,
+    sourceDatabase,
+    destinationDatabase,
     commonSpec.consulUrl,
     commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,

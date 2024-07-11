@@ -119,7 +119,9 @@ class PostProcessingRunner
   core::Activity mActivity;
   PostProcessingConfig mTaskConfig;
   PostProcessingRunnerConfig mRunnerConfig;
-  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
+  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mSourceDatabase;
+  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDestinationDatabase;
+  std::unique_ptr<repository::DatabaseInterface> configureDatabase(std::unordered_map<std::string, std::string>& dbConfig, const std::string& name);
 };
 
 MOCPublicationCallback publishToDPL(o2::framework::DataAllocator&, std::string outputBinding);
