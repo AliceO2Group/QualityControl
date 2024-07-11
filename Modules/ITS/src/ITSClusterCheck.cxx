@@ -38,9 +38,9 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     result = Quality::Good;
 
     if (iter->second->getName().find("AverageClusterSize") != std::string::npos) {
-      auto* h = dynamic_cast<TH2F*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       if (h == nullptr) {
-        ILOG(Error, Support) << "could not cast AverageClusteSize to TH2F*" << ENDM;
+        ILOG(Error, Support) << "could not cast AverageClusteSize to TH2D*" << ENDM;
         continue;
       }
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
@@ -53,9 +53,9 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     }
 
     if (iter->second->getName().find("EmptyLaneFractionGlobal") != std::string::npos) {
-      auto* h = dynamic_cast<TH1F*>(iter->second->getObject());
+      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h == nullptr) {
-        ILOG(Error, Support) << "could not cast EmptyLaneFractionGlobal to TH1F*" << ENDM;
+        ILOG(Error, Support) << "could not cast EmptyLaneFractionGlobal to TH1D*" << ENDM;
         continue;
       }
       result.addMetadata("EmptyLaneFractionGlobal", "good");
@@ -68,9 +68,9 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     } // end summary loop
 
     if (iter->second->getName().find("General_Occupancy") != std::string::npos) {
-      auto* hp = dynamic_cast<TH2F*>(iter->second->getObject());
+      auto* hp = dynamic_cast<TH2D*>(iter->second->getObject());
       if (hp == nullptr) {
-        ILOG(Error, Support) << "could not cast general occupancy to TH2F*" << ENDM;
+        ILOG(Error, Support) << "could not cast general occupancy to TH2D*" << ENDM;
         continue;
       }
       std::vector<int> skipxbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipxbinsoccupancy", ""));
@@ -133,7 +133,7 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 } // end check
 
-std::string ITSClusterCheck::getAcceptedType() { return "TH2F"; }
+std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
 
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
@@ -158,9 +158,9 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   Double_t positionX, positionY;
 
   if (mo->getName().find("AverageClusterSize") != std::string::npos) {
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast AverageClusterSize to TH2F*" << ENDM;
+      ILOG(Error, Support) << "could not cast AverageClusterSize to TH2D*" << ENDM;
       return;
     }
     std::string histoName = mo->getName();
@@ -189,9 +189,9 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   }
 
   if (mo->getName().find("EmptyLaneFractionGlobal") != std::string::npos) {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast EmptyLaneFractionGlobal to TH1F*" << ENDM;
+      ILOG(Error, Support) << "could not cast EmptyLaneFractionGlobal to TH1D*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {
@@ -231,9 +231,9 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
   if (mo->getName().find("General_Occupancy") != std::string::npos) {
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast General_Occupancy to TH2F*" << ENDM;
+      ILOG(Error, Support) << "could not cast General_Occupancy to TH2D*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {
