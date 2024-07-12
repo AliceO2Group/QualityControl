@@ -75,7 +75,6 @@ std::unique_ptr<DatabaseInterface> PostProcessingRunner::configureDatabase(std::
   return database;
 }
 
-
 void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig)
 {
   QcInfoLogger::init(("post/" + taskConfig.taskName).substr(0, QcInfoLogger::maxFacilityLength), runnerConfig.infologgerDiscardParameters);
