@@ -381,6 +381,16 @@ PostProcessingTaskSpec
   ppts.active = ppTaskTree.get<bool>("active", ppts.active);
   ppts.critical = ppTaskTree.get<bool>("critical", ppts.critical);
   ppts.detectorName = ppTaskTree.get<std::string>("detectorName", ppts.detectorName);
+  if (ppTaskTree.count("sourceRepo") > 0) {
+    for (const auto& [key, value] : ppTaskTree.get_child("sourceRepo")) {
+      ppts.sourceDatabase.emplace(key, value.get_value<std::string>());
+    }
+  }
+  if (ppTaskTree.count("destinationRepo") > 0) {
+    for (const auto& [key, value] : ppTaskTree.get_child("destinationRepo")) {
+      ppts.destinationDatabase.emplace(key, value.get_value<std::string>());
+    }
+  }
   ppts.tree = wholeTree;
 
   return ppts;
