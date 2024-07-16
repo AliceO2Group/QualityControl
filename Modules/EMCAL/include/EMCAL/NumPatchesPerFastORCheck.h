@@ -91,7 +91,7 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
    ************************************************/
 
   float mBadSigmaNumPatchesPerFastOR = 5.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean bad check
-  float mMedSigmaNumPatchesPerFastOR = 3.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean medium check
+  float mMedSigmaNumPatchesPerFastOR = 999.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean medium check
   int mLogLevelIL = 0;                     ///< Log level on InfoLogger
 
   o2::emcal::Geometry* mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);                                  ///< Geometry for mapping position between SM and full EMCAL
