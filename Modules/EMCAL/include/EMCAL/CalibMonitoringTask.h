@@ -77,7 +77,6 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   int GetTRUIndexFromSTUIndex(Int_t id, Int_t detector);
   int GetChannelForMaskRun2(int mask, int bitnumber, bool onethirdsm);
   std::vector<int> GetAbsFastORIndexFromMask();
-  void DrawTRUGrid();
 
   std::vector<std::string> mCalibObjects;             ///< list of vectors of parm objects to be processed
   TH1* mTimeCalibParamHisto = nullptr;                ///< Monitor Time Calib Param

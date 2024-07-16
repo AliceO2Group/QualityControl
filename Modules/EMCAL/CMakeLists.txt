@@ -44,6 +44,7 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/CellTimeCalibCheck.h
   include/EMCAL/CellAmpCheck.h
   include/EMCAL/TrendGraphCheck.h
+  include/EMCAL/DrawGridlines.h
   LINKDEF include/EMCAL/LinkDef.h)
 
 
