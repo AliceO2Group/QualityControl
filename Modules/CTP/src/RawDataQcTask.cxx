@@ -42,12 +42,12 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   int nclasses = o2::ctp::CTP_NCLASSES + 1;
   int norbits = o2::constants::lhc::LHCMaxBunches;
   mHistoInputs = std::make_unique<TH1DRatio>("inputs", "Input Rates; Input ; Rate [kHz]", ninps, 0, ninps, true);
-  mHistoClasses = std::make_unique<TH1DRatio>("classes", "Class Rates; Index; Rate [kHz]", nclasses, 0, nclasses, true);
+  mHistoClasses = std::make_unique<TH1DRatio>("classes", "Class Rates; Class; Rate [kHz]", nclasses, 0, nclasses, true);
   mHistoInputs->SetStats(0);
   mHistoClasses->SetStats(0);
   mHistoMTVXBC = std::make_unique<TH1D>("bcMTVX", "BC position of MTVX", norbits, 0, norbits);
   mHistoInputRatios = std::make_unique<TH1DRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
-  mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Index; Ratio", nclasses, 0, nclasses, true);
+  mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Class; Ratio", nclasses, 0, nclasses, true);
   getObjectsManager()->startPublishing(mHistoInputs.get());
   getObjectsManager()->startPublishing(mHistoClasses.get());
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
@@ -56,6 +56,11 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDecoder.setDoLumi(1);
   mDecoder.setDoDigits(1);
+  for (size_t i = 0; i < 65; i++) {
+    classNames[i] = "";
+  }
+  mHistoClassRatios.get()->GetXaxis()->CenterLabels(true);
+  mHistoClasses.get()->GetXaxis()->CenterLabels(true);
 }
 
 void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
@@ -99,9 +104,9 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   if (ok) {
     // get the index of the MB reference class
     ILOG(Info, Support) << "CTP config found, run:" << run << ENDM;
-    // std::vector<o2::ctp::CTPClass> ctpcls = CTPconfig.getCTPClasses();
     std::vector<o2::ctp::CTPClass> ctpcls = ctpconfigdb->getCTPClasses();
     for (size_t i = 0; i < ctpcls.size(); i++) {
+      classNames[i] = ctpcls[i].name.c_str();
       if (ctpcls[i].name.find(MBclassName) != std::string::npos) {
         mIndexMBclass = ctpcls[i].getIndex() + 1;
         break;
@@ -113,6 +118,19 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   if (mIndexMBclass == -1) {
     mIndexMBclass = 1;
   }
+  for (int i = 0; i < 65; i++) {
+    if (classNames[i] == "") {
+      mHistoClasses.get()->GetXaxis()->SetBinLabel(i + 1, Form("%i", i + 1));
+      mHistoClassRatios.get()->GetXaxis()->SetBinLabel(i + 1, Form("%i", i + 1));
+    } else {
+      mHistoClasses.get()->GetXaxis()->SetBinLabel(i + 1, Form("%s", classNames[i].Data()));
+      mHistoClassRatios.get()->GetXaxis()->SetBinLabel(i + 1, Form("%s", classNames[i].Data()));
+    }
+  }
+  mHistoClasses.get()->GetXaxis()->SetLabelSize(0.025);
+  mHistoClasses.get()->GetXaxis()->LabelsOption("v");
+  mHistoClassRatios.get()->GetXaxis()->SetLabelSize(0.025);
+  mHistoClassRatios.get()->GetXaxis()->LabelsOption("v");
 }
 
 void CTPRawDataReaderTask::startOfCycle()
@@ -132,7 +150,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   o2::framework::InputRecord& inputs = ctx.inputs();
   mDecoder.decodeRaw(inputs, filter, outputDigits, lumiPointsHBF1);
 
-  //reading the ctp inputs and ctp classes
+  // reading the ctp inputs and ctp classes
   std::string nameInput = "MTVX";
   auto indexTvx = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput);
   for (auto const digit : outputDigits) {

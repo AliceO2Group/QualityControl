@@ -23,6 +23,7 @@
 // ROOT
 #include <TH1.h>
 #include <TLatex.h>
+#include <TMath.h>
 #include <DataFormatsParameters/GRPLHCIFData.h>
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DetectorsBase/GRPGeomHelper.h>
@@ -38,27 +39,28 @@ void RawDataReaderCheck::configure()
 {
   // reading the parameters from the config.json
   // if not available, setting a default value
-  std::string param = mCustomParameters.atOrDefaultValue("thresholdRateBad", "0.15");
+  // the threshold values are nSigma
+  std::string param = mCustomParameters.atOrDefaultValue("thresholdRateBad", "3");
   mThresholdRateBad = std::stof(param);
-  if (mThresholdRateBad > 1 || mThresholdRateBad < 0) {
-    mThresholdRateBad = 0.15;
+  if (mThresholdRateBad > 4 || mThresholdRateBad < 0) {
+    mThresholdRateBad = 3;
   }
 
-  param = mCustomParameters.atOrDefaultValue("thresholdRateMedium", "0.1");
+  param = mCustomParameters.atOrDefaultValue("thresholdRateMedium", "2");
   mThresholdRateMedium = std::stof(param);
-  if (mThresholdRateMedium > 1 || mThresholdRateMedium < 0) {
-    mThresholdRateMedium = 0.1;
+  if (mThresholdRateMedium > 4 || mThresholdRateMedium < 0) {
+    mThresholdRateMedium = 2;
   }
 
-  param = mCustomParameters.atOrDefaultValue("thresholdRateRatioBad", "0.1");
+  param = mCustomParameters.atOrDefaultValue("thresholdRateRatioBad", "3");
   mThresholdRateRatioBad = std::stof(param);
-  if (mThresholdRateRatioBad > 1 || mThresholdRateRatioBad < 0) {
-    mThresholdRateRatioBad = 0.1;
+  if (mThresholdRateRatioBad > 4 || mThresholdRateRatioBad < 0) {
+    mThresholdRateRatioBad = 3;
   }
-  param = mCustomParameters.atOrDefaultValue("thresholdRateRatioMedium", "0.05");
-  mThresholdRateRatioBad = std::stof(param);
-  if (mThresholdRateRatioMedium > 1 || mThresholdRateRatioMedium < 0) {
-    mThresholdRateRatioMedium = 0.05;
+  param = mCustomParameters.atOrDefaultValue("thresholdRateRatioMedium", "2");
+  mThresholdRateRatioMedium = std::stof(param);
+  if (mThresholdRateRatioMedium > 4 || mThresholdRateRatioMedium < 0) {
+    mThresholdRateRatioMedium = 2;
   }
 }
 
@@ -104,10 +106,11 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         delete mHistInputPrevious;
         result.set(setQualityResult(mVecIndexBad, mVecIndexMedium));
       }
+      mHistAbsolute = (TH1D*)h->Clone();
       mHistInputPrevious = (TH1D*)h->Clone();
     } else if (mo->getName() == "inputRatio") {
       if (mHistInputRatioPrevious) {
-        checkChange(h, mHistInputRatioPrevious);
+        checkChangeOfRatio(h, mHistInputRatioPrevious, mHistAbsolute);
         delete mHistInputRatioPrevious;
         result.set(setQualityResult(mVecIndexBad, mVecIndexMedium));
       }
@@ -118,10 +121,11 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         delete mHistClassesPrevious;
         result.set(setQualityResult(mVecIndexBad, mVecIndexMedium));
       }
+      mHistAbsolute = (TH1D*)h->Clone();
       mHistClassesPrevious = (TH1D*)h->Clone();
     } else if (mo->getName() == "classRatio") {
       if (mHistClassRatioPrevious) {
-        checkChange(h, mHistClassRatioPrevious);
+        checkChangeOfRatio(h, mHistClassRatioPrevious, mHistAbsolute);
         delete mHistClassRatioPrevious;
         result.set(setQualityResult(mVecIndexBad, mVecIndexMedium));
       }
@@ -139,14 +143,27 @@ int RawDataReaderCheck::checkChange(TH1D* mHist, TH1D* mHistPrev)
   /// this function check how much the rates differ from previous cycle
   float thrBad = mThresholdRateBad;
   float thrMedium = mThresholdRateMedium;
-  if (mFlagRatio) {
-    thrBad = mThresholdRateRatioBad;
-    thrMedium = mThresholdRateRatioMedium;
-  }
   for (size_t i = 1; i < mHist->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
     double val = mHist->GetBinContent(i);
     double valPrev = mHistPrev->GetBinContent(i);
-    double relDiff = (valPrev != 0) ? (val - valPrev) / valPrev : 0;
+    double relDiff = (valPrev != 0) ? (val - valPrev) / TMath::Sqrt(val) : 0;
+    if (TMath::Abs(relDiff) > thrBad) {
+      mVecIndexBad.push_back(i - 1);
+    } else if (TMath::Abs(relDiff) > thrMedium) {
+      mVecIndexMedium.push_back(i - 1);
+    }
+  }
+  return 0;
+}
+int RawDataReaderCheck::checkChangeOfRatio(TH1D* mHist, TH1D* mHistPrev, TH1D* mHistAbs)
+{
+  /// this function check how much the rates differ from previous cycle
+  float thrBad = mThresholdRateRatioBad;
+  float thrMedium = mThresholdRateRatioMedium;
+  for (size_t i = 1; i < mHist->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
+    double val = mHist->GetBinContent(i);
+    double valPrev = mHistPrev->GetBinContent(i);
+    double relDiff = (val != 0) ? (val - valPrev) / (val * TMath::Sqrt(1 / mHistAbs->GetBinContent(3) + 1 / mHistAbs->GetBinContent(i))) : 0;
     if (TMath::Abs(relDiff) > thrBad) {
       mVecIndexBad.push_back(i - 1);
     } else if (TMath::Abs(relDiff) > thrMedium) {
@@ -242,6 +259,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       }
       h->GetXaxis()->SetLabelSize(0.045);
       h->GetXaxis()->LabelsOption("v");
+      h->GetXaxis()->CenterLabels(true);
     }
     if (checkResult == Quality::Bad) {
       msg->SetTextColor(kRed);
@@ -255,7 +273,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
         if (mFlagInput) {
           msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check %s %s", ctpinputs[mVecIndexBad[i]], groupName.c_str()));
         } else {
-          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check %s with Index: %d", groupName.c_str(), mVecIndexBad[i]));
+          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check %s %s", groupName.c_str(), h->GetXaxis()->GetBinLabel(mVecIndexBad[i] + 1)));
         }
         msg->SetTextSize(0.03);
         msg->SetNDC();

@@ -61,13 +61,10 @@
           "MOs": ["bcMTVX","inputs","classes","inputRatio","classRatio"]
         }],
         "checkParameters": {
-          "thresholdRateBad": "0.15",
-          "thresholdRateMedium": "0.1",
-          "thresholdRateRatioBad": "0.1",
-          "thresholdRateRatioMedium": "0.05",
-          "MBclassName": "CMTVX-B-NOPF",
-          "cycleDurationSeconds": "60",                       "":"Use the same value as in the task setting",
-          "fraction": "0.1",                                  "":"Use the same value as in the dataSamplingPolicies setting"
+          "thresholdRateBad": "3",
+          "thresholdRateMedium": "2",
+          "thresholdRateRatioBad": "3",
+          "thresholdRateRatioMedium": "2"
         }
       }
     }
