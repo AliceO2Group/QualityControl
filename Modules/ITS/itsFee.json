@@ -78,8 +78,11 @@
                             "LaneStatusSummary/LaneStatusSummaryGlobal",
                             "RDHSummary",
                             "TriggerVsFeeid",
+			    "TriggerVsFeeid_reset",
                             "PayloadSize",
-			    "TrailerCount"
+			    "TrailerCount",
+			    "TrailerCount_reset"
+
                         ]
                     }
                 ]

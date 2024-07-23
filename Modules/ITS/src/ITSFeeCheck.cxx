@@ -53,7 +53,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         result.set(Quality::Good);
         auto* hp = dynamic_cast<TH2Poly*>(mo->getObject());
         if (hp == nullptr) {
-          ILOG(Error, Support) << "could not cast TrailerCount to THPollyF*" << ENDM;
+          ILOG(Error, Support) << "could not cast laneStatusOverview to THPollyF*" << ENDM;
           continue;
         }
         badStaveIB = false;
@@ -143,7 +143,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
     }
 
-    if (mo->getName() == "TriggerVsFeeid") {
+    if (((string)mo->getName()).find("TriggerVsFeeid") != std::string::npos) {
       result.set(Quality::Good);
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
       if (h == nullptr) {
@@ -251,7 +251,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
     }
 
-    if (mo->getName() == "TrailerCount") {
+    if (((string)mo->getName()).find("TrailerCount") != std::string::npos) {
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
       if (h == nullptr) {
         ILOG(Error, Support) << "could not cast TrailerCount to TH2I*" << ENDM;
@@ -446,7 +446,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   }
 
   // trigger plot
-  if (mo->getName() == "TriggerVsFeeid") {
+  if (((string)mo->getName()).find("TriggerVsFeeid") != std::string::npos) {
     auto* h = dynamic_cast<TH2I*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast TriggerVsFeeId to TH2I*" << ENDM;
@@ -521,7 +521,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
-  if (mo->getName() == "TrailerCount") {
+  if (((string)mo->getName()).find("TrailerCount") != std::string::npos) {
     auto* h = dynamic_cast<TH2I*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast TrailerCount to TH2F*" << ENDM;
