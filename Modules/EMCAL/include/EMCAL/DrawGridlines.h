@@ -13,6 +13,7 @@
 #define QUALITYCONTROL_DRAWGRIDLINES_H
 
 #include "TLine.h"
+#include "TH2D.h"
 
 namespace o2::quality_control_modules::emcal
 {
@@ -21,7 +22,7 @@ namespace o2::quality_control_modules::emcal
 /// \brief Quality Control helper task for drawing the EMCAL gridlines
 /// \author Sierra Cantway
 
-class DrawGridlines final : public quality_control::postprocessing::PostProcessingInterface
+class DrawGridlines : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
   /// \brief Constructor
@@ -30,24 +31,29 @@ class DrawGridlines final : public quality_control::postprocessing::PostProcessi
   ~DrawGridlines() = default;
 
   /// \brief Draw the gridlines for the Supermodule limits in the Trigger Geometry
-  static void DrawSMGridInTriggerGeo()
+  static void DrawSMGridInTriggerGeo(TH2* histo = nullptr)
   {
-
+    if (histo == nullptr) {
+      return;
+    }
     // EMCAL
     for (int iside = 0; iside <= 48; iside += 24) {
       auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 63.5);
       smline->SetLineWidth(6);
-      smline->Draw("same");
+
+      histo->GetListOfFunctions()->Add(smline);
     }
     for (int iphi = 0; iphi < 60; iphi += 12) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
       smline->SetLineWidth(6);
-      smline->Draw("same");
+
+      histo->GetListOfFunctions()->Add(smline);
     }
     for (auto iphi = 60; iphi <= 64; iphi += 4) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
       smline->SetLineWidth(6);
-      smline->Draw("same");
+
+      histo->GetListOfFunctions()->Add(smline);
     }
 
     // DCAL
@@ -57,30 +63,36 @@ class DrawGridlines final : public quality_control::postprocessing::PostProcessi
         int etaoffset = sideoffset + isepeta * 16;
         auto smline = new TLine(static_cast<double>(etaoffset) - 0.5, 63.5, static_cast<double>(etaoffset) - 0.5, 99.5);
         smline->SetLineWidth(6);
-        smline->Draw("same");
+
+        histo->GetListOfFunctions()->Add(smline);
       }
       for (auto iphi = 76; iphi <= 88; iphi += 12) {
         auto smline = new TLine(static_cast<double>(sideoffset) - 0.5, static_cast<double>(iphi) - 0.5, static_cast<double>(sideoffset + 16) - 0.5, static_cast<double>(iphi) - 0.5);
         smline->SetLineWidth(6);
-        smline->Draw("same");
+
+        histo->GetListOfFunctions()->Add(smline);
       }
     }
     for (auto iphi = 100; iphi <= 104; iphi += 4) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
       smline->SetLineWidth(6);
-      smline->Draw("same");
+
+      histo->GetListOfFunctions()->Add(smline);
     }
     for (auto ieta = 0; ieta <= 48; ieta += 24) {
       auto smline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
       smline->SetLineWidth(6);
-      smline->Draw("same");
+
+      histo->GetListOfFunctions()->Add(smline);
     }
   };
 
   /// \brief Draw the gridlines for the TRU limits
-  static void DrawTRUGrid()
+  static void DrawTRUGrid(TH2* histo = nullptr)
   {
-
+    if (histo == nullptr) {
+      return;
+    }
     // EMCAL
     for (int side = 0; side < 2; side++) {
       int sideoffset = 24 * side;
@@ -88,7 +100,8 @@ class DrawGridlines final : public quality_control::postprocessing::PostProcessi
         int truoffset = sideoffset + (itru + 1) * 8;
         auto truline = new TLine(static_cast<int>(truoffset) - 0.5, -0.5, static_cast<int>(truoffset) - 0.5, 59.5);
         truline->SetLineWidth(3);
-        truline->Draw("same");
+
+        histo->GetListOfFunctions()->Add(truline);
       }
     }
 
@@ -97,22 +110,25 @@ class DrawGridlines final : public quality_control::postprocessing::PostProcessi
       int sideoffset = (side == 0) ? 0 : 32;
       auto truseparator = new TLine(static_cast<double>(sideoffset + 8) - 0.5, 63.5, static_cast<double>(sideoffset + 8) - 0.5, 99.5);
       truseparator->SetLineWidth(3);
-      truseparator->Draw("same");
+
+      histo->GetListOfFunctions()->Add(truseparator);
     }
   };
 
   /// \brief Draw the gridlines for the FastOR limits
-  static void DrawFastORGrid()
+  static void DrawFastORGrid(TH2* histo = nullptr)
   {
-
+    if (histo == nullptr) {
+      return;
+    }
     // EMCAL
     for (int iphi = 1; iphi < 64; iphi++) {
       auto fastorLine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
-      fastorLine->Draw("same");
+      histo->GetListOfFunctions()->Add(fastorLine);
     }
     for (int ieta = 1; ieta < 48; ieta++) {
       auto fastorLine = new TLine(static_cast<double>(ieta) - 0.5, -0.5, static_cast<double>(ieta) - 0.5, 63.5);
-      fastorLine->Draw("same");
+      histo->GetListOfFunctions()->Add(fastorLine);
     }
 
     // DCAL
@@ -121,21 +137,21 @@ class DrawGridlines final : public quality_control::postprocessing::PostProcessi
       for (int ieta = 0; ieta <= 16; ieta++) {
         int etaoffset = sideoffset + ieta;
         auto fastorline = new TLine(static_cast<double>(etaoffset - 0.5), 63.5, static_cast<double>(etaoffset) - 0.5, 99.5);
-        fastorline->Draw("same");
+        histo->GetListOfFunctions()->Add(fastorline);
       }
       for (int iphi = 0; iphi <= 36; iphi++) {
         int phioffset = iphi + 64;
         auto fastorline = new TLine(static_cast<double>(sideoffset - 0.5), static_cast<double>(phioffset - 0.5), static_cast<double>(sideoffset + 16) - 0.5, static_cast<double>(phioffset) - 0.5);
-        fastorline->Draw("same");
+        histo->GetListOfFunctions()->Add(fastorline);
       }
     }
     for (auto ieta = 1; ieta < 48; ieta++) {
       auto etaline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
-      etaline->Draw("same");
+      histo->GetListOfFunctions()->Add(etaline);
     }
     for (auto iphi = 101; iphi <= 103; iphi++) {
       auto philine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
-      philine->Draw("same");
+      histo->GetListOfFunctions()->Add(philine);
     }
   };
 };

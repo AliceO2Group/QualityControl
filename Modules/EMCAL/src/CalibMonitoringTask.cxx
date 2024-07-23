@@ -248,10 +248,13 @@ void CalibMonitoringTask::initialize(Trigger, framework::ServiceRegistryRef)
       }
       getObjectsManager()->startPublishing(mRollbackSTU);
 
-      if (!mTRUMaskPositionCanvas) {
-        mTRUMaskPositionCanvas = new TCanvas("TRUMaskPositionCanvas", "TRU Mask Position Canvas", 800, 600);
+      if (!mTRUMaskPositionHisto) {
+        mTRUMaskPositionHisto = new TH2D("TRUMaskPositionHisto", "TRU Mask Position Histogram", 48., -0.5, 47.5, 104, -0.5, 103.5);
+        mTRUMaskPositionHisto->GetXaxis()->SetTitle("FastOR Abs Eta");
+        mTRUMaskPositionHisto->GetYaxis()->SetTitle("FastOR Abs Phi");
+        mTRUMaskPositionHisto->SetStats(false);
       }
-      getObjectsManager()->startPublishing(mTRUMaskPositionCanvas);
+      getObjectsManager()->startPublishing(mTRUMaskPositionHisto);
     }
   }
   o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
@@ -345,27 +348,14 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
 
       auto fastORs = GetAbsFastORIndexFromMask();
 
-      if (mTRUMaskPositionHisto != nullptr) {
-        delete mTRUMaskPositionHisto;
-      }
-
-      mTRUMaskPositionHisto = new TH2D("mTRUMaskPositionHisto", "TRU Mask Position Histogram", 48., -0.5, 47.5, 104, -0.5, 103.5);
-      mTRUMaskPositionHisto->GetXaxis()->SetTitle("FastOR Abs Eta");
-      mTRUMaskPositionHisto->GetYaxis()->SetTitle("FastOR Abs Phi");
-      mTRUMaskPositionHisto->SetStats(false);
-
       for (auto fastORID : fastORs) {
         auto [eta, phi] = mTriggerMapping->getPositionInEMCALFromAbsFastORIndex(fastORID);
         mTRUMaskPositionHisto->SetBinContent(eta + 1, phi + 1, 1.);
       }
 
-      mTRUMaskPositionCanvas->Clear();
-      mTRUMaskPositionCanvas->cd();
-      mTRUMaskPositionHisto->Draw("colz");
-
-      o2::quality_control_modules::emcal::DrawGridlines::DrawFastORGrid();
-      o2::quality_control_modules::emcal::DrawGridlines::DrawTRUGrid();
-      o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo();
+      o2::quality_control_modules::emcal::DrawGridlines::DrawFastORGrid(mTRUMaskPositionHisto);
+      o2::quality_control_modules::emcal::DrawGridlines::DrawTRUGrid(mTRUMaskPositionHisto);
+      o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mTRUMaskPositionHisto);
     }
   }
 }
@@ -393,9 +383,7 @@ void CalibMonitoringTask::finalize(Trigger t, framework::ServiceRegistryRef)
       getObjectsManager()->stopPublishing(mTRUThresholds);
       getObjectsManager()->stopPublishing(mL0Algorithm);
       getObjectsManager()->stopPublishing(mRollbackSTU);
-      getObjectsManager()->stopPublishing(mTRUMaskPositionCanvas);
-      delete mTRUMaskPositionCanvas;
-      mTRUMaskPositionCanvas = nullptr;
+      getObjectsManager()->stopPublishing(mTRUMaskPositionHisto);
     }
   }
 }
@@ -445,6 +433,9 @@ void CalibMonitoringTask::reset()
   }
   if (mRollbackSTU) {
     mRollbackSTU->Reset();
+  }
+  if (mTRUMaskPositionHisto) {
+    mTRUMaskPositionHisto->Reset();
   }
 }
 } // namespace o2::quality_control_modules::emcal
