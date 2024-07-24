@@ -35,7 +35,7 @@
                 },
                 "location": "local",
                 "taskParameters": {
-                    "nQCCycleToMonitor": "30"
+                    "nQCCycleToMonitor": "10"
                 }
             }
     },
@@ -46,17 +46,10 @@
                 "moduleName": "QcITS",
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
-                "checkParameters": {
-                      "DecLinkErrorLimits": "5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, -1",
-                      "DecLinkErrorLimitsRatio": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1",
-                      "DecLinkErrorType": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",
-                      "plotWithTextMessage": "",
-                      "textMessage": ""
-                },
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSChipStatus",
-                    "MOs": ["General/LinkErrorPlots","General/ChipErrorPlots"]
+                    "MOs": ["StaveOverview"]
                 }]
             }
        }
