@@ -35,13 +35,14 @@
                 },
                 "location": "local",
                 "taskParameters": {
-                    "nQCCycleToMonitor": "10"
+                    "nQCCycleToMonitor": "10",
+		    "nQCCycleToOverview": "1"
                 }
             }
     },
     "checks": {
             "ChipStatusCheck": {
-                "active": "false",
+                "active": "true",
                 "className": "o2::quality_control_modules::its::ITSChipStatusCheck",
                 "moduleName": "QcITS",
                 "policy": "OnEachSeparately",
@@ -49,7 +50,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSChipStatus",
-                    "MOs": ["StaveOverview"]
+                    "MOs": ["StaveStatusOverview"]
                 }]
             }
        }
