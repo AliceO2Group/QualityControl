@@ -56,7 +56,11 @@ class CTPRawDataReaderTask final : public TaskInterface
   std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr; // histogram with ctp class ratios to MB
   std::unique_ptr<TH1D> mHistoMTVXBC = nullptr;           // histogram of BC positions to check LHC filling scheme
   int mRunNumber;
+  int indexTvx = -1;
+  static const int ninps = o2::ctp::CTP_NINPUTS + 1;
+  static const int nclasses = o2::ctp::CTP_NCLASSES + 1;
   long int mTimestamp;
+  std::string classNames[nclasses];
   int mIndexMBclass = -1; // index for the MB ctp class, which is used as scaling for the ratios
 };
 
