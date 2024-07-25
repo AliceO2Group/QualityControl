@@ -44,7 +44,8 @@
         },
         "taskParameters": {
           "ccdbName": "https://alice-ccdb.cern.ch",
-          "MBclassName" : "CMTVX-B-NOPF"
+          "MBclassName" : "CMTVX-B-NOPF",
+          "MBinputName" : "MTVX"
         },
         "location": "remote"
       }

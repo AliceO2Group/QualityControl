@@ -146,7 +146,7 @@ int RawDataReaderCheck::checkChange(TH1D* mHist, TH1D* mHistPrev)
   for (size_t i = 1; i < mHist->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
     double val = mHist->GetBinContent(i);
     double valPrev = mHistPrev->GetBinContent(i);
-    double relDiff = (valPrev != 0) ? (val - valPrev) / TMath::Sqrt(val) : 0;
+    double relDiff = (valPrev != 0 || val != 0) ? (val - valPrev) / TMath::Sqrt(val) : 0;
     if (TMath::Abs(relDiff) > thrBad) {
       mVecIndexBad.push_back(i - 1);
     } else if (TMath::Abs(relDiff) > thrMedium) {
@@ -160,10 +160,17 @@ int RawDataReaderCheck::checkChangeOfRatio(TH1D* mHist, TH1D* mHistPrev, TH1D* m
   /// this function check how much the rates differ from previous cycle
   float thrBad = mThresholdRateRatioBad;
   float thrMedium = mThresholdRateRatioMedium;
+  int binMB;
+  for (int i = 1; i < mHist->GetXaxis()->GetNbins() + 1; i++) {
+    if (mHist->GetBinContent(i) == mHistPrev->GetBinContent(i) && mHist->GetBinContent(i) == 1) {
+      binMB = i;
+      break;
+    }
+  }
   for (size_t i = 1; i < mHist->GetXaxis()->GetNbins() + 1; i++) { // Check how many inputs/classes changed more than a threshold value
     double val = mHist->GetBinContent(i);
     double valPrev = mHistPrev->GetBinContent(i);
-    double relDiff = (val != 0) ? (val - valPrev) / (val * TMath::Sqrt(1 / mHistAbs->GetBinContent(3) + 1 / mHistAbs->GetBinContent(i))) : 0;
+    double relDiff = (val != 0 || mHistAbs->GetBinContent(i) != 0) ? (val - valPrev) / (val * TMath::Sqrt(1 / mHistAbs->GetBinContent(binMB) + 1 / mHistAbs->GetBinContent(i))) : 0;
     if (TMath::Abs(relDiff) > thrBad) {
       mVecIndexBad.push_back(i - 1);
     } else if (TMath::Abs(relDiff) > thrMedium) {
@@ -265,15 +272,15 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetTextColor(kRed);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
-      msg = std::make_shared<TLatex>(0.45, 0.75, Form("Number of %s with big %s rate change: %lu", groupName.c_str(), relativeness.c_str(), mVecIndexBad.size()));
+      msg = std::make_shared<TLatex>(0.45, 0.70, Form("Number of %s with big %s rate change: %lu", groupName.c_str(), relativeness.c_str(), mVecIndexBad.size()));
       msg->SetTextSize(0.03);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
       for (size_t i = 0; i < mVecIndexBad.size(); i++) {
         if (mFlagInput) {
-          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check %s %s", ctpinputs[mVecIndexBad[i]], groupName.c_str()));
+          msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", ctpinputs[mVecIndexBad[i]], groupName.c_str()));
         } else {
-          msg = std::make_shared<TLatex>(0.45, 0.7 - i * 0.05, Form("Check %s %s", groupName.c_str(), h->GetXaxis()->GetBinLabel(mVecIndexBad[i] + 1)));
+          msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", groupName.c_str(), h->GetXaxis()->GetBinLabel(mVecIndexBad[i] + 1)));
         }
         msg->SetTextSize(0.03);
         msg->SetNDC();
