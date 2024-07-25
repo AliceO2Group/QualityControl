@@ -40,9 +40,9 @@ Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       }
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         for (int ibin = StaveBoundary[ilayer] + 1; ibin <= StaveBoundary[ilayer + 1]; ++ibin) {
-          if ( abs(h->GetBinContent(ibin)-1)<0.01 ) {
+          if (abs(h->GetBinContent(ibin) - 1) < 0.01) {
             result = Quality::Bad;
-            TString text = Form("BAD: At least one stave is without data", ilayer, ibin - StaveBoundary[ilayer]-1);
+            TString text = Form("BAD: At least one stave is without data", ilayer, ibin - StaveBoundary[ilayer] - 1);
             vBadStaves.push_back(Form("L%d_%d", ilayer, ibin - StaveBoundary[ilayer]));
             result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
           }

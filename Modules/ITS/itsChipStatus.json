@@ -36,7 +36,8 @@
                 "location": "local",
                 "taskParameters": {
                     "nQCCycleToMonitor": "10",
-		    "nQCCycleToOverview": "1"
+		    "nQCCycleToOverview": "1",
+		    "nRotationType": 0
                 }
             }
     },

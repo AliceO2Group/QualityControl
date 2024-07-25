@@ -44,9 +44,8 @@ void ITSChipStatusTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
 
   for (int i = 0; i < 3; i++) {
-
-    ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i]);
-    TFsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i]);
+    ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], nRotationType);
+    TFsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], nRotationType);
 
     DeadChips[i] = std::make_shared<TH2FRatio>(Form("DeadChips%s", BarrelNames[i].Data()), Form("Time fraction without data from %s chips", BarrelNames[i].Data()), nQCCycleToMonitor, 0, nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], 0, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], false);
     setAxisTitle(DeadChips[i].get(), Form("Last %d QC Cycles", nQCCycleToMonitor), "Chip ID");
@@ -158,6 +157,7 @@ void ITSChipStatusTask::getParameters()
 
   nQCCycleToMonitor = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nQCCycleToMonitor", nQCCycleToMonitor);
   NCycleForOverview = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nQCCycleToOverview", NCycleForOverview);
+  nRotationType = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nRotationType", nRotationType);
 }
 
 void ITSChipStatusTask::endOfCycle()

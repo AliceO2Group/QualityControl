@@ -36,19 +36,27 @@ class Stack
  private:
   int size_max;
   int current_element_id;
+  int nRotationType;
 
  public:
   std::vector<std::vector<int>> stack;
-  Stack() : size_max(0), current_element_id(0) {}
-  Stack(int nsizex, int nsizey) : size_max(nsizex), current_element_id(0)
+  Stack() : size_max(0), current_element_id(0), nRotationType(0) {}
+  Stack(int nsizex, int nsizey, int rotationType) : size_max(nsizex), current_element_id(0)
   {
     stack.resize(nsizex, std::vector<int>(nsizey, 0));
+    nRotationType = rotationType;
   }
   void push(const std::vector<int>& element)
   {
-    if (current_element_id < size_max) {
-      stack[current_element_id] = element;
-      current_element_id++;
+    if (nRotationType == 0) {
+
+      if (current_element_id < size_max) {
+        stack[current_element_id] = element;
+        current_element_id++;
+      } else {
+        std::rotate(stack.begin(), stack.begin() + 1, stack.end());
+        stack.back() = element;
+      }
     } else {
       std::rotate(stack.begin(), stack.begin() + 1, stack.end());
       stack.back() = element;
@@ -98,6 +106,7 @@ class ITSChipStatusTask final : public TaskInterface
   TString BarrelNames[3] = { "IB", "ML", "OB" };
   TH2Poly* StaveOverview;
   int NCycleForOverview = 3;
+  int nRotationType = 1;
   std::vector<int> CurrentDeadChips[3]; // Vectors of Dead Chips in current QC cycle
   std::vector<int> CurrentTFs[3];       // Vectors of Dead Chips in current QC cycle
 };
