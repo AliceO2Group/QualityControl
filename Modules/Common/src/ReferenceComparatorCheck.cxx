@@ -155,7 +155,7 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 
   if (mReferenceRun == 0) {
     message = "No reference run provided";
-    return Quality::Null;;
+    return Quality::Null;
   }
 
   // retrieve the reference plot only once and cache it for later use
