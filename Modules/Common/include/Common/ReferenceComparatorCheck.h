@@ -22,6 +22,7 @@
 #include "Common/ObjectComparatorInterface.h"
 
 #include <sstream>
+#include <unordered_map>
 
 class TPaveText;
 
@@ -56,6 +57,7 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
   std::map<std::string, std::shared_ptr<TPaveText>> mQualityLabels;
   quality_control::core::Activity mActivity /*current*/, mReferenceActivity;
   size_t mReferenceRun;
+  std::unordered_map<std::string, std::shared_ptr<MonitorObject>> mReferencePlots;
 };
 
 } // namespace o2::quality_control_modules::common

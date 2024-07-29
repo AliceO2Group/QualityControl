@@ -63,6 +63,9 @@ void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
   mActivity = activity;
   mReferenceActivity = activity;
   mReferenceActivity.mId = mReferenceRun;
+
+  // clear the cache of reference plots
+  mReferencePlots.clear();
 }
 
 void ReferenceComparatorCheck::endOfActivity(const Activity& activity)
@@ -155,8 +158,12 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
     return Quality::Null;;
   }
 
-  // todo we could cache the reference plot within a run
-  auto referencePlot = retrieveReference(path, mReferenceActivity);
+  // retrieve the reference plot only once and cache it for later use
+  if (mReferencePlots.count(path) == 0) {
+    mReferencePlots[path] = retrieveReference(path, mReferenceActivity);
+  }
+
+  auto referencePlot = mReferencePlots[path];
   if (!referencePlot) {
     message = "Reference plot not found";
     return Quality::Null;
