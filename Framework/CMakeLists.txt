@@ -126,9 +126,11 @@ target_include_directories(
   PUBLIC $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   ${MODERNCPPKAFKA_ROOT}
+  $<BUILD_INTERFACE:${RDFKAFKA_INCLUDE}>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  ${MODERNCPPKAFKA_ROOT})
+  ${MODERNCPPKAFKA_ROOT}
+  )
 
 target_link_libraries(O2QualityControl
                       PUBLIC Boost::boost
@@ -152,7 +154,7 @@ target_link_libraries(O2QualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
                              O2QualityControlKafkaProtos
-                             RdKafka::rdkafka++
+                             ${RDKAFKA_LIB}
                       PRIVATE Boost::system
                               CURL::libcurl
                               )
