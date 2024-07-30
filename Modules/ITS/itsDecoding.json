@@ -28,14 +28,14 @@
                 "className": "o2::quality_control_modules::its::ITSDecodingErrorTask",
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
-                "cycleDurationSeconds": "30",
+                "cycleDurationSeconds": "10",
                 "dataSource": {
                     "type": "direct",
                     "query": "linkerrors:ITS/LinkErrors/0;decerrors:ITS/ChipErrors/0"
                 },
                 "location": "local",
                 "taskParameters": {
-	            "isDoLinkErrorReset": 0,
+	            "isDoLinkErrorReset": 1,
                     "mBusyViolationLimit": "0.75"
                 }
             }
