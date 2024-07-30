@@ -1,4 +1,7 @@
 Rules:
+  - object_path: qc/CTP/Scalers/.*
+    delay: 1440
+    policy: none_kept
   - object_path: qc/ITS/.*
     delay: 1440
     policy: 1_per_run
