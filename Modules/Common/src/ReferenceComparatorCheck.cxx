@@ -63,6 +63,9 @@ void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
   mActivity = activity;
   mReferenceActivity = activity;
   mReferenceActivity.mId = mReferenceRun;
+
+  // clear the cache of reference plots
+  mReferencePlots.clear();
 }
 
 void ReferenceComparatorCheck::endOfActivity(const Activity& activity)
@@ -149,8 +152,18 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 
   // get path of mo and ref (we have to remove the provenance)
   std::string path = RepoPathUtils::getPathNoProvenance(mo);
-  // todo we could cache the reference plot within a run
-  auto referencePlot = retrieveReference(path, mReferenceActivity);
+
+  if (mReferenceRun == 0) {
+    message = "No reference run provided";
+    return Quality::Null;
+  }
+
+  // retrieve the reference plot only once and cache it for later use
+  if (mReferencePlots.count(path) == 0) {
+    mReferencePlots[path] = retrieveReference(path, mReferenceActivity);
+  }
+
+  auto referencePlot = mReferencePlots[path];
   if (!referencePlot) {
     message = "Reference plot not found";
     return Quality::Null;
@@ -171,11 +184,6 @@ Quality ReferenceComparatorCheck::getSinglePlotQuality(std::shared_ptr<MonitorOb
 Quality ReferenceComparatorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
-
-  if (mReferenceRun == 0) {
-    result.addFlag(FlagTypeFactory::Unknown(), "No reference run provided");
-    return result;
-  }
 
   for (auto& [key, mo] : *moMap) {
     auto moName = mo->getName();
