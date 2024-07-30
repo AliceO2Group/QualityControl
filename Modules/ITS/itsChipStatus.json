@@ -37,7 +37,7 @@
                 "taskParameters": {
                     "nQCCycleToMonitor": "10",
 		    "nQCCycleToOverview": "1",
-		    "nRotationType": 0
+		    "nRotationType": "0"
                 }
             }
     },
