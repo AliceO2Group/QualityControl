@@ -76,7 +76,7 @@ TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic,
   return [poller, copiedActivity]() mutable -> Trigger {
     for (const auto& record : poller->poll()) {
       if (auto event = proto::recordToEvent(record.value())) {
-        if (proto::start_of_run::check(*event, copiedActivity.mProvenance, copiedActivity.mId)) {
+        if (proto::start_of_run::isValid(*event, copiedActivity.mPartitionName, copiedActivity.mId)) {
           auto newActivityForTrigger = copiedActivity;
           proto::start_of_run::fillActivity(*event, newActivityForTrigger);
           return { TriggerType::StartOfRun, false, newActivityForTrigger, static_cast<uint64_t>(event->timestamp()), "sor" };
@@ -123,7 +123,7 @@ TriggerFcn EndOfRun(const std::string& kafkaBrokers, const std::string& topic, c
   return [poller, copiedActivity]() mutable -> Trigger {
     for (const auto& record : poller->poll()) {
       if (auto event = proto::recordToEvent(record.value())) {
-        if (proto::end_of_run::check(*event, copiedActivity.mProvenance, copiedActivity.mId)) {
+        if (proto::end_of_run::isValid(*event, copiedActivity.mPartitionName, copiedActivity.mId)) {
           auto newActivityForTrigger = copiedActivity;
           proto::end_of_run::fillActivity(*event, newActivityForTrigger);
           return { TriggerType::EndOfRun, false, newActivityForTrigger, static_cast<uint64_t>(event->timestamp()), "eor" };

@@ -13,17 +13,6 @@ namespace o2::quality_control::core
 namespace proto
 {
 
-bool isRunNumberSet(int runNumber)
-{
-  return runNumber != 0;
-}
-
-bool isEnvironmentIdSet(const std::string_view environmentID)
-{
-  // qc is default value for Activity object so we need to check against it as well
-  return !environmentID.empty() && environmentID != "qc";
-}
-
 struct Ev_RunEventPartial {
   std::string_view state;
   events::OpStatus transitionStatus;
@@ -31,19 +20,17 @@ struct Ev_RunEventPartial {
   int runNumber;
 };
 
-bool operator==(const events::Ev_RunEvent& runEvent, const Ev_RunEventPartial& runEvenPartial)
+// return true if runEvent and runEventPartial have the same state and transition state and have
+// DIFFERENT(!) runNumber AND environmentID
+bool operator==(const events::Ev_RunEvent& runEvent, const Ev_RunEventPartial& runEventPartial)
 {
   // TODO: Should we check whether the error is empty?
-  if (runEvent.state() != runEvenPartial.state ||
-      runEvent.transitionstatus() != runEvenPartial.transitionStatus) {
+  if (runEvent.state() != runEventPartial.state ||
+      runEvent.transitionstatus() != runEventPartial.transitionStatus) {
     return false;
   }
 
-  if (isRunNumberSet(runEvenPartial.runNumber) && runEvent.runnumber() != runEvenPartial.runNumber) {
-    return false;
-  }
-
-  if (isEnvironmentIdSet(runEvenPartial.environmentID) && runEvent.environmentid() != runEvenPartial.environmentID) {
+  if (runEvent.runnumber() == runEventPartial.runNumber && runEvent.environmentid() == runEventPartial.environmentID) {
     return false;
   }
 
@@ -66,14 +53,8 @@ void fillActivityWithoutTimestamp(const events::Event& event, Activity& activity
 {
   if (event.has_runevent()) {
     auto& runEvent = event.runevent();
-
-    if (!isRunNumberSet(activity.mId)) {
-      activity.mId = runEvent.runnumber();
-    }
-
-    if (!isEnvironmentIdSet(activity.mProvenance)) {
-      activity.mProvenance = runEvent.environmentid();
-    }
+    activity.mId = runEvent.runnumber();
+    activity.mPartitionName = runEvent.environmentid();
   }
 }
 
@@ -83,7 +64,7 @@ void start_of_run::fillActivity(const events::Event& event, Activity& activity)
   activity.mValidity.setMin(event.timestamp());
 }
 
-bool start_of_run::check(const events::Event& event, const std::string& environmentID, int runNumber)
+bool start_of_run::isValid(const events::Event& event, const std::string& environmentID, int runNumber)
 {
   if (!event.has_runevent()) {
     return false;
@@ -104,7 +85,7 @@ void end_of_run::fillActivity(const events::Event& event, Activity& activity)
   activity.mValidity.setMax(event.timestamp());
 }
 
-bool end_of_run::check(const events::Event& event, const std::string& environmentID, int runNumber)
+bool end_of_run::isValid(const events::Event& event, const std::string& environmentID, int runNumber)
 {
   if (!event.has_runevent()) {
     return false;
@@ -155,7 +136,7 @@ void KafkaPoller::subscribe(const std::string& topic, size_t numberOfRetries)
 
 auto KafkaPoller::poll() -> KafkaRecords
 {
-  const auto records = mConsumer.poll(std::chrono::milliseconds{ 100 });
+  const auto records = mConsumer.poll(std::chrono::seconds{ 1 });
   auto filtered = records | std::ranges::views::filter([](const auto& record) { return !record.error(); });
   KafkaRecords result{};
   result.reserve(records.size());

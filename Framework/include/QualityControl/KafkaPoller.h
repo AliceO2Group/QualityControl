@@ -31,13 +31,13 @@ auto recordToEvent(const kafka::Value&) -> std::optional<events::Event>;
 namespace start_of_run
 {
 void fillActivity(const events::Event& event, Activity& activity);
-bool check(const events::Event& event, const std::string& environmentID = "", int runNumber = 0);
+bool isValid(const events::Event& event, const std::string& environmentID = "", int runNumber = 0);
 } // namespace start_of_run
 
 namespace end_of_run
 {
 void fillActivity(const events::Event& event, Activity& activity);
-bool check(const events::Event& event, const std::string& environmentID = "", int runNumber = 0);
+bool isValid(const events::Event& event, const std::string& environmentID = "", int runNumber = 0);
 } // namespace end_of_run
 
 } // namespace proto

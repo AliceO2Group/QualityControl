@@ -18,17 +18,18 @@
 /// We are testing SOR and EOR triggers here so we have all tests that require
 /// Kafka in one place. Tests in this file can be run manually only right now,
 /// as there is no kafka cluster setup as a part of CI/CD for QC.
-/// Change `kafkaCluster` variable that reflects correct kafka cluster that
-/// you want to use for tests. In order to run these tests call from command line:
+/// In order to run these tests you need to setup TEST_KAFKA_CLUSTER environment
+/// variable and to run these tests call from command line:
 /// `o2-qc-test-core [.manual_kafka]`
 ///
 /// NOTE: it might be necessary to recreate or purge topic when you are doing
 /// a lot of consecutive tests.
-///
 
 #include <catch_amalgamated.hpp>
 #include <chrono>
+#include <cstdlib>
 #include <semaphore>
+#include <stdexcept>
 #include <thread>
 #include "kafka/ProducerRecord.h"
 #include "kafka/Types.h"
@@ -38,8 +39,16 @@
 #include <kafka/KafkaProducer.h>
 #include <proto/events.pb.h>
 
-// change this url if you are testing on different kafka cluster
-constexpr auto kafkaCluster = "mtichak-flp-1-27.cern.ch:9092";
+// get test kafka cluster id from Environment variable TEST_KAFKA_CLUSTER
+auto getClusterURLFromEnv() -> std::string
+{
+  const auto* val = std::getenv("TEST_KAFKA_CLUSTER");
+  if (val == nullptr) {
+    throw std::runtime_error("TEST_KAFKA_CLUSTER env variable was not set");
+  }
+  return std::string{ val };
+}
+
 constexpr auto testTopic = "qc_test_topic";
 
 constexpr auto globalRunNumber = 123;
@@ -108,6 +117,7 @@ void sendMessage(kafka::clients::producer::KafkaProducer& producer, events::Even
 
 void sendSorAndEor()
 {
+  const auto kafkaCluster = getClusterURLFromEnv();
   kafka::Properties props{ { { "bootstrap.servers", { kafkaCluster } } } };
   kafka::clients::producer::KafkaProducer producer(props);
 
@@ -118,7 +128,7 @@ void sendSorAndEor()
 void sendSorAndTeardown()
 {
   kafka::Properties props{ {
-    { "bootstrap.servers", { kafkaCluster } },
+    { "bootstrap.servers", { getClusterURLFromEnv() } },
   } };
   kafka::clients::producer::KafkaProducer producer(props);
 
@@ -128,6 +138,7 @@ void sendSorAndTeardown()
 
 TEST_CASE("test_kafka_poller_soreor", "[.manual_kafka]")
 {
+  const auto kafkaCluster = getClusterURLFromEnv();
   using namespace o2::quality_control::core;
   KafkaPoller kafkaPoller(kafkaCluster, "unitTestID");
   REQUIRE_NOTHROW(kafkaPoller.subscribe(testTopic));
@@ -145,10 +156,11 @@ TEST_CASE("test_kafka_poller_soreor", "[.manual_kafka]")
 
     for (const auto& record : records) {
       const auto event = proto::recordToEvent(record.value());
-      if (proto::start_of_run::check(event.value(), "", 0)) {
+      // we just need values that are different from global ones
+      if (proto::start_of_run::isValid(event.value(), "randomEnvID", 1)) {
         receivedSOR = true;
       }
-      if (proto::end_of_run::check(event.value(), "", 0)) {
+      if (proto::end_of_run::isValid(event.value(), "randomEnvID", 1)) {
         receivedEOR = true;
       }
     }
@@ -162,6 +174,7 @@ TEST_CASE("test_kafka_poller_soreor", "[.manual_kafka]")
 TEST_CASE("test_kafka_poller_sorteardown", "[.manual_kafka]")
 {
   using namespace o2::quality_control::core;
+  const auto kafkaCluster = getClusterURLFromEnv();
   KafkaPoller kafkaPoller(kafkaCluster, "unitTestID");
   REQUIRE_NOTHROW(kafkaPoller.subscribe(testTopic));
 
@@ -179,10 +192,11 @@ TEST_CASE("test_kafka_poller_sorteardown", "[.manual_kafka]")
 
     for (const auto& record : records) {
       const auto event = proto::recordToEvent(record.value());
-      if (proto::start_of_run::check(event.value(), "", 0)) {
+      // we just need values that are different from global ones
+      if (proto::start_of_run::isValid(event.value(), "randomEnvID", 1)) {
         receivedSOR = true;
       }
-      if (proto::end_of_run::check(event.value(), "", 0)) {
+      if (proto::end_of_run::isValid(event.value(), "randomEnvID", 1)) {
         receivedTeardown = true;
       }
     }
@@ -197,41 +211,47 @@ TEST_CASE("test_SOR_trigger", "[.manual_kafka]")
 {
   using namespace o2::quality_control;
 
+  const auto kafkaCluster = getClusterURLFromEnv();
   constexpr auto differentEnvId = "differentEnvId";
   constexpr int differentRunNumber = 42;
 
-  core::Activity constrainedActivity;
-  constrainedActivity.mId = globalRunNumber;
-  constrainedActivity.mProvenance = globalEnvironmentId;
-  auto sorTriggerConstrainedFn = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_constrained", constrainedActivity);
+  core::Activity activityMatching;
+  activityMatching.mId = differentRunNumber;
+  activityMatching.mPartitionName = differentEnvId;
+  auto sorTriggerMatchingFn = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_matching", activityMatching);
   // NOTE: calls for triggers in the beginning of function are meant to get rid of any offset lags on cluster
-  sorTriggerConstrainedFn();
+  sorTriggerMatchingFn();
 
-  core::Activity runNumberConstrainedActivity;
-  runNumberConstrainedActivity.mId = globalRunNumber;
-  auto sorTriggerRunNumberConstrainedFn = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_runnumber", runNumberConstrainedActivity);
-  sorTriggerRunNumberConstrainedFn();
+  core::Activity activityNotMatching;
+  activityNotMatching.mId = globalRunNumber;
+  activityNotMatching.mPartitionName = globalEnvironmentId;
+  auto sorTriggerNotMatchingFn = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_notmatching", activityNotMatching);
+  sorTriggerNotMatchingFn();
 
-  core::Activity envIdConstrainedActivity;
-  envIdConstrainedActivity.mProvenance = globalEnvironmentId;
-  auto sorTriggerEnvIdConstrainedFn = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_envid", envIdConstrainedActivity);
-  sorTriggerEnvIdConstrainedFn();
+  core::Activity activityMatchingDiffRunNumber;
+  activityMatchingDiffRunNumber.mId = differentRunNumber;
+  activityMatchingDiffRunNumber.mPartitionName = globalEnvironmentId;
+  auto sorTriggerNotMatchingDiffRunNumber = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_not_matching_diff_runnumber", activityMatchingDiffRunNumber);
+  sorTriggerNotMatchingDiffRunNumber();
 
-  auto sorTriggerUnconstrainedFn = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_unconstrained");
-  sorTriggerUnconstrainedFn();
+  core::Activity activityMatchingDiffEnvId;
+  activityMatchingDiffEnvId.mId = globalRunNumber;
+  activityMatchingDiffEnvId.mPartitionName = differentEnvId;
+  auto sorTriggerNotMatchingDiffEnvId = postprocessing::triggers::StartOfRun(kafkaCluster, testTopic, "TST", "sor_test_not_matching_diff_envid", activityMatchingDiffEnvId);
+  sorTriggerNotMatchingDiffEnvId();
 
   {
-    auto trigger = sorTriggerUnconstrainedFn();
+    auto trigger = sorTriggerMatchingFn();
     REQUIRE(trigger.triggerType == postprocessing::TriggerType::No);
 
-    auto constrainedTrigger = sorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
+    auto notMatchingTrigger = sorTriggerNotMatchingFn();
+    REQUIRE(notMatchingTrigger.triggerType == postprocessing::TriggerType::No);
 
-    auto runConstrainedTrigger = sorTriggerRunNumberConstrainedFn();
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
+    auto notMatchingTriggerDiffRunNumber = sorTriggerNotMatchingDiffRunNumber();
+    REQUIRE(notMatchingTriggerDiffRunNumber.triggerType == postprocessing::TriggerType::No);
 
-    auto envIdConstrainedTrigger = sorTriggerEnvIdConstrainedFn();
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
+    auto notMatchingTriggerDiffEnvId = sorTriggerNotMatchingDiffEnvId();
+    REQUIRE(notMatchingTriggerDiffEnvId.triggerType == postprocessing::TriggerType::No);
   }
 
   kafka::Properties props{ { { "bootstrap.servers", { kafkaCluster } } } };
@@ -240,101 +260,29 @@ TEST_CASE("test_SOR_trigger", "[.manual_kafka]")
   sendMessage(producer, createSorProtoMessage());
 
   {
-    auto trigger = sorTriggerUnconstrainedFn();
+    auto trigger = sorTriggerMatchingFn();
     auto& filledActivity = trigger.activity;
     REQUIRE(trigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(filledActivity.mId == globalRunNumber);
-    REQUIRE(filledActivity.mProvenance == globalEnvironmentId);
+    REQUIRE(filledActivity.mId == globalRunNumber);                // was set as differentRunNumber
+    REQUIRE(filledActivity.mPartitionName == globalEnvironmentId); // was set as differentEnvId
     REQUIRE(filledActivity.mValidity.getMin() == timestamp);
 
-    auto constrainedTrigger = sorTriggerConstrainedFn();
-    auto& constrainedFilledActivity = trigger.activity;
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(constrainedFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedFilledActivity.mValidity.getMin() == timestamp);
+    auto notmatchingTrigger = sorTriggerNotMatchingFn();
+    REQUIRE(notmatchingTrigger.triggerType == postprocessing::TriggerType::No); // was set as globalEnvironmentId and globalRunNumber
 
-    auto runConstrainedTrigger = sorTriggerRunNumberConstrainedFn();
-    auto& constrainedNumberFilledActivity = trigger.activity;
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(constrainedNumberFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedNumberFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedNumberFilledActivity.mValidity.getMin() == timestamp);
+    auto notMatchingTriggerDiffRunNumber = sorTriggerNotMatchingDiffRunNumber();
+    auto& notMatchingActivityDiffRunNumber = trigger.activity;
+    REQUIRE(notMatchingTriggerDiffRunNumber.triggerType == postprocessing::TriggerType::StartOfRun);
+    REQUIRE(notMatchingActivityDiffRunNumber.mId == globalRunNumber);                // was set as globalRunNumber
+    REQUIRE(notMatchingActivityDiffRunNumber.mPartitionName == globalEnvironmentId); // was set as differentEnvId
+    REQUIRE(notMatchingActivityDiffRunNumber.mValidity.getMin() == timestamp);
 
-    auto envIdConstrainedTrigger = sorTriggerEnvIdConstrainedFn();
-    auto& constrainedEnvIdFilledActivity = trigger.activity;
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(constrainedEnvIdFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedEnvIdFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedEnvIdFilledActivity.mValidity.getMin() == timestamp);
-  }
-
-  sendMessage(producer, createSorProtoMessage(differentEnvId, differentRunNumber));
-
-  {
-    auto trigger = sorTriggerUnconstrainedFn();
-    auto& filledActivity = trigger.activity;
-    REQUIRE(trigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(filledActivity.mId == differentRunNumber);
-    REQUIRE(filledActivity.mProvenance == differentEnvId);
-    REQUIRE(filledActivity.mValidity.getMin() == timestamp);
-
-    auto constrainedTrigger = sorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto runConstrainedTrigger = sorTriggerRunNumberConstrainedFn();
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto envIdConstrainedTrigger = sorTriggerEnvIdConstrainedFn();
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-  }
-
-  sendMessage(producer, createSorProtoMessage(differentEnvId, globalRunNumber));
-
-  {
-    auto trigger = sorTriggerUnconstrainedFn();
-    auto& filledActivity = trigger.activity;
-    REQUIRE(trigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(filledActivity.mId == globalRunNumber);
-    REQUIRE(filledActivity.mProvenance == differentEnvId);
-    REQUIRE(filledActivity.mValidity.getMin() == timestamp);
-
-    auto constrainedTrigger = sorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto runConstrainedTrigger = sorTriggerRunNumberConstrainedFn();
-    auto& constrainedNumberFilledActivity = trigger.activity;
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(constrainedNumberFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedNumberFilledActivity.mProvenance == differentEnvId);
-    REQUIRE(constrainedNumberFilledActivity.mValidity.getMin() == timestamp);
-
-    auto envIdConstrainedTrigger = sorTriggerEnvIdConstrainedFn();
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-  }
-
-  sendMessage(producer, createSorProtoMessage(globalEnvironmentId, differentRunNumber));
-
-  {
-    auto trigger = sorTriggerUnconstrainedFn();
-    auto& filledActivity = trigger.activity;
-    REQUIRE(trigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(filledActivity.mId == differentRunNumber);
-    REQUIRE(filledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(filledActivity.mValidity.getMin() == timestamp);
-
-    auto constrainedTrigger = sorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto runConstrainedTrigger = sorTriggerRunNumberConstrainedFn();
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto envIdConstrainedTrigger = sorTriggerEnvIdConstrainedFn();
-    auto& constrainedEnvIdFilledActivity = trigger.activity;
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::StartOfRun);
-    REQUIRE(constrainedEnvIdFilledActivity.mId == differentRunNumber);
-    REQUIRE(constrainedEnvIdFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedEnvIdFilledActivity.mValidity.getMin() == timestamp);
+    auto notMatchingTriggerDiffEnvId = sorTriggerNotMatchingDiffEnvId();
+    auto& notMatchingActivityDiffEnvId = trigger.activity;
+    REQUIRE(notMatchingTriggerDiffEnvId.triggerType == postprocessing::TriggerType::StartOfRun);
+    REQUIRE(notMatchingActivityDiffRunNumber.mId == globalRunNumber);                // was set as differentRunNumber
+    REQUIRE(notMatchingActivityDiffRunNumber.mPartitionName == globalEnvironmentId); // was set as globalEnvironmentId
+    REQUIRE(notMatchingActivityDiffEnvId.mValidity.getMin() == timestamp);
   }
 }
 
@@ -342,41 +290,47 @@ TEST_CASE("test_EOR_trigger", "[.manual_kafka]")
 {
   using namespace o2::quality_control;
 
+  const auto kafkaCluster = getClusterURLFromEnv();
   constexpr auto differentEnvId = "differentEnvId";
   constexpr int differentRunNumber = 42;
 
-  core::Activity constrainedActivity;
-  constrainedActivity.mId = globalRunNumber;
-  constrainedActivity.mProvenance = globalEnvironmentId;
-  auto eorTriggerConstrainedFn = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_constrained", constrainedActivity);
+  core::Activity activityMatching;
+  activityMatching.mId = differentRunNumber;
+  activityMatching.mPartitionName = differentEnvId;
+  auto eorTriggerMatchingFn = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_matching", activityMatching);
   // NOTE: calls for triggers in the beginning of function are meant to get rid of any offset lags on cluster
-  eorTriggerConstrainedFn();
+  eorTriggerMatchingFn();
 
-  core::Activity runNumberConstrainedActivity;
-  runNumberConstrainedActivity.mId = globalRunNumber;
-  auto eorTriggerRunNumberConstrainedFn = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_runnumber", runNumberConstrainedActivity);
-  eorTriggerRunNumberConstrainedFn();
+  core::Activity activityNotMatching;
+  activityNotMatching.mId = globalRunNumber;
+  activityNotMatching.mPartitionName = globalEnvironmentId;
+  auto eorTriggerNotMatchingFn = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_notmatching", activityNotMatching);
+  eorTriggerNotMatchingFn();
 
-  core::Activity envIdConstrainedActivity;
-  envIdConstrainedActivity.mProvenance = globalEnvironmentId;
-  auto eorTriggerEnvIdConstrainedFn = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_envid", envIdConstrainedActivity);
-  eorTriggerEnvIdConstrainedFn();
+  core::Activity activityMatchingDiffRunNumber;
+  activityMatchingDiffRunNumber.mId = differentRunNumber;
+  activityMatchingDiffRunNumber.mPartitionName = globalEnvironmentId;
+  auto eorTriggerNotMatchingDiffRunNumber = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_not_matching_diff_runnumber", activityMatchingDiffRunNumber);
+  eorTriggerNotMatchingDiffRunNumber();
 
-  auto eorTriggerUnconstrainedFn = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_unconstrained");
-  eorTriggerUnconstrainedFn();
+  core::Activity activityMatchingDiffEnvId;
+  activityMatchingDiffEnvId.mId = globalRunNumber;
+  activityMatchingDiffEnvId.mPartitionName = differentEnvId;
+  auto eorTriggerNotMatchingDiffEnvId = postprocessing::triggers::EndOfRun(kafkaCluster, testTopic, "TST", "eor_test_not_matching_diff_envid", activityMatchingDiffEnvId);
+  eorTriggerNotMatchingDiffEnvId();
 
   {
-    auto trigger = eorTriggerUnconstrainedFn();
+    auto trigger = eorTriggerMatchingFn();
     REQUIRE(trigger.triggerType == postprocessing::TriggerType::No);
 
-    auto constrainedTrigger = eorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
+    auto notMatchingTrigger = eorTriggerNotMatchingFn();
+    REQUIRE(notMatchingTrigger.triggerType == postprocessing::TriggerType::No);
 
-    auto runConstrainedTrigger = eorTriggerRunNumberConstrainedFn();
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
+    auto notMatchingTriggerDiffRunNumber = eorTriggerNotMatchingDiffRunNumber();
+    REQUIRE(notMatchingTriggerDiffRunNumber.triggerType == postprocessing::TriggerType::No);
 
-    auto envIdConstrainedTrigger = eorTriggerEnvIdConstrainedFn();
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
+    auto notMatchingTriggerDiffEnvId = eorTriggerNotMatchingDiffEnvId();
+    REQUIRE(notMatchingTriggerDiffEnvId.triggerType == postprocessing::TriggerType::No);
   }
 
   kafka::Properties props{ { { "bootstrap.servers", { kafkaCluster } } } };
@@ -385,100 +339,28 @@ TEST_CASE("test_EOR_trigger", "[.manual_kafka]")
   sendMessage(producer, createEorProtoMessage());
 
   {
-    auto trigger = eorTriggerUnconstrainedFn();
+    auto trigger = eorTriggerMatchingFn();
     auto& filledActivity = trigger.activity;
     REQUIRE(trigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(filledActivity.mId == globalRunNumber);
-    REQUIRE(filledActivity.mProvenance == globalEnvironmentId);
+    REQUIRE(filledActivity.mId == globalRunNumber);                // was set as differentRunNumber
+    REQUIRE(filledActivity.mPartitionName == globalEnvironmentId); // was set as differentEnvId
     REQUIRE(filledActivity.mValidity.getMax() == timestamp);
 
-    auto constrainedTrigger = eorTriggerConstrainedFn();
-    auto& constrainedFilledActivity = trigger.activity;
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(constrainedFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedFilledActivity.mValidity.getMax() == timestamp);
+    auto notmatchingTrigger = eorTriggerNotMatchingFn();
+    REQUIRE(notmatchingTrigger.triggerType == postprocessing::TriggerType::No); // was set as globalEnvironmentId and globalRunNumber
 
-    auto runConstrainedTrigger = eorTriggerRunNumberConstrainedFn();
-    auto& constrainedNumberFilledActivity = trigger.activity;
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(constrainedNumberFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedNumberFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedNumberFilledActivity.mValidity.getMax() == timestamp);
+    auto notMatchingTriggerDiffRunNumber = eorTriggerNotMatchingDiffRunNumber();
+    auto& notMatchingActivityDiffRunNumber = trigger.activity;
+    REQUIRE(notMatchingTriggerDiffRunNumber.triggerType == postprocessing::TriggerType::EndOfRun);
+    REQUIRE(notMatchingActivityDiffRunNumber.mId == globalRunNumber);                // was set as globalRunNumber
+    REQUIRE(notMatchingActivityDiffRunNumber.mPartitionName == globalEnvironmentId); // was set as differentEnvId
+    REQUIRE(notMatchingActivityDiffRunNumber.mValidity.getMax() == timestamp);
 
-    auto envIdConstrainedTrigger = eorTriggerEnvIdConstrainedFn();
-    auto& constrainedEnvIdFilledActivity = trigger.activity;
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(constrainedEnvIdFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedEnvIdFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedEnvIdFilledActivity.mValidity.getMax() == timestamp);
-  }
-
-  sendMessage(producer, createEorProtoMessage(differentEnvId, differentRunNumber));
-
-  {
-    auto trigger = eorTriggerUnconstrainedFn();
-    auto& filledActivity = trigger.activity;
-    REQUIRE(trigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(filledActivity.mId == differentRunNumber);
-    REQUIRE(filledActivity.mProvenance == differentEnvId);
-    REQUIRE(filledActivity.mValidity.getMax() == timestamp);
-
-    auto constrainedTrigger = eorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto runConstrainedTrigger = eorTriggerRunNumberConstrainedFn();
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto envIdConstrainedTrigger = eorTriggerEnvIdConstrainedFn();
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-  }
-
-  sendMessage(producer, createEorProtoMessage(differentEnvId, globalRunNumber));
-
-  {
-    auto trigger = eorTriggerUnconstrainedFn();
-    auto& filledActivity = trigger.activity;
-    REQUIRE(trigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(filledActivity.mId == globalRunNumber);
-    REQUIRE(filledActivity.mProvenance == differentEnvId);
-    REQUIRE(filledActivity.mValidity.getMax() == timestamp);
-
-    auto constrainedTrigger = eorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto runConstrainedTrigger = eorTriggerRunNumberConstrainedFn();
-    auto& constrainedNumberFilledActivity = trigger.activity;
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(constrainedNumberFilledActivity.mId == globalRunNumber);
-    REQUIRE(constrainedNumberFilledActivity.mProvenance == differentEnvId);
-    REQUIRE(constrainedNumberFilledActivity.mValidity.getMax() == timestamp);
-
-    auto envIdConstrainedTrigger = eorTriggerEnvIdConstrainedFn();
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-  }
-
-  sendMessage(producer, createEorProtoMessage(globalEnvironmentId, differentRunNumber));
-
-  {
-    auto trigger = eorTriggerUnconstrainedFn();
-    auto& filledActivity = trigger.activity;
-    REQUIRE(trigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(filledActivity.mId == differentRunNumber);
-    REQUIRE(filledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(filledActivity.mValidity.getMax() == timestamp);
-
-    auto constrainedTrigger = eorTriggerConstrainedFn();
-    REQUIRE(constrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto runConstrainedTrigger = eorTriggerRunNumberConstrainedFn();
-    REQUIRE(runConstrainedTrigger.triggerType == postprocessing::TriggerType::No);
-
-    auto envIdConstrainedTrigger = eorTriggerEnvIdConstrainedFn();
-    auto& constrainedEnvIdFilledActivity = trigger.activity;
-    REQUIRE(envIdConstrainedTrigger.triggerType == postprocessing::TriggerType::EndOfRun);
-    REQUIRE(constrainedEnvIdFilledActivity.mId == differentRunNumber);
-    REQUIRE(constrainedEnvIdFilledActivity.mProvenance == globalEnvironmentId);
-    REQUIRE(constrainedEnvIdFilledActivity.mValidity.getMax() == timestamp);
+    auto notMatchingTriggerDiffEnvId = eorTriggerNotMatchingDiffEnvId();
+    auto& notMatchingActivityDiffEnvId = trigger.activity;
+    REQUIRE(notMatchingTriggerDiffEnvId.triggerType == postprocessing::TriggerType::EndOfRun);
+    REQUIRE(notMatchingActivityDiffRunNumber.mId == globalRunNumber);                // was set as differentRunNumber
+    REQUIRE(notMatchingActivityDiffRunNumber.mPartitionName == globalEnvironmentId); // was set as globalEnvironmentId
+    REQUIRE(notMatchingActivityDiffEnvId.mValidity.getMax() == timestamp);
   }
 }

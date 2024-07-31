@@ -129,7 +129,6 @@ target_include_directories(
   $<BUILD_INTERFACE:${RDFKAFKA_INCLUDE}>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  ${MODERNCPPKAFKA_ROOT}
   )
 
 target_link_libraries(O2QualityControl
