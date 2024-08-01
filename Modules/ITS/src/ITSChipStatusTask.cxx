@@ -44,15 +44,39 @@ void ITSChipStatusTask::initialize(o2::framework::InitContext& /*ctx*/)
   getParameters();
 
   for (int i = 0; i < 3; i++) {
-
-    ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i]);
-    TFsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i]);
+    ChipsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], nRotationType);
+    TFsStack[i] = new Stack(nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], nRotationType);
 
     DeadChips[i] = std::make_shared<TH2FRatio>(Form("DeadChips%s", BarrelNames[i].Data()), Form("Time fraction without data from %s chips", BarrelNames[i].Data()), nQCCycleToMonitor, 0, nQCCycleToMonitor, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], 0, ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], false);
     setAxisTitle(DeadChips[i].get(), Form("Last %d QC Cycles", nQCCycleToMonitor), "Chip ID");
 
     getObjectsManager()->startPublishing(DeadChips[i].get());
   }
+
+  StaveOverview = new TH2Poly();
+  StaveOverview->SetName("StaveStatusOverview");
+  TString title = "Number of QC cycles when stave is without data";
+  title += ";mm (IB 3x);mm (IB 3x)";
+  StaveOverview->SetTitle(title);
+  StaveOverview->SetStats(0);
+  StaveOverview->SetOption("lcolz");
+  StaveOverview->SetMinimum(0);
+  StaveOverview->SetMaximum(1);
+  for (int ilayer = 0; ilayer < 7; ilayer++) {
+    for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+      double* px = new double[4];
+      double* py = new double[4];
+      getStavePoint(ilayer, istave, px, py);
+      if (ilayer < 3) {
+        for (int icoo = 0; icoo < 4; icoo++) {
+          px[icoo] *= 3.;
+          py[icoo] *= 3.;
+        }
+      }
+      StaveOverview->AddBin(4, px, py);
+    }
+  }
+  getObjectsManager()->startPublishing(StaveOverview);
 }
 
 void ITSChipStatusTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -75,6 +99,35 @@ void ITSChipStatusTask::startOfCycle()
     CurrentDeadChips[i].resize(ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], 0);
     CurrentTFs[i].clear();
     CurrentTFs[i].resize(ChipsBoundaryBarrels[i + 1] - ChipsBoundaryBarrels[i], 0);
+  }
+}
+
+void ITSChipStatusTask::getStavePoint(int layer, int stave, double* px, double* py)
+{
+  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             // the angle between to stave
+  float midAngle = StartAngle[layer] + (stave * stepAngle);       // mid point angle
+  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); // how many angle this stave rotate(compare with first stave)
+  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              // there are 4 point to decide this TH2Poly bin
+                                                                  // 0:left point in this stave;
+                                                                  // 1:mid point in this stave;
+                                                                  // 2:right point in this stave;
+                                                                  // 3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              // 4 point calculated accord the blueprint
+                                                                  // roughly calculate
+  if (layer < NLayerIB) {
+    px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 5.623 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 5.623 * TMath::Cos(staveRotateAngle) + py[1];
+  } else {
+    px[0] = 21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 40 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 40 * TMath::Cos(staveRotateAngle) + py[1];
   }
 }
 
@@ -103,6 +156,8 @@ void ITSChipStatusTask::getParameters()
 {
 
   nQCCycleToMonitor = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nQCCycleToMonitor", nQCCycleToMonitor);
+  NCycleForOverview = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nQCCycleToOverview", NCycleForOverview);
+  nRotationType = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nRotationType", nRotationType);
 }
 
 void ITSChipStatusTask::endOfCycle()
@@ -122,6 +177,37 @@ void ITSChipStatusTask::endOfCycle()
   }
 
   Beautify();
+  //---------- Shifter plot
+
+  int iLayer = 0;
+  int iStave = 0;
+  StaveOverview->Reset("content");
+  for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
+
+    for (int iSlice = 0; iSlice < NCycleForOverview; iSlice++) {
+      iLayer = iBarrel == 0 ? 0 : iBarrel == 1 ? 3
+                                               : 5;
+      TH1D* hBarrelProj = DeadChips[iBarrel]->getNum()->ProjectionY("dummy", nQCCycleToMonitor - iSlice, nQCCycleToMonitor - iSlice);
+      iStave = 0;
+      int nEmptyChips = 0;
+      for (int iChip = 1; iChip <= hBarrelProj->GetNbinsX(); iChip++) {
+        if (hBarrelProj->GetBinContent(iChip) > 0)
+          nEmptyChips++;
+        if (((iChip) % (nChipsPerHic[iLayer] * nHicPerStave[iLayer]) == 0)) {
+          if (nEmptyChips == nChipsPerHic[iLayer] * nHicPerStave[iLayer]) {
+            int binContent = StaveOverview->GetBinContent(iStave + StaveBoundary[iLayer]) * NCycleForOverview + 1;
+            StaveOverview->SetBinContent(iStave + StaveBoundary[iLayer], 1. * binContent / NCycleForOverview);
+          }
+          nEmptyChips = 0;
+          iStave++;
+          if ((iChip) == ChipsBoundaryLayers[iLayer + 1]) {
+            iLayer++;
+            iStave = 0;
+          }
+        }
+      }
+    }
+  }
 }
 
 void ITSChipStatusTask::Beautify()
