@@ -55,7 +55,7 @@ constexpr auto globalRunNumber = 123;
 constexpr auto timestamp = 1234;
 constexpr auto globalEnvironmentId = "envID";
 
-auto createSorProtoMessage(const std::string& environmentId = globalEnvironmentId, int runNumber = globalRunNumber) -> events::Event
+auto createSoSorProtoMessage(const std::string& environmentId = globalEnvironmentId, int runNumber = globalRunNumber) -> events::Event
 {
   events::Event event;
   event.set_timestamp(1234);
@@ -70,7 +70,22 @@ auto createSorProtoMessage(const std::string& environmentId = globalEnvironmentI
   return event;
 };
 
-auto createEorProtoMessage(const std::string& environmentId = globalEnvironmentId, int runNumber = globalRunNumber) -> events::Event
+auto createEoSorProtoMessage(const std::string& environmentId = globalEnvironmentId, int runNumber = globalRunNumber) -> events::Event
+{
+  events::Event event;
+  event.set_timestamp(1234);
+
+  auto* runEvent = event.mutable_runevent();
+  runEvent->set_transition("START_ACTIVITY");
+  runEvent->set_state("CONFIGURED");
+  runEvent->set_transitionstatus(events::OpStatus::DONE_OK);
+  runEvent->set_environmentid(environmentId);
+  runEvent->set_runnumber(runNumber);
+
+  return event;
+};
+
+auto createSoEorProtoMessage(const std::string& environmentId = globalEnvironmentId, int runNumber = globalRunNumber) -> events::Event
 {
   events::Event event;
   event.set_timestamp(1234);
@@ -79,6 +94,21 @@ auto createEorProtoMessage(const std::string& environmentId = globalEnvironmentI
   runEvent->set_transition("STOP_ACTIVITY");
   runEvent->set_state("RUNNING");
   runEvent->set_transitionstatus(events::OpStatus::STARTED);
+  runEvent->set_environmentid(environmentId);
+  runEvent->set_runnumber(runNumber);
+
+  return event;
+}
+
+auto createEoEorProtoMessage(const std::string& environmentId = globalEnvironmentId, int runNumber = globalRunNumber) -> events::Event
+{
+  events::Event event;
+  event.set_timestamp(1234);
+
+  auto* runEvent = event.mutable_runevent();
+  runEvent->set_transition("STOP_ACTIVITY");
+  runEvent->set_state("RUNNING");
+  runEvent->set_transitionstatus(events::OpStatus::DONE_OK);
   runEvent->set_environmentid(environmentId);
   runEvent->set_runnumber(runNumber);
 
@@ -121,8 +151,8 @@ void sendSorAndEor()
   kafka::Properties props{ { { "bootstrap.servers", { kafkaCluster } } } };
   kafka::clients::producer::KafkaProducer producer(props);
 
-  sendMessage(producer, createSorProtoMessage());
-  sendMessage(producer, createEorProtoMessage());
+  sendMessage(producer, createSoSorProtoMessage());
+  sendMessage(producer, createSoEorProtoMessage());
 }
 
 void sendSorAndTeardown()
@@ -132,7 +162,7 @@ void sendSorAndTeardown()
   } };
   kafka::clients::producer::KafkaProducer producer(props);
 
-  sendMessage(producer, createSorProtoMessage());
+  sendMessage(producer, createSoSorProtoMessage());
   sendMessage(producer, createEorTeardownProtoMessage());
 }
 
@@ -257,7 +287,31 @@ TEST_CASE("test_SOR_trigger", "[.manual_kafka]")
   kafka::Properties props{ { { "bootstrap.servers", { kafkaCluster } } } };
   kafka::clients::producer::KafkaProducer producer(props);
 
-  sendMessage(producer, createSorProtoMessage());
+  sendMessage(producer, createEoSorProtoMessage());
+
+  // kafka consumer inside trigger is using default poll timeout (10ms), so we wait here
+  // for synchronisation purposes
+  std::this_thread::sleep_for(std::chrono::milliseconds{ 500 });
+
+  {
+    auto trigger = sorTriggerMatchingFn();
+    REQUIRE(trigger.triggerType == postprocessing::TriggerType::No);
+
+    auto notMatchingTrigger = sorTriggerNotMatchingFn();
+    REQUIRE(notMatchingTrigger.triggerType == postprocessing::TriggerType::No);
+
+    auto notMatchingTriggerDiffRunNumber = sorTriggerNotMatchingDiffRunNumber();
+    REQUIRE(notMatchingTriggerDiffRunNumber.triggerType == postprocessing::TriggerType::No);
+
+    auto notMatchingTriggerDiffEnvId = sorTriggerNotMatchingDiffEnvId();
+    REQUIRE(notMatchingTriggerDiffEnvId.triggerType == postprocessing::TriggerType::No);
+  }
+
+  sendMessage(producer, createSoSorProtoMessage());
+
+  // kafka consumer inside trigger is using default poll timeout (10ms), so we wait here
+  // for synchronisation purposes
+  std::this_thread::sleep_for(std::chrono::milliseconds{ 500 });
 
   {
     auto trigger = sorTriggerMatchingFn();
@@ -336,7 +390,31 @@ TEST_CASE("test_EOR_trigger", "[.manual_kafka]")
   kafka::Properties props{ { { "bootstrap.servers", { kafkaCluster } } } };
   kafka::clients::producer::KafkaProducer producer(props);
 
-  sendMessage(producer, createEorProtoMessage());
+  sendMessage(producer, createEoEorProtoMessage());
+
+  // kafka consumer inside trigger is using default poll timeout (10ms), so we wait here
+  // for synchronisation purposes
+  std::this_thread::sleep_for(std::chrono::seconds{ 1 });
+
+  {
+    auto trigger = eorTriggerMatchingFn();
+    REQUIRE(trigger.triggerType == postprocessing::TriggerType::No);
+
+    auto notMatchingTrigger = eorTriggerNotMatchingFn();
+    REQUIRE(notMatchingTrigger.triggerType == postprocessing::TriggerType::No);
+
+    auto notMatchingTriggerDiffRunNumber = eorTriggerNotMatchingDiffRunNumber();
+    REQUIRE(notMatchingTriggerDiffRunNumber.triggerType == postprocessing::TriggerType::No);
+
+    auto notMatchingTriggerDiffEnvId = eorTriggerNotMatchingDiffEnvId();
+    REQUIRE(notMatchingTriggerDiffEnvId.triggerType == postprocessing::TriggerType::No);
+  }
+
+  sendMessage(producer, createSoEorProtoMessage());
+
+  // kafka consumer inside trigger is using default poll timeout (10ms), so we wait here
+  // for synchronisation purposes
+  std::this_thread::sleep_for(std::chrono::seconds{ 1 });
 
   {
     auto trigger = eorTriggerMatchingFn();

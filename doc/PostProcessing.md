@@ -40,14 +40,14 @@ Any Post-processing Task should inherit PostProcessingInterface, which includes 
   * `finalize` - finalizes the processing, given the event which it was triggered by.
   
 Interfaces to databases and other services are accesible via `ServiceRegistry`, which is an argument to the last three methods. They are invoked when any of the specified triggers is up, which can be:
- * Start Of Run (SOR, not implemented yet)
- * End Of Run (EOR, not implemented yet)
+ * Start Of Run - triggers when receives SOSOR message from `aliecs.run` kafka topic which has **DIFFERENT** run number **AND** environment id than `Activity` class in config
+ * End Of Run - triggers when receives SOEOR message from `aliecs.run` kafka topic which has **DIFFERENT** run number **AND** environment id than `Activity` class in config
  * Start Of Fill (SOF, not implemented yet)
  * End Of Fill (EOF, not implemented yet)
  * Periodic - triggers when a specified period of time passes 
  * New Object - triggers when an object in QCDB is updated
  * For Each Object - triggers for each object in QCDB which matches an Activity
- * For Each Latest - trggers for the latest object in QCDB for each matching Activity, sorted by Period, Pass and Run
+ * For Each Latest - triggers for the latest object in QCDB for each matching Activity, sorted by Period, Pass and Run
  * Once - triggers only first time it is checked
  * Always - triggers each time it is checked
 

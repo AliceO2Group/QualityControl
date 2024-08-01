@@ -76,6 +76,10 @@ bool start_of_run::isValid(const events::Event& event, const std::string& enviro
     return false;
   }
 
+  if (runEvent.transitionstatus() != events::OpStatus::STARTED) {
+    return false;
+  }
+
   return runEvent == Ev_RunEventPartial{ "CONFIGURED", events::OpStatus::STARTED, environmentID, runNumber };
 }
 
@@ -94,6 +98,10 @@ bool end_of_run::isValid(const events::Event& event, const std::string& environm
   const auto& runEvent = event.runevent();
 
   if (runEvent.transition() != "STOP_ACTIVITY" && runEvent.transition() != "TEARDOWN") {
+    return false;
+  }
+
+  if (runEvent.transitionstatus() != events::OpStatus::STARTED) {
     return false;
   }
 
@@ -134,9 +142,9 @@ void KafkaPoller::subscribe(const std::string& topic, size_t numberOfRetries)
   throw std::runtime_error(std::string{ "Kafka Poller failed to subscribe after " }.append(std::to_string(numberOfRetries)).append(" retries"));
 }
 
-auto KafkaPoller::poll() -> KafkaRecords
+auto KafkaPoller::poll(std::chrono::milliseconds timeout) -> KafkaRecords
 {
-  const auto records = mConsumer.poll(std::chrono::seconds{ 1 });
+  const auto records = mConsumer.poll(timeout);
   auto filtered = records | std::ranges::views::filter([](const auto& record) { return !record.error(); });
   KafkaRecords result{};
   result.reserve(records.size());

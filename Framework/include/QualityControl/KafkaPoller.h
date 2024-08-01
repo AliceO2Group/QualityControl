@@ -50,7 +50,8 @@ class KafkaPoller
   explicit KafkaPoller(const std::string& brokers, const std::string& groupId);
 
   void subscribe(const std::string& topic, size_t numberOfRetries = 5);
-  auto poll() -> KafkaRecords;
+  // timeout is used to wait if there are not messages.
+  auto poll(std::chrono::milliseconds timeout = std::chrono::milliseconds{ 10 }) -> KafkaRecords;
 
  private:
   kafka::clients::consumer::KafkaConsumer mConsumer;
