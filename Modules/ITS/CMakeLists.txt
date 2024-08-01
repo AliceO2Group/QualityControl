@@ -28,7 +28,7 @@ add_library(O2QcITS
             src/ITSDecodingErrorCheck.cxx 
             )
 
-target_sources(O2QcITS PRIVATE src/ITSChipStatusTask.cxx 
+target_sources(O2QcITS PRIVATE src/ITSChipStatusCheck.cxx  src/ITSChipStatusTask.cxx 
                src/TH2XlineReductor.cxx
                src/ReductorIntegralContent.cxx
                src/ReductorBinContent.cxx)
@@ -60,6 +60,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ITS
 
 add_root_dictionary(O2QcITS
                     HEADERS include/ITS/ITSRawTask.h
+  include/ITS/ITSChipStatusCheck.h
   include/ITS/ITSChipStatusTask.h
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
