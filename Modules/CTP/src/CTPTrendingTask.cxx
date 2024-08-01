@@ -45,7 +45,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
   std::string run = std::to_string(t.activity.mId);
   std::string CCDBHost;
   try {
-    CCDBHost = std::stof(mCustomParameters.at("ccdbName", "default"));
+    CCDBHost = mCustomParameters.at("ccdbName", "default");
   } catch (const std::exception& e) {
     CCDBHost = "https://alice-ccdb.cern.ch";
   }
@@ -180,11 +180,11 @@ void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef servic
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  if (mCTPconfigFound) {
+  if (!mCTPconfigFound) {
     initCTP(t);
-    if (mCTPconfigFound) {
-      return;
-    }
+  }
+  if (!mCTPconfigFound) {
+    return;
   }
   trendValues(t, qcdb);
   generatePlots();
