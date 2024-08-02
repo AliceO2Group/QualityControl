@@ -19,6 +19,7 @@
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+#include "QualityControl/KafkaPoller.h"
 
 #include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>
@@ -57,28 +58,33 @@ TriggerFcn NotImplemented(std::string triggerName)
   };
 }
 
-TriggerFcn StartOfRun(const Activity&)
+std::string createKafkaGroupId(std::string_view prefix, std::string_view detector, std::string_view taskName)
 {
-  return NotImplemented("StartOfRun");
+  std::string groupId;
+  constexpr int numberOfUnderscores = 2;
+  groupId.reserve(prefix.size() + detector.size() + taskName.size() + numberOfUnderscores);
+  groupId.append(prefix).append("_").append(detector).append("_").append(taskName);
 
-  // FIXME: it has to be initialized before the SOR, to actually catch it. Is it a problem?
-  //  bool runStarted = false; // runOngoing();
-  //  int runNumber = false;   // getRunNumber();
-  //
-  //  return [runStarted, runNumber]() mutable -> TriggerType {
-  //    bool trigger = false;
+  return groupId;
+}
 
-  // trigger if:
-  // - previously the run was not started
-  //    trigger |= !runStarted && runOngoing();
-  // - previously there was a different run number (we missed a stop and start sequence)
-  //    trigger |= runOngoing() && runNumber != getRunNumber();
-
-  //    runStarted = runOngoing();
-  //    runNumber = getRunNumber();
-  //
-  //    return trigger ? TriggerType::StartOfRun : TriggerType::No;
-  //  };
+TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const std::string& detector, const std::string& taskName, const core::Activity& activity)
+{
+  auto copiedActivity = activity;
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, createKafkaGroupId("SOR_postprocessing", detector, taskName));
+  poller->subscribe(topic);
+  return [poller, copiedActivity]() mutable -> Trigger {
+    for (const auto& record : poller->poll()) {
+      if (auto event = proto::recordToEvent(record.value())) {
+        if (proto::start_of_run::isValid(*event, copiedActivity.mPartitionName, copiedActivity.mId)) {
+          auto newActivityForTrigger = copiedActivity;
+          proto::start_of_run::fillActivity(*event, newActivityForTrigger);
+          return { TriggerType::StartOfRun, false, newActivityForTrigger, static_cast<uint64_t>(event->timestamp()), "sor" };
+        }
+      }
+    }
+    return { TriggerType::No, false, copiedActivity, Trigger::msSinceEpoch(), "sor" };
+  };
 }
 
 TriggerFcn Once(const Activity& activity)
@@ -109,9 +115,23 @@ TriggerFcn Never(const Activity& activity)
   };
 }
 
-TriggerFcn EndOfRun(const Activity&)
+TriggerFcn EndOfRun(const std::string& kafkaBrokers, const std::string& topic, const std::string& detector, const std::string& taskName, const Activity& activity)
 {
-  return NotImplemented("EndOfRun");
+  auto copiedActivity = activity;
+  auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, createKafkaGroupId("EOR_postprocessing", detector, taskName));
+  poller->subscribe(topic);
+  return [poller, copiedActivity]() mutable -> Trigger {
+    for (const auto& record : poller->poll()) {
+      if (auto event = proto::recordToEvent(record.value())) {
+        if (proto::end_of_run::isValid(*event, copiedActivity.mPartitionName, copiedActivity.mId)) {
+          auto newActivityForTrigger = copiedActivity;
+          proto::end_of_run::fillActivity(*event, newActivityForTrigger);
+          return { TriggerType::EndOfRun, false, newActivityForTrigger, static_cast<uint64_t>(event->timestamp()), "eor" };
+        }
+      }
+    }
+    return { TriggerType::No, false, copiedActivity, Trigger::msSinceEpoch(), "eor" };
+  };
 }
 
 TriggerFcn StartOfFill(const Activity&)

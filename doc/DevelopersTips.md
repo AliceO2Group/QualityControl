@@ -566,3 +566,9 @@ It is important to put the full destination path, including the name of the fold
 ```shell
 o2-qc-repo-move-objects --url http://localhost:8083 --log-level 10 --path qc/TRD/MO/TrackletsTask/triggerspertimeframe --new-path qc/TRD/MO/Tracklets/triggerspertimeframe --dry-run
 ```
+
+## Build QC the same way how CI/CD does
+Just run aliBuild with following parameters from the folder with prepared alidist
+```
+aliBuild build QualityControl --defaults o2 --docker --architecture slc8_x86-64
+```

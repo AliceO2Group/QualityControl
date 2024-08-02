@@ -35,6 +35,24 @@ add_root_dictionary(O2QualityControlTypes
   include/QualityControl/Activity.h
   LINKDEF include/QualityControl/TypesLinkDef.h)
 
+# ---- Kafka ----
+
+add_library(O2QualityControlKafkaProtos OBJECT
+  proto/events.proto)
+
+target_link_libraries(O2QualityControlKafkaProtos PUBLIC
+  protobuf::libprotobuf
+)
+
+target_include_directories(O2QualityControlKafkaProtos PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+)
+
+protobuf_generate(
+  TARGET O2QualityControlKafkaProtos
+  IMPORT_DIRS "${CMAKE_CURRENT_LIST_DIR}/proto"
+  PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto")
+
 # ---- Library ----
 
 add_library(O2QualityControl
@@ -100,14 +118,18 @@ add_library(O2QualityControl
   src/WorkflowType.cxx
   src/TimekeeperFactory.cxx
   src/RootFileStorage.cxx
-  src/ReductorHelpers.cxx)
+  src/ReductorHelpers.cxx
+  src/KafkaPoller.cxx)
 
 target_include_directories(
   O2QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  ${MODERNCPPKAFKA_ROOT}
+  $<BUILD_INTERFACE:${RDFKAFKA_INCLUDE}>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  )
 
 target_link_libraries(O2QualityControl
                       PUBLIC Boost::boost
@@ -130,8 +152,11 @@ target_link_libraries(O2QualityControl
                              O2::DataFormatsQualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
+                             O2QualityControlKafkaProtos
+                             ${RDKAFKA_LIB}
                       PRIVATE Boost::system
-                              CURL::libcurl)
+                              CURL::libcurl
+                              )
 
 add_root_dictionary(O2QualityControl
   HEADERS
@@ -250,6 +275,7 @@ add_executable(o2-qc-test-core
                test/testVersion.cxx
                test/testMonitorObjectCollection.cxx
                test/testTrendingTask.cxx
+               test/testKafkaTests.cxx
                )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
@@ -392,7 +418,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES}
+install(TARGETS O2QualityControl O2QualityControlTypes O2QualityControlKafkaProtos ${EXE_NAMES}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

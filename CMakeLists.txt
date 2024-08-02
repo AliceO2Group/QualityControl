@@ -104,6 +104,10 @@ find_package(FairLogger REQUIRED)
 find_package(Occ REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)
 
+# rdkafka is built by configure and does not provide FindPackage.cmake file
+find_library(RDKAFKA_LIB rdkafka REQUIRED PATHS ${RDKAFKA_ROOT}/lib)
+set(RDFKAFKA_INCLUDE "${RDKAFKA_ROOT}/include")
+
 configure_file(getTestDataDirectory.cxx.in getTestDataDirectory.cxx)
 
 # ---- Subdirectories ----
