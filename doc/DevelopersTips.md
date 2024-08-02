@@ -324,7 +324,15 @@ psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (sel
 8. copy hostcert and hostkey
 9 chmod 600 them
 10. Make sure that `.globus` and the two files are owned by the user `postgres`
-    
+ 
+### Enable the access log of the QCDB
+
+Add the following to the service file of the ccdb-sql (`/etc/systemd/system/ccdb-sql.service`): 
+```
+Environment="ACCESS_LOG=/home/ccdb/logs/access_log"
+Environment="ACCESS_LOG_MIN_LEVEL=200"
+```
+
 ### ControlWorkflows
 
 #### Parameter `qcConfiguration` in tasks
