@@ -17,8 +17,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <boost/algorithm/string.hpp>
 #include <string>
-#include <TCanvas.h>
-#include <TPaveText.h>
+#include <TProfile.h>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -30,36 +29,28 @@ void* SeparationPowerReductor::getBranchAddress()
 
 const char* SeparationPowerReductor::getBranchLeafList()
 {
-  return "meanPi/F:meanEl:separationPower";
+  return "amplitudePi/F:meanPi:sigmaPi:amplitudeEl:meanEl:sigmaEl:separationPower:chiSquareOverNdf";
 }
 
 void SeparationPowerReductor::update(TObject* obj)
 {
-  // The values for the separation power are saved in a TPaveText inside a TCanvas 'obj'.
+  // The values for the separation power are saved in a TProfile
   if (obj) {
-    if (auto canvas = static_cast<TCanvas*>(obj)) {
-      if (auto blocText = static_cast<TPaveText*>(canvas->GetPrimitive("TPave"))) {
-        mSeparationPower.meanPi = getValue((TText*)blocText->GetLineWith("Mean Pi:"));
-        mSeparationPower.meanEl = getValue((TText*)blocText->GetLineWith("Mean El:"));
-        mSeparationPower.separationPower = getValue((TText*)blocText->GetLineWith("separationPower:"));
-      }
+    if (auto profile = static_cast<TProfile*>(obj)) {
+      mSeparationPower.amplitudePi = profile->GetBinContent(1);
+      mSeparationPower.meanPi = profile->GetBinContent(2);
+      mSeparationPower.sigmaPi = profile->GetBinContent(3);
+
+      mSeparationPower.amplitudeEl = profile->GetBinContent(4);
+      mSeparationPower.meanEl = profile->GetBinContent(5);
+      mSeparationPower.sigmaEl = profile->GetBinContent(6);
+
+      mSeparationPower.separationPower = profile->GetBinContent(7);
+      mSeparationPower.chiSquareOverNdf = profile->GetBinContent(8);
     }
   } else {
     ILOG(Error, Support) << "No 'obj' found." << ENDM;
   }
-}
-
-float SeparationPowerReductor::getValue(TText* line)
-{
-  if (!line) {
-    return 0.;
-  }
-
-  std::string text = static_cast<std::string>(line->GetTitle());
-  const std::size_t posEndType = text.find(":");
-  std::string quantity = text.substr(posEndType + 2, -1); // take string (excluding : and empty space) till end of line
-
-  return stof(quantity);
 }
 
 } // namespace o2::quality_control_modules::tpc

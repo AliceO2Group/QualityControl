@@ -17,7 +17,6 @@
 #define QC_MODULE_TPC_SEPARATIONPOWERREDUCTOR_H
 
 #include "QualityControl/ReductorTObject.h"
-#include <TText.h>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -37,12 +36,15 @@ class SeparationPowerReductor : public quality_control::postprocessing::Reductor
 
  private:
   struct {
+    float amplitudePi;
     float meanPi;
+    float sigmaPi;
+    float amplitudeEl;
     float meanEl;
+    float sigmaEl;
     float separationPower;
+    float chiSquareOverNdf;
   } mSeparationPower;
-
-  float getValue(TText* line);
 };
 
 } // namespace o2::quality_control_modules::tpc
