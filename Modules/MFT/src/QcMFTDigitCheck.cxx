@@ -110,8 +110,8 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
       }
     }
-      
-//checker for empty ladders
+
+    // checker for empty ladders
     QcMFTUtilTables MFTTable;
     for (int i = 0; i < 20; i++) {
       if (mo->getName() == MFTTable.mDigitChipMapNames[i]) {
@@ -126,10 +126,10 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           mIsEmpty = true;
           for (int iBinY = 0; iBinY < hDigitChipOccupancyMap->GetNbinsY(); iBinY++) {
             if (hDigitChipOccupancyMap->GetBinContent(iBinX + 1, iBinY + 1) != 0) {
-              mIsEmpty = false; //if there is an unempty bin, the ladder is not empty
+              mIsEmpty = false; // if there is an unempty bin, the ladder is not empty
               break;
             } else {
-             // check if empty ladders are masked
+              // check if empty ladders are masked
               for (int i = 0; i < mMaskedChips.size(); i++) {
                 if (mo->getName().find(mChipMapName[i]) != std::string::npos) {
                   if (iBinX + 1 == hDigitChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]) && iBinY + 1 == hDigitChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[i]])) {
