@@ -110,7 +110,8 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
       }
     }
-
+      
+//checker for empty ladders
     QcMFTUtilTables MFTTable;
     for (int i = 0; i < 20; i++) {
       if (mo->getName() == MFTTable.mDigitChipMapNames[i]) {
@@ -120,14 +121,15 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           ILOG(Error, Support) << "Could not cast mDigitChipMap to TH2F." << ENDM;
           return Quality::Null;
         }
-
+        // loop over bins in each chip map
         for (int iBinX = 0; iBinX < hDigitChipOccupancyMap->GetNbinsX(); iBinX++) {
           mIsEmpty = true;
           for (int iBinY = 0; iBinY < hDigitChipOccupancyMap->GetNbinsY(); iBinY++) {
             if (hDigitChipOccupancyMap->GetBinContent(iBinX + 1, iBinY + 1) != 0) {
-              mIsEmpty = false;
+              mIsEmpty = false; //if there is an unempty bin, the ladder is not empty
               break;
             } else {
+             // check if empty ladders are masked
               for (int i = 0; i < mMaskedChips.size(); i++) {
                 if (mo->getName().find(mChipMapName[i]) != std::string::npos) {
                   if (iBinX + 1 == hDigitChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]) && iBinY + 1 == hDigitChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[i]])) {
@@ -139,13 +141,14 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
               }
             }
           }
-
+          // count empty ladders
           if (mIsEmpty) {
             mEmptyCount++;
             mAdjacentCount++;
           } else {
             mAdjacentCount = 0;
           }
+          // set bool for adjacent ladders
           if (mAdjacentCount >= 2) {
             if (!mAdjacentLadders) {
               mAdjacentLadders = true;
