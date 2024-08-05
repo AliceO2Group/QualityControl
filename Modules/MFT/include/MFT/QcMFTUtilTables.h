@@ -352,6 +352,52 @@ class QcMFTUtilTables
     { 17, -14, 14, 5, 0, 15 },
   };
 
+  // names for occupancy maps (for outside acceptance and ladder checker)
+  string mDigitChipMapNames[20] = {
+    "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_0/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_1/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_1/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_2/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_2/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_3/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_3/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_4/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_4/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_0/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_0/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_1/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_1/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_2/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_2/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_3/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_3/Face_1/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_4/Face_0/mDigitChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_4/Face_1/mDigitChipOccupancyMap"
+  };
+
+  string mClusterChipMapNames[20] = {
+    "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_0/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_1/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_1/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_2/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_2/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_3/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_3/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_4/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_0/Disk_4/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_0/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_0/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_1/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_1/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_2/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_2/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_3/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_3/Face_1/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_4/Face_0/mClusterChipOccupancyMap",
+    "ChipOccupancyMaps/Half_1/Disk_4/Face_1/mClusterChipOccupancyMap"
+  };
   // binX for outside acceptance (-1 due to uneven number of empty bins different parts of the detector)
   int mBinX[20][21] = {
     // half0

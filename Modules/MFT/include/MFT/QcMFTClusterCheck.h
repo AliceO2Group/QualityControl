@@ -43,18 +43,22 @@ class QcMFTClusterCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  int mZoneThresholdMedium;
-  int mZoneThresholdBad;
+  int mLadderThresholdMedium;
+  int mLadderThresholdBad;
+
+  // ladder checker
+  bool mIsEmpty;
+  bool mAdjacentLadders;
+  int mEmptyCount;
+  int mAdjacentCount;
 
   // masked chips part
   bool mFirstCall;
   std::vector<int> mMaskedChips;
   std::vector<string> mChipMapName;
-  std::vector<string> mOutsideAccName;
 
   void readMaskedChips(std::shared_ptr<MonitorObject> mo);
   void createMaskedChipsNames();
-  void createOutsideAccNames();
 
   // to form the name of the masked chips histograms
   int mHalf[936] = { 0 };

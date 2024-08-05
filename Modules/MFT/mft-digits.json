@@ -63,8 +63,8 @@
         "detectorName" : "MFT",
         "policy" : "OnEachSeparately",
         "checkParameters" : {
-          "ZoneThresholdMedium" : "2",
-          "ZoneThresholdBad" : "5",
+          "LadderThresholdMedium" : "1",
+          "LadderThresholdBad" : "2",
           "NoiseScan" : "1",
           "NCyclesNoiseMap" : "3"
         },
