@@ -120,15 +120,24 @@ class TrackPlotter : public HistPlotter
   std::array<std::unique_ptr<TH1D>, 3> mNofTracksPerTF;        ///< number of tracks per TF
   std::array<std::unique_ptr<TH1DRatio>, 3> mTrackChi2OverNDF; ///< chi2/ndf for the track
   std::array<std::unique_ptr<TH1DRatio>, 3> mTrackDCA;         ///< DCA (cm) of the track
-  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackEta;         ///< eta of the track
   std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPDCA;        ///< p (GeV/c) x DCA (cm) of the track
-  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPhi;         ///< phi (in degrees) of the track
-  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPt;          ///< Pt (Gev/c) of the track
-  std::unique_ptr<TH1DRatio> mTrackQOverPt;                    ///< Q / Pt of the track
   std::array<std::unique_ptr<TH1DRatio>, 3> mTrackRAbs;        ///< R at absorber end of the track
-  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPhi;      ///< phi (in degrees) vs. eta of the track
-  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPt;       ///< Pt (Gev/c) vs. eta of the track
-  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackPhiPt;       ///< Pt (Gev/c) vs. phi (in degrees) of the track
+  // kinematic variables, using MCH tracks parameters
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackEta;    ///< eta of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPhi;    ///< phi (in degrees) of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPt;     ///< Pt (Gev/c) of the track
+  std::unique_ptr<TH1DRatio> mTrackQOverPt;               ///< Q / Pt of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPhi; ///< phi (in degrees) vs. eta of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPt;  ///< Pt (Gev/c) vs. eta of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackPhiPt;  ///< Pt (Gev/c) vs. phi (in degrees) of the track
+  // kinematic variables, using global tracks parameters (only instantiated when MFT is included)
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackEtaGlobal;    ///< eta of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPhiGlobal;    ///< phi (in degrees) of the track
+  std::array<std::unique_ptr<TH1DRatio>, 3> mTrackPtGlobal;     ///< Pt (Gev/c) of the track
+  std::unique_ptr<TH1DRatio> mTrackQOverPtGlobal;               ///< Q / Pt of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPhiGlobal; ///< phi (in degrees) vs. eta of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackEtaPtGlobal;  ///< Pt (Gev/c) vs. eta of the track
+  std::array<std::unique_ptr<TH2DRatio>, 3> mTrackPhiPtGlobal;  ///< Pt (Gev/c) vs. phi (in degrees) of the track
 
   std::unique_ptr<TH2DRatio> mTrackPosAtMFT; ///< MCH track poisiton at MFT exit
   std::unique_ptr<TH2DRatio> mTrackPosAtMID; ///< MCH track poisiton at MID entrance
