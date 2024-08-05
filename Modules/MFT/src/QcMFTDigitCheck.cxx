@@ -51,13 +51,13 @@ namespace o2::quality_control_modules::mft
 
 void QcMFTDigitCheck::configure()
 {
-  if (auto param = mCustomParameters.find("ZoneThresholdMedium"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - ZoneThresholdMedium: " << param->second << ENDM;
-    mZoneThresholdMedium = stoi(param->second);
+  if (auto param = mCustomParameters.find("LadderThresholdMedium"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - LadderThresholdMedium: " << param->second << ENDM;
+    mLadderThresholdMedium = stoi(param->second);
   }
-  if (auto param = mCustomParameters.find("ZoneThresholdBad"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - ZoneThresholdBad: " << param->second << ENDM;
-    mZoneThresholdBad = stoi(param->second);
+  if (auto param = mCustomParameters.find("LadderThresholdBad"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - LadderThresholdBad: " << param->second << ENDM;
+    mLadderThresholdBad = stoi(param->second);
   }
   mNoiseScan = 0;
   if (auto param = mCustomParameters.find("NoiseScan"); param != mCustomParameters.end()) {
@@ -72,11 +72,14 @@ void QcMFTDigitCheck::configure()
 
   // no call to beautifier yet
   mFirstCall = true;
+  mIsEmpty = true;
+  mAdjacentLadders = false;
 
   mNCycles = 0;
   mNewNoisy = 0;
   mDissNoisy = 0;
   mTotalNoisy = 0;
+  mEmptyCount = 0;
 }
 
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -86,6 +89,13 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
+
+    if (mFirstCall) {
+      mFirstCall = false;
+      readMaskedChips(mo);
+      getChipMapData();
+      createMaskedChipsNames();
+    }
 
     if (mo->getName() == "mDigitChipOccupancy") {
       auto* hDigitChipOccupancy = dynamic_cast<TH1F*>(mo->getObject());
@@ -101,6 +111,50 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
     }
 
+    QcMFTUtilTables MFTTable;
+    for (int i = 0; i < 20; i++) {
+      if (mo->getName() == MFTTable.mDigitChipMapNames[i]) {
+        mAdjacentCount = 0;
+        auto* hDigitChipOccupancyMap = dynamic_cast<TH2F*>(mo->getObject());
+        if (hDigitChipOccupancyMap == nullptr) {
+          ILOG(Error, Support) << "Could not cast mDigitChipMap to TH2F." << ENDM;
+          return Quality::Null;
+        }
+
+        for (int iBinX = 0; iBinX < hDigitChipOccupancyMap->GetNbinsX(); iBinX++) {
+          mIsEmpty = true;
+          for (int iBinY = 0; iBinY < hDigitChipOccupancyMap->GetNbinsY(); iBinY++) {
+            if (hDigitChipOccupancyMap->GetBinContent(iBinX + 1, iBinY + 1) != 0) {
+              mIsEmpty = false;
+              break;
+            } else {
+              for (int i = 0; i < mMaskedChips.size(); i++) {
+                if (mo->getName().find(mChipMapName[i]) != std::string::npos) {
+                  if (iBinX + 1 == hDigitChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]) && iBinY + 1 == hDigitChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[i]])) {
+                    mIsEmpty = false;
+                  } else {
+                    mIsEmpty = true;
+                  }
+                }
+              }
+            }
+          }
+
+          if (mIsEmpty) {
+            mEmptyCount++;
+            mAdjacentCount++;
+          } else {
+            mAdjacentCount = 0;
+          }
+          if (mAdjacentCount >= 2) {
+            if (!mAdjacentLadders) {
+              mAdjacentLadders = true;
+            }
+          }
+        }
+      }
+    }
+
     if (mo->getName() == "mDigitOccupancySummary") {
       auto* hDigitOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
       if (hDigitOccupancySummary == nullptr) {
@@ -108,23 +162,13 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         return Quality::Null;
       }
 
-      float nEmptyBins = 0; // number of empty zones
-
-      for (int iBinX = 0; iBinX < hDigitOccupancySummary->GetNbinsX(); iBinX++) {
-        for (int iBinY = 0; iBinY < hDigitOccupancySummary->GetNbinsY(); iBinY++) {
-          if ((hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
-            nEmptyBins = nEmptyBins + 1;
-          }
-        }
-      }
-
-      if (nEmptyBins <= mZoneThresholdMedium) {
+      if (!mAdjacentLadders && mEmptyCount < 1) {
         result = Quality::Good;
       }
-      if (nEmptyBins > mZoneThresholdMedium && nEmptyBins <= mZoneThresholdBad) {
+      if (!mAdjacentLadders && mEmptyCount >= 1) {
         result = Quality::Medium;
       }
-      if (nEmptyBins > mZoneThresholdBad) {
+      if (mAdjacentLadders) {
         result = Quality::Bad;
       }
     }
@@ -202,28 +246,10 @@ void QcMFTDigitCheck::createMaskedChipsNames()
   }
 }
 
-void QcMFTDigitCheck::createOutsideAccNames()
-{
-  for (int iHalf = 0; iHalf < 2; iHalf++) {
-    for (int iDisk = 0; iDisk < 5; iDisk++) {
-      for (int iFace = 0; iFace < 2; iFace++) {
-        mOutsideAccName.push_back(Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mDigitChipOccupancyMap", iHalf, iDisk, iFace));
-      }
-    }
-  }
-}
-
 void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   mNCycles++;
-  // set up masking of dead chips once
-  if (mFirstCall) {
-    mFirstCall = false;
-    readMaskedChips(mo);
-    getChipMapData();
-    createMaskedChipsNames();
-    createOutsideAccNames();
-  }
+
   // print skull in maps to display dead chips
   int nMaskedChips = mMaskedChips.size();
   for (int i = 0; i < nMaskedChips; i++) {
@@ -245,7 +271,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     for (int iDisk = 0; iDisk < 5; iDisk++) {
       for (int iFace = 0; iFace < 2; iFace++) {
         int idx = (iDisk * 2 + iFace) + (10 * iHalf);
-        if (mo->getName().find(mOutsideAccName[idx]) != std::string::npos) {
+        if (mo->getName().find(MFTTable.mDigitChipMapNames[idx]) != std::string::npos) {
           auto* h = dynamic_cast<TH2F*>(mo->getObject());
           for (int i = 0; i < 21; i++) {
             int binX = MFTTable.mBinX[idx][i];
