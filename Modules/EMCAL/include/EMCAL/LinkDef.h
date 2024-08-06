@@ -37,5 +37,6 @@
 #pragma link C++ class o2::quality_control_modules::emcal::TrendGraphCheck + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::RawErrorCheckAll + ;
+#pragma link C++ class o2::quality_control_modules::emcal::DrawGridlines + ;
 
 #endif

@@ -94,7 +94,7 @@ class CalibMonitoringTask final : public quality_control::postprocessing::PostPr
   TH1* mTRUThresholds = nullptr;                      ///< The L0 threshold vs TRU ID PHYS
   TH1* mL0Algorithm = nullptr;                        ///< The L0 algorithm vs TRU ID
   TH1* mRollbackSTU = nullptr;                        ///< The Rollback buffer vs TRU ID
-  TH1* mTRUMaskPosition = nullptr;                    ///< The FastOR Mask Position in Eta, Phi
+  TH2* mTRUMaskPositionHisto = nullptr;               ///< The FastOR Mask Position in Eta, Phi Histogram
   std::unique_ptr<o2::emcal::CalibDB> mCalibDB;       ///< EMCAL calibration DB handler
   std::unique_ptr<o2::emcal::MappingHandler> mMapper; ///< EMCAL mapper
   o2::emcal::BadChannelMap* mBadChannelMap;           ///< EMCAL channel map
