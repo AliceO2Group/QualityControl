@@ -211,7 +211,9 @@ CcdbInspectorTask::ObjectStatus CcdbInspectorTask::inspectObject(CcdbInspectorTa
 
   // get timestamps and run numberof the last available object
   auto fullObjectPath = (mDatabaseType == "qcdb" ? trigger.activity.mProvenance + "/" : "") + path;
-  auto metadata = mDatabaseType == "qcdb" ? activity_helpers::asDatabaseMetadata(trigger.activity, false) : std::map<std::string, std::string>();
+  // metadata for CCDB queries, only specifying the run number
+  std::map<std::string, std::string> metadataCcdb{ { "runNumber", std::to_string(trigger.activity.mId) } };
+  auto metadata = mDatabaseType == "qcdb" ? activity_helpers::asDatabaseMetadata(trigger.activity, false) : metadataCcdb;
   auto timestamps = getObjectInfo(path, metadata);
   auto creationTime = std::get<2>(timestamps);
   auto runNumber = std::get<3>(timestamps);
