@@ -60,8 +60,10 @@ class ReferenceComparatorTask : public quality_control::postprocessing::PostProc
   };
 
  private:
-  int mReferenceRun{ 0 };
+  size_t mReferenceRun{ 0 };
   int mNotOlderThan{ 120 };
+  bool mIgnorePeriodForReference{ true }; /// whether to specify the period name in the reference run query
+  bool mIgnorePassForReference{ true };   /// whether to specify the pass name in the reference run query
 
   /// \brief configuration parameters
   ReferenceComparatorTaskConfig mConfig;

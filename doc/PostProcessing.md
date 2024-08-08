@@ -458,6 +458,8 @@ This post-processing task draws a given set of plots in comparison with their co
 
 Currently the source of reference data is specified as a run-type and beam-type specific `referenceRun` number. This will be modified once a centralized way of accessing reference plots will become available in the framework.
 The `notOlderThan` option allows to ignore monitor objects that are older than a given number of seconds. A value of -1 means "no limit".
+The `ignorePeriodForReference` and `ignorePassForReference` boolean parameters control whether the period and/or pass names should be matched or not when querying the reference plots from the database.
+A value of `"1"` (default) means that the reference plots are not required to match the period and/or pass names of the current run, while a value of `"0"` means that the reference plot is retrieved only if the corresponding period and/or pass names match those of the current run.
 
 The input MonitorObjects to be processed are logically divided in **dataGroups**. Each group is configured via the following parameters:
 * `inputPath`: path in the QCDB where the input objects are located
@@ -504,7 +506,9 @@ In the example configuration below, the relationship between the input and outpu
           "default": {
             "default": {
               "notOlderThan" : "300",
-              "referenceRun" : "551875"
+              "referenceRun" : "551875",
+              "ignorePeriodForReference": "1",
+              "ignorePassForReference": "1"
             }
           },
           "PHYSICS": {

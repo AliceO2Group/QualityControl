@@ -106,8 +106,19 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
   auto& qcdb = services.get<repository::DatabaseInterface>();
   mNotOlderThan = std::stoi(getCustomParameter(mCustomParameters, "notOlderThan", trigger.activity, "120"));
   mReferenceRun = std::stoi(getCustomParameter(mCustomParameters, "referenceRun", trigger.activity, "0"));
+  mIgnorePeriodForReference = std::stoi(getCustomParameter(mCustomParameters, "ignorePeriodForReference", trigger.activity, "1")) != 0;
+  mIgnorePassForReference = std::stoi(getCustomParameter(mCustomParameters, "ignorePassForReference", trigger.activity, "1")) != 0;
 
   ILOG(Info, Devel) << "Reference run set to '" << mReferenceRun << "' for activity " << trigger.activity << ENDM;
+
+  auto referenceActivity = trigger.activity;
+  referenceActivity.mId = mReferenceRun;
+  if (mIgnorePeriodForReference) {
+    referenceActivity.mPeriodName = "";
+  }
+  if (mIgnorePassForReference) {
+    referenceActivity.mPassName = "";
+  }
 
   // load and initialize the input groups
   for (auto group : mConfig.dataGroups) {
@@ -119,10 +130,9 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
       auto fullOutPath = group.outputPath + "/" + path;
 
       // retrieve the reference MO
-      auto referenceActivity = trigger.activity;
-      referenceActivity.mId = mReferenceRun;
       auto referencePlot = o2::quality_control::checker::getReferencePlot(&qcdb, fullRefPath, referenceActivity);
       if (!referencePlot) {
+        ILOG(Warning, Support) << "Could not load reference plot for object \"" << fullRefPath << "\" and activity " << referenceActivity << ENDM;
         continue;
       }
 

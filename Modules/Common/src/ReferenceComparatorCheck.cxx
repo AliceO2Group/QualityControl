@@ -50,6 +50,8 @@ void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
   auto comparatorName = mCustomParameters.atOptional("comparatorName", activity).value_or("");
   double threshold = std::stof(mCustomParameters.atOptional("threshold", activity).value_or("0"));
   mReferenceRun = std::stoi(mCustomParameters.atOptional("referenceRun", activity).value_or("0"));
+  mIgnorePeriodForReference = std::stoi(mCustomParameters.atOptional("ignorePeriodForReference", activity).value_or("1")) != 0;
+  mIgnorePassForReference = std::stoi(mCustomParameters.atOptional("ignorePassForReference", activity).value_or("1")) != 0;
 
   mComparator.reset();
   if (!moduleName.empty() && !comparatorName.empty()) {
@@ -60,9 +62,14 @@ void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
     mComparator->setThreshold(threshold);
   }
 
-  mActivity = activity;
   mReferenceActivity = activity;
   mReferenceActivity.mId = mReferenceRun;
+  if (mIgnorePeriodForReference) {
+    mReferenceActivity.mPeriodName = "";
+  }
+  if (mIgnorePassForReference) {
+    mReferenceActivity.mPassName = "";
+  }
 
   // clear the cache of reference plots
   mReferencePlots.clear();

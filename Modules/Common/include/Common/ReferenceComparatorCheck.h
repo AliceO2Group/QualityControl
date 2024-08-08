@@ -55,7 +55,9 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
   std::unique_ptr<ObjectComparatorInterface> mComparator;
   std::map<std::string, Quality> mQualityFlags;
   std::map<std::string, std::shared_ptr<TPaveText>> mQualityLabels;
-  quality_control::core::Activity mActivity /*current*/, mReferenceActivity;
+  quality_control::core::Activity mReferenceActivity;
+  bool mIgnorePeriodForReference{ true }; /// whether to specify the period name in the reference run query
+  bool mIgnorePassForReference{ true };   /// whether to specify the pass name in the reference run query
   size_t mReferenceRun;
   std::unordered_map<std::string, std::shared_ptr<MonitorObject>> mReferencePlots;
 };
