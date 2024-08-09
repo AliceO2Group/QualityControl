@@ -34,11 +34,6 @@ using namespace o2::header;
 namespace o2::quality_control_modules::daq
 {
 
-DaqTask::DaqTask()
-  : TaskInterface()
-{
-}
-
 // TODO remove this function once the equivalent is available in O2 DAQID
 bool isDetIdValid(DAQID::ID id)
 {
@@ -53,8 +48,6 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   mInputRecordPayloadSize = std::make_unique<TH1F>("inputRecordSize", "Total payload size per InputRecord;bytes", 128, 0, 2047);
   mInputRecordPayloadSize->SetCanExtend(TH1::kXaxis);
   getObjectsManager()->startPublishing(mInputRecordPayloadSize.get(), PublicationPolicy::Forever);
-  mNumberInputs = std::make_unique<TH1F>("numberInputs", "Number of inputs per InputRecords", 100, 1, 100);
-  getObjectsManager()->startPublishing(mNumberInputs.get(), PublicationPolicy::Forever);
   mInputSize = std::make_unique<TH1F>("payloadSizeInputs", "Payload size of the inputs;bytes", 128, 0, 2047);
   mInputSize->SetCanExtend(TH1::kXaxis);
   getObjectsManager()->startPublishing(mInputSize.get(), PublicationPolicy::Forever);
@@ -140,7 +133,6 @@ void DaqTask::reset()
   //      then we can just iterate over.
 
   mInputRecordPayloadSize->Reset();
-  mNumberInputs->Reset();
   mInputSize->Reset();
   mNumberRDHs->Reset();
 
@@ -209,7 +201,6 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
     }
   }
   mInputRecordPayloadSize->Fill(totalPayloadSize);
-  mNumberInputs->Fill(inputRecord.countValidInputs());
 }
 
 template <class T>

@@ -40,7 +40,7 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
 {
  public:
   /// \brief Constructor
-  DaqTask();
+  DaqTask() = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -67,7 +67,6 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
   // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
   // SubBlock = a single input of the InputRecord
   std::unique_ptr<TH1F> mInputRecordPayloadSize; // filled w/ the sum of the payload size of all the inputs of an inputrecord
-  std::unique_ptr<TH1F> mNumberInputs;           // filled w/ the number of inputs in each InputRecord we encounter
   std::unique_ptr<TH1F> mInputSize;              // filled w/ the size of the inputs in each InputRecord we encounter
   std::unique_ptr<TH1F> mNumberRDHs;             // filled w/ the number of RDHs found in each InputRecord we encounter
 
