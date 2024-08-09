@@ -103,6 +103,7 @@ void TracksTask::createTrackHistos(const Activity& activity)
   double cutChi2Max = getConfigurationParameter<double>(mCustomParameters, "cutChi2Max", 1000, activity);
   double nSigmaPDCA = getConfigurationParameter<double>(mCustomParameters, "nSigmaPDCA", 6, activity);
   double matchScoreMaxMFT = getConfigurationParameter<double>(mCustomParameters, "matchScoreMaxMFT", 1000, activity);
+  double matchChi2MaxMFT = getConfigurationParameter<double>(mCustomParameters, "matchChi2MaxMFT", 1000, activity);
   double diMuonTimeCut = getConfigurationParameter<double>(mCustomParameters, "diMuonTimeCut", 100, activity) / 1000;
 
   int etaBins = getConfigurationParameter<int>(mCustomParameters, "etaBins", 200, activity);
@@ -162,6 +163,12 @@ void TracksTask::createTrackHistos(const Activity& activity)
     // MFT-MCH match score
     [matchScoreMaxMFT](const MuonTrack& t) {
       if (t.hasMFT() && t.hasMCH() && t.getMatchInfoFwd().getMFTMCHMatchingScore() > matchScoreMaxMFT)
+        return false;
+      return true;
+    },
+    // MFT-MCH chi2 score
+    [matchChi2MaxMFT](const MuonTrack& t) {
+      if (t.hasMFT() && t.hasMCH() && t.getMatchInfoFwd().getMFTMCHMatchingChi2() > matchChi2MaxMFT)
         return false;
       return true;
     },
