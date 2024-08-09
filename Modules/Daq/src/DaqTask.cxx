@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2020 CERN and  bopyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -19,8 +19,6 @@
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/stringUtils.h"
-// ROOT
-#include <TH1.h>
 // O2
 #include <DPLUtils/DPLRawParser.h>
 #include <DetectorsRaw/RDHUtils.h>
@@ -41,14 +39,6 @@ DaqTask::DaqTask()
 {
 }
 
-DaqTask::~DaqTask()
-{
-  delete mInputRecordPayloadSize;
-  delete mNumberInputs;
-  delete mInputSize;
-  delete mNumberRDHs;
-}
-
 // TODO remove this function once the equivalent is available in O2 DAQID
 bool isDetIdValid(DAQID::ID id)
 {
@@ -60,17 +50,17 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initializiation of DaqTask" << ENDM;
 
   // General plots, related mostly to the payload size (InputRecord, Inputs) and the numbers of RDHs and Inputs in an InputRecord.
-  mInputRecordPayloadSize = new TH1F("inputRecordSize", "Total payload size per InputRecord;bytes", 128, 0, 2047);
+  mInputRecordPayloadSize = std::make_unique<TH1F>("inputRecordSize", "Total payload size per InputRecord;bytes", 128, 0, 2047);
   mInputRecordPayloadSize->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mInputRecordPayloadSize, PublicationPolicy::Forever);
-  mNumberInputs = new TH1F("numberInputs", "Number of inputs per InputRecords", 100, 1, 100);
-  getObjectsManager()->startPublishing(mNumberInputs, PublicationPolicy::Forever);
-  mInputSize = new TH1F("payloadSizeInputs", "Payload size of the inputs;bytes", 128, 0, 2047);
+  getObjectsManager()->startPublishing(mInputRecordPayloadSize.get(), PublicationPolicy::Forever);
+  mNumberInputs = std::make_unique<TH1F>("numberInputs", "Number of inputs per InputRecords", 100, 1, 100);
+  getObjectsManager()->startPublishing(mNumberInputs.get(), PublicationPolicy::Forever);
+  mInputSize = std::make_unique<TH1F>("payloadSizeInputs", "Payload size of the inputs;bytes", 128, 0, 2047);
   mInputSize->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mInputSize, PublicationPolicy::Forever);
-  mNumberRDHs = new TH1F("numberRDHs", "Number of RDHs per InputRecord", 100, 1, 100);
+  getObjectsManager()->startPublishing(mInputSize.get(), PublicationPolicy::Forever);
+  mNumberRDHs = std::make_unique<TH1F>("numberRDHs", "Number of RDHs per InputRecord", 100, 1, 100);
   mNumberRDHs->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mNumberRDHs, PublicationPolicy::Forever);
+  getObjectsManager()->startPublishing(mNumberRDHs.get(), PublicationPolicy::Forever);
 
   // initialize a map for the subsystems (id, name)
   for (int i = DAQID::MINDAQ; i < DAQID::MAXDAQ + 1; i++) {
@@ -85,12 +75,12 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& system : mSystems) {
     string name = system.second + "/sumRdhSizesPerInputRecord";
     string title = "Sum of RDH sizes per InputRecord for " + system.second + ";bytes";
-    mSubSystemsTotalSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
+    mSubSystemsTotalSizes[system.first] = std::make_unique<TH1F>(name.c_str(), title.c_str(), 128, 0, 2047);
     mSubSystemsTotalSizes[system.first]->SetCanExtend(TH1::kXaxis);
 
     name = system.second + "/RdhSizes";
     title = "RDH sizes for " + system.second + ";bytes";
-    mSubSystemsRdhSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
+    mSubSystemsRdhSizes[system.first] = std::make_unique<TH1F>(name.c_str(), title.c_str(), 128, 0, 2047);
     mSubSystemsRdhSizes[system.first]->SetCanExtend(TH1::kXaxis);
   }
 }
@@ -120,10 +110,10 @@ void DaqTask::endOfCycle()
   //      It might still be necessary in test runs without a proper run number.
   for (auto toBeAdded : mToBePublished) {
     if (!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[toBeAdded]->GetName())) {
-      getObjectsManager()->startPublishing(mSubSystemsTotalSizes[toBeAdded], PublicationPolicy::ThroughStop);
+      getObjectsManager()->startPublishing(mSubSystemsTotalSizes[toBeAdded].get(), PublicationPolicy::ThroughStop);
     }
     if (!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[toBeAdded]->GetName())) {
-      getObjectsManager()->startPublishing(mSubSystemsRdhSizes[toBeAdded], PublicationPolicy::ThroughStop);
+      getObjectsManager()->startPublishing(mSubSystemsRdhSizes[toBeAdded].get(), PublicationPolicy::ThroughStop);
     }
   }
 }
@@ -134,10 +124,10 @@ void DaqTask::endOfActivity(const Activity& /*activity*/)
 
   for (const auto& system : mSystems) {
     if (getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[system.first]->GetName())) {
-      getObjectsManager()->stopPublishing(mSubSystemsTotalSizes[system.first]);
+      getObjectsManager()->stopPublishing(mSubSystemsTotalSizes[system.first].get());
     }
     if (getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[system.first]->GetName())) {
-      getObjectsManager()->stopPublishing(mSubSystemsRdhSizes[system.first]);
+      getObjectsManager()->stopPublishing(mSubSystemsRdhSizes[system.first].get());
     }
   }
 }
