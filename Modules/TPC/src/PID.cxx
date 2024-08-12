@@ -62,7 +62,7 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   mQCPID.initializeHistograms();
   //mSeparationPower = new TProfile("mSeparationPower", "mSeparationPower", nPars, 0., (float)nPars);
   mSeparationPower.reset(new TProfile("mSeparationPower", "mSeparationPower", nPars, 0., (float)nPars));
-  getObjectsManager()->startPublishing(&(*mSeparationPower));
+  getObjectsManager()->startPublishing(mSeparationPower.get());
   // pass map of vectors of histograms to be beautified!
 
   o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
