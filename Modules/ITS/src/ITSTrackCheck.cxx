@@ -38,7 +38,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
 
-    if (iter->second->getName() == "NClusters") {
+    if (((string)iter->second->getName()).find("NClusters") != std::string::npos) {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h == nullptr) {
         ILOG(Error, Support) << "could not cast NClusters to TH1D*" << ENDM;
@@ -84,7 +84,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       }
     }
 
-    if (iter->second->getName() == "AngularDistribution") {
+    if (((string)iter->second->getName()).find("AngularDistribution") != std::string::npos) {
       auto* hAngular = dynamic_cast<TH2D*>(iter->second->getObject());
       if (hAngular == nullptr) {
         ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
@@ -220,7 +220,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   TString status;
   int textColor;
 
-  if (mo->getName() == "NClusters") {
+  if (((string)mo->getName()).find("NClusters") != std::string::npos) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast NClusters to TH1D*" << ENDM;
@@ -300,7 +300,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
-  if (mo->getName() == "AngularDistribution") {
+  if (((string)mo->getName()).find("AngularDistribution") != std::string::npos) {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
