@@ -188,7 +188,8 @@ class ITSFeeTask final : public TaskInterface
   int mPayloadParseEvery_n_TF = 1;          // Use >= 1 values
   bool mEnableIHWReading = 0;
   bool mDecodeCDW = 0;
-
+  int nResetCycle = 1;
+  int nCycleID = 0;
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
   TH2I* mTriggerVsFeeId_reset;

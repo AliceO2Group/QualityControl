@@ -393,7 +393,16 @@ void ITSFeeTask::startOfActivity(const Activity& activity)
   ILOG(Debug, Devel) << "startOfActivity : " << activity.mId << ENDM;
 }
 
-void ITSFeeTask::startOfCycle() { ILOG(Debug, Devel) << "startOfCycle" << ENDM; }
+void ITSFeeTask::startOfCycle()
+{
+  ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+
+  if (nCycleID % nResetCycle == 0) {
+    mTrailerCount_reset->Reset();
+    mTriggerVsFeeId_reset->Reset();
+  }
+  nCycleID++;
+}
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -683,6 +692,7 @@ void ITSFeeTask::getParameters()
   mPayloadParseEvery_n_TF = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "PayloadParsingEvery_n_TF", mPayloadParseEvery_n_TF);
   mEnableIHWReading = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "EnableIHWReading", mEnableIHWReading);
   mDecodeCDW = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "DecodeCDW", mDecodeCDW);
+  nResetCycle = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nResetCycle", nResetCycle);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
@@ -754,8 +764,6 @@ void ITSFeeTask::resetLanePlotsAndCounters(bool isFullReset)
   if (mResetPayload || isFullReset) {
     mPayloadSize->Reset("ICES");
   }
-  mTrailerCount_reset->Reset();
-  mTriggerVsFeeId_reset->Reset();
 }
 
 void ITSFeeTask::reset()
