@@ -280,7 +280,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       address &= ~(1 << 14); // remove HG/LG bit 14
       float chi = 0.2 * (*it);
       it++;
-      char relid[3];
+      int8_t relid[3];
       o2::phos::Geometry::absToRelNumbering(address, relid);
       mHist2D[kChi2M1 + relid[0] - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5, chi);
       mHist2D[kChi2NormM1 + relid[0] - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5);
@@ -393,7 +393,7 @@ void RawQcTask::endOfCycle()
     ILOG(Info, Support) << " Caclulating number of peaks" << ENDM;
     for (unsigned int absId = 1793; absId <= o2::phos::Mapping::NCHANNELS; absId++) {
       int npeaks = mSpSearcher->Search(&(mSpectra[absId - 1793]), 2, "goff", 0.1);
-      char relid[3];
+      int8_t relid[3];
       o2::phos::Geometry::absToRelNumbering(absId, relid);
       short mod = relid[0] - 1;
       int ibin = mHist2DMean[kLEDNpeaksM1 + mod]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
@@ -446,7 +446,7 @@ void RawQcTask::FillTRUHistograms(const gsl::span<const o2::phos::Cell>& cells, 
 {
   std::vector<int> triggerSTTiles;
   std::vector<int> triggerDGTiles;
-  char relId[3] = { 0 };
+  int8_t relId[3] = { 0 };
   for (const auto tr : cellsTR) {
     triggerSTTiles.clear();
     triggerDGTiles.clear();
@@ -534,7 +534,7 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
         //  relid[0] = PHOS Module number 1,...4:module
         //  relid[1] = Row number inside a PHOS module (Phi coordinate)
         //  relid[2] = Column number inside a PHOS module (Z coordinate)
-        char relid[3];
+        int8_t relid[3];
         o2::phos::Geometry::absToRelNumbering(address, relid);
         short mod = relid[0] - 1;
         int ibin = 0;
@@ -575,7 +575,7 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
     for (int i = firstCellInEvent; i < lastCellInEvent; i++) {
       const o2::phos::Cell c = cells[i];
       short address = c.getAbsId();
-      char relid[3];
+      int8_t relid[3];
       o2::phos::Geometry::absToRelNumbering(address, relid);
       short mod = relid[0] - 1;
       if (c.getHighGain()) {
