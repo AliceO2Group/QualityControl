@@ -41,7 +41,8 @@
 		    "EnableIHWReading": "1",
 		    "PayloadParsingEvery_n_HBFperTF": "0",
 		    "PayloadParsingEvery_n_TF": "1",
-		    "DecodeCDW": "0"
+		    "DecodeCDW": "0",
+		    "nResetCycle": "3"
                 }
             }
         },
