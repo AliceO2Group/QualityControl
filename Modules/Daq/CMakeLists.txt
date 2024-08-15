@@ -11,7 +11,10 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(O2QcDaq PUBLIC O2QualityControl PRIVATE ROOT::Gpad O2::DetectorsRaw)
+target_link_libraries(O2QcDaq PUBLIC O2QualityControl PRIVATE 
+                      ROOT::Gpad 
+                      O2::DetectorsRaw 
+                      O2QcCommon)
 
 add_root_dictionary(O2QcDaq
                     HEADERS include/Daq/DaqTask.h
