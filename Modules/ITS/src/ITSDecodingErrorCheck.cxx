@@ -67,7 +67,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
         result.set(Quality::Bad);
     }
 
-    if (mo->getName() == "General/LinkErrorPlots") {
+    if (((string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h == nullptr) {
@@ -137,7 +137,7 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
 
   TString status;
   int textColor;
-  if ((mo->getName() == "General/LinkErrorPlots") || (mo->getName() == "General/ChipErrorPlots")) {
+  if ((((string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) || (mo->getName() == "General/ChipErrorPlots")) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast LinkErrorPlots to TH1D*" << ENDM;
