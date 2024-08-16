@@ -774,6 +774,12 @@ void ITSFeeTask::reset()
   mProcessingTime->Reset();
   mProcessingTime2->Reset();
   ILOG(Debug, Devel) << "Reset" << ENDM;
+
+  if (mDecodeCDW) {
+    mCalibrationWordCount->Reset();
+    mCalibLoop->Reset();
+    mCalibStage->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::its
