@@ -210,8 +210,8 @@ Quality ReferenceComparatorCheck::check(std::map<std::string, std::shared_ptr<Mo
       continue;
     }
 
-    // update the overall quality
-    if (quality.isWorseThan(result)) {
+    // initialize or update the overall quality
+    if (result == Quality::Null || quality.isWorseThan(result)) {
       result.set(quality);
     }
 
