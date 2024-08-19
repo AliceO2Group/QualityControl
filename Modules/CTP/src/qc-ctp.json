@@ -65,7 +65,8 @@
           "thresholdRateBad": "3",
           "thresholdRateMedium": "2",
           "thresholdRateRatioBad": "3",
-          "thresholdRateRatioMedium": "2"
+          "thresholdRateRatioMedium": "2",
+          "mNSigBC": "2"
         }
       }
     }
