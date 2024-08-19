@@ -27,7 +27,35 @@
         "active": "true",
         "className": "o2::quality_control_modules::daq::DaqTask",
         "moduleName": "QcDaq",
-        "detectorName": "DAQ"
+        "detectorName": "ITS",
+        "cycleDurationSeconds": "10",
+        "dataSource": {
+          "type": "direct",
+          "query": "raw:ITS/RAWDATA"
+        },
+        "taskParameters": {
+          "TFSizeBins":"100",
+          "TFSizeMin":"0",
+          "TFSizeMax":"2047",
+          "payloadSizeInputsBins":"100",
+          "payloadSizeInputsMin":"0",
+          "payloadSizeInputsMax":"2047",
+          "numberRDHsBins":"100",
+          "numberRDHsMin":"0",
+          "numberRDHsMax":"2047",
+          "sumRdhSizesInTFBins":"100",
+          "sumRdhSizesInTFMin":"0",
+          "sumRdhSizesInTFMax":"2047",
+          "RdhSizesBins":"100",
+          "RdhSizesMin":"0",
+          "RdhSizesMax":"2047",
+          "RdhPayloadSizeBins":"100",
+          "RdhPayloadSizeMin":"0",
+          "RdhPayloadSizeMax":"2047",
+          "CRUidBins":"100",
+          "CRUidMin":"0",
+          "CRUidMax":"2047"
+        }
       }
     },
     "checks": {
@@ -36,7 +64,7 @@
         "className": "o2::quality_control_modules::common::NonEmpty",
         "moduleName": "QcCommon",
         "policy": "OnAny",
-        "detectorName": "DAQ",
+        "detectorName": "ITS",
         "dataSource": [{
           "type": "Task",
           "name": "DaqTask",
@@ -48,26 +76,13 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
-        "detectorName": "DAQ",
-        "dataSource": [{
-          "type": "Task",
-          "name": "DaqTask",
-          "MOs": ["IDs"]
-        }]
-      },
-      "CheckIncreasingIDs": {
-        "active": "true",
-        "className": "o2::quality_control_modules::daq::EverIncreasingGraph",
-        "moduleName": "QcDaq",
-        "policy": "OnAny",
-        "detectorName": "DAQ",
+        "detectorName": "ITS",
         "dataSource": [{
           "type": "Task",
           "name": "DaqTask",
           "MOs": ["IDs"]
         }]
       }
-
     }
   }
 }

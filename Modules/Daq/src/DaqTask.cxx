@@ -1,4 +1,4 @@
-// Copyright 2019-2020 CERN and  bopyright holders of ALICE O2.
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -45,11 +45,11 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Debug, Devel) << "initializiation of DaqTask" << ENDM;
 
-  mInputRecordPayloadSize = std::make_unique<TH1F>("inputRecordSize", "Total payload size per InputRecord;bytes",
-                                                   getIntParam("inputRecordSizeBins", 128),
-                                                   getIntParam("inputRecordSizeMin", 0),
-                                                   getIntParam("inputRecordSizeMax", 2047));
-  getObjectsManager()->startPublishing(mInputRecordPayloadSize.get(), PublicationPolicy::Forever);
+  mTFRecordPayloadSize = std::make_unique<TH1F>("TFSize", "Total payload size in TF;bytes",
+                                                getIntParam("TFSizeBins", 128),
+                                                getIntParam("TFSizeMin", 0),
+                                                getIntParam("TFSizeMax", 2047));
+  getObjectsManager()->startPublishing(mTFRecordPayloadSize.get(), PublicationPolicy::Forever);
 
   mInputSize = std::make_unique<TH1F>("payloadSizeInputs", "Payload size of the inputs;bytes",
                                       getIntParam("payloadSizeInputsBins", 128),
@@ -57,33 +57,33 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
                                       getIntParam("payloadSizeInputsMax", 2047));
   getObjectsManager()->startPublishing(mInputSize.get(), PublicationPolicy::Forever);
 
-  mNumberRDHs = std::make_unique<TH1F>("numberRdhs", "Number of RDHs per InputRecord",
+  mNumberRDHs = std::make_unique<TH1F>("numberRdhs", "Number of RDHs in TF;RDH count",
                                        getIntParam("numberRDHsBins", 100),
                                        getIntParam("numberRDHsMin", 1),
                                        getIntParam("numberRDHsMax", 100));
   getObjectsManager()->startPublishing(mNumberRDHs.get(), PublicationPolicy::Forever);
 
-  mSumRDHSizesPerInputRecord = std::make_unique<TH1F>("sumRdhSizesPerInputRecord", "Sum of RDH sizes per InputRecord;bytes",
-                                                      getIntParam("sumRdhSizesPerInputRecordBins", 128),
-                                                      getIntParam("sumRdhSizesPerInputRecordMin", 0),
-                                                      getIntParam("sumRdhSizesPerInputRecordMax", 2047));
-  getObjectsManager()->startPublishing(mSumRDHSizesPerInputRecord.get(), PublicationPolicy::Forever);
+  mSumRDHSizesInTF = std::make_unique<TH1F>("sumRdhSizesInTF", "Sum of RDH sizes in TF;bytes",
+                                            getIntParam("sumRdhSizesInTFBins", 128),
+                                            getIntParam("sumRdhSizesInTFMin", 0),
+                                            getIntParam("sumRdhSizesInTFMax", 2047));
+  getObjectsManager()->startPublishing(mSumRDHSizesInTF.get(), PublicationPolicy::Forever);
 
-  mSumRDHSizesPerRDH = std::make_unique<TH1F>("RdhSizes", "RDH sizes; bytes",
-                                              getIntParam("RdhSizesBins", 128),
-                                              getIntParam("RdhSizesMin", 0),
-                                              getIntParam("RdhSizesMax", 2047));
-  getObjectsManager()->startPublishing(mSumRDHSizesPerRDH.get(), PublicationPolicy::Forever);
+  mSumRDHSizesInRDH = std::make_unique<TH1F>("RdhSizes", "RDH sizes;bytes",
+                                             getIntParam("RdhSizesBins", 128),
+                                             getIntParam("RdhSizesMin", 0),
+                                             getIntParam("RdhSizesMax", 2047));
+  getObjectsManager()->startPublishing(mSumRDHSizesInRDH.get(), PublicationPolicy::Forever);
 
   mRDHSizesPerCRUIds = std::make_unique<TH2F>("RdhPayloadSizePerCRUid", "RDH payload size per CRU",
+                                              getIntParam("CRUidBins", (1 << 12) - 1), // CRU id is defined as 12 bits (see O2 RAWDataHeader.h cruID)
+                                              getIntParam("CRUidMin", 0),
+                                              getIntParam("CRUidMax", 500),
                                               getIntParam("RdhPayloadSizeBins", 128),
                                               getIntParam("RdhPayloadSizeMin", 0),
-                                              getIntParam("RdhPayloadSizeMax", 2047),
-                                              getIntParam("CRUidBins", 500),
-                                              getIntParam("CRUidMin", 0),
-                                              getIntParam("CRUidMax", 500));
-  mRDHSizesPerCRUIds->GetXaxis()->SetTitle("bytes");
-  mRDHSizesPerCRUIds->GetYaxis()->SetTitle("CRU Id");
+                                              getIntParam("RdhPayloadSizeMax", 2047));
+  mRDHSizesPerCRUIds->GetXaxis()->SetTitle("CRU Id");
+  mRDHSizesPerCRUIds->GetYaxis()->SetTitle("bytes");
   getObjectsManager()->startPublishing(mRDHSizesPerCRUIds.get(), PublicationPolicy::Forever);
 }
 
@@ -113,11 +113,11 @@ void DaqTask::endOfActivity(const Activity& /*activity*/)
 {
   ILOG(Debug, Devel) << "endOfActivity" << ENDM;
 
-  getObjectsManager()->stopPublishing(mInputRecordPayloadSize.get());
+  getObjectsManager()->stopPublishing(mTFRecordPayloadSize.get());
   getObjectsManager()->stopPublishing(mInputSize.get());
   getObjectsManager()->stopPublishing(mNumberRDHs.get());
-  getObjectsManager()->stopPublishing(mSumRDHSizesPerInputRecord.get());
-  getObjectsManager()->stopPublishing(mSumRDHSizesPerRDH.get());
+  getObjectsManager()->stopPublishing(mSumRDHSizesInRDH.get());
+  getObjectsManager()->stopPublishing(mSumRDHSizesInRDH.get());
   getObjectsManager()->stopPublishing(mRDHSizesPerCRUIds.get());
 }
 
@@ -128,11 +128,12 @@ void DaqTask::reset()
   // TODO if the number of plots grows we should probably have a container with pointers/references to all of them.
   //      then we can just iterate over.
 
-  mInputRecordPayloadSize->Reset();
+  mTFRecordPayloadSize->Reset();
   mInputSize->Reset();
   mNumberRDHs->Reset();
-  mSumRDHSizesPerRDH->Reset();
-  mSumRDHSizesPerInputRecord->Reset();
+  mSumRDHSizesInRDH->Reset();
+  mSumRDHSizesInRDH->Reset();
+  mRDHSizesPerCRUIds->Reset();
 }
 
 void DaqTask::printInputPayload(const header::DataHeader* header, const char* payload, size_t payloadSize)
@@ -193,7 +194,7 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
       ILOG(Warning, Support) << "Received an input with an empty header" << ENDM;
     }
   }
-  mInputRecordPayloadSize->Fill(totalPayloadSize);
+  mTFRecordPayloadSize->Fill(totalPayloadSize);
 }
 
 template <class T>
@@ -244,12 +245,12 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
 
     // RDH plots
     try {
-      const auto RDHSize = RDHUtils::getMemorySize(rdh) - RDHUtils::getHeaderSize(rdh);
-      mSumRDHSizesPerRDH->Fill(RDHSize);
-      totalSize += RDHSize;
+      const auto rdhSize = RDHUtils::getMemorySize(rdh) - RDHUtils::getHeaderSize(rdh);
+      mSumRDHSizesInRDH->Fill(rdhSize);
+      totalSize += rdhSize;
       rdhCounter++;
 
-      mRDHSizesPerCRUIds->Fill(RDHSize, RDHUtils::getCRUID(rdh));
+      mRDHSizesPerCRUIds->Fill(RDHUtils::getCRUID(rdh), rdhSize);
 
     } catch (std::runtime_error& e) {
       ILOG(Error, Devel) << "Caught an exception when accessing the rdh fields: \n"
@@ -257,7 +258,7 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
     }
   }
 
-  mSumRDHSizesPerInputRecord->Fill(totalSize);
+  mSumRDHSizesInTF->Fill(totalSize);
   mNumberRDHs->Fill(rdhCounter);
 }
 

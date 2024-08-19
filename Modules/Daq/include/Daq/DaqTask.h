@@ -60,12 +60,12 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
   // Message related
   // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
   // SubBlock = a single input of the InputRecord
-  std::unique_ptr<TH1F> mInputRecordPayloadSize;    // filled w/ the sum of the payload size of all the inputs of an inputrecord
-  std::unique_ptr<TH1F> mInputSize;                 // filled w/ the size of the inputs in each InputRecord we encounter
-  std::unique_ptr<TH1F> mNumberRDHs;                // filled w/ the number of RDHs found in each InputRecord we encounter
-  std::unique_ptr<TH1F> mSumRDHSizesPerInputRecord; // filled w/ the the sum of RDH memory sizes per InputRecord
-  std::unique_ptr<TH1F> mSumRDHSizesPerRDH;         // filled w/ the RDH memory sizes for each RDH
-  std::unique_ptr<TH2F> mRDHSizesPerCRUIds;         // filled w/ the RDH payload size per CRUId
+  std::unique_ptr<TH1F> mTFRecordPayloadSize; // filled w/ the sum of the payload size of all the inputs of an inputrecord
+  std::unique_ptr<TH1F> mInputSize;           // filled w/ the size of the inputs in each InputRecord we encounter
+  std::unique_ptr<TH1F> mNumberRDHs;          // filled w/ the number of RDHs found in each InputRecord we encounter
+  std::unique_ptr<TH1F> mSumRDHSizesInTF;     // filled w/ the the sum of RDH memory sizes per InputRecord
+  std::unique_ptr<TH1F> mSumRDHSizesInRDH;    // filled w/ the RDH memory sizes for each RDH
+  std::unique_ptr<TH2F> mRDHSizesPerCRUIds;   // filled w/ the RDH payload size per CRUId
 };
 
 } // namespace o2::quality_control_modules::daq
