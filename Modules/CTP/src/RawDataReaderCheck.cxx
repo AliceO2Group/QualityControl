@@ -62,6 +62,12 @@ void RawDataReaderCheck::configure()
   if (mThresholdRateRatioMedium > 4 || mThresholdRateRatioMedium < 0) {
     mThresholdRateRatioMedium = 2;
   }
+
+  param = mCustomParameters.atOrDefaultValue("nSigmaBC", "2");
+  mNSigBC = std::stof(param);
+  if (mNSigBC < 0) {
+    mNSigBC = 2;
+  }
 }
 
 Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -89,7 +95,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         continue;
       }
       mThreshold = h->GetEntries() / mLHCBCs.count();
-      mThreshold = sqrt(mThreshold);
+      mThreshold = mThreshold - mNSigBC * sqrt(mThreshold);
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
         if (mLHCBCs[i] && h->GetBinContent(i + 1) <= mThreshold) {
           mVecMediumBC.push_back(i); // medium BC occures when BC is expected on this possition but there is less inputs than threshold
