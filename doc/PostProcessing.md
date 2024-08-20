@@ -142,7 +142,7 @@ Checks can be applied to the results of Post-processing Tasks just as for normal
 ...
 ```
 
-## Definition and access of user-specific configuration
+#### Definition and access of user-specific configuration
 
 A postprocessing task can access custom parameters declared in the configuration file at `qc.postprocessing.<task_id>.extendedTaskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
 
@@ -164,6 +164,30 @@ Each of the three methods can be invoked by one or more triggers. Below are list
    pass and run.
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
+
+####  Using different databases
+
+It might happen that one wants to get data and store data in different databases. Typically if you want to test with
+production data but store the object in test. 
+
+This can be achieved by setting the extra parameter `sourceRepo` in the task. You have to add it to all your tasks as this is not a global
+parameter. It is optional.
+
+The destination repository is always the global one defined in the global configuration under `qc.config.database`.
+
+```
+    "postprocessing": {
+      "MyPostProcessingTaskID": {
+        ...
+        "sourceRepo": {
+          "implementation": "CCDB",
+          "host": "another-test.cern.ch:8080"
+        },
+        ...
+      }
+      ...
+    }
+```
 
 ### Running it
 

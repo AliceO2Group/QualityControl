@@ -45,6 +45,7 @@ struct PostProcessingTaskSpec {
   std::string detectorName = "Invalid";
   boost::property_tree::ptree tree = {};
   core::CustomParameters customParameters;
+  std::unordered_map<std::string, std::string> sourceDatabase;
 };
 
 } // namespace o2::quality_control::core
