@@ -170,20 +170,16 @@ Each of the three methods can be invoked by one or more triggers. Below are list
 It might happen that one wants to get data and store data in different databases. Typically if you want to test with
 production data but store the object in test. 
 
-This can be achieved by setting extra parameters in the task. You have to add it to all your tasks as this is not a global
-parameter. 
+This can be achieved by setting the extra parameter `sourceRepo` in the task. You have to add it to all your tasks as this is not a global
+parameter. It is optional.
 
-`sourceRepo` and `destinationRepo` are both optional. You can specify none, either or both. 
+The destination repository is always the global one defined in the global configuration under `qc.config.database`.
 
 ```
     "postprocessing": {
       "MyPostProcessingTaskID": {
         ...
         "sourceRepo": {
-          "implementation": "CCDB",
-          "host": "another-test.cern.ch:8080"
-        },
-        "destinationRepo": {
           "implementation": "CCDB",
           "host": "another-test.cern.ch:8080"
         },

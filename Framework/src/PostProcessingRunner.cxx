@@ -336,14 +336,13 @@ const std::string& PostProcessingRunner::getID() const
 PostProcessingRunnerConfig PostProcessingRunner::extractConfig(const CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec)
 {
   auto sourceDatabase = ppTaskSpec.sourceDatabase.empty() ? commonSpec.database : ppTaskSpec.sourceDatabase;
-  auto destinationDatabase = ppTaskSpec.destinationDatabase.empty() ? commonSpec.database : ppTaskSpec.destinationDatabase;
 
   return {
     ppTaskSpec.id,
     ppTaskSpec.taskName,
     ppTaskSpec.detectorName,
     sourceDatabase,
-    destinationDatabase,
+    commonSpec.database,
     commonSpec.consulUrl,
     commonSpec.bookkeepingUrl,
     commonSpec.infologgerDiscardParameters,

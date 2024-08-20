@@ -386,11 +386,6 @@ PostProcessingTaskSpec
       ppts.sourceDatabase.emplace(key, value.get_value<std::string>());
     }
   }
-  if (ppTaskTree.count("destinationRepo") > 0) {
-    for (const auto& [key, value] : ppTaskTree.get_child("destinationRepo")) {
-      ppts.destinationDatabase.emplace(key, value.get_value<std::string>());
-    }
-  }
   ppts.tree = wholeTree;
 
   return ppts;
