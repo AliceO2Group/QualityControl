@@ -17,12 +17,12 @@
 #ifndef QC_MODULE_DAQ_DAQTASK_H
 #define QC_MODULE_DAQ_DAQTASK_H
 
+// ROOT
+#include <TH1.h>
+#include <TH2.h>
+
 #include "QualityControl/TaskInterface.h"
 #include <Headers/DAQID.h>
-#include <map>
-#include <set>
-
-class TH1F;
 
 using namespace o2::quality_control::core;
 
@@ -37,9 +37,7 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
 {
  public:
   /// \brief Constructor
-  DaqTask();
-  /// Destructor
-  ~DaqTask() override;
+  DaqTask() = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -54,30 +52,20 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
   void printInputPayload(const header::DataHeader* header, const char* payload, size_t payloadSize);
   void monitorInputRecord(o2::framework::InputRecord& inputRecord);
   void monitorRDHs(o2::framework::InputRecord& inputRecord);
+  int getIntParam(const std::string paramName, int defaultValue = 0);
 
   // ** general information
-
-  std::map<o2::header::DAQID::ID, std::string> mSystems;
-  std::set<o2::header::DAQID::ID> mToBePublished; // keep the list of detectors we saw this cycle and whose plots should be published
-
   // ** objects we publish **
 
   // Message related
   // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
   // SubBlock = a single input of the InputRecord
-  TH1F* mInputRecordPayloadSize = nullptr; // filled w/ the sum of the payload size of all the inputs of an inputrecord
-  TH1F* mNumberInputs = nullptr;           // filled w/ the number of inputs in each InputRecord we encounter
-  TH1F* mInputSize = nullptr;              // filled w/ the size of the inputs in each InputRecord we encounter
-  TH1F* mNumberRDHs = nullptr;             // filled w/ the number of RDHs found in each InputRecord we encounter
-
-  // Per link information
-
-  // Per detector information
-  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsTotalSizes; // filled with the sum of RDH memory sizes per InputRecord
-  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhSizes;   // filled with the RDH memory sizes for each RDH
-  // todo : for the next one we need to know the number of links per detector.
-  //  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
-  // todo we could add back the graph for the IDs using the TFID
+  std::unique_ptr<TH1F> mTFRecordPayloadSize; // filled w/ the sum of the payload size of all the inputs of an inputrecord
+  std::unique_ptr<TH1F> mInputSize;           // filled w/ the size of the inputs in each InputRecord we encounter
+  std::unique_ptr<TH1F> mNumberRDHs;          // filled w/ the number of RDHs found in each InputRecord we encounter
+  std::unique_ptr<TH1F> mSumRDHSizesInTF;     // filled w/ the the sum of RDH memory sizes per InputRecord
+  std::unique_ptr<TH1F> mSumRDHSizesInRDH;    // filled w/ the RDH memory sizes for each RDH
+  std::unique_ptr<TH2F> mRDHSizesPerCRUIds;   // filled w/ the RDH payload size per CRUId
 };
 
 } // namespace o2::quality_control_modules::daq
