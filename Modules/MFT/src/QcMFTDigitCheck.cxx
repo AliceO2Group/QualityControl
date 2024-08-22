@@ -173,7 +173,7 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       } else {
         result = Quality::Good;
       }
-      // We rely on 'mClusterOccupancySummary' being run after chip maps in the list of MOs in the config file
+      // We rely on 'mDigitOccupancySummary' being run after chip maps in the list of MOs in the config file
       mEmptyCount = 0;
       mAdjacentLaddersEmpty = false;
     }
