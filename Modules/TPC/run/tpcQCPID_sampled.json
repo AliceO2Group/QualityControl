@@ -35,7 +35,15 @@
           "name": "tpc-tracks"
         },
         "taskParameters": {
-          "cutMinNCluster": "60", "cutAbsTgl": "1.", "cutMindEdxTot": "10.", "cutMaxdEdxTot": "70.", "cutMinpTPC": "0.05", "cutMaxpTPC": "20.", "cutMinpTPCMIPs": "0.45", "cutMaxpTPCMIPs": "0.55" , "createCanvas" : "1"
+          "cutMinNCluster": "60",
+          "cutAbsTgl": "1.",
+          "cutMindEdxTot": "10.",
+          "cutMaxdEdxTot": "70.",
+          "cutMinpTPC": "0.05",
+          "cutMaxpTPC": "20.",
+          "cutMinpTPCMIPs": "0.45",
+          "cutMaxpTPCMIPs": "0.55",
+          "getdEdxVspHypoHist": false
         },
         "location": "remote"
       }
@@ -47,11 +55,13 @@
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
         "detectorName": "TPC",
-        "dataSource": [{
-          "type": "Task",
-          "name": "PID",
-          "MOs": ["example"]
-        }]
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "PID",
+            "MOs": ["example"]
+          }
+        ]
       }
     }
   },
@@ -60,7 +70,7 @@
       "id": "tpc-tracks",
       "active": "true",
       "machines": [],
-      "query" : "inputTracks:TPC/TRACKS/0",
+      "query": "inputTracks:TPC/TRACKS/0",
       "samplingConditions": [
         {
           "condition": "random",
