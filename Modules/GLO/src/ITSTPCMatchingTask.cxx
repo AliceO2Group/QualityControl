@@ -151,45 +151,37 @@ void ITSTPCMatchingTask::endOfCycle()
 
   // Sync Mode
   if (common::getFromConfig(mCustomParameters, "isSync", false)) {
-    { // Pt
-      auto hEffPt = mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS);
-      mHEffPt.reset();
-      mHEffPt.reset(dynamic_cast<TH1*>(hEffPt->GetPassedHistogram()->Clone("mFractionITSTPCmatch_ITS_Hist")));
-      if (mHEffPt) {
-        mHEffPt->Divide(hEffPt->GetPassedHistogram(), hEffPt->GetTotalHistogram(), 1.0, 1.0, "B");
-        mHEffPt->SetBit(TH1::EStatusBits::kNoStats);
-        getObjectsManager()->startPublishing(mHEffPt.get(), PublicationPolicy::Once);
-        getObjectsManager()->setDefaultDrawOptions(mHEffPt->GetName(), "logx");
-      } else {
-        ILOG(Error) << "Failed cast for hEffPtHist, will not publish!" << ENDM;
+    auto makeRatio = [](TEfficiency* eff) {
+      std::string name = eff->GetName();
+      name += "_Hist";
+      auto ratio = std::make_unique<common::TH1FRatio>(name.c_str(), eff->GetTitle(),
+                                                       eff->GetPassedHistogram()->GetXaxis()->GetNbins(),
+                                                       eff->GetPassedHistogram()->GetXaxis()->GetXmin(),
+                                                       eff->GetPassedHistogram()->GetXaxis()->GetXmax());
+      ratio->SetBit(TH1::EStatusBits::kNoStats);
+      if (!ratio->getNum()->Add(eff->GetPassedHistogram())) {
+        ILOG(Error) << "Add operation for numerator histogram of " << name << " failed; efficiency will be skewed" << ENDM;
       }
-    }
+      if (!ratio->getDen()->Add(eff->GetTotalHistogram())) {
+        ILOG(Error) << "Add operation for denominator histogram of " << name << " failed; efficiency will be skewed" << ENDM;
+      }
+      ratio->Sumw2();
+      ratio->update();
+      return ratio;
+    };
 
-    { // Eta
-      auto hEffEta = mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS);
-      mHEffEta.reset();
-      mHEffEta.reset(dynamic_cast<TH1*>(hEffEta->GetPassedHistogram()->Clone("mFractionITSTPCmatchEta_ITS_Hist")));
-      if (mHEffEta) {
-        mHEffEta->Divide(hEffEta->GetPassedHistogram(), hEffEta->GetTotalHistogram(), 1.0, 1.0, "B");
-        mHEffEta->SetBit(TH1::EStatusBits::kNoStats);
-        getObjectsManager()->startPublishing(mHEffEta.get(), PublicationPolicy::Once);
-      } else {
-        ILOG(Error) << "Failed cast for hEffEtaHist, will not publish!" << ENDM;
-      }
-    }
+    // Pt
+    mEffPt = makeRatio(mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS));
+    getObjectsManager()->startPublishing(mEffPt.get(), PublicationPolicy::Once);
+    getObjectsManager()->setDefaultDrawOptions(mEffPt->GetName(), "logx");
 
-    { // Phi
-      auto hEffPhi = mMatchITSTPCQC.getFractionITSTPCmatchPhi(gloqc::MatchITSTPCQC::ITS);
-      mHEffPhi.reset();
-      mHEffPhi.reset(dynamic_cast<TH1*>(hEffPhi->GetPassedHistogram()->Clone("mFractionITSTPCmatchPhi_ITS_Hist")));
-      if (mHEffPhi) {
-        mHEffPhi->Divide(hEffPhi->GetPassedHistogram(), hEffPhi->GetTotalHistogram(), 1.0, 1.0, "B");
-        mHEffPhi->SetBit(TH1::EStatusBits::kNoStats);
-        getObjectsManager()->startPublishing(mHEffPhi.get(), PublicationPolicy::Once);
-      } else {
-        ILOG(Error) << "Failed cast for hEffPhiHist, will not publish!" << ENDM;
-      }
-    }
+    // Eta
+    mEffEta = makeRatio(mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS));
+    getObjectsManager()->startPublishing(mEffEta.get(), PublicationPolicy::Once);
+
+    // Phi
+    mEffPhi = makeRatio(mMatchITSTPCQC.getFractionITSTPCmatchPhi(gloqc::MatchITSTPCQC::ITS));
+    getObjectsManager()->startPublishing(mEffPhi.get(), PublicationPolicy::Once);
   }
 }
 
@@ -202,8 +194,11 @@ void ITSTPCMatchingTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Debug, Devel) << "Resetting the histogramss" << ENDM;
+  ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mMatchITSTPCQC.reset();
+  mEffPt.reset();
+  mEffPhi.reset();
+  mEffEta.reset();
 }
 
 } // namespace o2::quality_control_modules::glo

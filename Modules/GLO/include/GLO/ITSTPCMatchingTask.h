@@ -19,8 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "GLOQC/MatchITSTPCQC.h"
-
-#include "TH1.h"
+#include "Common/TH1Ratio.h"
 
 #include <memory>
 
@@ -51,9 +50,9 @@ class ITSTPCMatchingTask final : public TaskInterface
  private:
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
-  std::unique_ptr<TH1> mHEffPt;
-  std::unique_ptr<TH1> mHEffEta;
-  std::unique_ptr<TH1> mHEffPhi;
+  std::unique_ptr<common::TH1FRatio> mEffPt;
+  std::unique_ptr<common::TH1FRatio> mEffEta;
+  std::unique_ptr<common::TH1FRatio> mEffPhi;
 };
 
 } // namespace o2::quality_control_modules::glo
