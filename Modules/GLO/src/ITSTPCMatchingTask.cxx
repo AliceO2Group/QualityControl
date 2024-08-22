@@ -167,26 +167,6 @@ void ITSTPCMatchingTask::endOfCycle()
       }
       ratio->Sumw2();
       ratio->update();
-
-      // Calculate binominal errors for efficiency, taken from ROOT
-      for (Int_t iBin = 0; iBin < ratio->GetNcells(); ++iBin) {
-        const Double_t b1 = ratio->getNum()->GetBinContent(iBin);
-        const Double_t b2 = ratio->getDen()->GetBinContent(iBin);
-        if (b2 == 0) {
-          ratio->SetBinError(iBin, 0);
-          continue;
-        }
-        const Double_t b1sq = b1 * b1;
-        const Double_t b2sq = b2 * b2;
-        const Double_t e1 = ratio->getNum()->GetBinError(iBin), e1sq = e1 * e1;
-        const Double_t e2 = ratio->getDen()->GetBinError(iBin), e2sq = e2 * e2;
-        if (b1 != b2) {
-          ratio->SetBinError(iBin, TMath::Sqrt(TMath::Abs(((1. - 2. * b1 / b2) * e1sq + b1sq * e2sq / b2sq) / b2sq)));
-        } else {
-          ratio->SetBinError(iBin, 0);
-        }
-      }
-
       return ratio;
     };
 
