@@ -166,6 +166,7 @@ void ITSTPCMatchingTask::endOfCycle()
         ILOG(Error) << "Add operation for denominator histogram of " << name << " failed; efficiency will be skewed" << ENDM;
       }
       ratio->Sumw2();
+      ratio->setHasBinominalErrors();
       ratio->update();
       return ratio;
     };
