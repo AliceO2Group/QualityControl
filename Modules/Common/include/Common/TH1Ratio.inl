@@ -149,9 +149,8 @@ void TH1Ratio<T>::update()
   T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   T::SetBinsLength();
 
-  T::Add(mHistoNum);
-
   if (mUniformScaling) {
+    T::Add(mHistoNum);
     double entries = mHistoDen->GetBinContent(1);
     double norm = (entries > 0) ? 1.0 / entries : 0;
     // make sure the sum-of-weights structure is not initialized if not required
@@ -167,7 +166,7 @@ void TH1Ratio<T>::update()
         mHistoDen->GetXaxis()->SetBinLabel(bin, T::GetXaxis()->GetBinLabel(bin));
       }
     }
-    T::Divide(mHistoDen);
+    T::Divide(mHistoNum, mHistoDen, 1.0, 1.0, mBinominalErrors ? "B" : "");
   }
 }
 
