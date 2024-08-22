@@ -186,6 +186,7 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
       if (mAdjacentLadders) {
         result = Quality::Bad;
       }
+      mEmptyCount = 0;
     }
   }
   return result;

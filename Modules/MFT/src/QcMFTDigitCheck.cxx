@@ -149,7 +149,7 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
             mAdjacentCount = 0;
           }
           // set bool for adjacent ladders
-          if (mAdjacentCount >= 2) {
+          if (mAdjacentCount >= mLadderThresholdBad) {
             if (!mAdjacentLadders) {
               mAdjacentLadders = true;
             }
@@ -165,20 +165,20 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         return Quality::Null;
       }
 
-      if (!mAdjacentLadders && mEmptyCount < 1) {
+      if (!mAdjacentLadders && mEmptyCount < mLadderThresholdMedium) {
         result = Quality::Good;
       }
-      if (!mAdjacentLadders && mEmptyCount >= 1) {
+      if (!mAdjacentLadders && mEmptyCount >= mLadderThresholdMedium) {
         result = Quality::Medium;
       }
       if (mAdjacentLadders) {
         result = Quality::Bad;
       }
+      mEmptyCount = 0;
     }
   }
   return result;
 }
-
 std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
@@ -387,5 +387,4 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     }
   }
 }
-
 } // namespace o2::quality_control_modules::mft
