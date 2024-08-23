@@ -61,7 +61,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "Clusters",
-          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary", "mClusterOccupancySummary",
+          "MOs" : ["mClusterOccupancy","mClusterPatternIndex","mClusterSizeSummary", "mGroupedClusterSizeSummary",
               "ChipOccupancyMaps/Half_0/Disk_0/Face_1/mClusterChipOccupancyMap",
               "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mClusterChipOccupancyMap",
               "ChipOccupancyMaps/Half_0/Disk_1/Face_1/mClusterChipOccupancyMap",
@@ -81,7 +81,8 @@
               "ChipOccupancyMaps/Half_1/Disk_3/Face_1/mClusterChipOccupancyMap",
               "ChipOccupancyMaps/Half_1/Disk_3/Face_0/mClusterChipOccupancyMap",
               "ChipOccupancyMaps/Half_1/Disk_4/Face_1/mClusterChipOccupancyMap",
-              "ChipOccupancyMaps/Half_1/Disk_4/Face_0/mClusterChipOccupancyMap"
+              "ChipOccupancyMaps/Half_1/Disk_4/Face_0/mClusterChipOccupancyMap",
+              "mClusterOccupancySummary"
           ]
         } ],
         "checkParameters" : {

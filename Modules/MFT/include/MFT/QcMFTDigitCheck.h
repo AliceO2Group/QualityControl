@@ -46,10 +46,8 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
   int mLadderThresholdBad;
 
   // ladder checker
-  bool mIsEmpty;
-  bool mAdjacentLadders;
+  bool mAdjacentLaddersEmpty;
   int mEmptyCount;
-  int mAdjacentCount;
 
   // masked chips part
   bool mFirstCall;

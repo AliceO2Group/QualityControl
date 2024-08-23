@@ -64,15 +64,16 @@ void QcMFTClusterCheck::configure()
 
   // no call to beautifier yet
   mFirstCall = true;
-  mIsEmpty = true;
-  mAdjacentLadders = false;
-
   mEmptyCount = 0;
+  mAdjacentLaddersEmpty = false;
 }
 
 Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
+
+  bool isEmpty = true;
+  int adjacentCount = 0;
 
   for (auto& [moName, mo] : *moMap) {
 
@@ -127,7 +128,7 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     QcMFTUtilTables MFTTable;
     for (int i = 0; i < 20; i++) {
       if (mo->getName() == MFTTable.mClusterChipMapNames[i]) {
-        mAdjacentCount = 0;
+        adjacentCount = 0;
         auto* hClusterChipOccupancyMap = dynamic_cast<TH2F*>(mo->getObject());
         if (hClusterChipOccupancyMap == nullptr) {
           ILOG(Error, Support) << "Could not cast mClusterChipMap to TH2F." << ENDM;
@@ -135,36 +136,33 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         }
         // loop over bins in each chip map
         for (int iBinX = 0; iBinX < hClusterChipOccupancyMap->GetNbinsX(); iBinX++) {
-          mIsEmpty = true;
+          isEmpty = true;
           for (int iBinY = 0; iBinY < hClusterChipOccupancyMap->GetNbinsY(); iBinY++) {
             if (hClusterChipOccupancyMap->GetBinContent(iBinX + 1, iBinY + 1) != 0) {
-              mIsEmpty = false; // if there is an unempty bin, the ladder is not empty
+              isEmpty = false; // if there is an unempty bin, the ladder is not empty
               break;
             } else {
               // check if empty ladders are masked
               for (int i = 0; i < mMaskedChips.size(); i++) {
                 if (mo->getName().find(mChipMapName[i]) != std::string::npos) {
                   if (iBinX + 1 == hClusterChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]) && iBinY + 1 == hClusterChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[i]])) {
-                    mIsEmpty = false;
+                    isEmpty = false;
                   } else {
-                    mIsEmpty = true;
+                    isEmpty = true;
                   }
                 }
               }
             }
           }
           // count empty ladders
-          if (mIsEmpty) {
+          if (isEmpty) {
             mEmptyCount++;
-            mAdjacentCount++;
+            adjacentCount++;
           } else {
-            mAdjacentCount = 0;
+            adjacentCount = 0;
           }
-          // set bool for adjacent ladders
-          if (mAdjacentCount >= mLadderThresholdBad) {
-            if (!mAdjacentLadders) {
-              mAdjacentLadders = true;
-            }
+          if (adjacentCount >= mLadderThresholdBad) {
+            mAdjacentLaddersEmpty = true;
           }
         }
       }
@@ -177,15 +175,16 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         return Quality::Null;
       }
 
-      if (!mAdjacentLadders && mEmptyCount < mLadderThresholdMedium) {
+      if (mAdjacentLaddersEmpty) {
+        result = Quality::Bad;
+      } else if (mEmptyCount >= mLadderThresholdMedium) {
+        result = Quality::Medium;
+      } else {
         result = Quality::Good;
       }
-      if (!mAdjacentLadders && mEmptyCount >= mLadderThresholdMedium) {
-        result = Quality::Medium;
-      }
-      if (mAdjacentLadders) {
-        result = Quality::Bad;
-      }
+      // We rely on 'mClusterOccupancySummary' being run after chip maps in the list of MOs in the config file
+      mEmptyCount = 0;
+      mAdjacentLaddersEmpty = false;
     }
   }
   return result;
