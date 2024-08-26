@@ -61,6 +61,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
 
   bool producePlotsOnUpdate{};
   bool resumeTrend{};
+  bool trendIfAllInputs{ false };
   std::vector<Plot> plots;
   std::vector<DataSource> dataSources;
 };

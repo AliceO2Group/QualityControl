@@ -78,6 +78,7 @@ TEST_CASE("test_trending_task")
         "active": "true",
         "taskName": "TestTrendingTask",
         "className": "o2::quality_control::postprocessing::TrendingTask",
+        "trendIfAllInputs": true,
         "moduleName": "QualityControl",
         "detectorName": "TST",
         "dataSources": [
@@ -132,6 +133,35 @@ TEST_CASE("test_trending_task")
   repository->connect(CCDB_ENDPOINT, "", "", "");
   repository->truncate("qc/TST/MO/" + taskName, "*");
   repository->truncate("qc/TST/QO", checkName);
+
+  // Test "trendIfAllInputs". There should not be anything in DB so we don't have any input sources available
+  {
+    auto objectManager = std::make_shared<ObjectsManager>(taskName, "o2::quality_control::postprocessing::TrendingTask", "TST", "");
+    ServiceRegistry services;
+    services.registerService<DatabaseInterface>(repository.get());
+
+    TrendingTask task;
+    task.setName(trendingTaskName);
+    task.setID(trendingTaskID);
+    task.setObjectsManager(objectManager);
+    REQUIRE_NOTHROW(task.configure(config));
+
+    // test initialize()
+    REQUIRE_NOTHROW(task.initialize({ TriggerType::UserOrControl, true, { 0, "NONE", "", "", "qc" }, 1 }, services));
+    REQUIRE(objectManager->getNumberPublishedObjects() == 1);
+    auto treeMO = objectManager->getMonitorObject(trendingTaskName);
+    REQUIRE(treeMO != nullptr);
+    TTree* tree = dynamic_cast<TTree*>(treeMO->getObject());
+    REQUIRE(tree != nullptr);
+    REQUIRE(tree->GetEntries() == 0);
+
+    // test update()
+    task.update({ TriggerType::NewObject, false, { 0, "NONE", "", "", "qc", { 2, 100000 } }, 100000 - 1 }, services);
+    objectManager->stopPublishing(PublicationPolicy::Once);
+    task.update({ TriggerType::NewObject, false, { 0, "NONE", "", "", "qc", { 100000, 200000 } }, 200000 - 1 }, services);
+    REQUIRE(objectManager->getNumberPublishedObjects() == 1);
+    REQUIRE(tree->GetEntries() == 0);
+  }
 
   // Putting the objects to trend into the database
   {

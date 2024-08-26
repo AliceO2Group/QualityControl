@@ -158,8 +158,8 @@ void TrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  trendValues(t, qcdb);
-  if (mConfig.producePlotsOnUpdate) {
+  const auto allSourcesInvoked = trendValues(t, qcdb);
+  if (mConfig.producePlotsOnUpdate && (!mConfig.trendIfAllInputs || allSourcesInvoked)) {
     generatePlots();
   }
 }
@@ -172,22 +172,28 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistryRef)
   generatePlots();
 }
 
-void TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
+bool TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
   mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
             ? t.timestamp / 1000
             : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
   mMetaData.runNumber = t.activity.mId;
+  bool wereAllSourcesInvoked = true;
 
   for (auto& dataSource : mConfig.dataSources) {
     if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
+      wereAllSourcesInvoked = false;
       ILOG(Error, Support) << "Failed to update reductor for data sources with path '" << dataSource.path
                            << "', name '" << dataSource.name
                            << "', type '" << dataSource.type << "'." << ENDM;
     }
   }
 
-  mTrend->Fill();
+  if (!mConfig.trendIfAllInputs || wereAllSourcesInvoked) {
+    mTrend->Fill();
+  }
+
+  return wereAllSourcesInvoked;
 }
 
 void TrendingTask::setUserAxesLabels(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxesLabels)
