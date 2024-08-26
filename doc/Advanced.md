@@ -1337,7 +1337,7 @@ auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS", "Pb-Pb"); // r
 auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS"); // returns "myOwnValue1b"
 ```
 
-### Access values directly specifying the run and beam type
+### Access values directly specifying the run and beam type or an activity
 
 The value for the key, runType and beamType is returned if found, or an exception is thrown otherwise..
 However, before throwing we try to substitute the runType and the beamType with "default".
@@ -1351,6 +1351,8 @@ mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey1", "PHYSICS", "PROTON-PROTON"); // returns `myOwnValue1c`
 mCustomParameters.at("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns `myOwnValue1d`
 mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
+
+mCustomParameters.at("myOwnKey1", activity); // result will depend on activity
 ```
 
 ### Access values and return default if not found
