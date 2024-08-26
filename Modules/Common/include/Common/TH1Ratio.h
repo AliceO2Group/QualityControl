@@ -60,6 +60,10 @@ class TH1Ratio : public T, public o2::mergers::MergeInterface
     return mUniformScaling;
   }
 
+  // Use Binominal errors; only works if Sumw2 was called
+  void setHasBinominalErrors(bool flag = true) { mBinominalErrors = flag; }
+  bool hasBinominalErrors() const { return mBinominalErrors; }
+
   void update();
 
   // functions inherited from TH1x
@@ -76,10 +80,11 @@ class TH1Ratio : public T, public o2::mergers::MergeInterface
   T* mHistoNum{ nullptr };
   T* mHistoDen{ nullptr };
   bool mUniformScaling{ true };
+  bool mBinominalErrors{ false };
   Bool_t mSumw2Enabled{ kTRUE };
   std::string mTreatMeAs{ T::Class_Name() };
 
-  ClassDefOverride(TH1Ratio, 2);
+  ClassDefOverride(TH1Ratio, 3);
 };
 
 typedef TH1Ratio<TH1F> TH1FRatio;

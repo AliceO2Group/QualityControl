@@ -165,7 +165,10 @@ void ITSTPCMatchingTask::endOfCycle()
       if (!ratio->getDen()->Add(eff->GetTotalHistogram())) {
         ILOG(Error) << "Add operation for denominator histogram of " << name << " failed; efficiency will be skewed" << ENDM;
       }
+      ratio->GetXaxis()->SetTitle(eff->GetPassedHistogram()->GetXaxis()->GetTitle());
+      ratio->GetYaxis()->SetTitle(eff->GetPassedHistogram()->GetYaxis()->GetTitle());
       ratio->Sumw2();
+      ratio->setHasBinominalErrors();
       ratio->update();
       return ratio;
     };

@@ -150,9 +150,8 @@ void TH2Ratio<T>::update()
   T::GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
   T::SetBinsLength();
 
-  T::Add(mHistoNum);
-
   if (mUniformScaling) {
+    T::Add(mHistoNum);
     double entries = mHistoDen->GetBinContent(1, 1);
     double norm = (entries > 0) ? 1.0 / entries : 0;
     // make sure the sum-of-weights structure is not initialized if not required
@@ -173,7 +172,7 @@ void TH2Ratio<T>::update()
         mHistoDen->GetYaxis()->SetBinLabel(bin, T::GetYaxis()->GetBinLabel(bin));
       }
     }
-    T::Divide(mHistoDen);
+    T::Divide(mHistoNum, mHistoDen, 1.0, 1.0, mBinominalErrors ? "B" : "");
   }
 }
 
