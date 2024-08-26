@@ -1190,7 +1190,7 @@ The condition probably requires some external info, such as the run type or a de
 
 It could look like this 
 ```
-o2-qc --config apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/tpc-pulser-calib-qcmn?run_type={{ run_type }} ...
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/tpc-pulser-calib-qcmn?run_type={{ run_type }}' ...
 ```
 or 
 ```
