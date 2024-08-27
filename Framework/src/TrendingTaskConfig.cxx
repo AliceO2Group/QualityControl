@@ -25,6 +25,8 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
 {
   producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + id + ".producePlotsOnUpdate", true);
   resumeTrend = config.get<bool>("qc.postprocessing." + id + ".resumeTrend", false);
+  trendIfAllInputs = config.get<bool>("qc.postprocessing." + id + ".trendIfAllInputs", false);
+
   for (const auto& [_, plotConfig] : config.get_child("qc.postprocessing." + id + ".plots")) {
     // since QC-1155 we allow for more than one graph in a single plot (canvas). we support both the new and old ways
     // of configuring the expected plots.

@@ -70,7 +70,8 @@ class TrendingTask : public PostProcessingInterface
   static void formatRunNumberXAxis(TH1* background);
   static std::string deduceGraphLegendOptions(const TrendingTaskConfig::Graph& graphConfig);
 
-  void trendValues(const Trigger& t, repository::DatabaseInterface&);
+  /// returns true only if all datasources were available to update reductor
+  bool trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
   TCanvas* drawPlot(const TrendingTaskConfig::Plot& plotConfig);
   void initializeTrend(repository::DatabaseInterface& qcdb);
