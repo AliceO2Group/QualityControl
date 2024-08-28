@@ -27,6 +27,11 @@
 
 class TObject;
 class TObjArray;
+class TH1;
+class TTree;
+class THnBase;
+class TEfficiency;
+class TGraph;
 
 namespace o2::quality_control::core
 {
@@ -79,7 +84,19 @@ class ObjectsManager
    * @param obj The object to publish.
    * @throws DuplicateObjectError
    */
-  void startPublishing(TObject* obj, PublicationPolicy = PublicationPolicy::Forever);
+  template <typename T>
+  void startPublishing(T* obj, PublicationPolicy policy = PublicationPolicy::Forever)
+  {
+    if constexpr (!std::is_base_of_v<mergers::MergeInterface, T>() &&
+                  !std::is_base_of_v<TCollection, T>() &&
+                  !std::is_base_of_v<TH1, T>() &&
+                  !std::is_base_of_v<TTree, T>() &&
+                  !std::is_base_of_v<TGraph, T>() &&
+                  !std::is_base_of_v<TEfficiency, T>()) {
+      static_assert(true, "You are trying to start publish object, that is not mergeable");
+    }
+    startPublishingImpl(obj, policy);
+  }
 
   /**
    * Stop publishing this object
@@ -223,6 +240,8 @@ class ObjectsManager
   bool mUpdateServiceDiscovery;
   Activity mActivity;
   std::vector<std::string> mMovingWindowsList;
+
+  void startPublishingImpl(TObject* obj, PublicationPolicy);
 };
 
 } // namespace o2::quality_control::core
