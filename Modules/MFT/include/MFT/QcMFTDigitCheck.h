@@ -70,6 +70,20 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> mOldNoisyPix;
   std::vector<int> mNewNoisyPix;
 
+  bool mQualityGood;
+  bool mQualityMedium;
+  bool mQualityBad;
+  int mNoiseTotalMediumMin;
+  int mNoiseTotalMediumMax;
+  int mNoiseTotalBadMin;
+  int mNoiseTotalBadMax;
+  int mNoiseNewMediumMin;
+  int mNoiseNewMediumMax;
+  int mNoiseNewBadMax;
+  int mNoiseDissMediumMin;
+  int mNoiseDissMediumMax;
+  int mNoiseDissBadMax;
+
   // to form the name of the masked chips histograms
   int mHalf[936] = { 0 };
   int mDisk[936] = { 0 };

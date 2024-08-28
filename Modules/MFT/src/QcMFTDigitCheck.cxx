@@ -69,6 +69,46 @@ void QcMFTDigitCheck::configure()
     ILOG(Info, Support) << "Custom parameter - NCyclesNoiseMap: " << param->second << ENDM;
     mNCyclesNoiseMap = stoi(param->second);
   }
+  if (auto param = mCustomParameters.find("NoiseTotalMediumMin"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseTotalMediumMin: " << param->second << ENDM;
+    mNoiseTotalMediumMin = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseTotalMediumMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseTotalMediumMax: " << param->second << ENDM;
+    mNoiseTotalMediumMax = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseTotalBadMin"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseTotalBadMin: " << param->second << ENDM;
+    mNoiseTotalBadMin = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseTotalBadMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseTotalBadMax: " << param->second << ENDM;
+    mNoiseTotalBadMax = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseNewMediumMin"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMin: " << param->second << ENDM;
+    mNoiseNewMediumMin = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseNewMediumMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMax: " << param->second << ENDM;
+    mNoiseNewMediumMax = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseNewBadMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseNewBadMax: " << param->second << ENDM;
+    mNoiseNewBadMax = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseDissMediumMin"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMin: " << param->second << ENDM;
+    mNoiseDissMediumMin = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseDissMediumMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMax: " << param->second << ENDM;
+    mNoiseDissMediumMax = stoi(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseDissBadMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseNewBadMax: " << param->second << ENDM;
+    mNoiseDissBadMax = stoi(param->second);
+  }
 
   // no call to beautifier yet
   mFirstCall = true;
@@ -80,6 +120,9 @@ void QcMFTDigitCheck::configure()
 
   mEmptyCount = 0;
   mAdjacentLaddersEmpty = false;
+  mQualityGood = false;
+  mQualityMedium = false;
+  mQualityBad = false;
 }
 
 Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -293,6 +336,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       }
     }
   }
+
   if (mNoiseScan == 1) {
     if (mNCycles == 1) {
       long timestamp = mo->getValidity().getMin();
@@ -316,6 +360,17 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           mTotalNoisy++;
         }
       }
+      // quality of a noise scan
+      if (((mTotalNoisy < mNoiseTotalMediumMax) && (mTotalNoisy > mNoiseTotalMediumMin)) && ((mNewNoisy < mNoiseNewMediumMax) && (mNewNoisy > mNoiseNewMediumMin)) && ((mDissNoisy < mNoiseDissMediumMax) && (mDissNoisy > mNoiseDissMediumMin))) {
+        mQualityGood = true;
+      }
+      if (((mTotalNoisy > mNoiseTotalMediumMax) && (mTotalNoisy < mNoiseTotalBadMax)) || ((mTotalNoisy > mNoiseTotalBadMin) && (mTotalNoisy < mNoiseTotalMediumMin)) || ((mNewNoisy < mNoiseNewMediumMin) || (mNewNoisy > mNoiseNewMediumMax && mNewNoisy < mNoiseNewBadMax)) || ((mDissNoisy < mNoiseDissMediumMin) || (mDissNoisy > mNoiseDissMediumMax && mDissNoisy > mNoiseDissBadMax))) {
+        mQualityMedium = true;
+      }
+      if ((mTotalNoisy > mNoiseTotalBadMax) || (mTotalNoisy < mNoiseTotalBadMin) || (mNewNoisy > mNoiseNewBadMax) || (mDissNoisy > mNoiseDissBadMax)) {
+        mQualityBad = true;
+        mQualityMedium = false;
+      }
     }
 
     if (mo->getName().find("mDigitChipOccupancy") != std::string::npos) {
@@ -324,25 +379,42 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         TLatex* tl_total = new TLatex(0.14, 0.87, Form("Total noisy pixels: %i", mTotalNoisy));
         TLatex* tl_new = new TLatex(0.14, 0.83, Form("New noisy pixels: %i", mNewNoisy));
         TLatex* tl_dis = new TLatex(0.14, 0.79, Form("Disappeared noisy pixels: %i", mDissNoisy));
+        TPaveText* msg = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
+        Color_t QualityColor;
+        if (mQualityGood) {
+          QualityColor = kGreen;
+          msg->AddText("No action needed");
+        } else if (mQualityMedium) {
+          QualityColor = kOrange;
+          msg->AddText("Write a logbook entry tagging MFT");
+        } else if (mQualityBad) {
+          QualityColor = kRed;
+          msg->AddText("Call the on-call!");
+        } else {
+          QualityColor = kBlue;
+        }
         tl_total->SetNDC();
         tl_total->SetTextFont(42);
         tl_total->SetTextSize(0.03);
-        tl_total->SetTextColor(kBlue);
+        tl_total->SetTextColor(QualityColor);
         tl_new->SetNDC();
         tl_new->SetTextFont(42);
         tl_new->SetTextSize(0.03);
-        tl_new->SetTextColor(kBlue);
+        tl_new->SetTextColor(QualityColor);
         tl_dis->SetNDC();
         tl_dis->SetTextFont(42);
         tl_dis->SetTextSize(0.03);
-        tl_dis->SetTextColor(kBlue);
+        tl_dis->SetTextColor(QualityColor);
+        msg->SetFillColor(QualityColor);
         // add it to the histo
         DigitOccupancy->GetListOfFunctions()->Add(tl_total);
         DigitOccupancy->GetListOfFunctions()->Add(tl_new);
         DigitOccupancy->GetListOfFunctions()->Add(tl_dis);
+        DigitOccupancy->GetListOfFunctions()->Add(msg);
         tl_total->Draw();
         tl_new->Draw();
         tl_dis->Draw();
+        msg->Draw();
       }
     }
   }
