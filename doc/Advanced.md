@@ -107,7 +107,7 @@ The `binding` (first part, before the colon) is used in the path of the stored o
 
 ### Example 1: basic
 
-As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck :
+As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck :
 ```yaml
       "QcCheck": {
         "active": "true",
@@ -135,7 +135,7 @@ The check results are stored at `qc/<detector>/QO/<binding>/object`.
 
 ### Example 2: advanced
 
-This second, more advanced, example mixes QC tasks and external tasks. It is defined in [advanced-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/advanced-external-histo.json). It is represented here:
+This second, more advanced, example mixes QC tasks and external tasks. It is defined in [advanced-external-histo.json](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/advanced-external-histo.json). It is represented here:
 
 ![alt text](images/Advanced-external.png)
 
@@ -1316,7 +1316,7 @@ The new syntax is
           }
         },
 ```
-It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54. The `default` can be used 
+It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: [ECSDataAdapters.h](https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54). The `default` can be used 
 to ignore the run or the beam type. 
 The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
 
@@ -1661,7 +1661,7 @@ the "tasks" path.
 ### QC Checks configuration
 
 Below the full QC Checks configuration structure is described. Note that more than one check might be declared inside in
-the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDevelopment.md#configuration) for more details.
+the "checks" path. Please also refer to [the Checks documentation](ModulesDevelopment.md#configuration) for more details.
 
  ```json
 {
@@ -1697,7 +1697,7 @@ the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDe
 ### QC Aggregators configuration
 
 Below the full QC Aggregators configuration structure is described. Note that more than one aggregator might be declared inside in
-the "aggregators" path. Please also refer to [the Aggregators documentation](doc/ModulesDevelopment.md#quality-aggregation) for more details.
+the "aggregators" path. Please also refer to [the Aggregators documentation](ModulesDevelopment.md#quality-aggregation) for more details.
 
 ```json
 {
@@ -1730,7 +1730,7 @@ the "aggregators" path. Please also refer to [the Aggregators documentation](doc
 ### QC Post-processing configuration
 
 Below the full QC Post-processing (PP) configuration structure is described. Note that more than one PP Task might be
-declared inside in the "postprocessing" path. Please also refer to [the Post-processing documentation](doc/PostProcessing.md) for more details.
+declared inside in the "postprocessing" path. Please also refer to [the Post-processing documentation](PostProcessing.md) for more details.
 
 ```json
 {
