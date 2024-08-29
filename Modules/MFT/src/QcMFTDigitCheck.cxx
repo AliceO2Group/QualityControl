@@ -69,42 +69,52 @@ void QcMFTDigitCheck::configure()
     ILOG(Info, Support) << "Custom parameter - NCyclesNoiseMap: " << param->second << ENDM;
     mNCyclesNoiseMap = stoi(param->second);
   }
+  mNoiseTotalMediumMin = 7500;
   if (auto param = mCustomParameters.find("NoiseTotalMediumMin"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseTotalMediumMin: " << param->second << ENDM;
     mNoiseTotalMediumMin = stoi(param->second);
   }
+  mNoiseTotalMediumMax = 8500;
   if (auto param = mCustomParameters.find("NoiseTotalMediumMax"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseTotalMediumMax: " << param->second << ENDM;
     mNoiseTotalMediumMax = stoi(param->second);
   }
+  mNoiseTotalBadMin = 7000;
   if (auto param = mCustomParameters.find("NoiseTotalBadMin"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseTotalBadMin: " << param->second << ENDM;
     mNoiseTotalBadMin = stoi(param->second);
   }
+  mNoiseTotalBadMax = 9000;
   if (auto param = mCustomParameters.find("NoiseTotalBadMax"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseTotalBadMax: " << param->second << ENDM;
     mNoiseTotalBadMax = stoi(param->second);
   }
+  mNoiseNewMediumMin = 100;
   if (auto param = mCustomParameters.find("NoiseNewMediumMin"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMin: " << param->second << ENDM;
     mNoiseNewMediumMin = stoi(param->second);
   }
+  mNoiseNewMediumMax = 500;
   if (auto param = mCustomParameters.find("NoiseNewMediumMax"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMax: " << param->second << ENDM;
     mNoiseNewMediumMax = stoi(param->second);
   }
+  mNoiseNewBadMax = 1000;
   if (auto param = mCustomParameters.find("NoiseNewBadMax"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseNewBadMax: " << param->second << ENDM;
     mNoiseNewBadMax = stoi(param->second);
   }
+  mNoiseDissMediumMin = 100;
   if (auto param = mCustomParameters.find("NoiseDissMediumMin"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMin: " << param->second << ENDM;
     mNoiseDissMediumMin = stoi(param->second);
   }
+  mNoiseDissMediumMax = 500;
   if (auto param = mCustomParameters.find("NoiseDissMediumMax"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMax: " << param->second << ENDM;
     mNoiseDissMediumMax = stoi(param->second);
   }
+  mNoiseDissBadMax = 1000;
   if (auto param = mCustomParameters.find("NoiseDissBadMax"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - NoiseNewBadMax: " << param->second << ENDM;
     mNoiseDissBadMax = stoi(param->second);
