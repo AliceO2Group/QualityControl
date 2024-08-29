@@ -86,8 +86,8 @@ def parseArgs():
     parser.add_argument('--config-git', action='store_true',
                         help='Check out the config file from git (branch repo_cleaner), ignore --config.')
     parser.add_argument('--config-consul', action='store',
-                        help='Specify the consul url (without `http[s]://`) and port in the form of <url>:<port>,'
-                             ' file must be stored in o2/components/qc/ANY/any/repoCleanerConfig.yaml,'
+                        help='Specify the consul url (without `http[s]://`), port and file in the form of <url>:<port>:<file_name>,'
+                             ' file must be stored in o2/components/qc/ANY/any/,'
                              ' if specified ignore both --config and --config-git.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
@@ -170,7 +170,7 @@ def downloadConfigFromGit():
     return path
 
 
-def downloadConfigFromConsul(consul_url, consul_port):
+def downloadConfigFromConsul(consul_url: str, consul_port: str, file_name: str):
     """
     Download a config file from consul.
     :return: the path to the config file
@@ -178,7 +178,8 @@ def downloadConfigFromConsul(consul_url, consul_port):
 
     logging.debug("Get it from consul")
     consul_server = consul.Consul(host=consul_url, port=consul_port)
-    index, data = consul_server.kv.get(key='o2/components/qc/ANY/any/repoCleanerConfig.yaml')
+    file_path = 'o2/components/qc/ANY/any/' + file_name
+    index, data = consul_server.kv.get(key=file_path)
     logging.debug(f"config file from consul : \n{data['Value']}")
     text = data["Value"].decode()
     logging.debug(f"config file from consul : \n{text}")
@@ -309,7 +310,10 @@ def read_config(args):
     path = args.config
     if args.config_consul:
         items = args.config_consul.split(':')
-        path = downloadConfigFromConsul(items[0], items[1])
+        if len(items) < 3:
+            logging.error(f"Incorrect format of Consul config file parameter. Exiting.")
+            exit(1)
+        path = downloadConfigFromConsul(items[0], items[1], items[2])
     elif args.config_git:
         path = downloadConfigFromGit()
     config = parseConfig(path)

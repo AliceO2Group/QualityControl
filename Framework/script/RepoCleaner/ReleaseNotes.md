@@ -2,7 +2,8 @@
 
 New
 - 3 small fixes (https://github.com/AliceO2Group/QualityControl/pull/2308)
-- QC-1097 - use metadata to filter what to delete with o2-qc-repo-delete-time-interval
+- [QC-1097] - use metadata to filter what to delete with o2-qc-repo-delete-time-interval
+- [QC-1226] - Make config file name in consul configurable
 
 1.7
 - [QC-1144] 1_per_run : Consider RunNumber=0 as no run number (#2238)
