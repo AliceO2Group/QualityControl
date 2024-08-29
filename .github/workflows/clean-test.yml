@@ -23,19 +23,23 @@ name: Clean PR checks
         description: build/QualityControl/o2
         type: boolean
         default: true
-      'check_build/QualityControl/o2-dataflow-cs8 ':
+      'check_build/QualityControl/o2-dataflow-cs8':
         description: build/QualityControl/o2-dataflow-cs8
         type: boolean
         default: true
-      'check_build/QualityControl/o2-cs8 ':
+      'check_build/QualityControl/o2-cs8':
         description: build/QualityControl/o2-cs8
         type: boolean
         default: true
-      'check_build/QualityControl/o2-dataflow/macOS-arm ':
+      'check_build/QualityControl/o2-dataflow/macOS-arm':
         description: build/QualityControl/o2-dataflow/macOS-arm
         type: boolean
         default: true
-
+      'check_build/QualityControl/O2fst/o2':
+        description: Could you add build/QualityControl/O2fst/o2
+        type: boolean
+        default: true
+        
 permissions: {}
 
 jobs:
