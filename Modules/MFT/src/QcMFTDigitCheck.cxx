@@ -374,7 +374,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       if (((mTotalNoisy < mNoiseTotalMediumMax) && (mTotalNoisy > mNoiseTotalMediumMin)) && ((mNewNoisy < mNoiseNewMediumMax) && (mNewNoisy > mNoiseNewMediumMin)) && ((mDissNoisy < mNoiseDissMediumMax) && (mDissNoisy > mNoiseDissMediumMin))) {
         mQualityGood = true;
       }
-      if (((mTotalNoisy > mNoiseTotalMediumMax) && (mTotalNoisy < mNoiseTotalBadMax)) || ((mTotalNoisy > mNoiseTotalBadMin) && (mTotalNoisy < mNoiseTotalMediumMin)) || ((mNewNoisy < mNoiseNewMediumMin) || (mNewNoisy > mNoiseNewMediumMax && mNewNoisy < mNoiseNewBadMax)) || ((mDissNoisy < mNoiseDissMediumMin) || (mDissNoisy > mNoiseDissMediumMax && mDissNoisy > mNoiseDissBadMax))) {
+      if (((mTotalNoisy > mNoiseTotalMediumMax) && (mTotalNoisy < mNoiseTotalBadMax)) || ((mTotalNoisy > mNoiseTotalBadMin) && (mTotalNoisy < mNoiseTotalMediumMin)) || ((mNewNoisy < mNoiseNewMediumMin) || (mNewNoisy > mNoiseNewMediumMax && mNewNoisy < mNoiseNewBadMax)) || ((mDissNoisy < mNoiseDissMediumMin) || (mDissNoisy > mNoiseDissMediumMax && mDissNoisy < mNoiseDissBadMax))) {
         mQualityMedium = true;
       }
       if ((mTotalNoisy > mNoiseTotalBadMax) || (mTotalNoisy < mNoiseTotalBadMin) || (mNewNoisy > mNoiseNewBadMax) || (mDissNoisy > mNoiseDissBadMax)) {
