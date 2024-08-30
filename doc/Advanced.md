@@ -22,9 +22,6 @@ Advanced topics
    * [Critical, resilient and non-critical tasks](#critical-resilient-and-non-critical-tasks)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
-      * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
-      * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
-      * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [Solving performance issues](#solving-performance-issues)
    * [Dispatcher](#dispatcher)
    * [QC Tasks](#qc-tasks-1)
@@ -557,16 +554,6 @@ If they are not critical, they will be `expendable` and will not stop the run if
 
 ## QC with DPL Analysis
 
-QC offers several ways to interact with the DPL Analysis framework.
-One allows to [upload root objects generated](#uploading-objects-to-qcdb) by an Analysis Task into QCDB.
-It is also possible to [run QC workflows alongside Analysis Tasks](#merging-with-other-analysis-workflows),
- as they are also based on the Data Processing Layer.
-AOD tables can be [requested as direct data sources](#getting-aods-in-qc-tasks) and then read by a QC task with TableConsumer.
-
-In this piece of documentation it is assumed that the users already have some idea about QC and
-[DPL Analysis](https://aliceo2group.github.io/analysis-framework), and
-they have an access to AOD files following the Run 3 data model.
-
 ### Uploading objects to QCDB
 
 To upload objects written to a file by an Analysis Task to QCDB, one may use the following command:
@@ -595,97 +582,8 @@ the directories listed in the logs:
 2021-10-05 10:59:41.594386     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hTimeT0Call
 2021-10-05 10:59:41.597743     Successfully uploaded 10 objects to the QCDB.
 ```
-Notice that the executable will ignore the directory structure in the input file and upload all objects to one directory.
-If you need a different behaviour, please contact the developers.
-
-### Getting AODs in QC Tasks
-
-First, let's see how to get data directly from an AOD file. To read the table, we will use TableConsumer from DPL, as in [the example of a QC analysis
-task](../Modules/Example/src/AnalysisTask.cxx):
-```
-void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
-{
-  auto s = ctx.inputs().get<framework::TableConsumer>("aod-data");
-  auto table = s->asArrowTable();
-  ...
-}
-```
-In [our QC configuration file](../Modules/Example/etc/analysisDirect.json) we will request AOD data as a direct source
-, just as normal Analysis Tasks do:
-```
-    "tasks": {
-      "AnalysisQcTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::example::AnalysisTask",
-        "moduleName": "QcExample",
-        "detectorName": "TST",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource": {
-          "type": "direct",
-          "query": "aod-data:AOD/TRACK:PAR/0"
-        },
-        "location": "remote"
-      }
-    },
-```
-Then we can run the processing with the following command:
-```
-o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/analysisDirect.json -b --aod-file AO2D.root
-```
-
-### Merging with other analysis workflows
-
-Now, let's try to subscribe to data generated in another analysis workflow -
-[`o2-analysistutorial-tracks-combinations`](https://github.com/AliceO2Group/AliceO2/tree/dev/Analysis/Tutorials/src/tracksCombinations.cxx),
-which produces a new table with hash numbers generated out of tracks in AODs:
-```
-...
-DECLARE_SOA_TABLE(Hashes, "AOD", "HASH", hash::Bin);  
-...
-```
-Thus, in [our QC config file](../Modules/Example/etc/analysisDerived.json) we should query data described as `AOD/HASH/0`:
-```
-    "tasks": {
-      "AnalysisQcTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::example::AnalysisTask",
-        "moduleName": "QcExample",
-        "detectorName": "TST",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource": {
-          "type": "direct",
-          "query": "aod-data:AOD/HASH/0"
-        },
-        "location": "remote"
-      }
-    },
-```
-
-Finally, we can run the example by merging the two workflows. Remember to specify the AOD file path in both workflows
-, even if QC does need data directly from the file.
-```
-o2-analysistutorial-tracks-combinations --aod-file AO2D.root  -b | \
-  o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/analysisDerived.json -b --aod-file AO2D.root
-```
-
-### Enabling a workflow to run on Hyperloop
-
-Hyperloop requires a workflow JSON dump in order to run it on Grid. To generate such a dump, in CMakeLists.txt of a
-detector libraryone should use `configure_file` to install the configuration files, then `o2_add_qc_workflow` to
-declare a QC analysis workflow. The first argument is an arbitrary workflow name, the second is the configuration
-file path in the installation directory. For example:
-
-```
-configure_file("etc/analysisDirect.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json")
-configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json")
-
-# ---- Workflows for analysis ----
-
-o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
-o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
-```
+Notice that by default the executable will ignore the directory structure in the input file and upload all objects to one directory.
+If you need the directory structure preserved, add the argument `--preserve-directories`.
 
 # Solving performance issues
 
