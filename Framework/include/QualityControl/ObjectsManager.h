@@ -21,17 +21,14 @@
 #include "QualityControl/Activity.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/MonitorObjectCollection.h"
+#include <Mergers/Mergeable.h>
 // stl
+#include <concepts>
 #include <string>
 #include <memory>
+#include <type_traits>
 
 class TObject;
-class TObjArray;
-class TH1;
-class TTree;
-class THnBase;
-class TEfficiency;
-class TGraph;
 
 namespace o2::quality_control::core
 {
@@ -81,20 +78,23 @@ class ObjectsManager
   /**
    * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
    * The ownership remains to the caller.
+   * @param IgnoreMergeable if you want to ignore static_assert check for Mergeable
+   * @param T type of object that we want to publish.
    * @param obj The object to publish.
    * @throws DuplicateObjectError
    */
-  template <typename T>
-  void startPublishing(T* obj, PublicationPolicy policy = PublicationPolicy::Forever)
+  template <bool IgnoreMergeable = false, typename T>
+  void startPublishing(T obj, PublicationPolicy policy = PublicationPolicy::Forever)
   {
-    if constexpr (!std::is_base_of_v<mergers::MergeInterface, T>() &&
-                  !std::is_base_of_v<TCollection, T>() &&
-                  !std::is_base_of_v<TH1, T>() &&
-                  !std::is_base_of_v<TTree, T>() &&
-                  !std::is_base_of_v<TGraph, T>() &&
-                  !std::is_base_of_v<TEfficiency, T>()) {
-      static_assert(true, "You are trying to start publish object, that is not mergeable");
-    }
+// If you want to ignore Mergeable check for whole module
+#ifndef IGNORE_MERGEABLE_CHECK
+    static_assert(std::same_as<std::remove_pointer_t<T>, TObject> ||
+                    // there is TCanvas mentioned here because users are using it a lot when they should not
+                    // std::same_as<std::remove_pointer_t<T>, TCanvas> ||
+                    IgnoreMergeable || mergers::Mergeable<T>,
+                  "you are trying to startPublishing object that is not mergeable."
+                  " If you know what you are doing use startPublishing<true>(...)");
+#endif
     startPublishingImpl(obj, policy);
   }
 
@@ -103,7 +103,8 @@ class ObjectsManager
    * @param obj
    * @throw ObjectNotFoundError if object is not found.
    */
-  void stopPublishing(TObject* obj);
+  void
+    stopPublishing(TObject* obj);
 
   /**
    * Stop publishing this object
