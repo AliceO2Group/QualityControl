@@ -268,7 +268,7 @@ void TrendingTask::generatePlots()
     }
     auto c = drawPlot(plotConfig);
     mPlots[plotConfig.name].reset(c);
-    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
+    getObjectsManager()->startPublishing<true>(c, PublicationPolicy::Once);
   }
 }
 
