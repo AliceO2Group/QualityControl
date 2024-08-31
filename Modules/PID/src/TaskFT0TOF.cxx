@@ -560,6 +560,9 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
     if (ft0firstOrbit > ft0.getInteractionRecord().orbit) {
       continue; // skip FT0 objects from previous orbits
     }
+    if (abs(ft0.getCollisionTime(0)) > 1000) {
+      continue; // skip bad FT0 time (not from collisions)
+    }
 
     double ft0time = ((ft0.getInteractionRecord().orbit - ft0firstOrbit) * o2::constants::lhc::LHCMaxBunches + ft0.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS + ft0.getCollisionTime(0);
     double timemax = ft0time + 100E3;
