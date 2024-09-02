@@ -1,6 +1,9 @@
 # Release notes
 
 New
+-
+
+1.8
 - 3 small fixes (https://github.com/AliceO2Group/QualityControl/pull/2308)
 - QC-1097 - use metadata to filter what to delete with o2-qc-repo-delete-time-interval
 
