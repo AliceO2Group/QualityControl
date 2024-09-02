@@ -18,6 +18,8 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TF1.h>
+#include <TProfile.h>
 
 // O2 includes
 #include "Framework/ProcessingContext.h"
@@ -58,6 +60,9 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs, runAsyncAndTurnOffSomeHistos);
   mQCPID.setCreateCanvas(createCanvas);
   mQCPID.initializeHistograms();
+  //mSeparationPower = new TProfile("mSeparationPower", "mSeparationPower", nPars, 0., (float)nPars);
+  mSeparationPower.reset(new TProfile("mSeparationPower", "mSeparationPower", nPars, 0., (float)nPars));
+  getObjectsManager()->startPublishing(mSeparationPower.get());
   // pass map of vectors of histograms to be beautified!
 
   o2::tpc::qc::helpers::setStyleHistogramsInMap(mQCPID.getMapOfHisto());
@@ -97,6 +102,44 @@ void PID::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PID::endOfCycle()
 {
+  // ===| Fitting Histogram for separation Power |============================================================
+  //  std::unique_ptr<TF1> fitFunc = std::make_unique<TF1>("fitFunc", "[0]*exp(-0.5*((x-[1])/[2])^2) + [3]*exp(-0.5*((x-[4])/[5])^2)", 0, 100);
+  TF1 fitFunc("fitFunc", "[0]*exp(-0.5*((x-[1])/[2])^2) + [3]*exp(-0.5*((x-[4])/[5])^2)", 0, 100);
+
+  for (auto const& pair : mQCPID.getMapOfHisto()) {
+    for (auto& hist : pair.second) {
+      if (pair.first.compare("hdEdxTotMIP") == 0) {
+        // Define fitting function: sum of two Gaussians with an offset
+        // Set initial parameters for the fit
+        fitFunc.SetParameter(0, 3000); // Amplitude of the first Gaussian
+        fitFunc.SetParameter(1, 50);   // Mean of the first Gaussian
+        fitFunc.SetParLimits(1, 45, 55);
+        fitFunc.SetParameter(2, 2);   // Sigma of the first Gaussian
+        fitFunc.SetParameter(3, 100); // Amplitude of the second Gaussian
+        fitFunc.SetParameter(4, 75);  // Mean of the second Gaussian
+        fitFunc.SetParLimits(4, 60, 90);
+        fitFunc.SetParameter(5, 10); // Sigma of the second Gaussian
+
+        // Fit the histogram with the fitting function
+        hist->Fit(&fitFunc, "QRN");
+
+        const TString binLabels[8] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
+
+        for (int iPar = 0; iPar < nPars - 2; iPar++) {
+          mSeparationPower->GetXaxis()->SetBinLabel(iPar + 1, binLabels[iPar]);
+          mSeparationPower->Fill((float)iPar + 0.5, fitFunc.GetParameter(iPar));
+        }
+        // Retrieve parameters of the fitted function
+
+        const double sepPow = (fitFunc.GetParameter(4) - fitFunc.GetParameter(1)) / (fitFunc.GetParameter(2) / 2. + fitFunc.GetParameter(5) / 2.); //separation power
+        mSeparationPower->GetXaxis()->SetBinLabel(7, binLabels[6]);
+        mSeparationPower->GetXaxis()->SetBinLabel(8, binLabels[7]);
+        mSeparationPower->Fill(6.5, sepPow);
+        mSeparationPower->Fill(7.5, fitFunc.GetChisquare() / fitFunc.GetNDF());
+      }
+    }
+  }
+
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
 }
 
