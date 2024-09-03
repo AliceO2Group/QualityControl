@@ -26,6 +26,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
       - interval_between_versions: Period in minutes between the versions we will keep. (default: 90)
       - period_pass: Keep 1 version for a combination of run+pass+period if true. (default: false)
       - delete_first_last: delete the first and last of the run[+pass+period] before actually applying the rule.
+                           Useful to keep the second and second to last instead of first and last.
+      - mw_deletion_delay: delete moving windows data entirely after this number of minutes. If not present or negative, don't delete.
+                     As an extra safety, and because it is designed for Moving Windows, we only delete if the object has `mw` in the path.
 
     It is implemented like this :
         Map of buckets: run[+pass+period] -> list of versions
@@ -33,8 +36,11 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         Sort the versions in the bucket
         Remove the empty run from the map (we ignore objects without a run)
         Go through the map: for each run (resp. run+pass+period)
-
             Get SOR (validity of first object)
+
+            if SOR < now - mw_deletion_delay
+                delete the data for this run
+
             if SOR < now - delay
                 if delete_first_last
                     Get flag cleaner_2nd from first object (if there)
@@ -75,6 +81,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     logger.debug(f"migrate_to_EOS : {migrate_to_EOS}")
     delete_first_last = (extra_params.get("delete_first_last", False) is True)
     logger.debug(f"delete_first_last : {delete_first_last}")
+    mw_deletion_delay = int(extra_params.get("mw_deletion_delay", -1))
+    logger.info(f"mw_deletion_delay : {mw_deletion_delay}")
 
     # Find all the runs and group the versions (by run or by a combination of multiple attributes)
     policies_utils.group_versions(ccdb, object_path, period_pass, versions_buckets_dict)
@@ -95,9 +103,16 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         if policies_utils.in_grace_period(first_object, delay):
             logger.debug(f"     in grace period, skip this bucket")
             preservation_list.extend(run_versions)
-        elif not (from_timestamp < first_object.createdAt < to_timestamp):  # in the allowed period
+        elif not (from_timestamp < first_object.createdAt < to_timestamp):  # not in the allowed period
             logger.debug(f"     not in the allowed period, skip this bucket")
             preservation_list.extend(run_versions)
+        elif first_object.createdAtDt < datetime.now() - timedelta(minutes=mw_deletion_delay):
+            logger.debug(f"     after mw_deletion_delay period, delete this bucket")
+            for v in run_versions:
+                logger.debug(f"process {v}")
+                if "mw" in v.path: # this is because we really don't want to take the risk of batch deleting non moving windows
+                    deletion_list.append(v)
+                    ccdb.deleteVersion(v)
         else:
             logger.debug(f"    not in the grace period")
 
