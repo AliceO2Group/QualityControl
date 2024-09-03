@@ -82,7 +82,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     delete_first_last = (extra_params.get("delete_first_last", False) is True)
     logger.debug(f"delete_first_last : {delete_first_last}")
     mw_deletion_delay = int(extra_params.get("mw_deletion_delay", -1))
-    logger.info(f"mw_deletion_delay : {mw_deletion_delay}")
+    logger.debug(f"mw_deletion_delay : {mw_deletion_delay}")
 
     # Find all the runs and group the versions (by run or by a combination of multiple attributes)
     policies_utils.group_versions(ccdb, object_path, period_pass, versions_buckets_dict)
