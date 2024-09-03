@@ -69,6 +69,11 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(hist.get());
     }
   }
+  for (auto const& pair : mQCPID.getMapOfCanvas()) {
+    for (auto& canv : pair.second) {
+      getObjectsManager()->startPublishing<true>(canv.get());
+    }
+  }
 }
 
 void PID::startOfActivity(const Activity& /*activity*/)
