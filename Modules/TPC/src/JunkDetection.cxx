@@ -45,7 +45,7 @@ void JunkDetection::initialize(o2::framework::InitContext&)
   mJDHistos.emplace_back(new TH2F("h_removed_Strategy_B", "Removed Strategy (B)", 1, 0, 1, 1, 0, 1)); // dummy for the objectsManager
 
   if (!mIsMergeable) {
-    getObjectsManager()->startPublishing(mJDCanv.get());
+    getObjectsManager()->startPublishing<true>(mJDCanv.get());
   }
   for (const auto& hist : mJDHistos) {
     getObjectsManager()->startPublishing(hist);

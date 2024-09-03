@@ -86,11 +86,9 @@ class ObjectsManager
   template <bool IgnoreMergeable = false, typename T>
   void startPublishing(T obj, PublicationPolicy policy = PublicationPolicy::Forever)
   {
-// If you want to ignore Mergeable check for whole module
-#ifndef IGNORE_MERGEABLE_CHECK
+    // We don't want to do this compile time check in PostProcessing
+#ifndef QUALITYCONTROL_POSTPROCESSINTERFACE_H
     static_assert(std::same_as<std::remove_pointer_t<T>, TObject> ||
-                    // there is TCanvas mentioned here because users are using it a lot when they should not
-                    // std::same_as<std::remove_pointer_t<T>, TCanvas> ||
                     IgnoreMergeable || mergers::Mergeable<T>,
                   "you are trying to startPublishing object that is not mergeable."
                   " If you know what you are doing use startPublishing<true>(...)");
