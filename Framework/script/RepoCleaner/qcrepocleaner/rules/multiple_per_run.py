@@ -109,10 +109,13 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         elif first_object.createdAtDt < datetime.now() - timedelta(minutes=mw_deletion_delay):
             logger.debug(f"     after mw_deletion_delay period, delete this bucket")
             for v in run_versions:
-                logger.debug(f"process {v}")
                 if "mw" in v.path: # this is because we really don't want to take the risk of batch deleting non moving windows
+                    logger.debug(f"          deleting {v}")
                     deletion_list.append(v)
                     ccdb.deleteVersion(v)
+                else:
+                    logger.debug(f"          deletion is aborted as path does not contain `mw` ({v})")
+                    preservation_list.append(v)
         else:
             logger.debug(f"    not in the grace period")
 

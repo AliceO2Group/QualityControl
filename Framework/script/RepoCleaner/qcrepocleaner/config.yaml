@@ -12,6 +12,10 @@ Rules:
     delay: 1
     policy: multiple_per_run
     mw_deletion_delay: 15
+  - object_path: qc/TST/MO/QcTask
+    delay: 1440
+    policy: multiple_per_run
+    mw_deletion_delay: 15
 #  - object_path: qc/TST/MO/QcTask-barth/example3[/.*]{0,1}
 #    delay: 0
 #    policy: none_kept
