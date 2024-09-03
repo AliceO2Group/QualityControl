@@ -104,20 +104,20 @@ void QcMFTDigitCheck::configure()
     ILOG(Info, Support) << "Custom parameter - NoiseNewBadMax: " << param->second << ENDM;
     mNoiseNewBadMax = stoi(param->second);
   }
-  mNoiseDissMediumMin = 100;
-  if (auto param = mCustomParameters.find("NoiseDissMediumMin"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMin: " << param->second << ENDM;
-    mNoiseDissMediumMin = stoi(param->second);
+  mNoiseDisMediumMin = 100;
+  if (auto param = mCustomParameters.find("NoiseDisMediumMin"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseDisMediumMin: " << param->second << ENDM;
+    mNoiseDisMediumMin = stoi(param->second);
   }
-  mNoiseDissMediumMax = 500;
-  if (auto param = mCustomParameters.find("NoiseDissMediumMax"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - NoiseNewMediumMax: " << param->second << ENDM;
-    mNoiseDissMediumMax = stoi(param->second);
+  mNoiseDisMediumMax = 500;
+  if (auto param = mCustomParameters.find("NoiseDisMediumMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseDisMediumMax: " << param->second << ENDM;
+    mNoiseDisMediumMax = stoi(param->second);
   }
-  mNoiseDissBadMax = 1000;
-  if (auto param = mCustomParameters.find("NoiseDissBadMax"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - NoiseNewBadMax: " << param->second << ENDM;
-    mNoiseDissBadMax = stoi(param->second);
+  mNoiseDisBadMax = 1000;
+  if (auto param = mCustomParameters.find("NoiseDisBadMax"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - NoiseDisBadMax: " << param->second << ENDM;
+    mNoiseDisBadMax = stoi(param->second);
   }
 
   // no call to beautifier yet
@@ -125,7 +125,7 @@ void QcMFTDigitCheck::configure()
 
   mNCycles = 0;
   mNewNoisy = 0;
-  mDissNoisy = 0;
+  mDisNoisy = 0;
   mTotalNoisy = 0;
 
   mEmptyCount = 0;
@@ -361,7 +361,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
       for (int i = 0; i < mNewNoisyPix.size(); i++) {
         if (mNewNoisyPix[i] == -1 && mOldNoisyPix[i] != -1) {
-          mDissNoisy++;
+          mDisNoisy++;
         }
         if (mNewNoisyPix[i] != -1 && mOldNoisyPix[i] == -1) {
           mNewNoisy++;
@@ -371,13 +371,27 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         }
       }
       // quality of a noise scan
-      if (((mTotalNoisy < mNoiseTotalMediumMax) && (mTotalNoisy > mNoiseTotalMediumMin)) && ((mNewNoisy < mNoiseNewMediumMax) && (mNewNoisy > mNoiseNewMediumMin)) && ((mDissNoisy < mNoiseDissMediumMax) && (mDissNoisy > mNoiseDissMediumMin))) {
+      bool isTotalNoiseGood = (mTotalNoisy < mNoiseTotalMediumMax) && (mTotalNoisy > mNoiseTotalMediumMin);
+      bool isNewNoiseGood = (mNewNoisy < mNoiseNewMediumMax) && (mNewNoisy > mNoiseNewMediumMin);
+      bool isDisNoiseGood = (mDisNoisy < mNoiseDisMediumMax) && (mDisNoisy > mNoiseDisMediumMin);
+      bool isTotalNoiseMedium = (mTotalNoisy > mNoiseTotalMediumMax && mTotalNoisy < mNoiseTotalBadMax) ||
+                                (mTotalNoisy > mNoiseTotalBadMin && mTotalNoisy < mNoiseTotalMediumMin);
+      bool isNewNoiseMedium = (mNewNoisy < mNoiseNewMediumMin) ||
+                              (mNewNoisy > mNoiseNewMediumMax && mNewNoisy < mNoiseNewBadMax);
+      bool isDisNoiseMedium = (mDisNoisy < mNoiseDisMediumMin) ||
+                              (mDisNoisy > mNoiseDisMediumMax && mDisNoisy < mNoiseDisBadMax);
+      bool isTotalNoiseBad = (mTotalNoisy > mNoiseTotalBadMax) || (mTotalNoisy < mNoiseTotalBadMin);
+      bool isNewNoiseBad = mNewNoisy > mNoiseNewBadMax;
+      bool isDisNoiseBad = mDisNoisy > mNoiseDisBadMax;
+
+      if (isTotalNoiseGood && isNewNoiseGood && isDisNoiseGood) {
         mQualityGood = true;
       }
-      if (((mTotalNoisy > mNoiseTotalMediumMax) && (mTotalNoisy < mNoiseTotalBadMax)) || ((mTotalNoisy > mNoiseTotalBadMin) && (mTotalNoisy < mNoiseTotalMediumMin)) || ((mNewNoisy < mNoiseNewMediumMin) || (mNewNoisy > mNoiseNewMediumMax && mNewNoisy < mNoiseNewBadMax)) || ((mDissNoisy < mNoiseDissMediumMin) || (mDissNoisy > mNoiseDissMediumMax && mDissNoisy < mNoiseDissBadMax))) {
+
+      if (isTotalNoiseMedium || isNewNoiseMedium || isDisNoiseMedium) {
         mQualityMedium = true;
       }
-      if ((mTotalNoisy > mNoiseTotalBadMax) || (mTotalNoisy < mNoiseTotalBadMin) || (mNewNoisy > mNoiseNewBadMax) || (mDissNoisy > mNoiseDissBadMax)) {
+      if (isTotalNoiseBad || isNewNoiseBad || isDisNoiseBad) {
         mQualityBad = true;
         mQualityMedium = false;
       }
@@ -388,7 +402,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       if (DigitOccupancy != nullptr) {
         TLatex* tl_total = new TLatex(0.14, 0.87, Form("Total noisy pixels: %i", mTotalNoisy));
         TLatex* tl_new = new TLatex(0.14, 0.83, Form("New noisy pixels: %i", mNewNoisy));
-        TLatex* tl_dis = new TLatex(0.14, 0.79, Form("Disappeared noisy pixels: %i", mDissNoisy));
+        TLatex* tl_dis = new TLatex(0.14, 0.79, Form("Disappeared noisy pixels: %i", mDisNoisy));
         TPaveText* msg = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
         Color_t QualityColor;
         if (mQualityGood) {

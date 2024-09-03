@@ -74,9 +74,9 @@
           "NoiseNewMediumMin" : "100",
           "NoiseNewMediumMax" : "500",
           "NoiseNewBadMax" : "1000",
-          "NoiseDissMediumMin" : "100",
-          "NoiseDissMediumMax" : "500",
-          "NoiseDissBadMax" : "1000"
+          "NoiseDisMediumMin" : "100",
+          "NoiseDisMediumMax" : "500",
+          "NoiseDisBadMax" : "1000"
           
         },
         "dataSource" : [ {
