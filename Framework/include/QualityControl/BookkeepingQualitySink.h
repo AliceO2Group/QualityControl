@@ -17,11 +17,11 @@
 #ifndef QUALITYCONTROL_BOOKKEEPINGQUALITYSINK_H
 #define QUALITYCONTROL_BOOKKEEPINGQUALITYSINK_H
 
-#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 #include <Framework/CompletionPolicy.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/Task.h>
-#include "Provenance.h"
+#include "QualityControl/QualitiesToFlagCollectionConverter.h"
+#include "QualityControl/Provenance.h"
 
 namespace o2::quality_control::core
 {
@@ -31,7 +31,9 @@ class BookkeepingQualitySink : public framework::Task
 {
  public:
   // we are using map here instead of the set, because items in the map are changeable, however items of the set are not.
-  using FlagsMap = std::unordered_map<std::string /*detector*/, std::unique_ptr<QualityControlFlagCollection>>;
+  using FlagsMap = std::unordered_map<std::string /*detector*/,
+                                      std::unordered_map<std::string /* QO name */,
+                                                         std::unique_ptr<QualitiesToFlagCollectionConverter>>>;
   using SendCallback = std::function<void(const std::string& grpcUri, const FlagsMap&, Provenance)>;
 
   // sendCallback is mainly used for testing without the necessity to do grpc calls
@@ -50,7 +52,7 @@ class BookkeepingQualitySink : public framework::Task
   std::string mGrpcUri;
   Provenance mProvenance;
   SendCallback mSendCallback;
-  FlagsMap mQualityObjectsMap;
+  FlagsMap mFlagsMap;
 
   void sendAndClear();
 };

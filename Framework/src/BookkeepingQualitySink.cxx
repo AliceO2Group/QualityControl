@@ -19,6 +19,7 @@
 #include <Framework/InputRecordWalker.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
+#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/QualitiesToFlagCollectionConverter.h"
 #include "QualityControl/QualityObject.h"
@@ -26,6 +27,7 @@
 #include <BookkeepingApi/QcFlagServiceClient.h>
 #include <BookkeepingApi/BkpClientFactory.h>
 #include <stdexcept>
+#include <utility>
 
 namespace o2::quality_control::core
 {
@@ -44,36 +46,59 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
   auto bkpClient = o2::bkp::api::BkpClientFactory::create(grpcUri);
   auto& qcClient = bkpClient->qcFlag();
 
-  for (const auto& [detector, flagCollection] : flags) {
+  std::optional<int> runNumber;
+  std::optional<std::string> passName;
+  std::optional<std::string> periodName;
+
+  for (auto& [detector, qoMap] : flags) {
     ILOG(Info, Support) << "Sending " << flags.size() << " flags for detector:  " << detector << ENDM;
 
-    if (flagCollection->size() == 0) {
-      continue;
+    std::vector<QcFlag> bkpQcFlags{};
+    for (auto& [qoName, converter] : qoMap) {
+      if (converter == nullptr) {
+        continue;
+      }
+      auto flagCollection = converter->getResult();
+      if (flagCollection == nullptr) {
+        continue;
+      }
+      if (!runNumber.has_value()) {
+        runNumber = flagCollection->getRunNumber();
+      }
+      if (!passName.has_value()) {
+        passName = flagCollection->getPassName();
+      }
+      if (!periodName.has_value()) {
+        periodName = flagCollection->getPeriodName();
+      }
+
+      for (const auto& flag : *flagCollection) {
+        // BKP uses start/end of run for missing time values, so we are using this functionality in order to avoid
+        // determining these values by ourselves (see TaskRunner::start() for details). mtichak checked with mboulais that
+        // it is okay to do so.
+        bkpQcFlags.emplace_back(QcFlag{
+          .flagTypeId = flag.getFlag().getID(),
+          .from = flag.getStart() == gFullValidityInterval.getMin() ? std::nullopt : std::optional<uint64_t>{ flag.getStart() },
+          .to = flag.getEnd() == gFullValidityInterval.getMax() ? std::nullopt : std::optional<uint64_t>{ flag.getEnd() },
+          .origin = flag.getSource(),
+          .comment = flag.getComment() });
+      }
     }
 
-    std::vector<QcFlag> bkpQcFlags{};
-    for (const auto& flag : *flagCollection) {
-      // BKP uses start/end of run for missing time values, so we are using this functionality in order to avoid
-      // determining these values by ourselves (see TaskRunner::start() for details). mtichak checked with mboulais that
-      // it is okay to do so.
-      bkpQcFlags.emplace_back(QcFlag{
-        .flagTypeId = flag.getFlag().getID(),
-        .from = flag.getStart() == gFullValidityInterval.getMin() ? std::nullopt : std::optional<uint64_t>{ flag.getStart() },
-        .to = flag.getEnd() == gFullValidityInterval.getMax() ? std::nullopt : std::optional<uint64_t>{ flag.getEnd() },
-        .origin = flag.getSource(),
-        .comment = flag.getComment() });
+    if (bkpQcFlags.empty()) {
+      continue;
     }
 
     try {
       switch (provenance) {
         case Provenance::SyncQC:
-          qcClient->createForSynchronous(flagCollection->getRunNumber(), detector, bkpQcFlags);
+          qcClient->createForSynchronous(runNumber.value(), detector, bkpQcFlags);
           break;
         case Provenance::AsyncQC:
-          qcClient->createForDataPass(flagCollection->getRunNumber(), flagCollection->getPassName(), detector, bkpQcFlags);
+          qcClient->createForDataPass(runNumber.value(), passName.value(), detector, bkpQcFlags);
           break;
         case Provenance::MCQC:
-          qcClient->createForSimulationPass(flagCollection->getRunNumber(), flagCollection->getPeriodName(), detector, bkpQcFlags);
+          qcClient->createForSimulationPass(runNumber.value(), periodName.value(), detector, bkpQcFlags);
           break;
       }
     } catch (const std::runtime_error& err) {
@@ -84,14 +109,7 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
 }
 
 BookkeepingQualitySink::BookkeepingQualitySink(const std::string& grpcUri, Provenance provenance, SendCallback sendCallback)
-  : mGrpcUri{ grpcUri }, mProvenance{ provenance }, mSendCallback{ sendCallback } {}
-
-auto merge(std::unique_ptr<QualityControlFlagCollection>&& collection, const std::unique_ptr<QualityObject>& qualityObject) -> std::unique_ptr<QualityControlFlagCollection>
-{
-  QualitiesToFlagCollectionConverter converter(std::move(collection), qualityObject->getPath());
-  converter(*qualityObject);
-  return converter.getResult();
-}
+  : mGrpcUri{ grpcUri }, mProvenance{ provenance }, mSendCallback{ std::move(sendCallback) } {}
 
 auto collectionForQualityObject(const QualityObject& qualityObject) -> std::unique_ptr<QualityControlFlagCollection>
 {
@@ -108,13 +126,18 @@ auto collectionForQualityObject(const QualityObject& qualityObject) -> std::uniq
 void BookkeepingQualitySink::run(framework::ProcessingContext& context)
 {
   for (auto const& ref : framework::InputRecordWalker(context.inputs())) {
+    std::unique_ptr<QualityObject> qualityObject;
     try {
-      auto qualityObject = framework::DataRefUtils::as<QualityObject>(ref);
-      auto [emplacedIt, _] = mQualityObjectsMap.emplace(qualityObject->getDetectorName(), collectionForQualityObject(*qualityObject));
-      emplacedIt->second = merge(std::move(emplacedIt->second), qualityObject);
+      qualityObject = framework::DataRefUtils::as<QualityObject>(ref);
     } catch (...) {
       ILOG(Warning, Support) << "Unexpected message received, QualityObject expected" << ENDM;
+      continue;
     }
+    auto& converter = mFlagsMap[qualityObject->getDetectorName()][qualityObject->getName()];
+    if (converter == nullptr) {
+      converter = std::make_unique<QualitiesToFlagCollectionConverter>(collectionForQualityObject(*qualityObject), qualityObject->getPath());
+    }
+    (*converter)(*qualityObject);
   }
 }
 
@@ -130,8 +153,10 @@ void BookkeepingQualitySink::stop()
 
 void BookkeepingQualitySink::sendAndClear()
 {
-  mSendCallback(mGrpcUri, mQualityObjectsMap, mProvenance);
-  mQualityObjectsMap.clear();
+  if (!mFlagsMap.empty()) {
+    mSendCallback(mGrpcUri, mFlagsMap, mProvenance);
+  }
+  mFlagsMap.clear();
 }
 
 } // namespace o2::quality_control::core
