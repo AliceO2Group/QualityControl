@@ -284,11 +284,16 @@ void TH1Ratio<T>::Sumw2(Bool_t flag)
   if (!mHistoNum || !mHistoDen) {
     return;
   }
-
   mSumw2Enabled = flag;
-  mHistoNum->Sumw2(flag);
-  mHistoDen->Sumw2(flag);
-  T::Sumw2(flag);
+  if (!flag || !mHistoNum->GetSumw2N()) { // call only if Sumw2 was not called before or if false flag is passed just to reset structures
+    mHistoNum->Sumw2(flag);
+  }
+  if (!flag || !mHistoDen->GetSumw2N()) {
+    mHistoDen->Sumw2(flag);
+  }
+  if (!flag || !T::GetSumw2N()) {
+    T::Sumw2(flag);
+  }
 }
 
 } // namespace o2::quality_control_modules::common
