@@ -49,10 +49,10 @@
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
 		"checkParameters": {
-		    "feelimitsIB": "1,1",
-		    "feelimitsML": "1,0.87",
-		    "feelimitsOL": "1,0.92",
-		    "excludedfeeid": "",
+		    "feeidlimitsIB": "1,1",
+		    "feeidlimitsML": "1,0.87",
+		    "feeidlimitsOL": "1,0.92",
+		    "excludedfeeid": ""
 		},
                 "dataSource": [{
                     "type": "Task",
