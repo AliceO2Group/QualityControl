@@ -53,13 +53,13 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     doFlatCheck = true;
   }
 
-  bool checkFeeIDOnce = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "checkfeeoIDonce", "");
+  bool checkFeeIDOnce = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "checkfeeIDonlyonce", "");
 
   Quality result = Quality::Null;
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
 
-    if (mo->getName() == "General/ChipErrorPlots") {
+    if ((string)mo->getName() == "General/ChipErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h == nullptr) {
@@ -70,7 +70,8 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
         result.set(Quality::Bad);
     }
 
-    if (mo->GetName() == "General/LinkErrorVsFeeid") {
+    if ((string)mo->GetName() == "General/LinkErrorVsFeeid") {
+
       result = Quality::Good;
       auto* h = dynamic_cast<TH2D*>(mo->getObject());
       if (h == nullptr) {
@@ -78,7 +79,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
         continue;
       }
       for (int ifee = 0; ifee < h->GetNbinsX(); ifee++) {
-        for (int ierr = 0; ierr < h->GetNbinsY() - 1; ierr++) { // last y bin is recovery flag: do not check
+        for (int ierr = 0; ierr < h->GetNbinsY(); ierr++) { // last y bin is recovery flag: do not check
 
           if ((doFlatCheck && h->GetBinContent(ifee, ierr + 1) == 0) || (!doFlatCheck && h->GetBinContent(ifee + 1, ierr + 1) < vDecErrorLimits[ierr])) { // ok if below threshold
             continue;

@@ -200,15 +200,18 @@ void ITSChipStatusTask::endOfCycle()
 
   FeeIDOverview->Reset();
   for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
-    TH1D* hBarProj = DeadChips[iBarrel]->getNum()->ProjectionY("temp", TMath::Max(1, nQCCycleToMonitor - NCycleForOverview), nQCCycleToMonitor);
-    for (int ic = 0; ic < hBarProj->GetNbinsX(); ic++) {
+    TH1D* hBarProj = DeadChips[iBarrel]->getNum()->ProjectionY("temp", TMath::Max(1, nQCCycleToMonitor - NCycleForOverview + 1), nQCCycleToMonitor);
 
+    for (int ic = 0; ic < hBarProj->GetNbinsX(); ic++) {
       if (hBarProj->GetBinContent(ic + 1) < NCycleForOverview) { // report only chips dead for N consecutive cycles
         continue;
       }
       FeeIDOverview->Fill(getFEEID(iBarrel, ic), 1. / nChipsPerFeeID[iBarrel]);
     }
   }
+  FeeIDOverview->Sumw2(kFALSE);
+  FeeIDOverview->SetMinimum(0);
+  FeeIDOverview->SetMaximum(1);
 
   int iLayer = 0;
   int iStave = 0;

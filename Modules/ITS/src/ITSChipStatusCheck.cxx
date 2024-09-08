@@ -117,7 +117,7 @@ void ITSChipStatusCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
   TString status;
   int textColor;
 
-  if (mo->GetName() == "FEEIDOverview") {
+  if ((string)mo->GetName() == "FEEIDOverview") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast FEEIDOverview to TH1D*" << ENDM;
@@ -129,14 +129,9 @@ void ITSChipStatusCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       textColor = kGreen;
     } else if (checkResult == Quality::Bad) {
       status = "Quality::BAD (call expert)";
-      tInfo = std::make_shared<TLatex>(0.12, 0.831, "BAD: at least one FEEid with large number of missing chips");
-      tInfo->SetTextColor(kRed + 2);
-      tInfo->SetTextSize(0.04);
-      tInfo->SetTextFont(43);
-      tInfo->SetNDC();
-      h->GetListOfFunctions()->Add(tInfo->Clone());
       textColor = kRed + 2;
     }
+
     tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
     tInfo->SetTextColor(textColor);
     tInfo->SetTextSize(0.06);
@@ -145,7 +140,7 @@ void ITSChipStatusCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     h->GetListOfFunctions()->Add(tInfo->Clone());
   }
 
-  if (mo->getName() == "StaveStatusOverview") {
+  if ((string)mo->getName() == "StaveStatusOverview") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast StaveStatusOverview to TH2Poly*" << ENDM;
