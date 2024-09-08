@@ -48,6 +48,12 @@
                 "moduleName": "QcITS",
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
+		"checkParameters": {
+		    "feelimitsIB": "1,1",
+		    "feelimitsML": "1,0.87",
+		    "feelimitsOL": "1,0.92",
+		    "excludedfeeid": "",
+		},
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSChipStatus",

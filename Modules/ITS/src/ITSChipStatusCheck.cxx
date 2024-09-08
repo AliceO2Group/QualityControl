@@ -29,13 +29,37 @@ namespace o2::quality_control_modules::its
 
 Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+
+  // limits to be used as "X,Y" --> BAD if at least X FFEIDs have at least Y chips each into error
+  std::vector<float> feeidlimitsIB = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "feeidlimitsIB", ""));
+  std::vector<float> feeidlimitsML = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "feeidlimitsML", ""));
+  std::vector<float> feeidlimitsOL = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "feeidlimitsOL", ""));
+  std::vector<int> excludedfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "excludedfeeid", ""));
+
+  if (feeidlimitsIB.size() != 2) {
+    ILOG(Error, Support) << "Incorrect setting for feeidlimitsIB, check .json. Using default 1,1" << ENDM;
+    feeidlimitsIB.clear();
+    feeidlimitsIB = std::vector<float>{ 1, 1. };
+  }
+  if (feeidlimitsML.size() != 2) {
+    ILOG(Error, Support) << "Incorrect setting for feeidlimitsML, check .json. Using default 1,1" << ENDM;
+    feeidlimitsML.clear();
+    feeidlimitsML = std::vector<float>{ 1, 1. };
+  }
+  if (feeidlimitsOL.size() != 2) {
+    ILOG(Error, Support) << "Incorrect setting for feeidlimitsOL, check .json. Using default 1,1" << ENDM;
+    feeidlimitsOL.clear();
+    feeidlimitsOL = std::vector<float>{ 1, 1. };
+  }
+
   Quality result = Quality::Null;
   for (auto& [moName, mo] : *moMap) {
+
     if (mo->getName() == "StaveStatusOverview") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
       if (h == nullptr) {
-        ILOG(Error, Support) << "could not cast ChipError plots to TH2Poly" << ENDM;
+        ILOG(Error, Support) << "could not cast StaveStatusOverview plot from ChipError to TH2Poly" << ENDM;
         continue;
       }
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
@@ -49,6 +73,41 @@ Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         }
       }
     }
+
+    if (mo->getName() == "FEEIDOverview") {
+      result = Quality::Good;
+      auto* h = dynamic_cast<TH1D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast FEEIDoverview plot from ChipStatus to TH1D" << ENDM;
+        continue;
+      }
+
+      int nBadIB = 0;
+      int nBadML = 0;
+      int nBadOL = 0;
+      for (int ifee = 0; ifee < h->GetNbinsX(); ifee++) {
+
+        if (excludedfeeid.size() > 0 && std::find(excludedfeeid.begin(), excludedfeeid.end(), ifee) != excludedfeeid.end()) {
+          continue;
+        }
+
+        if (ifee >= FeeIDBoundaryVsBarrel[0] && ifee < FeeIDBoundaryVsBarrel[1] && h->GetBinContent(ifee + 1) >= feeidlimitsIB[1]) {
+          nBadIB++;
+        }
+        if (ifee >= FeeIDBoundaryVsBarrel[1] && ifee < FeeIDBoundaryVsBarrel[2] && h->GetBinContent(ifee + 1) >= feeidlimitsML[1]) {
+          nBadML++;
+        }
+        if (ifee >= FeeIDBoundaryVsBarrel[2] && ifee < FeeIDBoundaryVsBarrel[3] && h->GetBinContent(ifee + 1) >= feeidlimitsOL[1]) {
+          nBadOL++;
+        }
+      }
+
+      if (nBadIB >= feeidlimitsIB[0] || nBadML >= feeidlimitsML[0] || nBadOL >= feeidlimitsOL[0]) {
+        result = Quality::Bad;
+        TString text = "At least one FEEid with large number of missing chips";
+        result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), text.Data());
+      }
+    }
   }
   return result;
 }
@@ -57,10 +116,39 @@ void ITSChipStatusCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
 {
   TString status;
   int textColor;
-  if ((mo->getName() == "StaveStatusOverview")) {
+
+  if (mo->GetName() == "FEEIDOverview") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast FEEIDOverview to TH1D*" << ENDM;
+      return;
+    }
+
+    if (checkResult == Quality::Good) {
+      status = "Quality::GOOD";
+      textColor = kGreen;
+    } else if (checkResult == Quality::Bad) {
+      status = "Quality::BAD (call expert)";
+      tInfo = std::make_shared<TLatex>(0.12, 0.831, "BAD: at least one FEEid with large number of missing chips");
+      tInfo->SetTextColor(kRed + 2);
+      tInfo->SetTextSize(0.04);
+      tInfo->SetTextFont(43);
+      tInfo->SetNDC();
+      h->GetListOfFunctions()->Add(tInfo->Clone());
+      textColor = kRed + 2;
+    }
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
+    tInfo->SetTextColor(textColor);
+    tInfo->SetTextSize(0.06);
+    tInfo->SetTextFont(43);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo->Clone());
+  }
+
+  if (mo->getName() == "StaveStatusOverview") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (h == nullptr) {
-      ILOG(Error, Support) << "could not cast StatusOverview to TH2Poly*" << ENDM;
+      ILOG(Error, Support) << "could not cast StaveStatusOverview to TH2Poly*" << ENDM;
       return;
     }
     if (checkResult == Quality::Good) {

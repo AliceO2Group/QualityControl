@@ -48,6 +48,7 @@
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
                 "checkParameters": {
+		      "checkfeeIDonce": "true",
                       "DecLinkErrorLimits": "5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, -1",
                       "DecLinkErrorLimitsRatio": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1",
                       "DecLinkErrorType": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",

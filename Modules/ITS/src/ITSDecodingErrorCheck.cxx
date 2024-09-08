@@ -53,9 +53,12 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     doFlatCheck = true;
   }
 
+  bool checkFeeIDOnce = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "checkfeeoIDonce", "");
+
   Quality result = Quality::Null;
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
+
     if (mo->getName() == "General/ChipErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
@@ -66,6 +69,44 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
       if (h->GetMaximum() > 200)
         result.set(Quality::Bad);
     }
+
+    if (mo->GetName() == "General/LinkErrorVsFeeid") {
+      result = Quality::Good;
+      auto* h = dynamic_cast<TH2D*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast LinkErrorVsFeeid plot to TH2D*" << ENDM;
+        continue;
+      }
+      for (int ifee = 0; ifee < h->GetNbinsX(); ifee++) {
+        for (int ierr = 0; ierr < h->GetNbinsY() - 1; ierr++) { // last y bin is recovery flag: do not check
+
+          if ((doFlatCheck && h->GetBinContent(ifee, ierr + 1) == 0) || (!doFlatCheck && h->GetBinContent(ifee + 1, ierr + 1) < vDecErrorLimits[ierr])) { // ok if below threshold
+            continue;
+          }
+
+          if (vAlreadyCheckedFeeIDs.count(ifee) > 0) {
+            std::vector<int> flagskip = vAlreadyCheckedFeeIDs[ifee];
+            if (std::find(flagskip.begin(), flagskip.end(), ierr) != flagskip.end()) {
+              continue; // bin to be skipped
+            }
+          }
+
+          // if here, quality is BAD
+
+          if (checkFeeIDOnce) { // gives instruction to exclude chech on this bin from now on
+            if (vAlreadyCheckedFeeIDs.count(ifee) > 0) {
+              vAlreadyCheckedFeeIDs[ifee].push_back(ierr);
+            } else {
+              vAlreadyCheckedFeeIDs[ifee] = std::vector<int>{ ierr };
+            }
+          }
+
+          result.set(Quality::Bad);
+          result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD: ID = %d, %s", ierr, std::string(statistics.ErrNames[ierr]).c_str()));
+
+        } // end of y axis loop
+      }   // end of x axis loop
+    }     // end of check on General/LinkErrorVsFeeid
 
     if (((string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) {
       result = Quality::Good;
@@ -137,6 +178,31 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
 
   TString status;
   int textColor;
+
+  if (((string)mo->GetName()).find("General/LinkErrorVsFeeid") != std::string::npos) {
+
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "could not cast LinkErrorVsFeeid plot to TH2D*" << ENDM;
+      return;
+    }
+    if (checkResult == Quality::Good) {
+      status = "Quality::GOOD";
+      textColor = kGreen;
+    } else if (checkResult == Quality::Bad) {
+      status = "Quality::BAD (call expert)";
+      textColor = kRed + 2;
+    }
+
+    tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
+    tInfo->SetTextColor(textColor);
+    tInfo->SetTextSize(0.06);
+    tInfo->SetTextFont(43);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo->Clone());
+
+  } // end of beautify LinkErrorVsFeeid
+
   if ((((string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) || (mo->getName() == "General/ChipErrorPlots")) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
