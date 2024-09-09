@@ -26,6 +26,7 @@
 #include "QualityControl/HashDataDescription.h"
 
 #include <utility>
+#include <algorithm>
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -112,7 +113,7 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap, const Act
   if (filtered.empty()) {
     resultActivity = defaultActivity;
   } else {
-    // Aggregated Quality validity is a union of all Qualities used to produce it.
+    // Aggregated Quality validity is an intersection of all Qualities used to produce it.
     // This is to allow to trigger postprocessing on an update of the aggregated QualityObject
     // and get a validFrom timestamp which allows to access all the input QualityObjects as well.
     // Not sure if this is "correct", but I do not see a better solution at the moment...
@@ -122,8 +123,12 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap, const Act
                      return item.second->getActivity();
                    }));
     if (resultActivity.mValidity.isInvalid()) {
-      ILOG(Warning, Support) << "Overlapping validity of inputs QOs to aggregator " << mAggregatorConfig.name << " is invalid (disjoint validities of input objects). Default activity will be used instead." << ENDM;
-      resultActivity = defaultActivity;
+      ILOG(Warning, Support) << "Overlapping validity of inputs QOs to aggregator " << mAggregatorConfig.name << " is invalid (disjoint validities of input objects). The last valid timestamp in the latest input object will be used instead." << ENDM;
+      auto lastTimestamp = std::ranges::max(filtered | std::views::values, {}, [](const std::shared_ptr<const QualityObject>& item) {
+                             return item->getActivity().mValidity.getMax();
+                           })->getActivity()
+                             .mValidity.getMax();
+      resultActivity.mValidity = { lastTimestamp - 1, lastTimestamp };
     }
   }
 
