@@ -15,7 +15,6 @@
 ///
 
 // root includes
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
@@ -53,12 +52,11 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   const float cutMaxpTPC = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxpTPC");
   const float cutMinpTPCMIPs = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMinpTPCMIPs");
   const float cutMaxpTPCMIPs = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxpTPCMIPs");
-  const int createCanvas = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "createCanvas");
   const bool runAsyncAndTurnOffSomeHistos = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "turnOffHistosForAsync");
+  const bool getdEdxVspHypoHist = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "getdEdxVspHypoHist");
 
   // set track cuts defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
-  mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs, runAsyncAndTurnOffSomeHistos);
-  mQCPID.setCreateCanvas(createCanvas);
+  mQCPID.setPIDCuts(cutMinNCluster, cutAbsTgl, cutMindEdxTot, cutMaxdEdxTot, cutMinpTPC, cutMaxpTPC, cutMinpTPCMIPs, cutMaxpTPCMIPs, runAsyncAndTurnOffSomeHistos, getdEdxVspHypoHist);
   mQCPID.initializeHistograms();
   //mSeparationPower = new TProfile("mSeparationPower", "mSeparationPower", nPars, 0., (float)nPars);
   mSeparationPower.reset(new TProfile("mSeparationPower", "mSeparationPower", nPars, 0., (float)nPars));
@@ -69,11 +67,6 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   for (auto const& pair : mQCPID.getMapOfHisto()) {
     for (auto& hist : pair.second) {
       getObjectsManager()->startPublishing(hist.get());
-    }
-  }
-  for (auto const& pair : mQCPID.getMapOfCanvas()) {
-    for (auto& canv : pair.second) {
-      getObjectsManager()->startPublishing(canv.get());
     }
   }
 }
