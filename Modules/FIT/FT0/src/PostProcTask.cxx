@@ -104,6 +104,15 @@ void PostProcTask::initialize(Trigger trg, framework::ServiceRegistryRef service
   mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "SW + HW only to validated triggers fraction", mMapTrgBits);
   mAmpl = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mTime = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+
+  mChannelGeometry.init(-200., 200., -200., 200., 10.); // values - borders for hist and margin
+
+  mHistStatsSideA = mChannelGeometry.makeHistSideA("GeoChannelStatA", "Channel occupancy, side-A");
+  mHistStatsSideC = mChannelGeometry.makeHistSideC("GeoChannelStatC", "Channel occupancy, side-C");
+  getObjectsManager()->startPublishing(mHistStatsSideA.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistStatsSideA.get(), "TEXT COLZ L");
+  getObjectsManager()->startPublishing(mHistStatsSideC.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistStatsSideC.get(), "TEXT COLZ L");
 }
 
 void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
@@ -119,6 +128,7 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
   // Trigger correlation
   auto hTrgCorr = mPostProcHelper.template getObject<TH2F>("TriggersCorrelation");
   mHistTriggers->Reset();
+
   if (hTrgCorr) {
     double totalStat{ 0 };
     for (int iBin = 1; iBin < mHistTriggers->GetXaxis()->GetNbins() + 1; iBin++) {
@@ -130,6 +140,10 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
     mHistTriggers->SetEntries(totalStat);
   }
 
+  auto getVrtTrgCounters = [binPos = static_cast<int>(o2::ft0::Triggers::bitVertex) + 1](const auto& histTrgCnts) {
+    return histTrgCnts->GetBinContent(binPos);
+  };
+  const auto trgVrtCnts = getVrtTrgCounters(mHistTriggers);
   // Trigger rates
   mHistTriggerRates->Reset();
   if (mPostProcHelper.IsNonEmptySample()) {
@@ -168,6 +182,14 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
     std::unique_ptr<TH1D> projInWindow(hTimePerChannel->ProjectionX("projInWindow", hTimePerChannel->GetYaxis()->FindBin(mLowTimeThreshold), hTimePerChannel->GetYaxis()->FindBin(mUpTimeThreshold)));
     std::unique_ptr<TH1D> projFull(hTimePerChannel->ProjectionX("projFull"));
     mHistTimeInWindow->Divide(projInWindow.get(), projFull.get());
+    // hist with channel variables -> geometrical lot with channel variables
+    const double scaleVrtTrg = trgVrtCnts > 0. ? 1. / trgVrtCnts : 0.0;
+    projInWindow->Scale(scaleVrtTrg);
+    mHistStatsSideA->Reset("content");
+    mHistStatsSideC->Reset("content");
+    mHistStatsSideA->SetStats(0);
+    mHistStatsSideC->SetStats(0);
+    mChannelGeometry.convertHist1D(projInWindow.get(), mHistStatsSideA.get(), mHistStatsSideC.get());
   }
 
   if (hAmpPerChannel && hTimePerChannel) {

@@ -21,6 +21,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "FITCommon/PostProcHelper.h"
 #include "FITCommon/DetectorFIT.h"
+#include "FT0/ChannelGeometry.h"
 
 #include "CCDB/CcdbApi.h"
 #include "CommonConstants/LHCConstants.h"
@@ -29,6 +30,7 @@
 #include "DataFormatsFT0/Digit.h"
 
 #include <TH2.h>
+#include <TH2Poly.h>
 #include <TProfile.h>
 #include <TCanvas.h>
 #include <TGraph.h>
@@ -75,6 +77,9 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TH2F> mHistBcTrgOutOfBunchColl;
   std::unique_ptr<TProfile> mAmpl;
   std::unique_ptr<TProfile> mTime;
+  std::unique_ptr<TH2Poly> mHistStatsSideA;
+  std::unique_ptr<TH2Poly> mHistStatsSideC;
+  ChannelGeometry mChannelGeometry; //!
   // Configurations
   int mLowTimeThreshold{ -192 };
   int mUpTimeThreshold{ 192 };
