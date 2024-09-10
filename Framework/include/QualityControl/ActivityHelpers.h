@@ -59,7 +59,7 @@ Activity strictestMatchingActivity(const RangeOfActivities auto& activities)
   return result;
 }
 
-/// Produces an Activity which matches all the provided, but the validity is a union.
+/// Produces an Activity which matches all the provided, but the validity is an intersection.
 /// Be sure to check if the result validity is valid, it might not if the argument validities do not overlap
 Activity overlappingActivity(const RangeOfActivities auto& activities)
 {
