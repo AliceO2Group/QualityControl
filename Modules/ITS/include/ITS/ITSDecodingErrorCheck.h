@@ -44,6 +44,7 @@ class ITSDecodingErrorCheck : public o2::quality_control::checker::CheckInterfac
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::vector<int> vListErrorIdBad, vListErrorIdMedium;
   bool doFlatCheck = false;
+  std::map<int, std::vector<int>> vAlreadyCheckedFeeIDs{}; // alreadychecked[fee] = <vector of error flags to skip>
   o2::itsmft::GBTLinkDecodingStat statistics;
 
  private:

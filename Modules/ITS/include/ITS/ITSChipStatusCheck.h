@@ -52,6 +52,7 @@ class ITSChipStatusCheck : public o2::quality_control::checker::CheckInterface
   static const int NLayer = 7;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   std::shared_ptr<TLatex> tInfo;
+  const int FeeIDBoundaryVsBarrel[4] = { 0, 144, 252, 432 };
 };
 
 } // namespace o2::quality_control_modules::its
