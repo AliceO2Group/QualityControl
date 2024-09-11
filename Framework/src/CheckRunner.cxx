@@ -169,51 +169,10 @@ CheckRunner::~CheckRunner()
   }
 }
 
-void CheckRunner::refreshConfig(InitContext& iCtx)
-{
-  try {
-    // get the tree
-    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
-
-    if (updatedTree.empty()) {
-      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
-    } else {
-      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
-        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
-        printTree(updatedTree);
-      }
-
-      // prepare the information we need
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
-
-      // Use the config to reconfigure the check runner.
-      // The configs for the checks we find in the config and in our map are updated.
-      // Topology changes are ignored: New checks are ignored. Removed checks are ignored.
-      for (const auto& checkSpec : infrastructureSpec.checks) {
-        // search if we have this check in this runner and replace it
-        if (mChecks.find(checkSpec.checkName) != mChecks.end()) {
-          auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
-          mChecks.erase(checkConfig.name);
-          mChecks.emplace(checkConfig.name, checkConfig);
-          ILOG(Debug, Devel) << "Check " << checkSpec.checkName << " has been updated" << ENDM;
-        }
-      }
-    }
-  } catch (std::invalid_argument& error) {
-    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
-    ILOG(Warning, Devel) << "Could not get updated config tree in CheckRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
-  } catch (...) {
-    // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in CheckRunner::refreshConfig(): "
-                         << current_diagnostic(true) << ENDM;
-  }
-}
-
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
     core::initInfologger(iCtx, mConfig.infologgerDiscardParameters, createCheckRunnerFacility(mDeviceName));
-    refreshConfig(iCtx);
     Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
     initMonitoring();

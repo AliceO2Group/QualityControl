@@ -81,50 +81,11 @@ TaskRunner::~TaskRunner()
   ILOG(Debug, Trace) << "TaskRunner destructor (" << this << ")" << ENDM;
 }
 
-void TaskRunner::refreshConfig(InitContext& iCtx)
-{
-  try {
-    // get the tree
-    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
-
-    if (updatedTree.empty()) {
-      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
-    } else {
-      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
-        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
-        printTree(updatedTree);
-      }
-
-      // prepare the information we need
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
-      // find the correct taskSpec
-      auto taskSpecIter = find_if(infrastructureSpec.tasks.begin(),
-                                  infrastructureSpec.tasks.end(),
-                                  [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
-      if (taskSpecIter != infrastructureSpec.tasks.end()) {
-        bool runningWithMergers = mTaskConfig.parallelTaskID != 0; // it is 0 when we are the one and only task instance.
-        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter, runningWithMergers);
-        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);
-        ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
-      } else {
-        ILOG(Error, Support) << "Could not find the task " << mTaskConfig.taskName << " in the templated config provided by ECS, we continue with the original config" << ENDM;
-      }
-    }
-  } catch (std::invalid_argument& error) {
-    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
-    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
-  } catch (...) {
-    // we catch here because we don't know where it will get lost in dpl, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig() : " << current_diagnostic(true) << ENDM;
-  }
-}
-
 void TaskRunner::init(InitContext& iCtx)
 {
   core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.taskName, mTaskConfig.detectorName);
   ILOG(Info, Devel) << "Initializing TaskRunner" << ENDM;
 
-  refreshConfig(iCtx);
   printTaskConfig();
   Bookkeeping::getInstance().init(mTaskConfig.bookkeepingUrl);
 

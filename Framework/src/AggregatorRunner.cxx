@@ -78,48 +78,6 @@ AggregatorRunner::~AggregatorRunner()
   }
 }
 
-void AggregatorRunner::refreshConfig(InitContext& iCtx)
-{
-  try {
-    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
-
-    if (updatedTree.empty()) {
-      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
-    } else {
-      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
-        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
-        printTree(updatedTree);
-      }
-
-      // read the config, prepare spec
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree, workflow_type_helpers::getWorkflowType(iCtx.options()));
-
-      // replace the runner config
-      mRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
-
-      // replace the aggregators configs
-      mAggregatorsConfig.clear();
-      mAggregatorsConfig = AggregatorRunnerFactory::extractAggregatorsConfig(infrastructureSpec.common, infrastructureSpec.aggregators);
-
-      // replace the inputs
-      mInputs.clear();
-      prepareInputs();
-
-      mOutputs.clear();
-      prepareOutputs();
-
-      ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
-    }
-  } catch (std::invalid_argument& error) {
-    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
-    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
-  } catch (...) {
-    // we catch here because we don't know where it will get lost in DPL, and also we don't care if this part has failed.
-    ILOG(Warning, Devel) << "Error caught in refreshConfig(): "
-                         << current_diagnostic(true) << ENDM;
-  }
-}
-
 void AggregatorRunner::prepareInputs()
 {
   std::set<std::string> alreadySeen;
@@ -158,7 +116,6 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
   core::initInfologger(iCtx, mRunnerConfig.infologgerDiscardParameters, "aggregator");
-  refreshConfig(iCtx);
   QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
   Bookkeeping::getInstance().init(mRunnerConfig.bookkeepingUrl);
 
