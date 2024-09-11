@@ -83,12 +83,14 @@ class QualityTask : public quality_control::postprocessing::PostProcessingInterf
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
-  std::pair<std::shared_ptr<quality_control::core::QualityObject>, bool> getQO(
-    quality_control::repository::DatabaseInterface& qcdb, const quality_control::postprocessing::Trigger& t, const std::string& fullPath, const std::string& group);
+  std::pair<std::shared_ptr<quality_control::core::QualityObject>, bool> getLatestQO(
+    quality_control::repository::DatabaseInterface& qcdb, const o2::quality_control::core::Activity& activity, const std::string& fullPath, const std::string& group);
 
  private:
   /// \brief configuration parameters
   QualityTaskConfig mConfig;
+  /// \brief QOs are discarded if their creation time stamp is more than mMaxObjectAgeMs milliseconds in the past (set to zero to accept all objects)
+  int64_t mMaxObjectAgeMs{ 600000 };
   /// \brief latest creation timestamp of each tracked QO
   std::unordered_map<std::string /* full path */, uint64_t> mLatestTimestamps;
   /// \brief colors associated to each quality state (Good/Medium/Bad/Null)
