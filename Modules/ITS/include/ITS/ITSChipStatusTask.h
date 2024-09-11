@@ -85,10 +85,13 @@ class ITSChipStatusTask final : public TaskInterface
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void Beautify();
   void getStavePoint(int layer, int stave, double* px, double* py);
+  int getFEEID(int barrel, int chipinbarrel);
+
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
   const int nHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   const int nChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
+  const int nChipsPerFeeID[3] = { 3, 56, 98 }; // index is the barrel
   const int nChipsPerLayer[NLayer] = { 108, 144, 180, 2688, 3360, 8232, 9408 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
@@ -105,6 +108,7 @@ class ITSChipStatusTask final : public TaskInterface
   int nQCCycleToMonitor = 10;
   TString BarrelNames[3] = { "IB", "ML", "OB" };
   TH2Poly* StaveOverview;
+  TH1D* FeeIDOverview;
   int NCycleForOverview = 3;
   int nRotationType = 1;
   std::vector<int> CurrentDeadChips[3]; // Vectors of Dead Chips in current QC cycle

@@ -77,6 +77,9 @@ void ITSChipStatusTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
   getObjectsManager()->startPublishing(StaveOverview);
+
+  FeeIDOverview = new TH1D("FEEIDOverview", Form("Fraction of missing chips in the last %d cycles;QC FEEid;fraction of missing chips", NCycleForOverview), NFees, 0, NFees);
+  getObjectsManager()->startPublishing(FeeIDOverview);
 }
 
 void ITSChipStatusTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -131,6 +134,22 @@ void ITSChipStatusTask::getStavePoint(int layer, int stave, double* px, double* 
   }
 }
 
+int ITSChipStatusTask::getFEEID(int barrel, int chipinbarrel)
+{
+  if (barrel == 0) {
+    return chipinbarrel / nChipsPerFeeID[0];
+  }
+  if (barrel == 1) {
+    return ChipsBoundaryBarrels[1] / nChipsPerFeeID[0] + chipinbarrel / nChipsPerFeeID[1];
+  }
+  if (barrel == 2) {
+    return (ChipsBoundaryBarrels[1] / nChipsPerFeeID[0]) +
+           ((ChipsBoundaryBarrels[2] - ChipsBoundaryBarrels[1]) / nChipsPerFeeID[1]) +
+           chipinbarrel / nChipsPerFeeID[2];
+  }
+  return -1;
+}
+
 void ITSChipStatusTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   auto aliveChips = ctx.inputs().get<gsl::span<char>>("chipstatus");
@@ -179,6 +198,21 @@ void ITSChipStatusTask::endOfCycle()
   Beautify();
   //---------- Shifter plot
 
+  FeeIDOverview->Reset();
+  for (int iBarrel = 0; iBarrel < 3; iBarrel++) {
+    TH1D* hBarProj = DeadChips[iBarrel]->getNum()->ProjectionY("temp", TMath::Max(1, nQCCycleToMonitor - NCycleForOverview + 1), nQCCycleToMonitor);
+
+    for (int ic = 0; ic < hBarProj->GetNbinsX(); ic++) {
+      if (hBarProj->GetBinContent(ic + 1) < NCycleForOverview) { // report only chips dead for N consecutive cycles
+        continue;
+      }
+      FeeIDOverview->Fill(getFEEID(iBarrel, ic), 1. / nChipsPerFeeID[iBarrel]);
+    }
+  }
+  FeeIDOverview->Sumw2(kFALSE);
+  FeeIDOverview->SetMinimum(0);
+  FeeIDOverview->SetMaximum(1);
+
   int iLayer = 0;
   int iStave = 0;
   StaveOverview->Reset("content");
@@ -190,11 +224,16 @@ void ITSChipStatusTask::endOfCycle()
       TH1D* hBarrelProj = DeadChips[iBarrel]->getNum()->ProjectionY("dummy", nQCCycleToMonitor - iSlice, nQCCycleToMonitor - iSlice);
       iStave = 0;
       int nEmptyChips = 0;
+
       for (int iChip = 1; iChip <= hBarrelProj->GetNbinsX(); iChip++) {
+
         if (hBarrelProj->GetBinContent(iChip) > 0)
           nEmptyChips++;
-        if (((iChip) % (nChipsPerHic[iLayer] * nHicPerStave[iLayer]) == 0)) {
-          if (nEmptyChips == nChipsPerHic[iLayer] * nHicPerStave[iLayer]) {
+
+        if ((iChip) % (nChipsPerHic[iLayer] * nHicPerStave[iLayer]) == 0) {
+
+          if (nEmptyChips == nChipsPerHic[iLayer] * nHicPerStave[iLayer]) { // all the chips of the stave are dead
+
             int binContent = StaveOverview->GetBinContent(iStave + StaveBoundary[iLayer]) * NCycleForOverview + 1;
             StaveOverview->SetBinContent(iStave + StaveBoundary[iLayer], 1. * binContent / NCycleForOverview);
           }
@@ -204,7 +243,8 @@ void ITSChipStatusTask::endOfCycle()
             iLayer++;
             iStave = 0;
           }
-        }
+
+        } // end of ((iChip) % (nChipsPerHic[iLayer] * nHicPerStave[iLayer]) == 0)
       }
     }
   }
