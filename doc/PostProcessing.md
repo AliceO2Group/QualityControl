@@ -152,10 +152,10 @@ A postprocessing task can access custom parameters declared in the configuration
 
 Each of the three methods can be invoked by one or more triggers. Below are listed the possible options (case insensitive).
 
- * `"sor"` or `"startofrun"` - Start Of Run
- * `"eor"` or `"endofrun"` - End Of Run
- * `"sof"` or `"startoffill"` - Start Of Fill
- * `"eof"` or `"endoffill"` - End Of Fill
+ * `"sor"` or `"startofrun"` - start of a **different** run (useful for long-running post-processing which observes many data taking runs). Please ensure that the configuration file includes a kafka broker.
+ * `"eor"` or `"endofrun"` - end of a **different** run (useful for long-running post-processing which observes many data taking runs). Please ensure that the configuration file includes a kafka broker.
+ * `"sof"` or `"startoffill"` - Start Of Fill (not implemented yet)
+ * `"eof"` or `"endoffill"` - End Of Fill (not implemented yet)
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
  * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated (applicable for synchronous processing). For example: `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
  * `"foreachobject:[qcdb/ccdb]:<path>"` - For Each Object - triggers for each object in QCDB or CCDB which matches the activity indicated in the QC config file (applicable for asynchronous processing).
