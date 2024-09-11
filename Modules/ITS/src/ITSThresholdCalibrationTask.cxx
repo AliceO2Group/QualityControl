@@ -180,7 +180,7 @@ void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
           hCalibrationThrNoiseLayer[result.Layer]->Fill(result.Noise);
           hCalibrationThrNoiseRMSLayer[result.Layer]->Fill(result.NoiseRMS);
         }
-        // Fill percentage of unsuccess
+        // Fill percentage of success
         hUnsuccess[iBarrel]->SetBinContent(currentChip, currentStave, result.status);
       } else if (iScan == 4) {
         // fill 2D plots for the pulse length scan
@@ -447,7 +447,7 @@ void ITSThresholdCalibrationTask::createAllHistos()
     addObject(hCalibrationChipDone[iBarrel]);
 
     // Unsuccess 2D plot
-    hUnsuccess[iBarrel] = new TH2F(Form("ChipUnsuccess%s", sBarrelType[iBarrel].Data()), Form("Percentage of unsuccess %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+    hUnsuccess[iBarrel] = new TH2F(Form("ChipUnsuccess%s", sBarrelType[iBarrel].Data()), Form("Percentage of success %s", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
     hUnsuccess[iBarrel]->SetStats(0);
     hUnsuccess[iBarrel]->SetMinimum(0);
     hUnsuccess[iBarrel]->SetMaximum(100);
