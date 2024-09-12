@@ -45,9 +45,24 @@
           "nBCbins": "103",
           "dicttimestamp" : "0",
           "doNorm" : "1",
-          "InvMasses" : "0"
+          "InvMasses" : "0",
+          "UseDefaultMomResPar" : "0",
+          "MomResParMEAS1": "45, 45, 45, 55, 55, 55, 55",
+          "MomResParMEAS2": "40, 40, 40, 40, 40, 40, 40",
+          "MomResParMSC1": "30, 30, 30, 110, 110, 110, 110",
+          "MomResParMSC2": "25, 25, 25, 75, 75, 75, 75",
+          "ResidualMonitorTrackMinPt" : "0.00"
+        },
+	"grpGeomRequest" : {
+          "geomRequest": "Aligned",
+          "askGRPECS": "false",
+          "askGRPLHCIF": "false",
+          "askGRPMagField": "false",
+          "askMatLUT": "false",
+          "askTime": "false",
+          "askOnceAllButField": "true",
+          "needPropagatorD":  "false"
         }
-
       }
     },
     "checks" : {
