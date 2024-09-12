@@ -129,7 +129,6 @@ class TaskRunner : public framework::Task
 
   /// \brief Checks if all the expected data inputs are present in the provided InputRecord
   static bool isDataReady(const framework::InputRecord& inputs);
-  void refreshConfig(framework::InitContext& iCtx);
   void printTaskConfig() const;
   void startOfActivity();
   void endOfActivity();

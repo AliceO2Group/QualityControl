@@ -211,9 +211,6 @@ class CheckRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
-  /// Refresh the configuration using the payload found in the fairmq options (if available)
-  void refreshConfig(framework::InitContext& iCtx);
-
   // General state
   std::string mDeviceName;
   std::map<std::string, Check> mChecks;

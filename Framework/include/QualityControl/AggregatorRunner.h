@@ -142,8 +142,6 @@ class AggregatorRunner : public framework::Task
 
   void send(const QualityObjectsWithAggregatorNameVector&, framework::DataAllocator&);
 
-  void refreshConfig(framework::InitContext& iCtx);
-
   /**
    * Prepare the inputs, remove the duplicates
    */
