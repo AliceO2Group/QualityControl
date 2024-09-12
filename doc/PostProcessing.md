@@ -730,6 +730,8 @@ A **title** can be added, which is used in the summary canvas to denote given Qu
 If it is absent, **name** is used instead.
 Optionally, one can add **messageBad**, **messageMedium**, **messageGood**, **messageNull** to add a message when a particular Quality is seen.
 
+At each update, the task retrieves the latest version of each input QualityObject, even if their validity range ends in the past. A task configuration parameter, called `maxObjectAgeSeconds`, allows to define the maximum allowed age (in seconds) of the retrieved objects. The age is defined as the difference between the the time stamp of the task update and the creation time stamp of the retrieved object. 
+
 Here is a complete example of `QualityTask` configuration:
 ```json
 {
@@ -743,6 +745,9 @@ Here is a complete example of `QualityTask` configuration:
         "className": "o2::quality_control_modules::common::QualityTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
+        "taskParameters": {
+          "maxObjectAgeSeconds": "300"
+        },
         "qualityGroups": [
           {
             "name" : "global",
