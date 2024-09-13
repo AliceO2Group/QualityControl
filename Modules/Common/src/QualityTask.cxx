@@ -153,11 +153,19 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
   mColors[Quality::Bad.getName()] = kRed;
   mColors[Quality::Medium.getName()] = kOrange - 3;
   mColors[Quality::Good.getName()] = kGreen + 2;
+  mColors["Missing"] = kBlue + 2;
 
   mQualityIDs[Quality::Null.getName()] = 0;
   mQualityIDs[Quality::Bad.getName()] = 1;
   mQualityIDs[Quality::Medium.getName()] = 2;
   mQualityIDs[Quality::Good.getName()] = 3;
+
+  std::string key("maxObjectAgeSeconds");
+  auto value = mCustomParameters.atOptional(key, t.activity);
+  if (!value) {
+    value = mCustomParameters.atOptional(key).value_or("600");
+  }
+  mMaxObjectAgeMs = std::stoi(*value) * 1000;
 
   // instantiate the histograms and trends, one for each of the quality objects in the data sources list
   for (const auto& qualityGroupConfig : mConfig.qualityGroups) {
@@ -189,19 +197,26 @@ void QualityTask::initialize(quality_control::postprocessing::Trigger t, framewo
 // A non-null QO is returned in the first element of the pair if the QO is found in the QCDB
 // The second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
 
-std::pair<std::shared_ptr<QualityObject>, bool> QualityTask::getQO(
-  repository::DatabaseInterface& qcdb, const Trigger& t, const std::string& fullPath, const std::string& group)
+std::pair<std::shared_ptr<QualityObject>, bool> QualityTask::getLatestQO(
+  repository::DatabaseInterface& qcdb, const Activity& activity, const std::string& fullPath, const std::string& group)
 {
   // retrieve QO from CCDB
-  auto qo = qcdb.retrieveQO(fullPath, t.timestamp, t.activity);
+  auto qo = qcdb.retrieveQO(fullPath, repository::DatabaseInterface::Timestamp::Latest, activity);
   if (!qo) {
     return { nullptr, false };
   }
   // get the MO creation time stamp
-  long thisTimestamp{ 0 };
-  auto createdIter = qo->getMetadataMap().find(repository::metadata_keys::created);
-  if (createdIter != qo->getMetadataMap().end()) {
-    thisTimestamp = std::stol(createdIter->second);
+  long thisTimestamp = (qo->getMetadataMap().count(repository::metadata_keys::created) > 0) ? std::stol(qo->getMetadataMap().at(repository::metadata_keys::created)) : 0;
+
+  // check if the object is not older than a given number of milliseconds
+  if (mMaxObjectAgeMs > 0) {
+    uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    auto elapsed = now - thisTimestamp;
+    ILOG(Info, Devel) << "Quality Object '" << fullPath << "' for activity " << activity << " was created " << elapsed << " ms in the past" << ENDM;
+    if (elapsed > mMaxObjectAgeMs) {
+      ILOG(Warning, Support) << "Quality Object '" << fullPath << "' for activity " << activity << " is too old: " << elapsed << " > " << mMaxObjectAgeMs << " ms" << ENDM;
+      return { nullptr, false };
+    }
   }
 
   // check if the object is newer than the last visited one
@@ -245,9 +260,9 @@ void QualityTask::update(quality_control::postprocessing::Trigger t, framework::
       // retrieve QO from CCDB, in the form of a std::pair<std::shared_ptr<QualityObject>, bool>
       // a valid object is returned in the first element of the pair if the QO is found in the QCDB
       // the second element of the pair is set to true if the QO has a time stamp more recent than the last retrieved one
-      auto [qo, wasUpdated] = getQO(qcdb, t, fullPath, qualityGroupConfig.name);
+      auto [qo, wasUpdated] = getLatestQO(qcdb, t.activity, fullPath, qualityGroupConfig.name);
       if (!qo) {
-        lines.emplace_back(Message{ fmt::format("#color[{}]{{{} : quality missing!}}", mColors[Quality::Null.getName()], qualityTitle) });
+        lines.emplace_back(Message{ fmt::format("#color[{}]{{{} : quality missing!}}", mColors["Missing"], qualityTitle) });
         lines.emplace_back(TextAlign{ 12 });
         continue;
       }
