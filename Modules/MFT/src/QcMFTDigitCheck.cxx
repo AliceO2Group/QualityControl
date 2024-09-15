@@ -218,8 +218,17 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         ILOG(Error, Support) << "Could not cast mDigitOccupancySummary to TH2F." << ENDM;
         return Quality::Null;
       }
+      // check if all FLPs are sending data
+      bool mEmptyFLP = false;
+      for (int iBinX = 0; iBinX < hDigitOccupancySummary->GetNbinsX(); iBinX++) {
+        for (int iBinY = 0; iBinY < hDigitOccupancySummary->GetNbinsY(); iBinY++) {
+          if ((hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
+            mEmptyFLP = true;
+          }
+        }
+      }
 
-      if (mAdjacentLaddersEmpty) {
+      if (mAdjacentLaddersEmpty || mEmptyFLP) {
         result = Quality::Bad;
       } else if (mEmptyCount >= mLadderThresholdMedium) {
         result = Quality::Medium;
