@@ -219,16 +219,17 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         return Quality::Null;
       }
       // check if all FLPs are sending data
-      bool mEmptyFLP = false;
+      // with a missing FLP, the corresponding zones remain empty in the summary histogram
+      bool mEmptyZone = false;
       for (int iBinX = 0; iBinX < hDigitOccupancySummary->GetNbinsX(); iBinX++) {
         for (int iBinY = 0; iBinY < hDigitOccupancySummary->GetNbinsY(); iBinY++) {
           if ((hDigitOccupancySummary->GetBinContent(iBinX + 1, iBinY + 1)) == 0) {
-            mEmptyFLP = true;
+            mEmptyZone = true;
           }
         }
       }
 
-      if (mAdjacentLaddersEmpty || mEmptyFLP) {
+      if (mAdjacentLaddersEmpty || mEmptyZone) {
         result = Quality::Bad;
       } else if (mEmptyCount >= mLadderThresholdMedium) {
         result = Quality::Medium;
