@@ -117,7 +117,7 @@ void DaqTask::endOfActivity(const Activity& /*activity*/)
   getObjectsManager()->stopPublishing(mInputSize.get());
   getObjectsManager()->stopPublishing(mNumberRDHs.get());
   getObjectsManager()->stopPublishing(mSumRDHSizesInRDH.get());
-  getObjectsManager()->stopPublishing(mSumRDHSizesInRDH.get());
+  getObjectsManager()->stopPublishing(mSumRDHSizesInTF.get());
   getObjectsManager()->stopPublishing(mRDHSizesPerCRUIds.get());
 }
 
@@ -132,7 +132,7 @@ void DaqTask::reset()
   mInputSize->Reset();
   mNumberRDHs->Reset();
   mSumRDHSizesInRDH->Reset();
-  mSumRDHSizesInRDH->Reset();
+  mSumRDHSizesInTF->Reset();
   mRDHSizesPerCRUIds->Reset();
 }
 
