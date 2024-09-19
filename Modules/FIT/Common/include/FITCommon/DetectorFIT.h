@@ -104,6 +104,12 @@ class BaseDetectorFIT
     newTrgMap.insert({ Triggers_t::bitDataIsValid, "DataIsValid" });
     return newTrgMap;
   }
+  static TrgMap_t addBitsToMap(const TrgMap_t& trgMap, const std::vector<TrgMap_t::value_type>& vecPairs)
+  {
+    auto newTrgMap = trgMap;
+    std::for_each(vecPairs.cbegin(), vecPairs.cend(), [&newTrgMap](const auto& entry) { newTrgMap.insert(entry); });
+    return newTrgMap;
+  }
   static const inline TrgMap_t sMapPMbits = {
     { ChannelData_t::kNumberADC, "NumberADC" },
     { ChannelData_t::kIsDoubleEvent, "IsDoubleEvent" },
@@ -168,6 +174,7 @@ struct DetectorFIT<EDetectorFIT::kFT0> : public BaseDetectorFIT<EDetectorFIT::kF
     { Triggers_t::bitSCen, "SemiCentral" }
   };
   static const inline TrgMap_t sMapTechTrgBits = addTechTrgBits(sMapTrgBits);
+  static const inline TrgMap_t sMapTechTrgBitsExtra = addBitsToMap(sMapTechTrgBits, { { Triggers_t::bitMinBias, "MinBias" } });
 };
 
 template <>

@@ -60,7 +60,7 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   o2::quality_control_modules::fit::PostProcHelper mPostProcHelper;
   bool mIsFirstIter{ true };
   typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
-  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTechTrgBitsExtra = Detector_t::sMapTechTrgBitsExtra;
   typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
   // MOs
   std::unique_ptr<TH2F> mHistChDataNOTbits;
