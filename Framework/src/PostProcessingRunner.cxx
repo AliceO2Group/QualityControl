@@ -70,8 +70,8 @@ std::unique_ptr<DatabaseInterface> PostProcessingRunner::configureDatabase(std::
 {
   auto database = DatabaseFactory::create(dbConfig.at("implementation"));
   database->connect(dbConfig);
-  ILOG(Info, Support) << name << " database that is going to be used > Implementation : " << dbConfig.at("implementation") << " / "
-                      << " Host : " << dbConfig.at("host") << ENDM;
+  ILOG(Info, Devel) << name << " database that is going to be used > Implementation : " << dbConfig.at("implementation") << " / "
+                    << " Host : " << dbConfig.at("host") << ENDM;
   return database;
 }
 
