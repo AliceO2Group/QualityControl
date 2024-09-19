@@ -68,8 +68,9 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPublishMore = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishMore", mPublishMore);
 
   //analysis for its-only residual
+  mAlignmentMonitor = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doAlignmentMonitor", mAlignmentMonitor);
   mDefaultMomResPar = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "UseDefaultMomResPar", mDefaultMomResPar);
-  if(mDefaultMomResPar == 0){
+  if(mAlignmentMonitor == 1 && mDefaultMomResPar == 0){
     std::vector<int> vMomResParMEAS1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMEAS1", ""));
     std::vector<int> vMomResParMEAS2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMEAS2", ""));
     std::vector<int> vMomResParMSC1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMSC1", ""));
@@ -82,6 +83,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
       sigma_msc[1][l] = (double)vMomResParMSC2[l];
     }
   }
+  mResMonNclMin = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResidualMonitorNclMin", mResMonNclMin);
   mResMonTrackMinPt = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResidualMonitorTrackMinPt", mResMonTrackMinPt);
 
   fitfuncXY.loadparameters(sigma_meas, sigma_msc);
@@ -111,10 +113,6 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
 
-  //o2::base::GeometryManager::loadGeometry();
-  mGeom = o2::its::GeometryTGeo::Instance();
-  mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
-
   if (mTimestamp == -1) { // get dict from ccdb
     mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
@@ -123,6 +121,11 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::map<std::string, std::string> metadata;
     mDict = TaskInterface::retrieveConditionAny<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary", metadata, ts);
     ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
+
+    o2::its::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::its::GeometryTGeo>("ITS/Config/Geometry", metadata, ts));
+    mGeom = o2::its::GeometryTGeo::Instance();
+    //mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+    ILOG(Debug, Devel) << "Loaded new instance of mGeom" << ENDM;
   }
 
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
@@ -252,7 +255,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       std::vector<bool> hitUpdate;
       int chipIDs[7] = {-1, -1, -1, -1, -1, -1, -1};
-      if(out.getPt()>mResMonTrackMinPt) {
+      if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
         for (int iLayer = 0; iLayer < NLayer; iLayer++) hitUpdate.push_back(false);
       }
 
@@ -262,8 +265,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         auto ChipID = cluster.getSensorID();
 
         int layer = 0;
-        while (ChipID > ChipBoundary[layer])
+        while (ChipID >= ChipBoundary[layer] && layer <= NLayer){
           layer++;
+        }
         layer--;
 
         double clusterSizeWithCorrection = (double)clSize[index] * (std::cos(std::atan(out.getTgl())));
@@ -272,7 +276,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
 
         //Residual Monitoring
-        if(out.getPt()>mResMonTrackMinPt) {
+        if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
 
           if(layer < 0 || layer >= NLayer) continue;
           hitUpdate[layer] = true;
@@ -288,11 +292,11 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
 
       //Residual Monitoring
-      if(out.getPt()>mResMonTrackMinPt) {
+      if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
         for (int ipar = 0; ipar < 6; ipar++) FitparXY[ipar] = 0;
 
         double Cost_Fit = 0;
-        circlefit_XY(inputG_C, FitparXY, Cost_Fit, hitUpdate, 0);
+        circleFitXY(inputG_C, FitparXY, Cost_Fit, hitUpdate, 0);
 
         double RecRadius = std::abs(1/FitparXY[0]);
         double CircleXc  = FitparXY[0] >0 ? RecRadius*std::cos(FitparXY[1]+FitparXY[4] + 0.5*TMath::Pi()) : RecRadius*std::cos(FitparXY[1]+FitparXY[4] - 0.5*TMath::Pi());
@@ -309,7 +313,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
           beta[l]       = std::atan2(inputG_C[3*l + 1] - CircleYc, inputG_C[3*l + 0] - CircleXc);
         }
 
-        linefit_DZ(z_meas, beta, FitparDZ, RecRadius, false, hitUpdate);
+        lineFitDZ(z_meas, beta, FitparDZ, RecRadius, false, hitUpdate);
       
         for(int l=0; l<NLayer; l++) {
           if(chipIDs[l]<0) continue;
@@ -727,13 +731,13 @@ void ITSTrackTask::createAllHistos()
   for (int l = 0; l < NLayer; l++) {
     //sensor
     hdxySensor[l] = std::make_unique<TH2D>(Form("hdxy%dSensor",l), Form("ChipID vs dxy, Layer %d",l), 
-                                           1000, -0.05, 0.05, ChipBoundary[l+1] - ChipBoundary[l], ChipBoundary[l], ChipBoundary[l+1]);
+                                           500, -0.05, 0.05, ChipBoundary[l+1] - ChipBoundary[l], ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
     addObject(hdxySensor[l].get());
     formatAxes(hdxySensor[l].get(), "dxy(cm)", "chipID", 1, 1.10);
     hdxySensor[l]->SetStats(0);
 
     hdzSensor[l] = std::make_unique<TH2D>(Form("hdz%dSensor",l), Form("ChipID vs dz, Layer %d",l),
-                                          1000, -0.05, 0.05, ChipBoundary[l+1] - ChipBoundary[l], ChipBoundary[l], ChipBoundary[l+1]);
+                                          500, -0.05, 0.05, ChipBoundary[l+1] - ChipBoundary[l], ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
     addObject(hdzSensor[l].get());
     formatAxes(hdzSensor[l].get(), "dz(cm)", "chipID", 1, 1.10);
     hdzSensor[l]->SetStats(0);
@@ -759,7 +763,7 @@ void ITSTrackTask::publishHistos()
 }
 
 
-void ITSTrackTask::circlefit_XY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step){
+void ITSTrackTask::circleFitXY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step){
 
   int hitentries = 0;
   for(int a=0; a<hitUpdate.size(); a++){
@@ -860,64 +864,6 @@ void ITSTrackTask::circlefit_XY(double* input, double* par, double &MSEvalue, st
       }  
     }
   }
-  
-  /*
-  {
-    // fast seeding
-    //int index[7] = {-1, -1, -1, -1, -1, -1, -1, -1};
-    int hit1[] = {0, 1, 2};
-    int hit2[] = {3, 4, 5, 2}; bool hit_mid = false;
-    int hit3[] = {6, 5};
-
-    int nhit[3] = {0, 0, 0};
-    double hitX[3] = {0, 0, 0};
-    double hitY[3] = {0, 0, 0};
-
-    for(int i1 = 0; i1 < 3; i1++){
-      // i1 -> hit1[i1]
-      if(hitUpdate[hit1[i1]]==true) {
-        hitX[0] += i[index[hit1[i1]]];
-        hitY[0] += j[index[hit1[i1]]];
-        nhit[0]++;
-      }
-    }
-    for(int i2 = 0; i2 < 4; i2++){
-      // i2 -> hit2[i2]
-      if(hitUpdate[hit2[i2]]==true) {
-        hitX[1] += i[index[hit2[i2]]];
-        hitY[1] += j[index[hit2[i2]]];
-        nhit[1]++;
-      }
-    }
-    for(int i3 = 0; i3 < 2; i3++){
-      // i3 -> hit3[i3]
-      if(hitUpdate[hit3[i3]]==true) {
-        hitX[2] += i[index[hit3[i3]]];
-        hitY[2] += j[index[hit3[i3]]];
-        nhit[2]++;
-      }
-    }
-
-    hitX[0] /= (double)nhit[0]; hitY[0] /= (double)nhit[0];
-    hitX[1] /= (double)nhit[1]; hitY[1] /= (double)nhit[1];
-    hitX[2] /= (double)nhit[2]; hitY[2] /= (double)nhit[2];
-
-    double d12 = -(hitX[1] - hitX[0])/(hitY[1] - hitY[0]);
-    double d23 = -(hitX[2] - hitX[1])/(hitY[2] - hitY[1]);
-
-    double x12 = 0.5*(hitX[0] + hitX[1]);
-    double x23 = 0.5*(hitX[1] + hitX[2]);
-    double y12 = 0.5*(hitY[0] + hitY[1]);
-    double y23 = 0.5*(hitY[1] + hitY[2]);
-
-    double CenterX = ((-d23*x23 + d12*x12) + (y23 - y12))/(-d23 + d12);
-    double CenterY = d12*(CenterX - x12) + y12;
-
-    double temp_R = std::sqrt(std::pow(CenterX - hitX[0],2) + std::pow(CenterY - hitY[0],2));
-    initR.push_back(TVector3(CenterX,CenterY,temp_R));
-    cntR[0]++;
-  }
-  */
 
   if(initR.size()==0) {
     initR.push_back(TVector3(0,0,10000));
@@ -1121,7 +1067,7 @@ void ITSTrackTask::circlefit_XY(double* input, double* par, double &MSEvalue, st
   }  
 }
 
-void ITSTrackTask::linefit_DZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate){
+void ITSTrackTask::lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate){
 
   int hitentries = 0;
   for(int a=0; a<hitUpdate.size(); a++){

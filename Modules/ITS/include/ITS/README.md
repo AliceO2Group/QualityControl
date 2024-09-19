@@ -1,8 +1,8 @@
 # Analysis for its-only residual
 
-## Circular Fit in the XY plane : circleFitXY
+We use the Weighted Least Square(WLS) fit and calculate the residuals from each cluster positions to the fitted trajectory.
 
-We use the Weighted Least Square(WLS) fit and calculate the residuals from each cluster positions to the fitted trajectory. 
+## Circular Fit in the XY plane : circleFitXY
 
 In the XY plane, the trajectory of particle under the magnetic field in z-axis can be fitted with circular model.
 There are 4 fit parameters : radius(R), direction at origin(tR), estimated vertex X(vx), and estimated vertex Y(vy).
@@ -27,4 +27,3 @@ On the other hand, another parameter beta determined above the equation of the c
 In this case, the fitting stability can be guaranteed even if the collision position is not located in the same quadrant.
 
 So we proceed with the linear fit in the DZ plane.
-

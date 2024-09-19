@@ -143,7 +143,9 @@ class ITSTrackTask : public TaskInterface
   double FitparDZ[2];
   ROOT::Fit::Fitter fitterA;
   ROOT::Fit::Fitter fitterB;
+  Int_t mAlignmentMonitor = 0;
   Int_t mDefaultMomResPar = 0;
+  Int_t mResMonNclMin = 0;
   float mResMonTrackMinPt = 0;
 
   TH1D* hResidualRealTimePerTrackwFinerBin;
@@ -151,7 +153,7 @@ class ITSTrackTask : public TaskInterface
   std::array<std::unique_ptr<TH2D>, NLayer> hdxySensor{};//[NLayer];
   std::array<std::unique_ptr<TH2D>, NLayer> hdzSensor{};//[NLayer];
 
-  void circlefit_XY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step = 0);
+  void circleFitXY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step = 0);
 
   //default setting
   // function Object to be minimized
@@ -247,7 +249,7 @@ class ITSTrackTask : public TaskInterface
 
   se_circlefitXY fitfuncXY;
 
-  void linefit_DZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate);
+  void lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate);
 
   double sigma_meas[2][NLayer] = {{45,45,45,55,55,55,55},
                                   {40,40,40,40,40,40,40}}; //um unit
