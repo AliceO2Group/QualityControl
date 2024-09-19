@@ -76,21 +76,41 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     adaptFromTask<quality_control::core::BookkeepingQualitySink>(
       "grpcUri", core::Provenance::SyncQC,
       [](const std::string&, const core::BookkeepingQualitySink::FlagsMap& flagsMap, core::Provenance) {
-        for (auto& [_, flagsCollection] : flagsMap) {
-          for (size_t i = 0; auto& flag : *flagsCollection) {
-            switch (i) {
-              case 0:
-                compareFatal(flag, QualityControlFlag{ core::gFullValidityInterval.getMin(), 9, FlagTypeFactory::UnknownQuality(), "No Quality Objects found within the specified time range", "qc/TST/QO/testCheckNull" });
-                break;
-              case 1:
-                compareFatal(flag, QualityControlFlag{ 10, 500, FlagTypeFactory::Good(), "I am comment", "qc/TST/QO/testCheckNull" });
-                break;
-              case 2:
-                compareFatal(flag, QualityControlFlag{ 500, core::gFullValidityInterval.getMax(), FlagTypeFactory::UnknownQuality(), "No Quality Objects found within the specified time range", "qc/TST/QO/testCheckNull" });
-                break;
-            }
-            ++i;
+        if (!flagsMap.contains("TST")) {
+          LOG(fatal) << "no flag collections for detector TST";
+          return;
+        }
+        const auto& flagsCollectionsTST = flagsMap.at("TST");
+        if (!flagsCollectionsTST.contains("testCheckNull")) {
+          LOG(fatal) << "no flag collections for QO testCheckNull";
+          return;
+        }
+        const auto& flagConverter = flagsCollectionsTST.at("testCheckNull");
+        if (flagConverter == nullptr) {
+          LOG(fatal) << "nullptr flag collection for QO testCheckNull";
+          return;
+        }
+        const auto flagsCollection = flagConverter->getResult();
+        if (flagsCollection == nullptr) {
+          LOG(fatal) << "nullptr flag collection for QO testCheckNull";
+          return;
+        }
+
+        for (size_t i = 0; const auto& flag : *flagsCollection) {
+          switch (i) {
+            case 0:
+              compareFatal(flag, QualityControlFlag{ core::gFullValidityInterval.getMin(), 10, FlagTypeFactory::UnknownQuality(), "Did not receive a Quality Object which covers this period", "qc/TST/QO/testCheckNull" });
+              break;
+            case 1:
+              compareFatal(flag, QualityControlFlag{ 10, 500, FlagTypeFactory::Good(), "I am comment", "qc/TST/QO/testCheckNull" });
+              break;
+            case 2:
+              compareFatal(flag, QualityControlFlag{ 500, core::gFullValidityInterval.getMax(), FlagTypeFactory::UnknownQuality(), "Did not receive a Quality Object which covers this period", "qc/TST/QO/testCheckNull" });
+              break;
+            default:
+              LOG(fatal) << "More Flags received than expected";
           }
+          ++i;
         }
       })
   };

@@ -119,7 +119,8 @@ add_library(O2QualityControl
   src/TimekeeperFactory.cxx
   src/RootFileStorage.cxx
   src/ReductorHelpers.cxx
-  src/KafkaPoller.cxx)
+  src/KafkaPoller.cxx
+  src/FlagHelpers.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -276,7 +277,9 @@ add_executable(o2-qc-test-core
                test/testMonitorObjectCollection.cxx
                test/testTrendingTask.cxx
                test/testKafkaTests.cxx
-               )
+               test/testFlagHelpers.cxx
+               test/testQualitiesToFlagCollectionConverter.cxx
+)
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 target_link_libraries(o2-qc-test-core PRIVATE O2QualityControl O2::Catch2)
@@ -305,7 +308,6 @@ set(TEST_SRCS
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testRepoPathUtils.cxx
-    test/testQualitiesToFlagCollectionConverter.cxx
     test/testUserCodeInterface.cxx
     test/testStringUtils.cxx
     test/testRunnerUtils.cxx

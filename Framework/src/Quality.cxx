@@ -95,7 +95,12 @@ std::string Quality::getMetadata(const std::string& key, const std::string& defa
 
 Quality& Quality::addFlag(const FlagType& flag, std::string comment)
 {
-  mFlags.emplace_back(std::move(flag), std::move(comment));
+  if (isWorseThan(Quality::Medium) && !flag.getBad()) {
+    std::cerr << "Warning: assigning good flag to " << mName << " quality" << std::endl;
+  } else if (isBetterThan(Quality::Medium) && flag.getBad()) {
+    std::cerr << "Warning: assigning bad flag to " << mName << " quality" << std::endl;
+  }
+  mFlags.emplace_back(flag, std::move(comment));
   return *this;
 }
 const CommentedFlagTypes& Quality::getFlags() const
