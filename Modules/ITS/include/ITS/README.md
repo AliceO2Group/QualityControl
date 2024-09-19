@@ -5,7 +5,7 @@ We use the Weighted Least Square(WLS) fit and calculate the residuals from each 
 ## Circular Fit in the XY plane : circleFitXY
 
 In the XY plane, the trajectory of particle under the magnetic field in z-axis can be fitted with circular model.
-There are 4 fit parameters : radius(R), direction at origin($$ \theta_R $$), estimated vertex X(vx), and estimated vertex Y(vy).
+There are 4 fit parameters : radius(R), direction at origin($$\theta_R$$), estimated vertex X(vx), and estimated vertex Y(vy).
 
 $$ x_c = R \cdot cos(\theta_R + \frac{R}{|R|} \cdot \pi/2) $$
 
@@ -20,9 +20,9 @@ For the fit stability,
 ## Linear Fit in the DZ plane : lineFitDZ
 
 After 4 fit parameters of circular trajectory is determined, we can describe the fit positions of associated clusters as well as the global positions.
-This makes it possible to represent each cluster position in the poloar coordinates $$ (r, \beta) $$, whose origin is $$ (x_c, y_c) $$.
+This makes it possible to represent each cluster position in the poloar coordinates $$(r, \beta)$$, whose origin is $$(x_c, y_c)$$.
 
-One of the simplest residual in z direction can be calculated in the RZ plane, where $$ r = sqrt(x^2 + y^2) $$.
+One of the simplest residual in z direction can be calculated in the RZ plane, where $$r = \sqrt(x^2 + y^2)$$.
 However, in this case, the fitting stability cannot be guaranteed if the collision position is not located in the same quadrant.
 
 On the other hand, another parameter beta determined above the equation of the circle determined (in the XY plane) corresponds to the distance of the particle moving(=D) in the XY plane.
