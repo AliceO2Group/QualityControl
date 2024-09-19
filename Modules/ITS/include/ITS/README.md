@@ -1,4 +1,4 @@
-# Analysis for its-only residual
+# Analysis for ITS-only residual
 
 We use the Weighted Least Square(WLS) fit and calculate the residuals from each cluster positions to the fitted trajectory.
 
@@ -8,7 +8,9 @@ In the XY plane, the trajectory of particle under the magnetic field in z-axis c
 There are 4 fit parameters : radius(R), direction at origin(tR), estimated vertex X(vx), and estimated vertex Y(vy).
 
 xc = R > 0 ? R*std::cos(tR + 0.5*TMath::Pi()) : R*std::cos(tR - 0.5*TMath::Pi())
+
 yc = R > 0 ? R*std::sin(tR + 0.5*TMath::Pi()) : R*std::sin(tR - 0.5*TMath::Pi())
+
 (x - (xc + vx))^2 + (y - (yc + vy))^2 = |R|^2
 
 For the fit stability, 
