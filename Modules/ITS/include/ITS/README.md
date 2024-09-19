@@ -7,9 +7,9 @@ We use the Weighted Least Square(WLS) fit and calculate the residuals from each 
 In the XY plane, the trajectory of particle under the magnetic field in z-axis can be fitted with circular model.
 There are 4 fit parameters : radius(R), direction at origin($$ \theta_R $$), estimated vertex X(vx), and estimated vertex Y(vy).
 
-$$ x_c = R > 0 ? R \cdot cos(\theta_R + \pi/2) : R \cdot cos(\theta_R - \pi/2) $$
+$$ x_c = R \cdot cos(\theta_R + \frac{R}{|R|} \cdot \pi/2) $$
 
-$$ y_c = R > 0 ? R \cdot sin(\theta_R + \pi/2) : R \cdot sin(\theta_R - \pi/2) $$
+$$ y_c = R \cdot sin(\theta_R + \frac{R}{|R|} \cdot \pi/2) $$
 
 $$ (x - (x_c + v_x))^2 + (y - (y_c + v_y))^2 = |R|^2 $$
 
