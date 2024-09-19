@@ -289,6 +289,7 @@ some additional parameters.
         "detectorName": "TST",
         "resumeTrend": "false",
         "producePlotsOnUpdate": "true",
+        "trendingTimestamp": "validUntil",
         "dataSources": [],
         "plots": [],
         "initTrigger": [ "once" ],
@@ -390,6 +391,9 @@ use the boolean flag `"producePlotsOnUpdate"`.
 To pick up the last existing trend which matches the specified Activity, set `"resumeTrend"` to `"true"`.
 
 To generate plots only when all input objects are available, set `"trendIfAllInputs"`.
+
+`"trendingTimestamp"` allows to select which timestamp should be used as the trending point.
+The available options are `"trigger"` (timestamp provided by the trigger), `"validFrom"` (validity start in activity provided by the trigger), `"validUntil"` (validity end in activity provided by the trigger, default).
 
 ### The SliceTrendingTask class
 The `SliceTrendingTask` is a complementary task to the standard `TrendingTask`. This task allows the trending of canvas objects that hold multiple histograms (which have to be of the same dimension, e.g. TH1) and the slicing of histograms. The latter option allows the user to divide a histogram into multiple subsections along one or two dimensions which are trended in parallel to each other. The task has specific reductors for `TH1` and `TH2` objects which are `o2::quality_control_modules::common::TH1SliceReductor` and `o2::quality_control_modules::common::TH2SliceReductor`.

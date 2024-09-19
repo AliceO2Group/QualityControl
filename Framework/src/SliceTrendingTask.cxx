@@ -136,9 +136,14 @@ void SliceTrendingTask::finalize(Trigger t, framework::ServiceRegistryRef)
 void SliceTrendingTask::trendValues(const Trigger& t,
                                     repository::DatabaseInterface& qcdb)
 {
-  mTime = activity_helpers::isLegacyValidity(t.activity.mValidity)
-            ? t.timestamp / 1000
-            : t.activity.mValidity.getMax() / 1000; // ROOT expects seconds since epoch.
+  if (mConfig.trendingTimestamp == "trigger") {
+    // ROOT expects seconds since epoch.
+    mTime = t.timestamp / 1000;
+  } else if (mConfig.trendingTimestamp == "validFrom") {
+    mTime = t.activity.mValidity.getMin() / 1000;
+  } else { // validUntil
+    mTime = t.activity.mValidity.getMax() / 1000;
+  }
   mMetaData.runNumber = t.activity.mId;
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
