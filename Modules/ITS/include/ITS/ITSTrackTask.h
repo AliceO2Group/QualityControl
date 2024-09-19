@@ -229,7 +229,7 @@ class ITSTrackTask : public TaskInterface
       double charge    = par[0]>0 ? +1 : -1;
       double RecRadius = std::abs(1/par[0]);
 
-      double Sigma_tot[7];
+      double Sigma_tot[NLayer];
       double sum_Sigma_tot = 0;
       for(int l = 0; l < nhits; l++){
         Sigma_tot[l] = getsigma(RecRadius, fHits[l].Z(), Bz, 1);
@@ -259,7 +259,7 @@ class ITSTrackTask : public TaskInterface
   double getsigma(double R, int L, double B, int axis){
     //R : cm
     //B : T
-    if(L<0 || L>=7) return 1;
+    if(L<0 || L>=NLayer) return 1;
     double aL   = sigma_meas[axis][L]*1e-4; //um -> cm
     double bL   = sigma_msc[axis][L]*1e-4;  //um -> cm
     double Beff = 0.3*B;
