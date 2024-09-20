@@ -28,6 +28,7 @@ SliceTrendingTaskConfig::SliceTrendingTaskConfig(const std::string& id,
 {
   producePlotsOnUpdate = config.get<bool>("qc.postprocessing." + id + ".producePlotsOnUpdate", true);
   resumeTrend = config.get<bool>("qc.postprocessing." + id + ".resumeTrend", false);
+  trendingTimestamp = config.get<std::string>("qc.postprocessing." + id + ".trendingTimestamp", "validUntil");
   for (const auto& plotConfig : config.get_child("qc.postprocessing." + id + ".plots")) {
     plots.push_back({ plotConfig.second.get<std::string>("name"),
                       plotConfig.second.get<std::string>("title", ""),
