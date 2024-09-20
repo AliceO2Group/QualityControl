@@ -30,6 +30,8 @@ target_sources(O2QcCommon
                        src/ReferenceComparatorTask.cxx
                        src/ReferenceComparatorTaskConfig.cxx
                        src/ReferenceComparatorCheck.cxx
+                       src/CheckerThresholdsConfig.cxx
+                       src/TrendCheck.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -68,6 +70,7 @@ add_root_dictionary(O2QcCommon
                             include/Common/ObjectComparatorKolmogorov.h
                             include/Common/ReferenceComparatorTask.h
                             include/Common/ReferenceComparatorCheck.h
+                            include/Common/TrendCheck.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Ratio.h
                             include/Common/TH2Ratio.h

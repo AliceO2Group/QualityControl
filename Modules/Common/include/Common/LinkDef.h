@@ -24,6 +24,7 @@
 #pragma link C++ class o2::quality_control_modules::common::ObjectComparatorKolmogorov + ;
 #pragma link C++ class o2::quality_control_modules::common::ReferenceComparatorTask + ;
 #pragma link C++ class o2::quality_control_modules::common::ReferenceComparatorCheck + ;
+#pragma link C++ class o2::quality_control_modules::common::TrendCheck + ;
 #pragma link C++ class o2::quality_control_modules::common::WorstOfAllAggregator + ;
 #pragma link C++ class o2::quality_control_modules::common::IncreasingEntries + ;
 #pragma link C++ class o2::quality_control_modules::common::TH1SliceReductor + ;
