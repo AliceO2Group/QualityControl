@@ -43,14 +43,16 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoClasses = std::make_unique<TH1DRatio>("classes", "Class Rates; Class; Rate [kHz]", nclasses, 0, nclasses, true);
   mHistoInputs->SetStats(0);
   mHistoClasses->SetStats(0);
-  mHistoMTVXBC = std::make_unique<TH1D>("bcMTVX", "BC position of MTVX", norbits, 0, norbits);
+  mHistoBCMinBias1 = std::make_unique<TH1D>("bcMinBias1", "BC position MB1", norbits, 0, norbits);
+  mHistoBCMinBias2 = std::make_unique<TH1D>("bcMinBias2", "BC position MB2", norbits, 0, norbits);
   mHistoInputRatios = std::make_unique<TH1DRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
   mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Class; Ratio", nclasses, 0, nclasses, true);
   getObjectsManager()->startPublishing(mHistoInputs.get());
   getObjectsManager()->startPublishing(mHistoClasses.get());
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
   getObjectsManager()->startPublishing(mHistoInputRatios.get());
-  getObjectsManager()->startPublishing(mHistoMTVXBC.get());
+  getObjectsManager()->startPublishing(mHistoBCMinBias1.get());
+  getObjectsManager()->startPublishing(mHistoBCMinBias2.get());
 
   mDecoder.setDoLumi(1);
   mDecoder.setDoDigits(1);
@@ -68,15 +70,14 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoClasses->Reset();
   mHistoClassRatios->Reset();
   mHistoInputRatios->Reset();
-  mHistoMTVXBC->Reset();
+  mHistoBCMinBias1->Reset();
+  mHistoBCMinBias2->Reset();
 
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
 
-  std::string MBclassName = mCustomParameters["MBclassName"];
-  if (MBclassName.empty()) {
-    MBclassName = "CMTVX-B-NOPF";
-  }
+  auto MBclassName = mCustomParameters.atOrDefaultValue("MBclassName", "CMTVX-B-NOPF", activity);
+
   std::string run = std::to_string(mRunNumber);
   std::string ccdbName = mCustomParameters["ccdbName"];
   if (ccdbName.empty()) {
@@ -116,13 +117,16 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   if (mIndexMBclass == -1) {
     mIndexMBclass = 1;
   }
-  std::string nameInput = mCustomParameters["MBinputName"];
-  if (nameInput.empty()) {
-    nameInput = "MTVX";
+  std::string nameInput1 = mCustomParameters.atOrDefaultValue("MB1inputName", "MTVX", activity);
+  std::string nameInput2 = mCustomParameters.atOrDefaultValue("MB2inputName", "MT0A", activity);
+
+  indexMB1 = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput1);
+  indexMB2 = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput2);
+  if (indexMB1 == -1) {
+    indexMB1 = 3; // 3 is the MTVX index
   }
-  indexTvx = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput);
-  if (indexTvx == -1) {
-    indexTvx = 3; // 3 is the MTVX index
+  if (indexMB2 == -1) {
+    indexMB2 = 1; // 3 is the MT0A index
   }
   for (int i = 0; i < nclasses; i++) {
     if (classNames[i] == "") {
@@ -137,6 +141,9 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoClasses.get()->GetXaxis()->LabelsOption("v");
   mHistoClassRatios.get()->GetXaxis()->SetLabelSize(0.025);
   mHistoClassRatios.get()->GetXaxis()->LabelsOption("v");
+
+  mHistoBCMinBias1->SetTitle(Form("BC position %s", nameInput1.c_str()));
+  mHistoBCMinBias2->SetTitle(Form("BC position %s", nameInput2.c_str()));
 }
 
 void CTPRawDataReaderTask::startOfCycle()
@@ -164,9 +171,12 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (digit.CTPInputMask[i]) {
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
-          if (i == indexTvx - 1) {
-            mHistoMTVXBC->Fill(bcid);
+          if (i == indexMB1 - 1) {
+            mHistoBCMinBias1->Fill(bcid);
             mHistoInputRatios->getDen()->Fill(0., 1);
+          }
+          if (i == indexMB2 - 1) {
+            mHistoBCMinBias2->Fill(bcid);
           }
         }
       }
@@ -214,7 +224,8 @@ void CTPRawDataReaderTask::reset()
   mHistoClasses->Reset();
   mHistoInputRatios->Reset();
   mHistoClassRatios->Reset();
-  mHistoMTVXBC->Reset();
+  mHistoBCMinBias1->Reset();
+  mHistoBCMinBias2->Reset();
 }
 
 } // namespace o2::quality_control_modules::ctp
