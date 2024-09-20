@@ -108,10 +108,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistBC = helper::registerHist<TH1F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mHistChDataBits = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits);
 
-  mHistOrbitVsTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapTechTrgBits);
+  // Trg plots
+  mHistOrbitVsTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "OrbitVsTriggers", "Orbit vs Triggers;Orbit;Trg", sOrbitsPerTF, 0, sOrbitsPerTF, mMapTechTrgBitsExtra);
+  mHistBCvsTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBitsExtra);
+  mHistTriggersCorrelation = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersCorrelation", "Correlation of triggers from TCM", mMapTechTrgBitsExtra, mMapTechTrgBitsExtra);
+
   mHistOrbit2BC = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "OrbitPerBC", "BC-Orbit map;Orbit;BC;", sOrbitsPerTF, 0, sOrbitsPerTF, sBCperOrbit, 0, sBCperOrbit);
-  mHistTriggersCorrelation = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TriggersCorrelation", "Correlation of triggers from TCM", mMapTechTrgBits, mMapTechTrgBits);
-  mHistBCvsTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BCvsTriggers", "BC vs Triggers;BC;Trg", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
   mHistPmTcmNchA = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmNumChannelsA", "Comparison of num. channels A from PM and TCM;Number of channels(TCM), side A;PM - TCM", sNCHANNELS_A + 2, 0, sNCHANNELS_A + 2, 2 * sNCHANNELS_A + 1, -int(sNCHANNELS_A) - 0.5, int(sNCHANNELS_A) + 0.5);
   mHistPmTcmSumAmpA = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmSumAmpA", "Comparison of sum of amplitudes A from PM and TCM;Sum of amplitudes(TCM), side A;PM - TCM", 2e2, 0, 1e3, 2e3, -1e3 - 0.5, 1e3 - 0.5);
   mHistPmTcmAverageTimeA = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "PmTcmAverageTimeA", "Comparison of average time A from PM and TCM;Average time(TCM), side A;PM - TCM", 410, -2050, 2050, 820, -410 - 0.5, 410 - 0.5);
@@ -315,9 +317,6 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   for (auto& digit : digits) {
     // Exclude all BCs, in which laser signals are expected (and trigger outputs are blocked)
-    if (digit.mTriggers.getOutputsAreBlocked()) {
-      continue;
-    }
     const auto& vecChData = digit.getBunchChannelData(channels);
     bool isTCM = true;
     if (digit.mTriggers.getTimeA() == o2::fit::Triggers::DEFAULT_TIME && digit.mTriggers.getTimeC() == o2::fit::Triggers::DEFAULT_TIME) {
@@ -433,15 +432,23 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistPmTcmAverageTimeC->Fill(digit.mTriggers.getTimeC(), pmAverTimeC - digit.mTriggers.getTimeC());
 
       mHistTimeSum2Diff->Fill((digit.mTriggers.getTimeC() - digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2, (digit.mTriggers.getTimeC() + digit.mTriggers.getTimeA()) * sCFDChannel2NS / 2);
-      for (const auto& binPos : mHashedPairBitBinPos[digit.mTriggers.getTriggersignals()]) {
-        mHistTriggersCorrelation->Fill(binPos.first, binPos.second);
-      }
-      for (const auto& binPos : mHashedBitBinPos[digit.mTriggers.getTriggersignals()]) {
-        mHistBCvsTrg->Fill(digit.getIntRecord().bc, binPos);
-        mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, binPos);
+    }
+    if (isTCM) {
+      std::vector<unsigned int> vecTrgWords{};
+      const uint64_t trgWordExt = digit.mTriggers.getExtendedTrgWordFT0();
+      for (const auto& entry : mMapTechTrgBitsExtra) {
+        const auto& trgBit = entry.first;
+        if (((1 << trgBit) & trgWordExt) > 0) {
+          mHistTriggersCorrelation->Fill(trgBit, trgBit);
+          for (const auto& prevTrgBit : vecTrgWords) {
+            mHistTriggersCorrelation->Fill(trgBit, prevTrgBit);
+          }
+          mHistBCvsTrg->Fill(digit.getIntRecord().bc, trgBit);
+          mHistOrbitVsTrg->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, trgBit);
+          vecTrgWords.push_back(trgBit);
+        }
       }
     }
-
     // trigger emulation
     DataTCM_t tcmEmu(pmSumAmplA, pmSumAmplC, pmSumTimeA, pmSumTimeC, pmNChanA, pmNChanC);
     mTrgValidation.emulateTriggers(tcmEmu); // emulate trigger

@@ -96,7 +96,7 @@ class DigitQcTask final : public TaskInterface
   uint8_t mTCMhash;                                // hash value for TCM, and bin position in hist
   std::map<uint8_t, bool> mMapPMhash2isAside;
   typename Detector_t::TrgMap_t mMapPMbits = Detector_t::sMapPMbits;
-  typename Detector_t::TrgMap_t mMapTechTrgBits = Detector_t::sMapTechTrgBits;
+  typename Detector_t::TrgMap_t mMapTechTrgBitsExtra = Detector_t::sMapTechTrgBitsExtra;
   typename Detector_t::TrgMap_t mMapTrgBits = Detector_t::sMapTrgBits;
   using DataTCM_t = o2::quality_control_modules::fit::DataTCM<typename Detector_t::Digit_t>;
   using TrgValidation_t = o2::quality_control_modules::fit::TrgValidation<typename Detector_t::Digit_t>;

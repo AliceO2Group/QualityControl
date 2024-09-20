@@ -93,14 +93,14 @@ void PostProcTask::initialize(Trigger trg, framework::ServiceRegistryRef service
   mIsFirstIter = true; // to be sure
 
   mHistChDataNOTbits = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "ChannelDataNegBits", "ChannelData NOT PM bits per ChannelID;Channel;Negative bit", sNCHANNELS_PM, 0, sNCHANNELS_PM, mMapPMbits);
-  mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers", "Triggers from TCM", mMapTechTrgBits);
-  mHistTriggerRates = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "HIST", "TriggerRates", "Trigger rates; Triggers; Rate [kHz]", mMapTechTrgBits);
-  mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
-  mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBits);
+  mHistTriggers = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers", "Triggers from TCM", mMapTechTrgBitsExtra);
+  mHistTriggerRates = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "HIST", "TriggerRates", "Trigger rates; Triggers; Rate [kHz]", mMapTechTrgBitsExtra);
+  mHistBcTrgOutOfBunchColl = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "OutOfBunchColl_BCvsTrg", "BC vs Triggers for out-of-bunch collisions;BC;Triggers", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBitsExtra);
+  mHistBcPattern = helper::registerHist<TH2F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "COLZ", "bcPattern", "BC pattern", sBCperOrbit, 0, sBCperOrbit, mMapTechTrgBitsExtra);
   mHistTimeInWindow = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TimeInWindowFraction", Form("Fraction of events with CFD in time gate(%i,%i) vs ChannelID;ChannelID;Event fraction with CFD in time gate", mLowTimeThreshold, mUpTimeThreshold), sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistCFDEff = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "CFD_efficiency", "Fraction of events with CFD in ADC gate vs ChannelID;ChannelID;Event fraction with CFD in ADC gate;", sNCHANNELS_PM, 0, sNCHANNELS_PM);
   mHistChannelID_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "ChannelID_outOfBC", "ChannelID, out of bunch", sNCHANNELS_PM, 0, sNCHANNELS_PM);
-  mHistTrg_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers_outOfBC", "Trigger fraction, out of bunch", mMapTechTrgBits);
+  mHistTrg_outOfBC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "Triggers_outOfBC", "Trigger fraction, out of bunch", mMapTechTrgBitsExtra);
   mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "SW + HW only to validated triggers fraction", mMapTrgBits);
   mAmpl = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mTime = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
@@ -217,7 +217,7 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
   // BC pattern
   mHistBcPattern->Reset();
   for (int i = 0; i < sBCperOrbit + 1; i++) {
-    for (int j = 0; j < mMapTechTrgBits.size() + 1; j++) {
+    for (int j = 0; j < mMapTechTrgBitsExtra.size() + 1; j++) {
       mHistBcPattern->SetBinContent(i + 1, j + 1, bcPattern.testBC(i));
     }
   }
@@ -227,14 +227,14 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
   float vmax = hBcVsTrg->GetBinContent(hBcVsTrg->GetMaximumBin());
   mHistBcTrgOutOfBunchColl->Add(hBcVsTrg.get(), mHistBcPattern.get(), 1, -1 * vmax);
   for (int i = 0; i < sBCperOrbit + 1; i++) {
-    for (int j = 0; j < mMapTechTrgBits.size() + 1; j++) {
+    for (int j = 0; j < mMapTechTrgBitsExtra.size() + 1; j++) {
       if (mHistBcTrgOutOfBunchColl->GetBinContent(i + 1, j + 1) < 0) {
         mHistBcTrgOutOfBunchColl->SetBinContent(i + 1, j + 1, 0); // is it too slow?
       }
     }
   }
-  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapTechTrgBits.size()));
-  for (int iBin = 1; iBin < mMapTechTrgBits.size() + 1; iBin++) {
+  mHistBcTrgOutOfBunchColl->SetEntries(mHistBcTrgOutOfBunchColl->Integral(1, sBCperOrbit, 1, mMapTechTrgBitsExtra.size()));
+  for (int iBin = 1; iBin < mMapTechTrgBitsExtra.size() + 1; iBin++) {
     const std::string metadataKey = "BcVsTrgIntegralBin" + std::to_string(iBin);
     const std::string metadataValue = std::to_string(hBcVsTrg->Integral(1, sBCperOrbit, iBin, iBin));
     getObjectsManager()->getMonitorObject(mHistBcTrgOutOfBunchColl->GetName())->addOrUpdateMetadata(metadataKey, metadataValue);
