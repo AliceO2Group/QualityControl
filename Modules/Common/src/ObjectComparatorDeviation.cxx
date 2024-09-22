@@ -38,17 +38,17 @@ Quality ObjectComparatorDeviation::compare(TObject* object, TObject* referenceOb
   auto* referenceHistogram = std::get<1>(checkResult);
 
   const double epsilon = 1.0e-6;
-  int binRangeX[2] = { 1, histogram->GetXaxis()->GetNbins()};
-  int binRangeY[2] = { 1, histogram->GetYaxis()->GetNbins()};
-  int binRangeZ[2] = { 1, histogram->GetZaxis()->GetNbins()};
+  int binRangeX[2] = { 1, histogram->GetXaxis()->GetNbins() };
+  int binRangeY[2] = { 1, histogram->GetYaxis()->GetNbins() };
+  int binRangeZ[2] = { 1, histogram->GetZaxis()->GetNbins() };
 
-  if( getXRange().has_value()) {
+  if (getXRange().has_value()) {
     binRangeX[0] = histogram->GetXaxis()->FindBin(getXRange()->first);
     // subtract a small amount to the upper edge to avoid getting the next bin
     binRangeX[1] = histogram->GetXaxis()->FindBin(getXRange()->second - epsilon);
   }
 
-  if( getYRange().has_value()) {
+  if (getYRange().has_value()) {
     binRangeY[0] = histogram->GetYaxis()->FindBin(getYRange()->first);
     // subtract a small amount to the upper edge to avoid getting the next bin
     binRangeY[1] = histogram->GetYaxis()->FindBin(getYRange()->second - epsilon);

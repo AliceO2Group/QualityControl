@@ -57,19 +57,19 @@ Quality ObjectComparatorBinByBinDeviation::compare(TObject* object, TObject* ref
   auto* histogram = std::get<0>(checkResult);
   auto* referenceHistogram = std::get<1>(checkResult);
 
-  int binRangeX[2] = { 1, histogram->GetXaxis()->GetNbins()};
-  if( getXRange().has_value()) {
+  int binRangeX[2] = { 1, histogram->GetXaxis()->GetNbins() };
+  if (getXRange().has_value()) {
     binRangeX[0] = histogram->GetXaxis()->FindBin(getXRange()->first);
     binRangeX[1] = histogram->GetXaxis()->FindBin(getXRange()->second);
   }
 
-  int binRangeY[2] = { 1, histogram->GetYaxis()->GetNbins()};
-  if( getYRange().has_value()) {
+  int binRangeY[2] = { 1, histogram->GetYaxis()->GetNbins() };
+  if (getYRange().has_value()) {
     binRangeY[0] = histogram->GetYaxis()->FindBin(getYRange()->first);
     binRangeY[1] = histogram->GetYaxis()->FindBin(getYRange()->second);
   }
 
-  int binRangeZ[2] = { 1, histogram->GetZaxis()->GetNbins()};
+  int binRangeZ[2] = { 1, histogram->GetZaxis()->GetNbins() };
 
   // compute the average relative deviation between the bins
   double averageDeviation = 0;

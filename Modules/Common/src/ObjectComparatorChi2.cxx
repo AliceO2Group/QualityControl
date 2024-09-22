@@ -40,7 +40,7 @@ Quality ObjectComparatorChi2::compare(TObject* object, TObject* referenceObject,
   // if X and/or Y ranges are specified, set the appropriate bin range in the corresponding axis
   // to restrict the histogram area where the test is applied
   const double epsilon = 1.0e-6;
-  if( getXRange().has_value()) {
+  if (getXRange().has_value()) {
     int binMin = histogram->GetXaxis()->FindBin(getXRange()->first);
     // subtract a small amount to the upper edge to avoid getting the next bin
     int binMax = histogram->GetXaxis()->FindBin(getXRange()->second - epsilon);
@@ -49,7 +49,7 @@ Quality ObjectComparatorChi2::compare(TObject* object, TObject* referenceObject,
     referenceHistogram->GetXaxis()->SetRange(binMin, binMax);
   }
 
-  if( getYRange().has_value()) {
+  if (getYRange().has_value()) {
     int binMin = histogram->GetYaxis()->FindBin(getYRange()->first);
     // subtract a small amount to the upper edge to avoid getting the next bin
     int binMax = histogram->GetYaxis()->FindBin(getYRange()->second - epsilon);

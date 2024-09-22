@@ -360,7 +360,7 @@ void ReferenceComparatorCheck::drawHorizontalRange(const std::string& moName, TC
   // draw an horizontal double arrow marking the X-axis range
   double xMin = ratioPlot->GetXaxis()->GetBinLowEdge(ratioPlot->GetXaxis()->FindBin(rangeX->first));
   double xMax = ratioPlot->GetXaxis()->GetBinUpEdge(ratioPlot->GetXaxis()->FindBin(rangeX->second - 1.0e-6));
-  auto arrow = new TArrow(xMin,1.8,xMax,1.8,0.015,"<|>");
+  auto arrow = new TArrow(xMin, 1.8, xMax, 1.8, 0.015, "<|>");
   arrow->SetLineColor(getQualityColor(quality));
   arrow->SetFillColor(getQualityColor(quality));
   ratioPlot->GetListOfFunctions()->Add(arrow);
