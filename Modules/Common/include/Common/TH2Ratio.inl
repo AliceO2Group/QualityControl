@@ -19,6 +19,37 @@
 namespace o2::quality_control_modules::common
 {
 
+namespace th2ratio_internal
+{
+
+template <class T>
+bool copyBinLabels(const T* srcHist, T* destHist)
+{
+  if (srcHist->GetXaxis()->GetNbins() != destHist->GetXaxis()->GetNbins()) {
+    return false;
+  }
+  if (srcHist->GetYaxis()->GetNbins() != destHist->GetYaxis()->GetNbins()) {
+    return false;
+  }
+
+  bool result = false;
+  if (srcHist->GetXaxis()->GetLabels())  {
+    for (int bin = 1; bin <= srcHist->GetXaxis()->GetNbins(); bin++) {
+      destHist->GetXaxis()->SetBinLabel(bin, srcHist->GetXaxis()->GetBinLabel(bin));
+    }
+    result = true;
+  }
+  if (srcHist->GetYaxis()->GetLabels())  {
+    for (int bin = 1; bin <= srcHist->GetYaxis()->GetNbins(); bin++) {
+      destHist->GetYaxis()->SetBinLabel(bin, srcHist->GetYaxis()->GetBinLabel(bin));
+    }
+    result = true;
+  }
+  return result;
+}
+
+}
+
 template<class T>
 TH2Ratio<T>::TH2Ratio()
   : T(),
@@ -150,6 +181,13 @@ void TH2Ratio<T>::update()
   T::GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
   T::SetBinsLength();
 
+  // Copy bin labels between histograms.
+  // If set, the bin labels of the ratio histograms are copied to the numerator.
+  // If instead the numerator has bin labels they are copied to the ratio plot.
+  if (!th2ratio_internal::copyBinLabels<T>(this, mHistoNum)) {
+    th2ratio_internal::copyBinLabels<T>(mHistoNum, this);
+  }
+
   if (mUniformScaling) {
     T::Add(mHistoNum);
     double entries = mHistoDen->GetBinContent(1, 1);
@@ -161,17 +199,8 @@ void TH2Ratio<T>::update()
       T::Scale(norm, "nosw2");
     }
   } else {
-    // copy bin labels to denominator before dividing, otherwise we get a warning
-    if (T::GetXaxis()->GetLabels())  {
-      for (int bin = 1; bin <= T::GetXaxis()->GetNbins(); bin++) {
-        mHistoDen->GetXaxis()->SetBinLabel(bin, T::GetXaxis()->GetBinLabel(bin));
-      }
-    }
-    if (T::GetYaxis()->GetLabels())  {
-      for (int bin = 1; bin <= T::GetYaxis()->GetNbins(); bin++) {
-        mHistoDen->GetYaxis()->SetBinLabel(bin, T::GetYaxis()->GetBinLabel(bin));
-      }
-    }
+    // copy bin labels from numerator to denominator (if needed) before dividing, otherwise we get a warning from ROOT
+    th2ratio_internal::copyBinLabels<T>(mHistoNum, mHistoDen);
     T::Divide(mHistoNum, mHistoDen, 1.0, 1.0, mBinominalErrors ? "B" : "");
   }
 }
@@ -278,7 +307,7 @@ Bool_t TH2Ratio<T>::Add(const TH1* h1, Double_t c1)
 
 template<class T>
 void TH2Ratio<T>::SetBins(Int_t nx, Double_t xmin, Double_t xmax,
-                       Int_t ny, Double_t ymin, Double_t ymax)
+                          Int_t ny, Double_t ymin, Double_t ymax)
 {
   getNum()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
   getDen()->SetBins(nx, xmin, xmax, ny, ymin, ymax);
