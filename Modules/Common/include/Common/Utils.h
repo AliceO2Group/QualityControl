@@ -89,7 +89,11 @@ T getFromExtendedConfig(const quality_control::core::Activity& activity, const q
   if (auto param = params.atOptional(name, activity)) {
     parameter = param.value();
   } else {
-    parameter = params.atOrDefaultValue(name, std::to_string(retVal));
+    if constexpr (std::is_same<std::string, T>::value) {
+      parameter = params.atOrDefaultValue(name, retVal);
+    } else {
+      parameter = params.atOrDefaultValue(name, std::to_string(retVal));
+    }
   }
   return internal::stringToType<T>(parameter);
 }
