@@ -25,6 +25,7 @@
 #include <unordered_map>
 
 class TPaveText;
+class TCanvas;
 
 namespace o2::quality_control_modules::common
 {
@@ -50,16 +51,22 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
   void endOfActivity(const Activity& activity) override;
 
  private:
-  Quality getSinglePlotQuality(std::shared_ptr<MonitorObject> mo, std::string& message);
+  Quality getSinglePlotQuality(std::shared_ptr<MonitorObject> mo, ObjectComparatorInterface* comparator, std::string& message);
+  void drawHorizontalRange(const std::string& moName, TCanvas* canvas, const Quality& quality);
 
-  std::unique_ptr<ObjectComparatorInterface> mComparator;
   std::map<std::string, Quality> mQualityFlags;
   std::map<std::string, std::shared_ptr<TPaveText>> mQualityLabels;
+  quality_control::core::Activity mActivity;
   quality_control::core::Activity mReferenceActivity;
+  std::string mComparatorModuleName;      /// dynamic module providing the object comparator
+  std::string mComparatorClassName;       /// name of the object comparator class
   bool mIgnorePeriodForReference{ true }; /// whether to specify the period name in the reference run query
   bool mIgnorePassForReference{ true };   /// whether to specify the pass name in the reference run query
   size_t mReferenceRun;
+  /// cached reference MOs
   std::unordered_map<std::string, std::shared_ptr<MonitorObject>> mReferencePlots;
+  /// collection of object comparators with plot-specific settings
+  std::unordered_map<std::string, std::unique_ptr<ObjectComparatorInterface>> mComparators;
 };
 
 } // namespace o2::quality_control_modules::common
