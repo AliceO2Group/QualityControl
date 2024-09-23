@@ -31,9 +31,29 @@
 #include <Framework/Logger.h>
 #include <bitset>
 #include <algorithm>
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control_modules::tpc
 {
+
+bool getPropertyBool(const boost::property_tree::ptree& config, const std::string& id, const std::string property)
+{
+  const auto propertyFullName = fmt::format("qc.postprocessing.{}.{}", id, property);
+  const boost::optional<const boost::property_tree::ptree&> propertyExists = config.get_child_optional(propertyFullName);
+  if (propertyExists) {
+    const auto doProperty = config.get<std::string>(propertyFullName);
+    if (doProperty == "1" || doProperty == "true" || doProperty == "True" || doProperty == "TRUE" || doProperty == "yes") {
+      return true;
+    } else if (doProperty == "0" || doProperty == "false" || doProperty == "False" || doProperty == "FALSE" || doProperty == "no") {
+      return false;
+    } else {
+      ILOG(Warning, Support) << fmt::format("No valid input for '{}'. Using default value 'false'.", property) << ENDM;
+    }
+  } else {
+    ILOG(Warning, Support) << fmt::format("Option '{}' is missing. Using default value 'false'.", property) << ENDM;
+  }
+  return false;
+}
 
 void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, std::vector<std::unique_ptr<TCanvas>>& canVec, std::vector<std::string_view> canvNames, const std::map<std::string, std::string>& metaData)
 {
@@ -174,10 +194,15 @@ std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::
 {
   std::vector<long> outVec{};
   std::vector<long> tmpVec{};
-
-  std::vector<std::string> fileList = o2::utils::Str::tokenize(cdbApi.list(path.data()), '\n');
+  std::vector<long> tmpVec2{};
 
   if (limit == -1) {
+
+    // get the list of files for the latest timestamps up to 1 day ago from the moment the code is running
+    // added some seconds to upper timestamp limit as the ccdbapi uses creation timestamp, not validity!
+    const auto to = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::minutes(1)).time_since_epoch()).count();
+    const auto from = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::system_clock::now() + std::chrono::weeks(-2)).time_since_epoch()).count();
+    std::vector<std::string> fileList = o2::utils::Str::tokenize(cdbApi.list(path.data(), false, "text/plain", to, from), '\n');
     for (const auto& metaData : fileList) {
       getTimestamp(metaData, outVec);
       if (outVec.size() == nFiles) {
@@ -185,6 +210,9 @@ std::vector<long> getDataTimestamps(const o2::ccdb::CcdbApi& cdbApi, const std::
       }
     }
   } else {
+    // get file list for requested timestamp minus three days
+    // added some seconds to upper timestamp limit as the ccdbapi uses creation timestamp, not validity!
+    std::vector<std::string> fileList = o2::utils::Str::tokenize(cdbApi.list(path.data(), false, "text/plain", limit + 600000, limit - 86400000), '\n');
     for (const auto& metaData : fileList) {
       if (outVec.size() < nFiles) {
         getTimestamp(metaData, tmpVec);

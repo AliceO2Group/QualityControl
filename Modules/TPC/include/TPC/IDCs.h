@@ -73,6 +73,8 @@ class IDCs : public quality_control::postprocessing::PostProcessingInterface
   o2::ccdb::CcdbApi mCdbApi;
   std::string mHost;
   bool mDoIDCDelta = false;
+  bool mDoIDC1 = false;
+  bool mDoFourier = false;
   std::unique_ptr<TCanvas> mIDCZeroScale;
   std::unique_ptr<TCanvas> mIDCZerOverview;
   std::unique_ptr<TCanvas> mIDCZeroSides;
