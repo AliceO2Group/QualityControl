@@ -61,7 +61,7 @@ class ChannelGeometry
   static std::string getFilepath(const std::string& filename = "FT0_LUT.csv")
   {
     const auto pathEnv = std::getenv("QUALITYCONTROL_ROOT");
-    const std::string subfilepath = "/Modules/FIT/FT0/etc/" + filename;
+    const std::string subfilepath = "/etc/Modules/FIT/FT0/etc/" + filename;
     if (pathEnv) {
       return pathEnv + subfilepath;
     }
