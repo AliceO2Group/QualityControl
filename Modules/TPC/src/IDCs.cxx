@@ -111,21 +111,9 @@ void IDCs::configure(const boost::property_tree::ptree& config)
 
   mHost = config.get<std::string>("qc.postprocessing." + id + ".dataSourceURL");
 
-  boost::optional<const boost::property_tree::ptree&> doDeltaExists = config.get_child_optional("qc.postprocessing." + id + ".doIDCDelta");
-  if (doDeltaExists) {
-    auto doDelta = config.get<std::string>("qc.postprocessing." + id + ".doIDCDelta");
-    if (doDelta == "1" || doDelta == "true" || doDelta == "True" || doDelta == "TRUE" || doDelta == "yes") {
-      mDoIDCDelta = true;
-    } else if (doDelta == "0" || doDelta == "false" || doDelta == "False" || doDelta == "FALSE" || doDelta == "no") {
-      mDoIDCDelta = false;
-    } else {
-      mDoIDCDelta = false;
-      ILOG(Warning, Support) << "No valid input for 'doIDCDelta'. Using default value 'false'." << ENDM;
-    }
-  } else {
-    mDoIDCDelta = false;
-    ILOG(Warning, Support) << "Option 'doIDCDelta' is missing. Using default value 'false'." << ENDM;
-  }
+  mDoIDCDelta = getPropertyBool(config, id, "doIDCDelta");
+  mDoIDC1 = getPropertyBool(config, id, "doIDC1");
+  mDoFourier = getPropertyBool(config, id, "doFourier");
 }
 
 void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
@@ -137,9 +125,6 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
   mIDCZeroRadialProf.reset();
   mIDCZeroStacksA.reset();
   mIDCZeroStacksC.reset();
-  mIDCOneSides1D.reset();
-  mFourierCoeffsA.reset();
-  mFourierCoeffsC.reset();
 
   mIDCZeroScale = std::make_unique<TCanvas>("c_sides_IDC0_scale");
   mIDCZerOverview = std::make_unique<TCanvas>("c_sides_IDC0_overview");
@@ -147,10 +132,11 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
   mIDCZeroStacksA = std::make_unique<TCanvas>("c_GEMStacks_IDC0_1D_ASide");
   mIDCZeroStacksC = std::make_unique<TCanvas>("c_GEMStacks_IDC0_1D_CSide");
 
-  mIDCOneSides1D = std::make_unique<TCanvas>("c_sides_IDC1_1D");
-
-  mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
-  mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
+  getObjectsManager()->startPublishing(mIDCZeroScale.get());
+  getObjectsManager()->startPublishing(mIDCZerOverview.get());
+  getObjectsManager()->startPublishing(mIDCZeroRadialProf.get());
+  getObjectsManager()->startPublishing(mIDCZeroStacksA.get());
+  getObjectsManager()->startPublishing(mIDCZeroStacksC.get());
 
   if (mDoIDCDelta) {
     mIDCDeltaStacksA.reset();
@@ -161,32 +147,75 @@ void IDCs::initialize(Trigger, framework::ServiceRegistryRef)
     getObjectsManager()->startPublishing(mIDCDeltaStacksC.get());
   }
 
-  getObjectsManager()->startPublishing(mIDCZeroScale.get());
-  getObjectsManager()->startPublishing(mIDCZerOverview.get());
-  getObjectsManager()->startPublishing(mIDCZeroRadialProf.get());
-  getObjectsManager()->startPublishing(mIDCZeroStacksA.get());
-  getObjectsManager()->startPublishing(mIDCZeroStacksC.get());
+  if (mDoIDC1) {
+    mIDCOneSides1D.reset();
+    mIDCOneSides1D = std::make_unique<TCanvas>("c_sides_IDC1_1D");
+    getObjectsManager()->startPublishing(mIDCOneSides1D.get());
+  }
 
-  getObjectsManager()->startPublishing(mIDCOneSides1D.get());
-
-  getObjectsManager()->startPublishing(mFourierCoeffsA.get());
-  getObjectsManager()->startPublishing(mFourierCoeffsC.get());
+  if (mDoFourier) {
+    mFourierCoeffsA.reset();
+    mFourierCoeffsC.reset();
+    mFourierCoeffsA = std::make_unique<TCanvas>("c_FourierCoefficients_1D_ASide");
+    mFourierCoeffsC = std::make_unique<TCanvas>("c_FourierCoefficients_1D_CSide");
+    getObjectsManager()->startPublishing(mFourierCoeffsA.get());
+    getObjectsManager()->startPublishing(mFourierCoeffsC.get());
+  }
 }
 
 void IDCs::update(Trigger, framework::ServiceRegistryRef)
 {
   std::vector<long> availableTimestampsIDCZeroA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC0A), 1, mTimestamps["IDCZero"]);
   std::vector<long> availableTimestampsIDCZeroC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC0C), 1, mTimestamps["IDCZero"]);
-  std::vector<long> availableTimestampsIDCOneA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC1A), 1, mTimestamps["IDCOne"]);
-  std::vector<long> availableTimestampsIDCOneC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC1C), 1, mTimestamps["IDCOne"]);
-  std::vector<long> availableTimestampsFFTA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCFourierA), 1, mTimestamps["FourierCoeffs"]);
-  std::vector<long> availableTimestampsFFTC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCFourierC), 1, mTimestamps["FourierCoeffs"]);
   std::vector<long> availableTimestampsIDCDeltaA{ 0 };
   std::vector<long> availableTimestampsIDCDeltaC{ 0 };
+  std::vector<long> availableTimestampsIDCOneA{ 0 };
+  std::vector<long> availableTimestampsIDCOneC{ 0 };
+  std::vector<long> availableTimestampsFFTA{ 0 };
+  std::vector<long> availableTimestampsFFTC{ 0 };
+  bool timestampFoundForIDCZero = false;
+  if (availableTimestampsIDCZeroA.size() == 0 || availableTimestampsIDCZeroC.size() == 0) {
+    ILOG(Warning, Support) << fmt::format("No timstemp found for '{}' produced in the last day.", "IDCZero") << ENDM;
+  } else {
+    timestampFoundForIDCZero = true;
+  }
 
+  bool timestampFoundForIDCDelta = false;
   if (mDoIDCDelta) {
     availableTimestampsIDCDeltaA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCDeltaA), 1, mTimestamps["IDCDelta"]);
     availableTimestampsIDCDeltaC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCDeltaC), 1, mTimestamps["IDCDelta"]);
+    if (availableTimestampsIDCDeltaA.size() == 0 || availableTimestampsIDCDeltaC.size() == 0) {
+      ILOG(Warning, Support) << fmt::format("No timstemp found for '{}' produced in the last day.", "IDCDelta") << ENDM;
+    } else {
+      timestampFoundForIDCDelta = true;
+    }
+    mIDCDeltaStacksA.get()->Clear();
+    mIDCDeltaStacksC.get()->Clear();
+  }
+
+  bool timestampFoundForIDCOne = false;
+  if (mDoIDC1) {
+    availableTimestampsIDCOneA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC1A), 1, mTimestamps["IDCOne"]);
+    availableTimestampsIDCOneC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDC1C), 1, mTimestamps["IDCOne"]);
+    if (availableTimestampsIDCOneA.size() == 0 || availableTimestampsIDCOneC.size() == 0) {
+      ILOG(Warning, Support) << fmt::format("No timstemp found for '{}' produced in the last day.", "IDCOne") << ENDM;
+    } else {
+      timestampFoundForIDCOne = true;
+    }
+    mIDCOneSides1D.get()->Clear();
+  }
+
+  bool timestampFoundForFourier = false;
+  if (mDoFourier) {
+    availableTimestampsFFTA = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCFourierA), 1, mTimestamps["FourierCoeffs"]);
+    availableTimestampsFFTC = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalIDCFourierC), 1, mTimestamps["FourierCoeffs"]);
+    if (availableTimestampsFFTA.size() == 0 || availableTimestampsFFTC.size() == 0) {
+      ILOG(Warning, Support) << fmt::format("No timstemp found for '{}' produced in the last day.", "FourierCoeffs") << ENDM;
+    } else {
+      timestampFoundForFourier = true;
+    }
+    mFourierCoeffsA.get()->Clear();
+    mFourierCoeffsC.get()->Clear();
   }
 
   mIDCZeroScale.get()->Clear();
@@ -194,14 +223,6 @@ void IDCs::update(Trigger, framework::ServiceRegistryRef)
   mIDCZeroRadialProf.get()->Clear();
   mIDCZeroStacksA.get()->Clear();
   mIDCZeroStacksC.get()->Clear();
-  mIDCOneSides1D.get()->Clear();
-  mFourierCoeffsA.get()->Clear();
-  mFourierCoeffsC.get()->Clear();
-
-  if (mDoIDCDelta) {
-    mIDCDeltaStacksA.get()->Clear();
-    mIDCDeltaStacksC.get()->Clear();
-  }
 
   o2::tpc::IDCZero* idcZeroA = nullptr;
   o2::tpc::IDCZero* idcZeroC = nullptr;
@@ -212,16 +233,24 @@ void IDCs::update(Trigger, framework::ServiceRegistryRef)
   o2::tpc::FourierCoeff* idcFFTA = nullptr;
   o2::tpc::FourierCoeff* idcFFTC = nullptr;
 
-  idcZeroA = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0A), std::map<std::string, std::string>{}, availableTimestampsIDCZeroA[0]);
-  idcZeroC = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0C), std::map<std::string, std::string>{}, availableTimestampsIDCZeroC[0]);
-  if (mDoIDCDelta) {
+  if (timestampFoundForIDCZero) {
+    idcZeroA = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0A), std::map<std::string, std::string>{}, availableTimestampsIDCZeroA[0]);
+    idcZeroC = mCdbApi.retrieveFromTFileAny<IDCZero>(CDBTypeMap.at(CDBType::CalIDC0C), std::map<std::string, std::string>{}, availableTimestampsIDCZeroC[0]);
+  }
+
+  if (mDoIDCDelta && timestampFoundForIDCDelta) {
     idcDeltaA = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaA), std::map<std::string, std::string>{}, availableTimestampsIDCDeltaA[0]);
     idcDeltaC = mCdbApi.retrieveFromTFileAny<IDCDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalIDCDeltaC), std::map<std::string, std::string>{}, availableTimestampsIDCDeltaC[0]);
   }
-  idcOneA = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1A), std::map<std::string, std::string>{}, availableTimestampsIDCOneA[0]);
-  idcOneC = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1C), std::map<std::string, std::string>{}, availableTimestampsIDCOneC[0]);
-  idcFFTA = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierA), std::map<std::string, std::string>{}, availableTimestampsFFTA[0]);
-  idcFFTC = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierC), std::map<std::string, std::string>{}, availableTimestampsFFTC[0]);
+  if (mDoIDC1 && timestampFoundForIDCOne) {
+    idcOneA = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1A), std::map<std::string, std::string>{}, availableTimestampsIDCOneA[0]);
+    idcOneC = mCdbApi.retrieveFromTFileAny<IDCOne>(CDBTypeMap.at(CDBType::CalIDC1C), std::map<std::string, std::string>{}, availableTimestampsIDCOneC[0]);
+  }
+
+  if (mDoFourier && timestampFoundForFourier) {
+    idcFFTA = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierA), std::map<std::string, std::string>{}, availableTimestampsFFTA[0]);
+    idcFFTC = mCdbApi.retrieveFromTFileAny<FourierCoeff>(CDBTypeMap.at(CDBType::CalIDCFourierC), std::map<std::string, std::string>{}, availableTimestampsFFTC[0]);
+  }
 
   if (idcZeroA && idcZeroC) {
     mCCDBHelper.setIDCZero(idcZeroA, Side::A);
@@ -290,10 +319,14 @@ void IDCs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mIDCZeroStacksA.get());
   getObjectsManager()->stopPublishing(mIDCZeroStacksC.get());
 
-  getObjectsManager()->stopPublishing(mIDCOneSides1D.get());
+  if (mDoIDC1) {
+    getObjectsManager()->stopPublishing(mIDCOneSides1D.get());
+  }
 
-  getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
-  getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+  if (mDoFourier) {
+    getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
+    getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+  }
 
   if (mDoIDCDelta) {
     getObjectsManager()->stopPublishing(mIDCDeltaStacksA.get());

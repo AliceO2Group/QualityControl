@@ -30,6 +30,12 @@
 
 namespace o2::quality_control_modules::tpc
 {
+/// \brief Get boolean configurable from json file
+/// This function checks if a configurable is available in the json file and makes sure that different versions of it are accepted (true, TRUE, 1, etc)
+/// \param config ConfigurationInterface with prefix set to ""
+/// \param id Task id
+/// \param property Property name to be looked for in json
+bool getPropertyBool(const boost::property_tree::ptree& config, const std::string& id, const std::string property);
 
 /// \brief Prepare canvases to publish DalPad data
 /// This function creates canvases for CalPad data and registers them to be published on the QCG.
