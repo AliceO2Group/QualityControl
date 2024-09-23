@@ -126,7 +126,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     indexMB1 = 3; // 3 is the MTVX index
   }
   if (indexMB2 == -1) {
-    indexMB2 = 1; // 3 is the MT0A index
+    indexMB2 = 5; // 5 is the MTCE index
   }
   for (int i = 0; i < nclasses; i++) {
     if (classNames[i] == "") {
