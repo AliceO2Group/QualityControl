@@ -30,7 +30,8 @@ namespace o2::quality_control_modules::tof
 void CheckSlotPartMask::configure()
 {
   utils::parseIntParameter(mCustomParameters, "NCrates", mNCrates);
-  utils::parseIntParameter(mCustomParameters, "CheckLinkInefficiency", mCheckLinkInefficiency);
+  utils::parseIntParameter(mCustomParameters, "MinNhitsPerSlot", mMinNhitsPerSlot);
+  utils::parseIntParameter(mCustomParameters, "MaxNumberIneffientSlotPerCrate", mMaxNumberIneffientSlotPerCrate);
   utils::parseDoubleParameter(mCustomParameters, "IneffThreshold", mIneffThreshold);
   utils::parseIntParameter(mCustomParameters, "NCrateIneff", mNCrateIneff);
 
@@ -50,39 +51,41 @@ Quality CheckSlotPartMask::check(std::map<std::string, std::shared_ptr<MonitorOb
       double hitsxcrate[72] = {};
       double meanhitsxcrate = 0;
       int ncrate = 0;
-      for (int xbin = 1; xbin <= h->GetNbinsX(); xbin++) {   // loop over crates
-        for (int ybin = 1; ybin <= h->GetNbinsY(); ybin++) { // loop over slots
-          hitsxcrate[xbin - 1] += h->GetBinContent(xbin, ybin);
-        }
-        if (hitsxcrate[xbin - 1] == 0) { // is entire crate empty?
-          ncrate++;
-        }
-        meanhitsxcrate += hitsxcrate[xbin - 1];
-      }
-      meanhitsxcrate /= 72;
+      double maxhitsxcrate = hitsxcrate[0];
 
+      for (int xbin = 1; xbin <= h->GetNbinsX(); xbin++) { // loop over crates
+        int nslot = 0;
+        for (int ybin = 1; ybin <= h->GetNbinsY(); ybin++) { // loop over slot
+          hitsxcrate[xbin - 1] += h->GetBinContent(xbin, ybin);
+          if (h->GetBinContent(xbin, ybin) <= mMinNhitsPerSlot) {
+            nslot++; // number of inefficient slots in each crate
+          }
+        }
+        if (nslot > mMaxNumberIneffientSlotPerCrate) {
+          ncrate++; // if the number of inefficient slots in a crate is above a maximun, the crate is inefficient
+        }
+        if (maxhitsxcrate <= hitsxcrate[xbin - 1])
+          maxhitsxcrate = hitsxcrate[xbin - 1]; // Finding the maximum number of hits in a crate
+      }
       // look for inefficient crates
       int ncrate_ineff = 0;
-      if (mCheckLinkInefficiency) {
-        for (int ncrate = 0; ncrate < 72; ncrate++) { // loop over crates
-          if (hitsxcrate[ncrate] < mIneffThreshold * meanhitsxcrate) {
-            ncrate_ineff++;
-          }
+      for (int ncrate = 0; ncrate < 72; ncrate++) { // loop over crates
+        if (hitsxcrate[ncrate] < mIneffThreshold * maxhitsxcrate) {
+          ncrate_ineff++;
         }
       }
 
       if (ncrate > mNCrates) {
         result = Quality::Bad;
-      } else if (mCheckLinkInefficiency && (ncrate_ineff > mNCrateIneff)) {
-        result = Quality::Bad;
+      } else if ((ncrate_ineff > mNCrateIneff)) {
+        result = Quality::Medium;
       } else {
         result = Quality::Good;
       }
     }
+    return result;
   }
-  return result;
 }
-
 std::string CheckSlotPartMask::getAcceptedType() { return "TH2F"; }
 
 void CheckSlotPartMask::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
@@ -90,16 +93,17 @@ void CheckSlotPartMask::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   if (mo->getName() == "hSlotPartMask") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult, "bl");
+    msg->SetTextSize(30);
     if (!msg) {
       return;
     }
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
-      msg->AddText("Many links missing.");
+      msg->AddText("Many crates have many inefficient slots.");
       msg->AddText("Call TOF on-call.");
     } else if (checkResult == Quality::Medium) {
-      // msg->AddText("");
+      msg->AddText("Many inefficient crates.");
       // msg->AddText("");
     }
   } else
