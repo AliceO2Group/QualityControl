@@ -359,7 +359,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
-      ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to MonitorObject" << ENDM;
+      ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to MonitorObject (objectVersion: " << objectVersion << ")" << ENDM;
       return nullptr;
     }
   } else {
@@ -386,7 +386,7 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
   }
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
-    ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to QualityObject" << ENDM;
+    ILOG(Error, Devel) << "Could not cast the object " << fullPath << " to QualityObject (objectVersion: " << objectVersion << ")" << ENDM;
   } else {
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
