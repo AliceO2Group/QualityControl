@@ -17,6 +17,7 @@
 #include "Common/ReferenceComparatorCheck.h"
 #include "QualityControl/ReferenceUtils.h"
 #include "Common/TH1Ratio.h"
+#include "Common/Utils.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -47,11 +48,12 @@ void ReferenceComparatorCheck::configure()
 
 void ReferenceComparatorCheck::startOfActivity(const Activity& activity)
 {
-  mComparatorModuleName = mCustomParameters.atOptional("moduleName", activity).value_or("");
-  mComparatorClassName = mCustomParameters.atOptional("comparatorName", activity).value_or("");
-  mReferenceRun = std::stoi(mCustomParameters.atOptional("referenceRun", activity).value_or("0"));
-  mIgnorePeriodForReference = std::stoi(mCustomParameters.atOptional("ignorePeriodForReference", activity).value_or("1")) != 0;
-  mIgnorePassForReference = std::stoi(mCustomParameters.atOptional("ignorePassForReference", activity).value_or("1")) != 0;
+  mComparatorModuleName = getFromExtendedConfig<std::string>(activity, mCustomParameters, "moduleName", "");
+  mComparatorClassName = getFromExtendedConfig<std::string>(activity, mCustomParameters, "comparatorName", "");
+  mReferenceRun = getFromExtendedConfig<int>(activity, mCustomParameters, "referenceRun", 0);
+  mIgnorePeriodForReference = getFromExtendedConfig<bool>(activity, mCustomParameters, "ignorePeriodForReference", true);
+  mIgnorePassForReference = getFromExtendedConfig<bool>(activity, mCustomParameters, "ignorePassForReference", true);
+  mRatioPlotRange = getFromExtendedConfig<double>(activity, mCustomParameters, "ratioPlotRange", mRatioPlotRange);
 
   mActivity = activity;
 
@@ -328,17 +330,17 @@ static void setQualityLabel(TCanvas* canvas, const Quality& quality)
   }
 }
 
-void ReferenceComparatorCheck::drawHorizontalRange(const std::string& moName, TCanvas* canvas, const Quality& quality)
+void ReferenceComparatorCheck::beautifyRatioPlot(const std::string& moName, TH1* ratioPlot, const Quality& quality)
 {
-  if (!canvas) {
-    return;
-  }
-
-  // get the plot with the current/reference ratio from the canvas
-  auto ratioPlot = getRatioPlotFromCanvas(canvas);
   // currently the range indicator is only implemented for 1-D histograms
   if (!ratioPlot || ratioPlot->InheritsFrom("TH2")) {
     return;
+  }
+
+  // set vertical range according to preferences
+  if (mRatioPlotRange > 0) {
+    ratioPlot->SetMinimum(1.0 - mRatioPlotRange);
+    ratioPlot->SetMaximum(1.0 + mRatioPlotRange);
   }
 
   // get the comparator associated to this plot
@@ -360,7 +362,10 @@ void ReferenceComparatorCheck::drawHorizontalRange(const std::string& moName, TC
   // draw an horizontal double arrow marking the X-axis range
   double xMin = ratioPlot->GetXaxis()->GetBinLowEdge(ratioPlot->GetXaxis()->FindBin(rangeX->first));
   double xMax = ratioPlot->GetXaxis()->GetBinUpEdge(ratioPlot->GetXaxis()->FindBin(rangeX->second - 1.0e-6));
-  auto arrow = new TArrow(xMin, 1.8, xMax, 1.8, 0.015, "<|>");
+  double yMin = ratioPlot->GetMinimum();
+  double yMax = ratioPlot->GetMaximum();
+  double yArrow = yMin + 0.1 * (yMax - yMin);
+  auto arrow = new TArrow(xMin, yArrow, xMax, yArrow, 0.015, "<|>");
   arrow->SetLineColor(getQualityColor(quality));
   arrow->SetFillColor(getQualityColor(quality));
   ratioPlot->GetListOfFunctions()->Add(arrow);
@@ -384,7 +389,7 @@ void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
     setQualityLabel(canvas, quality);
 
     // draw a double-arrow indicating the horizontal range for the check, if it is set
-    drawHorizontalRange(moName, canvas, quality);
+    beautifyRatioPlot(moName, getRatioPlotFromCanvas(canvas), quality);
   } else {
     // draw the quality label directly on the plot if the MO is an histogram
     auto* th1 = dynamic_cast<TH1*>(mo->getObject());

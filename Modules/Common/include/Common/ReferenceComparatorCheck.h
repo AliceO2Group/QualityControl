@@ -52,7 +52,7 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
 
  private:
   Quality getSinglePlotQuality(std::shared_ptr<MonitorObject> mo, ObjectComparatorInterface* comparator, std::string& message);
-  void drawHorizontalRange(const std::string& moName, TCanvas* canvas, const Quality& quality);
+  void beautifyRatioPlot(const std::string& moName, TH1* ratioPlot, const Quality& quality);
 
   std::map<std::string, Quality> mQualityFlags;
   std::map<std::string, std::shared_ptr<TPaveText>> mQualityLabels;
@@ -63,6 +63,7 @@ class ReferenceComparatorCheck : public o2::quality_control::checker::CheckInter
   bool mIgnorePeriodForReference{ true }; /// whether to specify the period name in the reference run query
   bool mIgnorePassForReference{ true };   /// whether to specify the pass name in the reference run query
   size_t mReferenceRun;
+  double mRatioPlotRange{ 0 };
   /// cached reference MOs
   std::unordered_map<std::string, std::shared_ptr<MonitorObject>> mReferencePlots;
   /// collection of object comparators with plot-specific settings
