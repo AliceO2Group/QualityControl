@@ -52,7 +52,7 @@ install(FILES etc/ft0-digits.json
               etc/ft0-post-processing.json
               etc/ft0-recpoints.json
               etc/FT0_LUT.csv
-        DESTINATION Modules/FIT/FT0/etc)
+        DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/Modules/FIT/FT0/etc)
 
 # ---- Executables ----
 # keep commented as an example
