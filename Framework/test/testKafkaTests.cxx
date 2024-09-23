@@ -166,6 +166,22 @@ void sendSorAndTeardown()
   sendMessage(producer, createEorTeardownProtoMessage());
 }
 
+TEST_CASE("test_kafka_empty_brokers", "[.manual_kafka]")
+{
+  using namespace o2::quality_control::core;
+  REQUIRE_THROWS_AS(KafkaPoller("", ""), std::invalid_argument);
+}
+
+TEST_CASE("test_kafka_poller_soreor_empty_brokers", "[.manual_kafka]")
+{
+  using namespace o2::quality_control;
+  core::Activity activityMatching{};
+  REQUIRE_THROWS_AS(postprocessing::triggers::StartOfRun("", testTopic, "TST", "sor_test_matching", activityMatching), std::invalid_argument);
+  REQUIRE_THROWS_AS(postprocessing::triggers::StartOfRun("emptystring", "", "TST", "sor_test_matching", activityMatching), std::invalid_argument);
+  REQUIRE_THROWS_AS(postprocessing::triggers::EndOfRun("", testTopic, "TST", "sor_test_matching", activityMatching), std::invalid_argument);
+  REQUIRE_THROWS_AS(postprocessing::triggers::EndOfRun("emptystring", "", "TST", "sor_test_matching", activityMatching), std::invalid_argument);
+}
+
 TEST_CASE("test_kafka_poller_soreor", "[.manual_kafka]")
 {
   const auto kafkaCluster = getClusterURLFromEnv();

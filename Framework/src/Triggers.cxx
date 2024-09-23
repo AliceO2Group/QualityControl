@@ -68,8 +68,25 @@ std::string createKafkaGroupId(std::string_view prefix, std::string_view detecto
   return groupId;
 }
 
+bool checkKafkaParams(const std::string& kafkaBrokers, const std::string& topic, const std::string_view triggerTypeLogId)
+{
+  if (kafkaBrokers.empty()) {
+    ILOG(Error, Support) << "You are tring to create " << triggerTypeLogId << " trigger using Kafka without any brokers, fill config value 'kafkaBrokersUrl'" << ENDM;
+    return false;
+  }
+  if (topic.empty()) {
+    ILOG(Error, Support) << "You are tring to consume empty Kafka topic from " << triggerTypeLogId << " trigger, fill config value 'kafkaTopic'" << ENDM;
+    return false;
+  }
+  return true;
+}
+
 TriggerFcn StartOfRun(const std::string& kafkaBrokers, const std::string& topic, const std::string& detector, const std::string& taskName, const core::Activity& activity)
 {
+  if (!checkKafkaParams(kafkaBrokers, topic, "SOR")) {
+    throw std::invalid_argument{ "We don't have enough information to consume Kafka. Check IL" };
+  }
+
   auto copiedActivity = activity;
   auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, createKafkaGroupId("SOR_postprocessing", detector, taskName));
   poller->subscribe(topic);
@@ -117,6 +134,10 @@ TriggerFcn Never(const Activity& activity)
 
 TriggerFcn EndOfRun(const std::string& kafkaBrokers, const std::string& topic, const std::string& detector, const std::string& taskName, const Activity& activity)
 {
+  if (!checkKafkaParams(kafkaBrokers, topic, "EOR")) {
+    throw std::invalid_argument{ "We don't have enough information to consume Kafka. Check IL" };
+  }
+
   auto copiedActivity = activity;
   auto poller = std::make_shared<core::KafkaPoller>(kafkaBrokers, createKafkaGroupId("EOR_postprocessing", detector, taskName));
   poller->subscribe(topic);
