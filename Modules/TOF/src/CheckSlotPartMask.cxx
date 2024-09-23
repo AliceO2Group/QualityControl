@@ -49,19 +49,18 @@ Quality CheckSlotPartMask::check(std::map<std::string, std::shared_ptr<MonitorOb
     if (mo->getName() == "hSlotPartMask") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       double hitsxcrate[72] = {};
-      double meanhitsxcrate = 0;
       int ncrate = 0;
-      double maxhitsxcrate = hitsxcrate[0];
+      double maxhitsxcrate = 0.;
 
-      for (int xbin = 1; xbin <= h->GetNbinsX(); xbin++) { // loop over crates
-        int nslot = 0;
-        for (int ybin = 1; ybin <= h->GetNbinsY(); ybin++) { // loop over slot
+      for (int xbin = 1; xbin <= h->GetNbinsX(); xbin++) {   // loop over crates
+        int nSlotsBelowThr = 0;                              // define couter variable for the slots below the threshold
+        for (int ybin = 1; ybin <= h->GetNbinsY(); ybin++) { // loop over slots
           hitsxcrate[xbin - 1] += h->GetBinContent(xbin, ybin);
           if (h->GetBinContent(xbin, ybin) <= mMinNhitsPerSlot) {
-            nslot++; // number of inefficient slots in each crate
+            nSlotsBelowThr++; // number of inefficient slots in each crate
           }
         }
-        if (nslot > mMaxNumberIneffientSlotPerCrate) {
+        if (nSlotsBelowThr > mMaxNumberIneffientSlotPerCrate) {
           ncrate++; // if the number of inefficient slots in a crate is above a maximun, the crate is inefficient
         }
         if (maxhitsxcrate <= hitsxcrate[xbin - 1])
@@ -75,16 +74,20 @@ Quality CheckSlotPartMask::check(std::map<std::string, std::shared_ptr<MonitorOb
         }
       }
 
+      Quality partialResult = Quality::Null;
       if (ncrate > mNCrates) {
-        result = Quality::Bad;
+        partialResult = Quality::Bad;
       } else if ((ncrate_ineff > mNCrateIneff)) {
-        result = Quality::Medium;
+        partialResult = Quality::Medium;
       } else {
-        result = Quality::Good;
+        partialResult = Quality::Good;
+      }
+      if (partialResult.isWorseThan(result) || result == Quality::Null) {
+        result = partialResult;
       }
     }
-    return result;
   }
+  return result;
 }
 std::string CheckSlotPartMask::getAcceptedType() { return "TH2F"; }
 
