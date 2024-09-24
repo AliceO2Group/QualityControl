@@ -19,6 +19,28 @@
 namespace o2::quality_control_modules::common
 {
 
+namespace th1ratio_internal
+{
+
+template <class T>
+bool copyBinLabels(const T* srcHist, T* destHist)
+{
+  if (srcHist->GetXaxis()->GetNbins() != destHist->GetXaxis()->GetNbins()) {
+    return false;
+  }
+
+  bool result = false;
+  if (srcHist->GetXaxis()->GetLabels())  {
+    for (int bin = 1; bin <= srcHist->GetXaxis()->GetNbins(); bin++) {
+      destHist->GetXaxis()->SetBinLabel(bin, srcHist->GetXaxis()->GetBinLabel(bin));
+    }
+    result = true;
+  }
+  return result;
+}
+
+}
+
 template<class T>
 TH1Ratio<T>::TH1Ratio()
   : T(),
@@ -149,6 +171,13 @@ void TH1Ratio<T>::update()
   T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
   T::SetBinsLength();
 
+  // Copy bin labels between histograms.
+  // If set, the bin labels of the ratio histograms are copied to the numerator.
+  // If instead the numerator has bin labels they are copied to the ratio plot.
+  if (!th1ratio_internal::copyBinLabels<T>(this, mHistoNum)) {
+    th1ratio_internal::copyBinLabels<T>(mHistoNum, this);
+  }
+
   if (mUniformScaling) {
     T::Add(mHistoNum);
     double entries = mHistoDen->GetBinContent(1);
@@ -160,12 +189,8 @@ void TH1Ratio<T>::update()
       T::Scale(norm, "nosw2");
     }
   } else {
-    if (T::GetXaxis()->GetLabels())  {
-      // copy bin labels to denominator before dividing, otherwise we get a warning
-      for (int bin = 1; bin <= T::GetXaxis()->GetNbins(); bin++) {
-        mHistoDen->GetXaxis()->SetBinLabel(bin, T::GetXaxis()->GetBinLabel(bin));
-      }
-    }
+    // copy bin labels from numerator to denominator (if needed) before dividing, otherwise we get a warning from ROOT
+    th1ratio_internal::copyBinLabels<T>(mHistoNum, mHistoDen);
     T::Divide(mHistoNum, mHistoDen, 1.0, 1.0, mBinominalErrors ? "B" : "");
   }
 }
