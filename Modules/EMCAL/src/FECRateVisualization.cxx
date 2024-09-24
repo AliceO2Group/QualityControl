@@ -69,7 +69,7 @@ void FECRateVisualization::update(Trigger t, framework::ServiceRegistryRef servi
 
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
   auto mo = qcdb.retrieveMO("EMC/MO/CellTrendingDetailEMCAL", "CellTrendingDetailEMCAL", t.timestamp, t.activity);
-  TTree* datatree = static_cast<TTree*>(mo->getObject());
+  TTree* datatree = mo ? static_cast<TTree*>(mo->getObject()) : nullptr;
   if (!datatree) {
     ILOG(Error, Support) << "Tree not found" << ENDM;
     return;
