@@ -16,6 +16,7 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 /// \author David Grund
+/// \author Sara Haidlova
 ///
 
 // C++
@@ -126,23 +127,37 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
     // checker for empty ladders
     QcMFTUtilTables MFTTable;
-    for (int i = 0; i < 20; i++) {
-      if (mo->getName() == MFTTable.mClusterChipMapNames[i]) {
+    for (int j = 0; j < 20; j++) {
+      if (mo->getName() == MFTTable.mClusterChipMapNames[j]) {
         adjacentCount = 0;
         auto* hClusterChipOccupancyMap = dynamic_cast<TH2F*>(mo->getObject());
         if (hClusterChipOccupancyMap == nullptr) {
           ILOG(Error, Support) << "Could not cast mClusterChipMap to TH2F." << ENDM;
           return Quality::Null;
         }
+
         // loop over bins in each chip map
+        bool isOutsideAcc = false;
         for (int iBinX = 0; iBinX < hClusterChipOccupancyMap->GetNbinsX(); iBinX++) {
           isEmpty = true;
           for (int iBinY = 0; iBinY < hClusterChipOccupancyMap->GetNbinsY(); iBinY++) {
+            isOutsideAcc = false;
             if (hClusterChipOccupancyMap->GetBinContent(iBinX + 1, iBinY + 1) != 0) {
               isEmpty = false; // if there is an unempty bin, the ladder is not empty
               break;
             } else {
-              // check if empty ladders are masked
+              // check if empty chips are outside acceptance
+              for (int k = 0; k < 21; k++) {
+                if (mo->getName().find(MFTTable.mClusterChipMapNames[j]) != std::string::npos) {
+                  if (iBinX + 1 == MFTTable.mBinX[j][k] && iBinY + 1 == MFTTable.mBinY[j][k]) {
+                    isOutsideAcc = true;
+                    continue;
+                  }
+                }
+              }
+            }
+            // if the chip is still empty and not outside acceptance, check if it is masked
+            if (isEmpty && !isOutsideAcc) {
               for (int i = 0; i < mMaskedChips.size(); i++) {
                 if (mo->getName().find(mChipMapName[i]) != std::string::npos) {
                   if (iBinX + 1 == hClusterChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]) && iBinY + 1 == hClusterChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[i]])) {
