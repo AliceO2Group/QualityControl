@@ -140,6 +140,8 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
   ReferenceComparatorPlotImpl1D(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption)
     : ReferenceComparatorPlotImpl(scaleReference)
   {
+    float labelSize = 0.04;
+
     if (!referenceHistogram) {
       return;
     }
@@ -148,98 +150,110 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     std::string canvasName = outputPath;
     mCanvas = std::make_shared<TCanvas>(canvasName.c_str(), canvasName.c_str(), 800, 600);
 
+    // Pad where the histogram ratio is drawn. If drawRatioOnly is true the pad is placed on top
+    // without any transparency, and fully covers the other pad
+    mCanvas->cd();
+    if (drawRatioOnly) {
+      mPadHistRatio = std::make_shared<TPad>((canvasName + "_PadHistRatio").c_str(), "PadHistRatio", 0, 0, 1, 1);
+    } else {
+      mPadHistRatio = std::make_shared<TPad>((canvasName + "_PadHistRatio").c_str(), "PadHistRatio", 0, 1.0 / 3, 1, 1);
+      mPadHistRatio->SetTopMargin(0.15);
+      mPadHistRatio->SetBottomMargin(0.5);
+      mPadHistRatio->SetLeftMargin(0.1);
+      mPadHistRatio->SetRightMargin(0.1);
+      mPadHistRatio->SetGridy();
+    }
+
     // Pad where the histograms are drawn. If drawRatioOnly is true the pad is placed hidden
     // behind the second pad where the ratio histogram is drawn
     mCanvas->cd();
     if (drawRatioOnly) {
       mPadHist = std::make_shared<TPad>((canvasName + "_PadHist").c_str(), "PadHist", 0.2, 0.2, 0.8, 0.8);
     } else {
-      mPadHist = std::make_shared<TPad>((canvasName + "_PadHist").c_str(), "PadHist", 0, 0, 1, 1);
-      mPadHist->SetBottomMargin(1.0 / 3);
-      mPadHist->SetFillStyle(4000);
+      mPadHist = std::make_shared<TPad>((canvasName + "_PadHist").c_str(), "PadHist", 0, 0, 1, 2.0 / 3 - 0.01);
+      mPadHist->SetTopMargin(0);
+      mPadHist->SetBottomMargin(0.15);
+      mPadHist->SetLeftMargin(0.1);
+      mPadHist->SetRightMargin(0.1);
     }
-    mPadHist->Draw();
 
-    // Pad where the histogram ratio is drawn. If drawRatioOnly is true the pad is placed on top
-    // without any transparency, and fully covers the other pad
-    mCanvas->cd();
-    mPadHistRatio = std::make_shared<TPad>((canvasName + "_PadHistRatio").c_str(), "PadHistRatio", 0, 0, 1, 1);
-    if (!drawRatioOnly) {
-      mPadHistRatio->SetTopMargin(2.0 / 3);
-      mPadHistRatio->SetFillStyle(4000);
+    if (drawRatioOnly) {
+      // If drawRatioOnly is true the pad with the ratio plot is placed on top
+      mCanvas->cd();
+      mPadHist->Draw();
+      mCanvas->cd();
+      mPadHistRatio->Draw();
+    } else {
+      // otherwise the pad with the superimposed histograms goes on top
+      mCanvas->cd();
+      mPadHistRatio->Draw();
+      mCanvas->cd();
+      mPadHist->Draw();
     }
-    mPadHistRatio->Draw();
 
     // histogram from the current run
     mPadHist->cd();
-    mPlot = std::make_shared<HIST>((canvasName + "_hist").c_str(),
-                                   referenceHistogram->GetTitle(),
+    mPlot = std::make_shared<HIST>((canvasName + "_hist").c_str(), "",
                                    referenceHistogram->GetXaxis()->GetNbins(),
                                    referenceHistogram->GetXaxis()->GetXmin(),
                                    referenceHistogram->GetXaxis()->GetXmax());
-    // hide the X-axis
-    mPlot->GetXaxis()->SetTitle("");
-    mPlot->GetXaxis()->SetLabelSize(0);
+    mPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
+    mPlot->GetXaxis()->SetLabelSize(labelSize);
+    mPlot->GetXaxis()->SetTitleSize(labelSize);
+    mPlot->GetXaxis()->SetTitleOffset(1.0);
     mPlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
+    mPlot->GetYaxis()->SetLabelSize(labelSize);
+    mPlot->GetYaxis()->SetTitleSize(labelSize);
+    mPlot->GetYaxis()->SetTitleOffset(1.0);
     mPlot->SetLineColor(kBlack);
     mPlot->SetStats(0);
     mPlot->SetOption(drawOption.c_str());
     mPlot->Draw(drawOption.c_str());
 
     // histogram from the reference run
-    mReferencePlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(),
-                                            referenceHistogram->GetTitle(),
+    mReferencePlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(), "",
                                             referenceHistogram->GetXaxis()->GetNbins(),
                                             referenceHistogram->GetXaxis()->GetXmin(),
                                             referenceHistogram->GetXaxis()->GetXmax());
     mReferencePlot->SetLineColor(kBlue);
-    // mReferencePlot->SetLineStyle(kDashed);
-    // mReferencePlot->SetLineWidth(2);
     mReferencePlot->SetOption((drawOption + "SAME").c_str());
     mReferencePlot->Draw((drawOption + "SAME").c_str());
 
     // histogram with current/reference ratio
     mPadHistRatio->cd();
-    mRatioPlot = std::make_shared<HIST>((canvasName + "_hist_ratio").c_str(),
-                                        referenceHistogram->GetTitle(),
+    mRatioPlot = std::make_shared<HIST>((canvasName + "_hist_ratio").c_str(), "",
                                         referenceHistogram->GetXaxis()->GetNbins(),
                                         referenceHistogram->GetXaxis()->GetXmin(),
                                         referenceHistogram->GetXaxis()->GetXmax());
-    mRatioPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
     if (drawRatioOnly) {
+      mRatioPlot->SetTitle(referenceHistogram->GetTitle());
+      mRatioPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
       mRatioPlot->GetYaxis()->SetTitle("current / reference");
     } else {
+      // hide the X axis labels
+      mRatioPlot->GetXaxis()->SetLabelSize(0);
+      mRatioPlot->GetXaxis()->SetTitleSize(0);
       mRatioPlot->GetYaxis()->SetTitle("ratio");
       mRatioPlot->GetYaxis()->CenterTitle(kTRUE);
       mRatioPlot->GetYaxis()->SetNdivisions(5);
-      mRatioPlot->SetTitle("");
+      mRatioPlot->GetYaxis()->SetLabelSize(labelSize);
+      mRatioPlot->GetYaxis()->SetTitleSize(labelSize);
+      mRatioPlot->GetYaxis()->SetTitleOffset(1.0);
     }
     mRatioPlot->SetLineColor(kBlack);
     mRatioPlot->SetStats(0);
     mRatioPlot->SetOption("E");
     mRatioPlot->Draw("E");
-    mRatioPlot->SetMinimum(0);
     if (drawRatioOnly) {
+      mRatioPlot->SetMinimum(0);
       mRatioPlot->SetMaximum(2);
     } else {
-      // set the maximum sligtly below 2.0, such that the corresponding bin label is not shown
-      // and does not overlap with the zero of the histogram above
+      // set the minimum and maximum sligtly above 0 and below 2.0, such that the first and last bin labels are not shown
+      mRatioPlot->SetMinimum(0.001);
       mRatioPlot->SetMaximum(1.999);
     }
 
-    // Apparently with transparent pads the histogram border is also not draw,
-    // so we need to add it by hand when drawing multiple pads
     mCanvas->cd();
-    if (!drawRatioOnly) {
-      mBorderTop = std::make_shared<TLine>(0.1, 0.9, 0.9, 0.9);
-      mBorderTop->SetLineColor(kBlack);
-      mBorderTop->Draw();
-
-      mBorderRight = std::make_shared<TLine>(0.9, 0.1, 0.9, 0.9);
-      mBorderRight->SetLineColor(kBlack);
-      mBorderRight->Draw();
-    }
-
     // We place an empty TPaveText in the good place, it will be used by the checker
     // to draw the quality labels and flags
     mQualityLabel = std::make_shared<TPaveText>(0.00, 0.9, 0.9, 0.98, "brNDC");
@@ -248,6 +262,17 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     mQualityLabel->SetTextAlign(12);
     mQualityLabel->SetTextFont(42);
     mQualityLabel->Draw();
+
+    if (!drawRatioOnly) {
+      // draw the histogram title
+      mHistogramTitle = std::make_shared<TPaveText>(0.1, 0.94, 0.9, 1.0, "brNDC");
+      mHistogramTitle->SetBorderSize(0);
+      mHistogramTitle->SetFillStyle(0);
+      mHistogramTitle->SetTextAlign(22);
+      mHistogramTitle->SetTextFont(42);
+      mHistogramTitle->AddText(referenceHistogram->GetTitle());
+      mHistogramTitle->Draw();
+    }
   }
 
   TObject* getMainCanvas()
@@ -266,7 +291,7 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     mRatioPlot->Reset();
     mRatioPlot->Add(mPlot.get());
     mRatioPlot->Divide(mReferencePlot.get());
-    mRatioPlot->SetMinimum(0);
+    mRatioPlot->SetMinimum(0.001);
     mRatioPlot->SetMaximum(1.999);
   }
 
@@ -278,8 +303,10 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
   std::shared_ptr<HIST> mReferencePlot;
   std::shared_ptr<HIST> mRatioPlot;
   std::shared_ptr<TLine> mBorderTop;
+  std::shared_ptr<TLine> mBorderMiddle;
   std::shared_ptr<TLine> mBorderRight;
   std::shared_ptr<TPaveText> mQualityLabel;
+  std::shared_ptr<TPaveText> mHistogramTitle;
 };
 
 template <class HIST>
