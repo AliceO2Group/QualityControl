@@ -48,6 +48,8 @@ target_include_directories(O2QualityControlKafkaProtos PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/proto")
+
 protobuf_generate(
   TARGET O2QualityControlKafkaProtos
   IMPORT_DIRS "${CMAKE_CURRENT_LIST_DIR}/proto"
@@ -127,7 +129,7 @@ target_include_directories(
   PUBLIC $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   ${MODERNCPPKAFKA_ROOT}
-  $<BUILD_INTERFACE:${RDFKAFKA_INCLUDE}>
+  $<BUILD_INTERFACE:${RDKAFKA_INCLUDE}>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   )
