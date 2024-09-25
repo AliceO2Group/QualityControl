@@ -115,6 +115,106 @@ TH2Ratio<T>::TH2Ratio(const char* name, const char* title, int nbinsx, double xm
 }
 
 template<class T>
+TH2Ratio<T>::TH2Ratio(const char* name, const char* title, int nbinsx, const float *xbins, int nbinsy, const float *ybins, bool uniformScaling)
+  : T(name, title, nbinsx, xbins, nbinsy, ybins),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(uniformScaling)
+{
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
+  {
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xbins, nbinsy, ybins);
+    if (mUniformScaling) {
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1, 1, -1, 1);
+    } else {
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xbins, nbinsy, ybins);
+    }
+  }
+
+  init();
+}
+
+template<class T>
+TH2Ratio<T>::TH2Ratio(const char* name, const char* title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, bool uniformScaling)
+  : T(name, title, nbinsx, xbins, nbinsy, ybins),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(uniformScaling)
+{
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
+  {
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xbins, nbinsy, ybins);
+    if (mUniformScaling) {
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1, 1, -1, 1);
+    } else {
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xbins, nbinsy, ybins);
+    }
+  }
+
+  init();
+}
+
+template<class T>
+TH2Ratio<T>::TH2Ratio(const char* name, const char* title, int nbinsx, const double *xbins, int nbinsy, double ymin, double ymax, bool uniformScaling)
+  : T(name, title, nbinsx, xbins, nbinsy, ymin, ymax),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(uniformScaling)
+{
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
+  {
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xbins, nbinsy, ymin, ymax);
+    if (mUniformScaling) {
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1, 1, -1, 1);
+    } else {
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xbins, nbinsy, ymin, ymax);
+    }
+  }
+
+  init();
+}
+
+template<class T>
+TH2Ratio<T>::TH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, const double *ybins, bool uniformScaling)
+  : T(name, title, nbinsx, xmin, xmax, nbinsy, ybins),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(uniformScaling)
+{
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
+  {
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xmin, xmax, nbinsy, ybins);
+    if (mUniformScaling) {
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1, 1, -1, 1);
+    } else {
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xmin, xmax, nbinsy, ybins);
+    }
+  }
+
+  init();
+}
+
+template<class T>
 TH2Ratio<T>::TH2Ratio(const char* name, const char* title, bool uniformScaling)
   : T(name, title, 10, 0, 10, 10, 0, 10),
     o2::mergers::MergeInterface(),
@@ -177,8 +277,8 @@ void TH2Ratio<T>::update()
   }
 
   T::Reset();
-  T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
-  T::GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
+  mHistoNum->GetXaxis()->Copy(*T::GetXaxis());
+  mHistoNum->GetYaxis()->Copy(*T::GetYaxis());
   T::SetBinsLength();
 
   // Copy bin labels between histograms.

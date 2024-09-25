@@ -106,6 +106,56 @@ TH1Ratio<T>::TH1Ratio(const char* name, const char* title, int nbinsx, double xm
 }
 
 template<class T>
+TH1Ratio<T>::TH1Ratio(const char* name, const char* title, int nbinsx, float* xbins, bool uniformScaling)
+  : T(name, title, nbinsx, xbins),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(uniformScaling)
+{
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
+  {
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xbins);
+    if (mUniformScaling) {
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1);
+    } else {
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xbins);
+    }
+  }
+
+  init();
+}
+
+template<class T>
+TH1Ratio<T>::TH1Ratio(const char* name, const char* title, int nbinsx, double* xbins, bool uniformScaling)
+  : T(name, title, nbinsx, xbins),
+    o2::mergers::MergeInterface(),
+    mUniformScaling(uniformScaling)
+{
+  // do not add created histograms to gDirectory
+  // see https://root.cern.ch/doc/master/TEfficiency_8cxx.html
+  {
+    TString nameNum = T::GetName() + TString("_num");
+    TString nameDen = T::GetName() + TString("_den");
+    TString titleNum = T::GetTitle() + TString(" num");
+    TString titleDen = T::GetTitle() + TString(" den");
+    TDirectory::TContext ctx(nullptr);
+    mHistoNum = new T(nameNum, titleNum, nbinsx, xbins);
+    if (mUniformScaling) {
+      mHistoDen = new T(nameDen, titleDen, 1, -1, 1);
+    } else {
+      mHistoDen = new T(nameDen, titleDen, nbinsx, xbins);
+    }
+  }
+
+  init();
+}
+
+template<class T>
 TH1Ratio<T>::TH1Ratio(const char* name, const char* title, bool uniformScaling)
   : T(name, title, 10, 0, 10),
     o2::mergers::MergeInterface(),
@@ -168,7 +218,7 @@ void TH1Ratio<T>::update()
   }
 
   T::Reset();
-  T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
+  mHistoNum->GetXaxis()->Copy(*T::GetXaxis());
   T::SetBinsLength();
 
   // Copy bin labels between histograms.
