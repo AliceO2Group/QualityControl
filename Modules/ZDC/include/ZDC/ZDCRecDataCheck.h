@@ -60,21 +60,48 @@ class ZDCRecDataCheck : public o2::quality_control::checker::CheckInterface
  private:
   std::vector<sCheck> mVectParamADC;
   std::vector<sCheck> mVectParamTDC;
+  std::vector<sCheck> mVectParamTDCA;
+  std::vector<sCheck> mVectParamPeak1n;
+  std::vector<sCheck> mVectParamPeak1p;
+
   int mNumWADC = 0;
   int mNumEADC = 0;
   int mNumWTDC = 0;
   int mNumETDC = 0;
+  int mNumWTDCA = 0;
+  int mNumETDCA = 0;
+  int mNumWPeak1n = 0;
+  int mNumEPeak1n = 0;
+  int mNumWPeak1p = 0;
+  int mNumEPeak1p = 0;
+
   float mPosMsgADCX;
   float mPosMsgADCY;
   float mPosMsgTDCX;
   float mPosMsgTDCY;
+  float mPosMsgTDCAX;
+  float mPosMsgTDCAY;
+  float mPosMsgPeak1nX;
+  float mPosMsgPeak1nY;
+  float mPosMsgPeak1pX;
+  float mPosMsgPeak1pY;
+
   int mQADC = 0;
   int mQTDC = 0;
+  int mQTDCA = 0;
+  int mQPeak1n = 0;
+  int mQPeak1p = 0;
 
   std::string mStringWADC = "";
   std::string mStringEADC = "";
   std::string mStringWTDC = "";
   std::string mStringETDC = "";
+  std::string mStringWTDCA = "";
+  std::string mStringETDCA = "";
+  std::string mStringWPeak1n = "";
+  std::string mStringEPeak1n = "";
+  std::string mStringWPeak1p = "";
+  std::string mStringEPeak1p = "";
 };
 
 } // namespace o2::quality_control_modules::zdc

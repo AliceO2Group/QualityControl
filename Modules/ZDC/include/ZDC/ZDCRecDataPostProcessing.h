@@ -12,7 +12,7 @@
 ///
 /// \file    ZDCRecDataPostProcessing.h
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Post-processing of the ZDC ADC and TDC plots
+/// \brief   Post-processing of the ZDC ADC and TDC (Time and Amplitude) plots
 /// \since   30/08/2023
 ///
 
@@ -86,18 +86,32 @@ class ZDCRecDataPostProcessing : public PostProcessingInterface
                     const char* displayHints = "");
   void createSummaryADCHistos(Trigger t, repository::DatabaseInterface* qcdb);
   void createSummaryTDCHistos(Trigger t, repository::DatabaseInterface* qcdb);
+  void createSummaryTDCAHistos(Trigger t, repository::DatabaseInterface* qcdb);
+  void createSummaryPeak1nHistos(Trigger t, repository::DatabaseInterface* qcdb);
+  void createSummaryPeak1pHistos(Trigger t, repository::DatabaseInterface* qcdb);
   void updateSummaryADCHistos(Trigger t, repository::DatabaseInterface* qcdb);
   void updateSummaryTDCHistos(Trigger t, repository::DatabaseInterface* qcdb);
+  void updateSummaryTDCAHistos(Trigger t, repository::DatabaseInterface* qcdb);
+  void updateSummaryPeak1nHistos(Trigger t, repository::DatabaseInterface* qcdb);
+  void updateSummaryPeak1pHistos(Trigger t, repository::DatabaseInterface* qcdb);
 
   // CCDB object accessors
   std::map<size_t, MOHelper> mMOsADC;
   std::map<size_t, MOHelper> mMOsTDC;
-
+  std::map<size_t, MOHelper> mMOsTDCA;
+  std::map<size_t, MOHelper> mMOsPeak1n;
+  std::map<size_t, MOHelper> mMOsPeak1p;
   // Hit rate histograms ===============================================
   std::vector<std::string> mBinLabelsADC;
   std::vector<std::string> mBinLabelsTDC;
+  std::vector<std::string> mBinLabelsTDCA;
+  std::vector<std::string> mBinLabelsPeak1n;
+  std::vector<std::string> mBinLabelsPeak1p;
   std::unique_ptr<TH1F> mSummaryADCHisto;
   std::unique_ptr<TH1F> mSummaryTDCHisto;
+  std::unique_ptr<TH1F> mSummaryTDCAHisto;
+  std::unique_ptr<TH1F> mSummaryPeak1nHisto;
+  std::unique_ptr<TH1F> mSummaryPeak1pHisto;
 };
 
 template <typename T>

@@ -54,6 +54,7 @@ void ZDCRecDataCheck::startOfActivity(const Activity& activity)
 Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
+  // ADC
   mNumEADC = 0;
   mNumWADC = 0;
   mStringWADC = "";
@@ -94,6 +95,8 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         mQADC = 3;
       }
     }
+
+    // TDC TIME
     mNumETDC = 0;
     mNumWTDC = 0;
     mStringWTDC = "";
@@ -130,29 +133,172 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       if (mNumETDC > 0) {
         mQTDC = 3;
       }
+    }
 
-      if (mQADC == 1 && mQTDC == 1) {
-        result = Quality::Good;
-      } else if (mQADC == 3 || mQTDC == 3) {
-        result = Quality::Bad;
-        if (mQADC == 3) {
-          result.addFlag(FlagTypeFactory::Unknown(),
-                         "Task quality is bad because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringEADC + "have a value in the bad range");
+    // summary TDC Amplitude
+    mNumETDCA = 0;
+    mNumWTDCA = 0;
+    mStringWTDCA = "";
+    mStringETDCA = "";
+    if (mo->getName() == "h_summary_TDCA") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+        return Quality::Null;
+      }
+      // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamTDC.size());
+      if ((int)h->GetNbinsX() != (int)mVectParamTDCA.size()) {
+        return Quality::Null;
+      }
+      for (int i = 0; i < h->GetNbinsX(); i++) {
+        ib = i + 1;
+        if ((((float)h->GetBinContent(ib) < (float)mVectParamTDCA.at(i).minW && (float)h->GetBinContent(ib) >= (float)mVectParamTDCA.at(i).minE)) || ((float)h->GetBinContent(ib) > (float)mVectParamTDCA.at(i).maxW && (float)h->GetBinContent(ib) < (float)mVectParamTDCA.at(i).maxE)) {
+          mNumWTDCA += 1;
+          mStringWTDCA = mStringWTDCA + mVectParamTDCA.at(i).ch + " ";
+          //  ILOG(Warning, Support) << "Rec Warning in " << mVectParamTDCA.at(i).ch << " intervall: " << mVectParamTDCA.at(i).minW << " - " << mVectParamTDCA.at(i).maxW << " Value: " << h->GetBinContent(ib) << ENDM;
         }
-        if (mQTDC == 3) {
-          result.addFlag(FlagTypeFactory::Unknown(),
-                         "It is bad because in TDC Summary" + std::to_string(mNumWTDC) + " channels:" + mStringETDC + "have a value in the bad range");
+        if (((float)h->GetBinContent(ib) < (float)mVectParamTDCA.at(i).minE) || ((float)h->GetBinContent(ib) > (float)mVectParamTDCA.at(i).maxE)) {
+          mNumETDCA += 1;
+          mStringETDCA = mStringETDCA + mVectParamTDCA.at(i).ch + " ";
+          //  ILOG(Error, Support) << "Rec Error in " << mVectParamTDCA.at(i).ch << " intervall: " << mVectParamTDCA.at(i).minE << " - " << mVectParamTDCA.at(i).maxE << " Value: " << h->GetBinContent(ib) << ENDM;
         }
-      } else {
-        result = Quality::Medium;
-        if (mQADC == 2) {
-          result.addFlag(FlagTypeFactory::Unknown(),
-                         "It is medium because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringWADC + "have a value in the medium range");
+      }
+      if (mNumWTDCA == 0 && mNumETDCA == 0) {
+        mQTDCA = 1;
+      }
+      if (mNumWTDCA > 0) {
+        mQTDCA = 2;
+      }
+      if (mNumETDCA > 0) {
+        mQTDCA = 3;
+      }
+    }
+
+    // summary TDC Amplitude Peak 1n
+    mNumEPeak1n = 0;
+    mNumWPeak1n = 0;
+    mStringWPeak1n = "";
+    mStringEPeak1n = "";
+    if (mo->getName() == "h_summary_Peak1n") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+        return Quality::Null;
+      }
+      // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamTDC.size());
+      if ((int)h->GetNbinsX() != (int)mVectParamPeak1n.size()) {
+        return Quality::Null;
+      }
+      for (int i = 0; i < h->GetNbinsX(); i++) {
+        ib = i + 1;
+        if ((((float)h->GetBinContent(ib) < (float)mVectParamPeak1n.at(i).minW && (float)h->GetBinContent(ib) >= (float)mVectParamPeak1n.at(i).minE)) || ((float)h->GetBinContent(ib) > (float)mVectParamPeak1n.at(i).maxW && (float)h->GetBinContent(ib) < (float)mVectParamPeak1n.at(i).maxE)) {
+          mNumWPeak1n += 1;
+          mStringWPeak1n = mStringWPeak1n + mVectParamPeak1n.at(i).ch + " ";
+          //  ILOG(Warning, Support) << "Rec Warning in " << mVectParamPeak1n.at(i).ch << " intervall: " << mVectParamPeak1n.at(i).minW << " - " << mVectParamPeak1n.at(i).maxW << " Value: " << h->GetBinContent(ib) << ENDM;
         }
-        if (mQTDC == 2) {
-          result.addFlag(FlagTypeFactory::Unknown(),
-                         "It is medium because in TDC Summary " + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the medium range");
+        if (((float)h->GetBinContent(ib) < (float)mVectParamPeak1n.at(i).minE) || ((float)h->GetBinContent(ib) > (float)mVectParamPeak1n.at(i).maxE)) {
+          mNumEPeak1n += 1;
+          mStringEPeak1n = mStringEPeak1n + mVectParamPeak1n.at(i).ch + " ";
+          //  ILOG(Error, Support) << "Rec Error in " << mVectParamPeak1n.at(i).ch << " intervall: " << mVectParamPeak1n.at(i).minE << " - " << mVectParamPeak1n.at(i).maxE << " Value: " << h->GetBinContent(ib) << ENDM;
         }
+      }
+      if (mNumWPeak1n == 0 && mNumEPeak1n == 0) {
+        mQPeak1n = 1;
+      }
+      if (mNumWPeak1n > 0) {
+        mQPeak1n = 2;
+      }
+      if (mNumEPeak1n > 0) {
+        mQPeak1n = 3;
+      }
+    }
+
+    // summary TDC Amplitude peak 1p
+    mNumEPeak1p = 0;
+    mNumWPeak1p = 0;
+    mStringWPeak1p = "";
+    mStringEPeak1p = "";
+    if (mo->getName() == "h_summary_Peak1p") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (h == nullptr) {
+        ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
+        return Quality::Null;
+      }
+      // dumpVecParam((int)h->GetNbinsX(),(int)mVectParamTDC.size());
+      if ((int)h->GetNbinsX() != (int)mVectParamPeak1p.size()) {
+        return Quality::Null;
+      }
+      for (int i = 0; i < h->GetNbinsX(); i++) {
+        ib = i + 1;
+        if ((((float)h->GetBinContent(ib) < (float)mVectParamPeak1p.at(i).minW && (float)h->GetBinContent(ib) >= (float)mVectParamPeak1p.at(i).minE)) || ((float)h->GetBinContent(ib) > (float)mVectParamPeak1p.at(i).maxW && (float)h->GetBinContent(ib) < (float)mVectParamPeak1p.at(i).maxE)) {
+          mNumWPeak1p += 1;
+          mStringWPeak1p = mStringWPeak1p + mVectParamPeak1p.at(i).ch + " ";
+          // ILOG(Warning, Support) << "Rec Warning in " << mVectParamPeak1p.at(i).ch << " intervall: " << mVectParamPeak1p.at(i).minW << " - " << mVectParamPeak1p.at(i).maxW << " Value: " << h->GetBinContent(ib) << ENDM;
+        }
+        if (((float)h->GetBinContent(ib) < (float)mVectParamPeak1p.at(i).minE) || ((float)h->GetBinContent(ib) > (float)mVectParamPeak1p.at(i).maxE)) {
+          mNumEPeak1p += 1;
+          mStringEPeak1p = mStringEPeak1p + mVectParamPeak1p.at(i).ch + " ";
+          // ILOG(Error, Support) << "Rec Error in " << mVectParamPeak1p.at(i).ch << " intervall: " << mVectParamPeak1p.at(i).minE << " - " << mVectParamPeak1p.at(i).maxE << " Value: " << h->GetBinContent(ib) << ENDM;
+        }
+      }
+      if (mNumWPeak1p == 0 && mNumEPeak1p == 0) {
+        mQPeak1p = 1;
+      }
+      if (mNumWPeak1p > 0) {
+        mQPeak1p = 2;
+      }
+      if (mNumEPeak1p > 0) {
+        mQPeak1p = 3;
+      }
+    }
+
+    // Global Check
+    if (mQADC == 1 && mQTDC == 1 && mQTDCA == 1 && mQPeak1n == 1 && mQPeak1p == 1) {
+      result = Quality::Good;
+    } else if (mQADC == 3 || mQTDC == 3 || mQTDCA == 3 && mQPeak1n == 3 && mQPeak1p == 3) {
+      result = Quality::Bad;
+      if (mQADC == 3) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "Task quality is bad because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringEADC + "have a value in the bad range");
+      }
+
+      if (mQTDC == 3) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is bad because in TDC  Summary" + std::to_string(mNumWTDC) + " channels:" + mStringETDC + "have a value in the bad range");
+      }
+      if (mQTDCA == 3) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is bad because in TDC Amplitude Summary" + std::to_string(mNumWTDCA) + " channels:" + mStringETDCA + "have a value in the bad range");
+      }
+      if (mQPeak1n == 3) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is bad because in TDC Amplitude Peak1n Summary" + std::to_string(mNumWPeak1n) + " channels:" + mStringEPeak1n + "have a value in the bad range");
+      }
+      if (mQPeak1p == 3) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is bad because in TDC Amplitude Peak1p Summary" + std::to_string(mNumWPeak1p) + " channels:" + mStringEPeak1p + "have a value in the bad range");
+      }
+    } else {
+      result = Quality::Medium;
+      if (mQADC == 2) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is medium because in ADC Summary " + std::to_string(mNumWADC) + " channels:" + mStringWADC + "have a value in the medium range");
+      }
+      if (mQTDC == 2) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is medium because in TDC  Summary " + std::to_string(mNumWTDC) + " channels:" + mStringWTDC + "have a value in the medium range");
+      }
+      if (mQTDCA == 2) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is medium because in TDC Amplitude  Summary " + std::to_string(mNumWTDCA) + " channels:" + mStringWTDCA + "have a value in the medium range");
+      }
+      if (mQPeak1n == 2) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is medium because in TDC Amplitude Peak1n Summary " + std::to_string(mNumWPeak1n) + " channels:" + mStringWPeak1n + "have a value in the medium range");
+      }
+      if (mQPeak1p == 2) {
+        result.addFlag(FlagTypeFactory::Unknown(),
+                       "It is medium because in TDC Amplitude Peak1p Summary " + std::to_string(mNumWPeak1p) + " channels:" + mStringWPeak1p + "have a value in the medium range");
       }
     }
   }
@@ -174,6 +320,7 @@ void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       setQualityInfo(mo, kOrange, errorSt);
     }
   }
+
   if (mo->getName() == "h_summary_TDC") {
     if (mQTDC == 1) {
       setQualityInfo(mo, kGreen, getCurrentDataTime() + "TDC OK");
@@ -185,8 +332,43 @@ void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       setQualityInfo(mo, kOrange, errorSt);
     }
   }
-}
 
+  if (mo->getName() == "h_summary_TDCA") {
+    if (mQTDCA == 1) {
+      setQualityInfo(mo, kGreen, getCurrentDataTime() + "TDC Amplitude OK");
+    } else if (mQTDCA == 3) {
+      std::string errorSt = getCurrentDataTime() + "Error TDC Amplitude  value in the channels: " + mStringETDCA + "is not correct. Call the expert";
+      setQualityInfo(mo, kRed, errorSt);
+    } else if (mQTDCA == 2) {
+      std::string errorSt = getCurrentDataTime() + "Warning TDC Amplitude  value in the channels: " + mStringWTDCA + "is not correct. Send mail to the expert";
+      setQualityInfo(mo, kOrange, errorSt);
+    }
+  }
+
+  if (mo->getName() == "h_summary_Peak1n") {
+    if (mQPeak1n == 1) {
+      setQualityInfo(mo, kGreen, getCurrentDataTime() + "TDC Amplitude Peak1n OK");
+    } else if (mQPeak1n == 3) {
+      std::string errorSt = getCurrentDataTime() + "Error TDC Amplitude Peak1n value in the channels: " + mStringEPeak1n + "is not correct. Call the expert";
+      setQualityInfo(mo, kRed, errorSt);
+    } else if (mQPeak1n == 2) {
+      std::string errorSt = getCurrentDataTime() + "Warning TDC Amplitude Peak1n value in the channels: " + mStringWPeak1n + "is not correct. Send mail to the expert";
+      setQualityInfo(mo, kOrange, errorSt);
+    }
+  }
+
+  if (mo->getName() == "h_summary_Peak1p") {
+    if (mQPeak1p == 1) {
+      setQualityInfo(mo, kGreen, getCurrentDataTime() + "TDC Amplitude OK");
+    } else if (mQPeak1p == 3) {
+      std::string errorSt = getCurrentDataTime() + "Error TDC Amplitude Peak1p value in the channels: " + mStringEPeak1p + "is not correct. Call the expert";
+      setQualityInfo(mo, kRed, errorSt);
+    } else if (mQPeak1p == 2) {
+      std::string errorSt = getCurrentDataTime() + "Warning TDC Amplitude Peak1p value in the channels: " + mStringWPeak1p + "is not correct. Send mail to the expert";
+      setQualityInfo(mo, kOrange, errorSt);
+    }
+  }
+}
 void ZDCRecDataCheck::setQualityInfo(std::shared_ptr<MonitorObject> mo, int color, std::string text)
 {
   auto* h = dynamic_cast<TH1F*>(mo->getObject());
@@ -209,6 +391,9 @@ void ZDCRecDataCheck::init(const Activity& activity)
 {
   mVectParamADC.clear();
   mVectParamTDC.clear();
+  mVectParamTDCA.clear();
+  mVectParamPeak1n.clear();
+  mVectParamPeak1p.clear();
 
   setChName("ADC_ZNAC", "ADC");
   setChName("ADC_ZNA1", "ADC");
@@ -252,11 +437,41 @@ void ZDCRecDataCheck::init(const Activity& activity)
   setChName("TDC_ZPCC", "TDC");
   setChName("TDC_ZPCS", "TDC");
 
+  setChName("TDCA_ZNAC", "TDCA");
+  setChName("TDCA_ZNAS", "TDCA");
+  setChName("TDCA_ZPAC", "TDCA");
+  setChName("TDCA_ZPAS", "TDCA");
+  setChName("TDCA_ZEM1", "TDCA");
+  setChName("TDCA_ZEM2", "TDCA");
+  setChName("TDCA_ZNCC", "TDCA");
+  setChName("TDCA_ZNCS", "TDCA");
+  setChName("TDCA_ZPCC", "TDCA");
+  setChName("TDCA_ZPCS", "TDCA");
+
+  setChName("PEAK1N_ZNAC", "PEAK1N");
+  setChName("PEAK1N_ZNAS", "PEAK1N");
+  setChName("PEAK1N_ZNCC", "PEAK1N");
+  setChName("PEAK1N_ZNCS", "PEAK1N");
+
+  setChName("PEAK1P_ZPAC", "PEAK1P");
+  setChName("PEAK1P_ZPAS", "PEAK1P");
+  setChName("PEAK1P_ZPCC", "PEAK1P");
+  setChName("PEAK1P_ZPCS", "PEAK1P");
+
   for (int i = 0; i < (int)mVectParamADC.size(); i++) {
     setChCheck(i, "ADC", activity);
   }
   for (int i = 0; i < (int)mVectParamTDC.size(); i++) {
     setChCheck(i, "TDC", activity);
+  }
+  for (int i = 0; i < (int)mVectParamTDCA.size(); i++) {
+    setChCheck(i, "TDCA", activity);
+  }
+  for (int i = 0; i < (int)mVectParamPeak1n.size(); i++) {
+    setChCheck(i, "PEAK1N", activity);
+  }
+  for (int i = 0; i < (int)mVectParamPeak1p.size(); i++) {
+    setChCheck(i, "PEAK1P", activity);
   }
   if (auto param = mCustomParameters.atOptional("ADC_POS_MSG_X", activity)) {
     mPosMsgADCX = atof(param.value().c_str());
@@ -270,6 +485,24 @@ void ZDCRecDataCheck::init(const Activity& activity)
   if (auto param = mCustomParameters.atOptional("TDC_POS_MSG_Y", activity)) {
     mPosMsgTDCY = atof(param.value().c_str());
   }
+  if (auto param = mCustomParameters.atOptional("TDCA_POS_MSG_X", activity)) {
+    mPosMsgTDCAX = atof(param.value().c_str());
+  }
+  if (auto param = mCustomParameters.atOptional("TDCA_POS_MSG_Y", activity)) {
+    mPosMsgTDCAY = atof(param.value().c_str());
+  }
+  if (auto param = mCustomParameters.atOptional("PEAK1N_POS_MSG_X", activity)) {
+    mPosMsgPeak1nX = atof(param.value().c_str());
+  }
+  if (auto param = mCustomParameters.atOptional("PEAK1N_POS_MSG_Y", activity)) {
+    mPosMsgPeak1nY = atof(param.value().c_str());
+  }
+  if (auto param = mCustomParameters.atOptional("PEAK1P_POS_MSG_X", activity)) {
+    mPosMsgPeak1pX = atof(param.value().c_str());
+  }
+  if (auto param = mCustomParameters.atOptional("PEAK1P_POS_MSG_Y", activity)) {
+    mPosMsgPeak1pY = atof(param.value().c_str());
+  }
 }
 
 void ZDCRecDataCheck::setChName(std::string channel, std::string type)
@@ -281,6 +514,15 @@ void ZDCRecDataCheck::setChName(std::string channel, std::string type)
   }
   if (type == "TDC") {
     mVectParamTDC.push_back(chCheck);
+  }
+  if (type == "TDCA") {
+    mVectParamTDCA.push_back(chCheck);
+  }
+  if (type == "PEAK1N") {
+    mVectParamPeak1n.push_back(chCheck);
+  }
+  if (type == "PEAK1P") {
+    mVectParamPeak1p.push_back(chCheck);
   }
 }
 
@@ -307,8 +549,37 @@ void ZDCRecDataCheck::setChCheck(int index, std::string type, const Activity& ac
       mVectParamTDC.at(index).maxE = atof(tokenString.at(0).c_str()) + atof(tokenString.at(2).c_str());
     }
   }
-}
+  if (type == "TDCA" && index < (int)mVectParamTDCA.size()) {
+    if (auto param = mCustomParameters.atOptional(mVectParamTDCA.at(index).ch, activity)) {
+      tokenString = tokenLine(param.value(), ";");
 
+      mVectParamTDCA.at(index).minW = atof(tokenString.at(0).c_str()) - atof(tokenString.at(1).c_str());
+      mVectParamTDCA.at(index).maxW = atof(tokenString.at(0).c_str()) + atof(tokenString.at(1).c_str());
+      mVectParamTDCA.at(index).minE = atof(tokenString.at(0).c_str()) - atof(tokenString.at(2).c_str());
+      mVectParamTDCA.at(index).maxE = atof(tokenString.at(0).c_str()) + atof(tokenString.at(2).c_str());
+    }
+  }
+  if (type == "PEAK1N" && index < (int)mVectParamPeak1n.size()) {
+    if (auto param = mCustomParameters.atOptional(mVectParamPeak1n.at(index).ch, activity)) {
+      tokenString = tokenLine(param.value(), ";");
+
+      mVectParamPeak1n.at(index).minW = atof(tokenString.at(0).c_str()) - atof(tokenString.at(1).c_str());
+      mVectParamPeak1n.at(index).maxW = atof(tokenString.at(0).c_str()) + atof(tokenString.at(1).c_str());
+      mVectParamPeak1n.at(index).minE = atof(tokenString.at(0).c_str()) - atof(tokenString.at(2).c_str());
+      mVectParamPeak1n.at(index).maxE = atof(tokenString.at(0).c_str()) + atof(tokenString.at(2).c_str());
+    }
+  }
+  if (type == "PEAK1P" && index < (int)mVectParamPeak1p.size()) {
+    if (auto param = mCustomParameters.atOptional(mVectParamPeak1p.at(index).ch, activity)) {
+      tokenString = tokenLine(param.value(), ";");
+
+      mVectParamPeak1p.at(index).minW = atof(tokenString.at(0).c_str()) - atof(tokenString.at(1).c_str());
+      mVectParamPeak1p.at(index).maxW = atof(tokenString.at(0).c_str()) + atof(tokenString.at(1).c_str());
+      mVectParamPeak1p.at(index).minE = atof(tokenString.at(0).c_str()) - atof(tokenString.at(2).c_str());
+      mVectParamPeak1p.at(index).maxE = atof(tokenString.at(0).c_str()) + atof(tokenString.at(2).c_str());
+    }
+  }
+}
 std::vector<std::string> ZDCRecDataCheck::tokenLine(std::string Line, std::string Delimiter)
 {
   std::string token;
@@ -347,10 +618,23 @@ void ZDCRecDataCheck::dumpVecParam(int numBinHisto, int num_ch)
     for (int i = 0; i < (int)mVectParamTDC.size(); i++) {
       dumpFile << mVectParamTDC.at(i).ch << " \t" << std::to_string(mVectParamTDC.at(i).minW) << " \t" << std::to_string(mVectParamTDC.at(i).maxW) << " \t" << std::to_string(mVectParamTDC.at(i).minE) << " \t" << std::to_string(mVectParamTDC.at(i).maxE) << " \n";
     }
+    dumpFile << "\n Vector Param TDCA \n";
+    for (int i = 0; i < (int)mVectParamTDCA.size(); i++) {
+      dumpFile << mVectParamTDCA.at(i).ch << " \t" << std::to_string(mVectParamTDCA.at(i).minW) << " \t" << std::to_string(mVectParamTDCA.at(i).maxW) << " \t" << std::to_string(mVectParamTDCA.at(i).minE) << " \t" << std::to_string(mVectParamTDCA.at(i).maxE) << " \n";
+    }
+    dumpFile << "\n Vector Param PEAK1N \n";
+    for (int i = 0; i < (int)mVectParamPeak1n.size(); i++) {
+      dumpFile << mVectParamPeak1n.at(i).ch << " \t" << std::to_string(mVectParamPeak1n.at(i).minW) << " \t" << std::to_string(mVectParamPeak1n.at(i).maxW) << " \t" << std::to_string(mVectParamPeak1n.at(i).minE) << " \t" << std::to_string(mVectParamPeak1n.at(i).maxE) << " \n";
+    }
+
+    dumpFile << "\n Vector Param PEAK1P \n";
+    for (int i = 0; i < (int)mVectParamPeak1n.size(); i++) {
+      dumpFile << mVectParamPeak1p.at(i).ch << " \t" << std::to_string(mVectParamPeak1p.at(i).minW) << " \t" << std::to_string(mVectParamPeak1p.at(i).maxW) << " \t" << std::to_string(mVectParamPeak1p.at(i).minE) << " \t" << std::to_string(mVectParamPeak1p.at(i).maxE) << " \n";
+    }
+
     dumpFile << "Num Bin Histo " << std::to_string(numBinHisto) << " \n";
     dumpFile << "Num ch " << std::to_string(num_ch) << " \n";
     dumpFile.close();
   }
 }
-
 } // namespace o2::quality_control_modules::zdc
