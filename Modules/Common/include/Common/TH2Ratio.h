@@ -32,6 +32,10 @@ class TH2Ratio : public T, public o2::mergers::MergeInterface
   TH2Ratio();
   TH2Ratio(TH2Ratio const& copymerge);
   TH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, bool uniformScaling = false);
+  TH2Ratio(const char* name, const char* title, int nbinsx, const float* xbins, int nbinsy, const float* ybins, bool uniformScaling = false);
+  TH2Ratio(const char* name, const char* title, int nbinsx, const double* xbins, int nbinsy, const double* ybins, bool uniformScaling = false);
+  TH2Ratio(const char* name, const char* title, int nbinsx, const double* xbins, int nbinsy, double ymin, double ymax, bool uniformScaling = false);
+  TH2Ratio(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, const double* ybins, bool uniformScaling = false);
   TH2Ratio(const char* name, const char* title, bool uniformScaling = false);
 
   ~TH2Ratio();
