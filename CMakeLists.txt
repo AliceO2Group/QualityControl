@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+cmake_policy(SET CMP0144 NEW) # find_package() uses upper-case <PACKAGENAME>_ROOT variables.
 
 include(CMakeParseArguments)
 include(GNUInstallDirs)
