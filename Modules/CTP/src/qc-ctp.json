@@ -42,10 +42,32 @@
           "type": "dataSamplingPolicy",
           "name": "ctp-raw"
         },
-        "taskParameters": {
-          "ccdbName": "https://alice-ccdb.cern.ch",
-          "MBclassName" : "CMTVX-B-NOPF",
-          "MBinputName" : "MTVX"
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "ccdbName": "https://alice-ccdb.cern.ch",
+              "MBclassName" : "CMTVX-B-NOPF",
+              "MB1inputName" : "MTVX",
+              "MB2inputName" : "MTVA"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "MBclassName" : "CMTVX-B-NOPF",
+              "MB1inputName" : "MTVX",
+              "MB2inputName" : "MTVA"
+            },
+            "PROTON-PROTON": {
+              "MBclassName" : "CMTVX-B-NOPF",
+              "MB1inputName" : "MTVX",
+              "MB2inputName" : "MTVA"
+            },
+            "Pb-Pb": {
+              "MBclassName" : "CMTVX-B-NOPF",
+              "MB1inputName" : "MTSC",
+              "MB2inputName" : "MTCE"
+            }
+          }
         },
         "location": "remote"
       }
@@ -59,7 +81,7 @@
         "dataSource": [{
           "type": "Task",
           "name": "CTPRawData",
-          "MOs": ["bcMTVX","inputs","classes","inputRatio","classRatio"]
+          "MOs": ["bcMinBias1","bcMinBias2","inputs","classes","inputRatio","classRatio"]
         }],
         "checkParameters": {
           "thresholdRateBad": "3",

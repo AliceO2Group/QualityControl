@@ -90,12 +90,15 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       ILOG(Info, Support) << "histogram is not found for check:" << moName << ENDM;
       continue;
     }
-    if (mo->getName() == "bcMTVX") {
+    if (mo->getName() == "bcMinBias1" || mo->getName() == "bcMinBias2") {
       if (mLHCBCs.count() == 0) {
         continue;
       }
-      mThreshold = h->GetEntries() / mLHCBCs.count();
-      mThreshold = mThreshold - mNSigBC * sqrt(mThreshold);
+      float average = h->GetEntries() / mLHCBCs.count();
+      mThreshold = average - mNSigBC * sqrt(average);
+      if (mThreshold < std::sqrt(average)) {
+        mThreshold = average / 2;
+      }
       for (int i = 0; i < o2::constants::lhc::LHCMaxBunches; i++) {
         if (mLHCBCs[i] && h->GetBinContent(i + 1) <= mThreshold) {
           mVecMediumBC.push_back(i); // medium BC occures when BC is expected on this possition but there is less inputs than threshold
@@ -191,11 +194,11 @@ std::string RawDataReaderCheck::getAcceptedType() { return "TH1"; }
 void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   std::shared_ptr<TLatex> msg;
-  if (mo->getName() == "bcMTVX") {
+  if (mo->getName() == "bcMinBias1" || mo->getName() == "bcMinBias2") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     h->GetXaxis()->SetTitle("BC");
     if (checkResult != Quality::Null) {
-      msg = std::make_shared<TLatex>(0.4, 0.85, Form("Quality: %s", (checkResult.getName()).c_str()));
+      msg = std::make_shared<TLatex>(0.2, 0.85, Form("Quality: %s", (checkResult.getName()).c_str()));
       if (checkResult == Quality::Bad) {
         msg->SetTextColor(kRed);
       } else if (checkResult == Quality::Medium) {
@@ -209,48 +212,43 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
 
     if (checkResult == Quality::Null) {
-      msg = std::make_shared<TLatex>(0.4, 0.8, Form("Check was not performed, LHC information not available"));
+      msg = std::make_shared<TLatex>(0.2, 0.8, Form("Check was not performed, LHC information not available"));
       msg->SetTextColor(kBlack);
       msg->SetTextSize(0.03);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
     } else {
-      msg = std::make_shared<TLatex>(0.4, 0.8, Form("Number of good BC: %lu", mVecGoodBC.size()));
+      msg = std::make_shared<TLatex>(0.2, 0.8, Form("Number of good BC: %lu", mVecGoodBC.size()));
       msg->SetTextColor(kBlack);
       msg->SetTextSize(0.03);
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
 
       if (mVecMediumBC.size() > 0) {
-        msg = std::make_shared<TLatex>(0.4, 0.75, Form("BC is expected on following possitions but inputs are below threshold:"));
+        msg = std::make_shared<TLatex>(0.2, 0.75, Form("BC is expected on following possitions, but inputs are below threshold (%f):", mThreshold));
         msg->SetTextSize(0.03);
         msg->SetNDC();
         h->GetListOfFunctions()->Add(msg->Clone());
         for (size_t i = 0; i < mVecMediumBC.size(); i++) {
-          msg = std::make_shared<TLatex>(0.4, 0.75, Form("%d", mVecMediumBC[i]));
-          msg->SetTextSize(0.03);
+          msg = std::make_shared<TLatex>(0.2, 0.75 - (i + 1) * 0.02, Form("%d", mVecMediumBC[i]));
+          msg->SetTextSize(0.02);
           msg->SetNDC();
           h->GetListOfFunctions()->Add(msg->Clone());
         }
       }
 
       if (mVecBadBC.size() > 0) {
-        msg = std::make_shared<TLatex>(0.4, 0.75, Form("BC is not expected on following possitions but inputs are above threshold:"));
+        msg = std::make_shared<TLatex>(0.2, 0.75, Form("BC is not expected on following possitions, but inputs are above threshold (%f):", mThreshold));
         msg->SetTextSize(0.03);
         msg->SetNDC();
         h->GetListOfFunctions()->Add(msg->Clone());
         for (size_t i = 0; i < mVecBadBC.size(); i++) {
-          msg = std::make_shared<TLatex>(0.4, 0.75, Form("%d", mVecBadBC[i]));
-          msg->SetTextSize(0.03);
+          msg = std::make_shared<TLatex>(0.2, 0.75 - (i + 1) * 0.02, Form("%d", mVecBadBC[i]));
+          msg->SetTextSize(0.02);
           msg->SetNDC();
           h->GetListOfFunctions()->Add(msg->Clone());
         }
       }
-
-      msg = std::make_shared<TLatex>(0.4, 0.65, Form("Threshold : %f", mThreshold));
-      msg->SetTextSize(0.03);
-      msg->SetNDC();
-      h->GetListOfFunctions()->Add(msg->Clone());
     }
     h->SetStats(kFALSE);
     h->GetYaxis()->SetRangeUser(0, h->GetMaximum() * 1.5);

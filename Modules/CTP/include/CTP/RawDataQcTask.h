@@ -54,9 +54,11 @@ class CTPRawDataReaderTask final : public TaskInterface
   std::unique_ptr<TH1DRatio> mHistoClasses = nullptr;     // histogram with ctp classes
   std::unique_ptr<TH1DRatio> mHistoInputRatios = nullptr; // histogram with ctp input ratios to MB
   std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr; // histogram with ctp class ratios to MB
-  std::unique_ptr<TH1D> mHistoMTVXBC = nullptr;           // histogram of BC positions to check LHC filling scheme
+  std::unique_ptr<TH1D> mHistoBCMinBias1 = nullptr;       // histogram of BC positions to check LHC filling scheme
+  std::unique_ptr<TH1D> mHistoBCMinBias2 = nullptr;       // histogram of BC positions to check LHC filling scheme
   int mRunNumber;
-  int indexTvx = -1;
+  int indexMB1 = -1;
+  int indexMB2 = -1;
   static const int ninps = o2::ctp::CTP_NINPUTS + 1;
   static const int nclasses = o2::ctp::CTP_NCLASSES + 1;
   long int mTimestamp;
