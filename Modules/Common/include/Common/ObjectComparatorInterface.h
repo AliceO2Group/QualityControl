@@ -40,11 +40,16 @@ class ObjectComparatorInterface
   virtual ~ObjectComparatorInterface() = default;
 
   /// \brief comparator configuration via CustomParameters
-  // virtual void configure(const o2::quality_control::core::CustomParameters& customParameters, const o2::quality_control::core::Activity activity = {}){};
+  virtual void configure(const o2::quality_control::core::CustomParameters& customParameters, const std::string& plotName, const o2::quality_control::core::Activity activity = {});
 
   /// setter/getter methods for the threshold to define the goodness of the comparison
   void setThreshold(double threshold) { mThreshold = threshold; }
   double getThreshold() { return mThreshold; }
+
+  void setXRange(const std::pair<double, double>& range) { mRanges[0] = range; }
+  void setYRange(const std::pair<double, double>& range) { mRanges[1] = range; }
+  std::optional<std::pair<double, double>> getXRange() { return mRanges[0]; }
+  std::optional<std::pair<double, double>> getYRange() { return mRanges[1]; }
 
   /// perform a number of sanity checks on the input objects
   /// \return a tuple containing pointers to the histogram, the reference histogram, and a boolean indicating the success of the checks
@@ -54,9 +59,15 @@ class ObjectComparatorInterface
   /// \return the quality resulting from the object comparison
   virtual o2::quality_control::core::Quality compare(TObject* object, TObject* referenceObject, std::string& message) = 0;
 
+ protected:
+  /// \brief helper function to retrieve plot-specific configuration parameters
+  std::string getParameterForPlot(const o2::quality_control::core::CustomParameters& customParameters, const std::string& parKey, const std::string& plotName, const o2::quality_control::core::Activity& activity);
+
  private:
   /// the threshold to define the goodness of the comparison
   double mThreshold{ 0 };
+  // optional ranges to restrict the histogram area on which the comparison is performed
+  std::array<std::optional<std::pair<double, double>>, 2> mRanges;
 };
 
 } // namespace o2::quality_control_modules::common

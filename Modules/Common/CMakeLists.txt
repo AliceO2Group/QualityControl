@@ -24,6 +24,7 @@ target_sources(O2QcCommon
                        src/CcdbInspectorCheck.cxx
                        src/ObjectComparatorInterface.cxx
                        src/ObjectComparatorDeviation.cxx
+                       src/ObjectComparatorBinByBinDeviation.cxx
                        src/ObjectComparatorChi2.cxx
                        src/ObjectComparatorKolmogorov.cxx
                        src/ReferenceComparatorPlot.cxx
@@ -64,6 +65,7 @@ add_root_dictionary(O2QcCommon
                             include/Common/CcdbInspectorCheck.h
                             include/Common/ObjectComparatorInterface.h
                             include/Common/ObjectComparatorDeviation.h
+                            include/Common/ObjectComparatorBinByBinDeviation.h
                             include/Common/ObjectComparatorChi2.h
                             include/Common/ObjectComparatorKolmogorov.h
                             include/Common/ReferenceComparatorTask.h

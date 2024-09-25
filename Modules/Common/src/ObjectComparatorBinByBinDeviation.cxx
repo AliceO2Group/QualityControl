@@ -10,12 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ObjectComparatorDeviation.cxx
+/// \file   ObjectComparatorBinByBinDeviation.cxx
 /// \author Andrea Ferrero
 /// \brief  A class for comparing two histogram objects based on the average of the relative deviation between the bins
 ///
 
-#include "Common/ObjectComparatorDeviation.h"
+#include "Common/ObjectComparatorBinByBinDeviation.h"
+#include "Common/Utils.h"
+#include "QualityControl/QcInfoLogger.h"
 //  ROOT
 #include <TH1.h>
 
@@ -27,7 +29,25 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::common
 {
 
-Quality ObjectComparatorDeviation::compare(TObject* object, TObject* referenceObject, std::string& message)
+void ObjectComparatorBinByBinDeviation::configure(const CustomParameters& customParameters, const std::string& plotName, const Activity activity)
+{
+  ObjectComparatorInterface::configure(customParameters, plotName, activity);
+
+  // get configuration parameter associated to the key
+  std::string parValue = getParameterForPlot(customParameters, std::string("maxAllowedBadBins"), plotName, activity);
+  if (parValue.empty()) {
+    return;
+  }
+
+  try {
+    mMaxAllowedBadBins = std::stoi(parValue);
+  } catch (std::exception& exception) {
+    ILOG(Error, Support) << "Cannot convert maxAllowedBadBins for plot \"" << plotName << "\", string is " << parValue << ENDM;
+    return;
+  }
+}
+
+Quality ObjectComparatorBinByBinDeviation::compare(TObject* object, TObject* referenceObject, std::string& message)
 {
   auto checkResult = checkInputObjects(object, referenceObject, message);
   if (!std::get<2>(checkResult)) {
@@ -37,26 +57,23 @@ Quality ObjectComparatorDeviation::compare(TObject* object, TObject* referenceOb
   auto* histogram = std::get<0>(checkResult);
   auto* referenceHistogram = std::get<1>(checkResult);
 
-  const double epsilon = 1.0e-6;
   int binRangeX[2] = { 1, histogram->GetXaxis()->GetNbins() };
-  int binRangeY[2] = { 1, histogram->GetYaxis()->GetNbins() };
-  int binRangeZ[2] = { 1, histogram->GetZaxis()->GetNbins() };
-
   if (getXRange().has_value()) {
     binRangeX[0] = histogram->GetXaxis()->FindBin(getXRange()->first);
-    // subtract a small amount to the upper edge to avoid getting the next bin
-    binRangeX[1] = histogram->GetXaxis()->FindBin(getXRange()->second - epsilon);
+    binRangeX[1] = histogram->GetXaxis()->FindBin(getXRange()->second);
   }
 
+  int binRangeY[2] = { 1, histogram->GetYaxis()->GetNbins() };
   if (getYRange().has_value()) {
     binRangeY[0] = histogram->GetYaxis()->FindBin(getYRange()->first);
-    // subtract a small amount to the upper edge to avoid getting the next bin
-    binRangeY[1] = histogram->GetYaxis()->FindBin(getYRange()->second - epsilon);
+    binRangeY[1] = histogram->GetYaxis()->FindBin(getYRange()->second);
   }
+
+  int binRangeZ[2] = { 1, histogram->GetZaxis()->GetNbins() };
 
   // compute the average relative deviation between the bins
   double averageDeviation = 0;
-  int numberOfBins = 0;
+  int numberOfBadBins = 0;
   for (int binX = binRangeX[0]; binX <= binRangeX[1]; binX++) {
     for (int binY = binRangeY[0]; binY <= binRangeY[1]; binY++) {
       for (int binZ = binRangeZ[0]; binZ <= binRangeZ[1]; binZ++) {
@@ -64,18 +81,16 @@ Quality ObjectComparatorDeviation::compare(TObject* object, TObject* referenceOb
         double val = histogram->GetBinContent(bin);
         double refVal = referenceHistogram->GetBinContent(bin);
         double deviation = (refVal == 0) ? 0 : std::abs((val - refVal) / refVal);
-        averageDeviation += deviation;
-        numberOfBins += 1;
+        if (deviation > getThreshold()) {
+          numberOfBadBins += 1;
+        }
       }
     }
   }
-  if (numberOfBins > 0) {
-    averageDeviation /= numberOfBins;
-  }
 
   // compare the average deviation with the maximum allowed value
-  if (averageDeviation > getThreshold()) {
-    message = fmt::format("large deviation: {:.2f} > {:.2f}", averageDeviation, getThreshold());
+  if (numberOfBadBins > mMaxAllowedBadBins) {
+    message = fmt::format("bins above {:.2f}: {} > {}", getThreshold(), numberOfBadBins, mMaxAllowedBadBins);
     return Quality::Bad;
   }
 

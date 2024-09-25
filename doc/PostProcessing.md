@@ -505,10 +505,38 @@ The `normalizeReference` boolean parameter controls wether the reference histogr
 
 The checker extracts the current and reference plots from the stored MO, and compares them using external modules, specified via the `moduleName` and `comparatorName` parameters. The `threshold` parameter specifies the value used to discriminate between good and bad matches between the histograms.
 
-Three comparison modules are provided in the framework:
-1. `o2::quality_control_modules::common::ObjectComparatorDeviation`: comparison based on the average relative deviation between the bins of the current and reference histograms; the `threshold` parameter represent in this case the maximum allowed deviation
-2. `o2::quality_control_modules::common::ObjectComparatorChi2`: comparison based on a standard chi2 test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed chi2 probability
-3. `o2::quality_control_modules::common::ObjectComparatorKolmogorov`: comparison based on a standard Kolmogorov test between the current and reference histograms; the `threshold` parameter represent in this case the minimum allowed Kolmogorov probability
+Four comparison modules are provided in the framework:
+1. `o2::quality_control_modules::common::ObjectComparatorDeviation`: comparison based on the average relative deviation between the bins of the current and reference histograms; the module accepts the following configuration parameters:
+    * `threshold`: the maximum allowed average relative deviation between current and reference histograms
+    * `rangeX`, `rangeY`: if set, the comparison is restricted to the bins in the specified X and Y ranges; bins outside the ranges are ignored
+2. `o2::quality_control_modules::common::ObjectComparatorBinByBinDeviation`: comparison based on the relative deviation between each bin of the current and reference histograms; the module accepts the following configuration parameters:
+    * `threshold`: the maximum allowed relative deviation for each bin between current and reference histograms
+    * `rangeX`, `rangeY`: if set, the comparison is restricted to the bins in the specified X and Y ranges; bins outside the ranges are ignored
+    * `maxAllowedBadBins`: the maximum number of bins above threshold for which the quality is still considered Good
+3. `o2::quality_control_modules::common::ObjectComparatorChi2`: comparison based on a standard chi2 test between the current and reference histograms; the module accepts the following configuration parameters:
+    * `threshold`: the minimum allowed chi2 probability
+    * `rangeX`, `rangeY`: if set, the Chi2 test is restricted to the bins in the specified X and Y ranges; bins outside the ranges are ignored
+4. `o2::quality_control_modules::common::ObjectComparatorKolmogorov`: comparison based on a standard Kolmogorov test between the current and reference histograms; the module accepts the following configuration parameters:
+    * `threshold`: the minimum allowed Kolmogorov probability
+
+All the configuration parameters of the comparison modules optionally allow to restrict their validity to specific plots.
+The following example specifies a threshold value common to all the plots, and then overrides the threshold and X range for all plots named `TrackEta`:
+
+```json
+        "extendedCheckParameters": {
+          "default": {      
+            "default": {      
+              "moduleName" : "QualityControl",
+              "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
+              "threshold" : "0.5",
+              "threshold:TrackEta" : "0.2",
+              "rangeX:TrackEta" : "-3.5,-2.5"
+            }
+          }
+        }
+```
+
+#### Full configuration example
 
 In the example configuration below, the relationship between the input and output histograms is the following:
 * `MCH/MO/Tracks/WithCuts/TrackEta` (1-D histogram)
@@ -586,7 +614,9 @@ In the example configuration below, the relationship between the input and outpu
             "default": {      
               "moduleName" : "QualityControl",
               "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
-              "threshold" : "0.5"
+              "threshold" : "0.5",
+              "threshold:TrackEta" : "0.2",
+              "rangeX:TrackEta" : "-3.5,-2.5"
             }
           }
         },
