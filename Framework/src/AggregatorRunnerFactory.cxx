@@ -47,7 +47,6 @@ DataProcessorSpec AggregatorRunnerFactory::create(const core::CommonSpec& common
     AlgorithmSpec{},
     aggRunnerConfig.options
   };
-  newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
   framework::DataProcessorLabel resilientLabel = { "resilient" };
   newAggregatorRunner.labels.emplace_back(resilientLabel);
