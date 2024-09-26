@@ -60,19 +60,22 @@ ObjectsManager::~ObjectsManager()
   ILOG(Debug, Devel) << "ObjectsManager destructor" << ENDM;
 }
 
-void ObjectsManager::startPublishingImpl(TObject* object, PublicationPolicy publicationPolicy)
+void ObjectsManager::startPublishingImpl(TObject* object, PublicationPolicy publicationPolicy, bool ignoreMergeableWarning)
 {
   if (!object) {
     ILOG(Warning, Support) << "A nullptr provided to ObjectManager::startPublishing" << ENDM;
     return;
   }
+
   if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << "), will remove it and add the new one" << ENDM;
     stopPublishing(object->GetName());
   }
-  if (mergers::isMergeable(object)) {
-    ILOG(Warning, Support) << "Object '" + std::string(object->GetName()) + "' with type '" + std::string(object->ClassName()) + "' is not one of the mergeable types, it might cause issues during publishing";
+
+  if (!ignoreMergeableWarning && !mergers::isMergeable(object)) {
+    ILOG(Warning, Support) << "Object '" + std::string(object->GetName()) + "' with type '" + std::string(object->ClassName()) + "' is not one of the mergeable types, it will not be correctly merged in distributed setups, such as P2 and Grid" << ENDM;
   }
+
   auto* newObject = new MonitorObject(object, mTaskName, mTaskClass, mDetectorName);
   newObject->setIsOwner(false);
   newObject->setActivity(mActivity);

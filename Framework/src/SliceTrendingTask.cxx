@@ -258,7 +258,7 @@ void SliceTrendingTask::generatePlots()
     }
 
     mPlots[plot.name] = c;
-    getObjectsManager()->startPublishing<true>(c, PublicationPolicy::Once);
+    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
   }
 } // void SliceTrendingTask::generatePlots()
 
