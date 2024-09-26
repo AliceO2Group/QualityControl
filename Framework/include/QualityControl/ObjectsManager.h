@@ -93,7 +93,7 @@ class ObjectsManager
                   "you are trying to startPublishing object that is not mergeable."
                   " If you know what you are doing use startPublishing<true>(...)");
 #endif
-    startPublishingImpl(obj, policy);
+    startPublishingImpl(obj, policy, IgnoreMergeable);
   }
 
   /**
@@ -240,7 +240,7 @@ class ObjectsManager
   Activity mActivity;
   std::vector<std::string> mMovingWindowsList;
 
-  void startPublishingImpl(TObject* obj, PublicationPolicy);
+  void startPublishingImpl(TObject* obj, PublicationPolicy, bool ignoreMergeableWarning);
 };
 
 } // namespace o2::quality_control::core
