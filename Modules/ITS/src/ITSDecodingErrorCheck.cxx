@@ -79,9 +79,12 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
         continue;
       }
       for (int ifee = 0; ifee < h->GetNbinsX(); ifee++) {
-        for (int ierr = 0; ierr < h->GetNbinsY() - 1; ierr++) { // last y bin is recovery flag: do not check
+        for (int ierr = 0; ierr < h->GetNbinsY(); ierr++) {
 
-          if ((doFlatCheck && h->GetBinContent(ifee, ierr + 1) == 0) || (!doFlatCheck && h->GetBinContent(ifee + 1, ierr + 1) < vDecErrorLimits[ierr])) { // ok if below threshold
+          if (doFlatCheck && h->GetBinContent(ifee + 1, ierr + 1) < 200) { // ok if below threshold
+            continue;
+          }
+          if (!doFlatCheck && (vDecErrorLimits[ierr] < 0 || h->GetBinContent(ifee + 1, ierr + 1) < vDecErrorLimits[ierr])) { // ok if below threshold or if threshold is -1
             continue;
           }
 
