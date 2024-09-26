@@ -75,7 +75,7 @@ bool checkKafkaParams(const std::string& kafkaBrokers, const std::string& topic,
     return false;
   }
   if (topic.empty()) {
-    ILOG(Error, Support) << "You are tring to consume empty Kafka topic from " << triggerTypeLogId << " trigger, fill config value 'kafkaTopic'" << ENDM;
+    ILOG(Error, Support) << "You are tring to consume empty Kafka topic from '" << triggerTypeLogId << "' trigger, fill config value 'kafkaTopic'" << ENDM;
     return false;
   }
   return true;
