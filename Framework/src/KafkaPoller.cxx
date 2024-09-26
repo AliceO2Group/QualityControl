@@ -6,6 +6,7 @@
 #include "proto/events.pb.h"
 #include <chrono>
 #include <ranges>
+#include <stdexcept>
 
 namespace o2::quality_control::core
 {
@@ -112,10 +113,21 @@ bool end_of_run::isValid(const events::Event& event, const std::string& environm
 
 kafka::Properties createProperties(const std::string& brokers, const std::string& groupId)
 {
-  return { { { "bootstrap.servers", { brokers } },
-             { "group.id", { groupId } },
-             { "enable.auto.commit", { "true" } },
-             { "auto.offset.reset", { "latest" } } } };
+  if (brokers.empty()) {
+    constexpr std::string_view message{ "You are trying to start KafkaPoller without any brokers" };
+    ILOG(Fatal, Ops) << message << ENDM;
+    throw std::invalid_argument{ message.data() };
+  }
+
+  auto properties = kafka::Properties{ { { "bootstrap.servers", { brokers } },
+                                         { "enable.auto.commit", { "true" } },
+                                         { "auto.offset.reset", { "latest" } } } };
+
+  if (!groupId.empty()) {
+    properties.put("group.id", groupId);
+  }
+
+  return properties;
 }
 
 KafkaPoller::KafkaPoller(const std::string& brokers, const std::string& groupId)
@@ -130,7 +142,7 @@ void KafkaPoller::subscribe(const std::string& topic, size_t numberOfRetries)
       mConsumer.subscribe({ topic });
       return;
     } catch (const kafka::KafkaException& ex) {
-      // it sometimes happen that subscibe timeouts but another retry succeeds
+      // it sometimes happens that subscibe timeouts but another retry succeeds
       if (ex.error().value() != RD_KAFKA_RESP_ERR__TIMED_OUT) {
         throw;
       } else {
