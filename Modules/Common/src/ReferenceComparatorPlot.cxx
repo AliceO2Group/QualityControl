@@ -98,6 +98,61 @@ static void copyAndScaleHistograms(TH1* histogram, TH1* referenceHistogram, TH1*
   }
 }
 
+template <class HIST>
+static std::shared_ptr<HIST> createHisto1D(const char* name, const char* title, TH1* source)
+{
+  std::shared_ptr<HIST> result;
+  if (source->GetXaxis()->IsVariableBinSize()) {
+    result = std::make_shared<HIST>(name, title,
+                                    source->GetXaxis()->GetNbins(),
+                                    source->GetXaxis()->GetXbins()->GetArray());
+  } else {
+    result = std::make_shared<HIST>(name, title,
+                                    source->GetXaxis()->GetNbins(),
+                                    source->GetXaxis()->GetXmin(),
+                                    source->GetXaxis()->GetXmax());
+  }
+
+  return result;
+}
+
+template <class HIST>
+static std::shared_ptr<HIST> createHisto2D(const char* name, const char* title, TH1* source)
+{
+  std::shared_ptr<HIST> result;
+  if (source->GetXaxis()->IsVariableBinSize() && source->GetYaxis()->IsVariableBinSize()) {
+    result = std::make_shared<HIST>(name, title,
+                                    source->GetXaxis()->GetNbins(),
+                                    source->GetXaxis()->GetXbins()->GetArray(),
+                                    source->GetYaxis()->GetNbins(),
+                                    source->GetYaxis()->GetXbins()->GetArray());
+  } else if (source->GetXaxis()->IsVariableBinSize() && !source->GetYaxis()->IsVariableBinSize()) {
+    result = std::make_shared<HIST>(name, title,
+                                    source->GetXaxis()->GetNbins(),
+                                    source->GetXaxis()->GetXbins()->GetArray(),
+                                    source->GetYaxis()->GetNbins(),
+                                    source->GetYaxis()->GetXmin(),
+                                    source->GetYaxis()->GetXmax());
+  } else if (!source->GetXaxis()->IsVariableBinSize() && source->GetYaxis()->IsVariableBinSize()) {
+    result = std::make_shared<HIST>(name, title,
+                                    source->GetXaxis()->GetNbins(),
+                                    source->GetXaxis()->GetXmin(),
+                                    source->GetXaxis()->GetXmax(),
+                                    source->GetYaxis()->GetNbins(),
+                                    source->GetYaxis()->GetXbins()->GetArray());
+  } else {
+    result = std::make_shared<HIST>(name, title,
+                                    source->GetXaxis()->GetNbins(),
+                                    source->GetXaxis()->GetXmin(),
+                                    source->GetXaxis()->GetXmax(),
+                                    source->GetYaxis()->GetNbins(),
+                                    source->GetYaxis()->GetXmin(),
+                                    source->GetYaxis()->GetXmax());
+  }
+
+  return result;
+}
+
 //_________________________________________________________________________________________
 
 class ReferenceComparatorPlotImpl
@@ -193,10 +248,7 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
 
     // histogram from the current run
     mPadHist->cd();
-    mPlot = std::make_shared<HIST>((canvasName + "_hist").c_str(), "",
-                                   referenceHistogram->GetXaxis()->GetNbins(),
-                                   referenceHistogram->GetXaxis()->GetXmin(),
-                                   referenceHistogram->GetXaxis()->GetXmax());
+    mPlot = createHisto1D<HIST>((canvasName + "_hist").c_str(), "", referenceHistogram);
     mPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
     mPlot->GetXaxis()->SetLabelSize(labelSize);
     mPlot->GetXaxis()->SetTitleSize(labelSize);
@@ -211,20 +263,14 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     mPlot->Draw(drawOption.c_str());
 
     // histogram from the reference run
-    mReferencePlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(), "",
-                                            referenceHistogram->GetXaxis()->GetNbins(),
-                                            referenceHistogram->GetXaxis()->GetXmin(),
-                                            referenceHistogram->GetXaxis()->GetXmax());
+    mReferencePlot = createHisto1D<HIST>((canvasName + "_hist_ref").c_str(), "", referenceHistogram);
     mReferencePlot->SetLineColor(kBlue);
     mReferencePlot->SetOption((drawOption + "SAME").c_str());
     mReferencePlot->Draw((drawOption + "SAME").c_str());
 
     // histogram with current/reference ratio
     mPadHistRatio->cd();
-    mRatioPlot = std::make_shared<HIST>((canvasName + "_hist_ratio").c_str(), "",
-                                        referenceHistogram->GetXaxis()->GetNbins(),
-                                        referenceHistogram->GetXaxis()->GetXmin(),
-                                        referenceHistogram->GetXaxis()->GetXmax());
+    mRatioPlot = createHisto1D<HIST>((canvasName + "_hist_ratio").c_str(), "", referenceHistogram);
     if (drawRatioOnly) {
       mRatioPlot->SetTitle(referenceHistogram->GetTitle());
       mRatioPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
@@ -369,14 +415,9 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
 
     // histogram from the current run
     mPadHist->cd();
-    mPlot = std::make_shared<HIST>((canvasName + "_hist").c_str(),
-                                   referenceHistogram->GetTitle(),
-                                   referenceHistogram->GetXaxis()->GetNbins(),
-                                   referenceHistogram->GetXaxis()->GetXmin(),
-                                   referenceHistogram->GetXaxis()->GetXmax(),
-                                   referenceHistogram->GetYaxis()->GetNbins(),
-                                   referenceHistogram->GetYaxis()->GetXmin(),
-                                   referenceHistogram->GetYaxis()->GetXmax());
+    mPlot = createHisto2D<HIST>((canvasName + "_hist").c_str(),
+                                referenceHistogram->GetTitle(),
+                                referenceHistogram);
     mPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
     mPlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
     mPlot->SetStats(0);
@@ -385,14 +426,9 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
 
     // histogram from the reference run
     mPadHistRef->cd();
-    mReferencePlot = std::make_shared<HIST>((canvasName + "_hist_ref").c_str(),
-                                            TString::Format("%s (reference)", referenceHistogram->GetTitle()),
-                                            referenceHistogram->GetXaxis()->GetNbins(),
-                                            referenceHistogram->GetXaxis()->GetXmin(),
-                                            referenceHistogram->GetXaxis()->GetXmax(),
-                                            referenceHistogram->GetYaxis()->GetNbins(),
-                                            referenceHistogram->GetYaxis()->GetXmin(),
-                                            referenceHistogram->GetYaxis()->GetXmax());
+    mReferencePlot = createHisto2D<HIST>((canvasName + "_hist_ref").c_str(),
+                                         TString::Format("%s (reference)", referenceHistogram->GetTitle()),
+                                         referenceHistogram);
     mReferencePlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
     mReferencePlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
     mReferencePlot->SetStats(0);
@@ -401,14 +437,9 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
 
     // histogram with current/reference ratio
     mPadHistRatio->cd();
-    mRatioPlot = std::make_shared<HIST>((canvasName + "_hist_ratio").c_str(),
-                                        TString::Format("%s (ratio)", referenceHistogram->GetTitle()),
-                                        referenceHistogram->GetXaxis()->GetNbins(),
-                                        referenceHistogram->GetXaxis()->GetXmin(),
-                                        referenceHistogram->GetXaxis()->GetXmax(),
-                                        referenceHistogram->GetYaxis()->GetNbins(),
-                                        referenceHistogram->GetYaxis()->GetXmin(),
-                                        referenceHistogram->GetYaxis()->GetXmax());
+    mRatioPlot = createHisto2D<HIST>((canvasName + "_hist_ratio").c_str(),
+                                     TString::Format("%s (ratio)", referenceHistogram->GetTitle()),
+                                     referenceHistogram);
     mRatioPlot->GetXaxis()->SetTitle(referenceHistogram->GetXaxis()->GetTitle());
     mRatioPlot->GetYaxis()->SetTitle(referenceHistogram->GetYaxis()->GetTitle());
     if (!drawRatioOnly) {
