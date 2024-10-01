@@ -19,6 +19,7 @@
 
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/CustomParameters.h"
 #include "MCHConstants/DetectionElements.h"
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -28,6 +29,7 @@
 #include <TText.h>
 #include <gsl/span>
 #include <utility>
+#include <array>
 #include <optional>
 
 namespace o2::quality_control::core
@@ -52,10 +54,18 @@ constexpr int getNumDE() { return (4 * 4 + 18 * 2 + 26 * 4); }
 int getNumDEinChamber(int chIndex);
 std::pair<int, int> getDEindexInChamber(int deId);
 
+void getThresholdsPerStation(o2::quality_control::core::CustomParameters customParameters,
+                             const o2::quality_control::core::Activity& activity,
+                             std::string parKey,
+                             std::array<std::optional<double>, 5>& thresholds,
+                             double& defaultThreshold);
+
 o2::quality_control::core::Quality checkDetectorQuality(gsl::span<o2::quality_control::core::Quality>& deQuality);
 
 void addChamberDelimiters(TH1F* h, float xmin = 0, float xmax = 0);
 void addChamberDelimiters(TH2F* h);
+void drawThresholdsPerStation(TH1* histogram, const std::array<std::optional<double>, 5>& thresholdsPerStation, double defaultThreshold);
+void addDEBinLabels(TH1* histogram);
 
 std::string getHistoPath(int deId);
 bool matchHistName(std::string hist, std::string name);

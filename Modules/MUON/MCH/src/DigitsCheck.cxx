@@ -17,6 +17,7 @@
 #include "MCH/DigitsCheck.h"
 #include "MUONCommon/Helpers.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
 
 // ROOT
 #include <TH1.h>
@@ -40,20 +41,17 @@ void DigitsCheck::configure()
 void DigitsCheck::startOfActivity(const Activity& activity)
 {
   mMeanRateHistName = getConfigurationParameter<std::string>(mCustomParameters, "MeanRateHistName", mMeanRateHistName, activity);
-  mMeanRateRatioHistName = getConfigurationParameter<std::string>(mCustomParameters, "MeanRateRatioHistName", mMeanRateRatioHistName, activity);
   mGoodChanFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodChanFracHistName", mGoodChanFracHistName, activity);
-  mGoodChanFracRatioHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodChanFracRatioHistName", mGoodChanFracRatioHistName, activity);
 
-  mMinRate = getConfigurationParameter<double>(mCustomParameters, "MinRate", mMinRate, activity);
-  mMaxRate = getConfigurationParameter<double>(mCustomParameters, "MaxRate", mMaxRate, activity);
-  mMaxRateDelta = getConfigurationParameter<double>(mCustomParameters, "MaxRateDelta", mMaxRateDelta, activity);
-  mMinGoodFraction = getConfigurationParameter<double>(mCustomParameters, "MinGoodFraction", mMinGoodFraction, activity);
-  mMaxGoodFractionDelta = getConfigurationParameter<double>(mCustomParameters, "MaxGoodFractionDelta", mMaxGoodFractionDelta, activity);
-  mRatePlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "RatePlotScaleMin", mRatePlotScaleMin, activity);
-  mRatePlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "RatePlotScaleMax", mRatePlotScaleMax, activity);
+  getThresholdsPerStation(mCustomParameters, activity, "MinRate", mMinRatePerStation, mMinRate);
+  getThresholdsPerStation(mCustomParameters, activity, "MaxRate", mMaxRatePerStation, mMaxRate);
+  getThresholdsPerStation(mCustomParameters, activity, "MinGoodFraction", mMinGoodFractionPerStation, mMinGoodFraction);
 
   mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
   mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
+
+  mRatePlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "RatePlotScaleMin", mRatePlotScaleMin, activity);
+  mRatePlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "RatePlotScaleMax", mRatePlotScaleMax, activity);
 
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;
@@ -68,7 +66,6 @@ std::array<Quality, getNumDE()> checkPlot(TH1F* h, Lambda check)
   for (auto de : o2::mch::constants::deIdsForAllMCH) {
     int chamberId = (de - 100) / 100;
     int stationId = chamberId / 2;
-    int chamberIdInStation = chamberId % 2;
 
     int deId = getDEindex(de);
     if (deId < 0) {
@@ -77,7 +74,7 @@ std::array<Quality, getNumDE()> checkPlot(TH1F* h, Lambda check)
     int bin = deId + 1;
 
     double val = h->GetBinContent(bin);
-    if (check(val)) {
+    if (check(val, stationId)) {
       result[deId] = Quality::Good;
     } else {
       result[deId] = Quality::Bad;
@@ -89,22 +86,34 @@ std::array<Quality, getNumDE()> checkPlot(TH1F* h, Lambda check)
 
 std::array<Quality, getNumDE()> DigitsCheck::checkMeanRates(TH1F* h)
 {
-  return checkPlot(h, [&](double val) -> bool { return (val >= mMinRate && val <= mMaxRate); });
-}
-
-std::array<Quality, getNumDE()> DigitsCheck::checkMeanRatesRatio(TH1F* h)
-{
-  return checkPlot(h, [&](double val) -> bool { return (std::abs(val - 1) <= mMaxRateDelta); });
+  auto checkFunction = [&](double val, int station) -> bool {
+    auto minRate = mMinRate;
+    auto maxRate = mMaxRate;
+    if (station >= 0 && station < 5) {
+      if (mMinRatePerStation[station]) {
+        minRate = mMinRatePerStation[station].value();
+      }
+      if (mMaxRatePerStation[station]) {
+        maxRate = mMaxRatePerStation[station].value();
+      }
+    }
+    return (val >= minRate && val <= maxRate);
+  };
+  return checkPlot(h, checkFunction);
 }
 
 std::array<Quality, getNumDE()> DigitsCheck::checkBadChannels(TH1F* h)
 {
-  return checkPlot(h, [&](double val) -> bool { return (val >= mMinGoodFraction); });
-}
-
-std::array<Quality, getNumDE()> DigitsCheck::checkBadChannelsRatio(TH1F* h)
-{
-  return checkPlot(h, [&](double val) -> bool { return (std::abs(val - 1) <= mMaxGoodFractionDelta); });
+  auto checkFunction = [&](double val, int station) -> bool {
+    auto minGoodFraction = mMinGoodFraction;
+    if (station >= 0 && station < 5) {
+      if (mMinGoodFractionPerStation[station]) {
+        minGoodFraction = mMinGoodFractionPerStation[station].value();
+      }
+    }
+    return (val >= minGoodFraction);
+  };
+  return checkPlot(h, checkFunction);
 }
 
 template <typename T>
@@ -153,26 +162,10 @@ Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
     }
 
-    if (matchHistName(mo->getName(), mMeanRateRatioHistName)) {
-      TH1F* h = getHisto<TH1F>(mo);
-      if (h && h->GetEntries() > 0) {
-        auto q = checkMeanRatesRatio(h);
-        mQualityChecker.addCheckResult(q);
-      }
-    }
-
     if (matchHistName(mo->getName(), mGoodChanFracHistName)) {
       TH1F* h = getHisto<TH1F>(mo);
       if (h) {
         auto q = checkBadChannels(h);
-        mQualityChecker.addCheckResult(q);
-      }
-    }
-
-    if (matchHistName(mo->getName(), mGoodChanFracRatioHistName)) {
-      TH1F* h = getHisto<TH1F>(mo);
-      if (h && h->GetEntries() > 0) {
-        auto q = checkBadChannelsRatio(h);
         mQualityChecker.addCheckResult(q);
       }
     }
@@ -194,43 +187,8 @@ static void updateTitle(TH1* hist, std::string suffix)
   hist->SetTitle(title);
 }
 
-static void updateTitle(TCanvas* c, std::string suffix)
-{
-  if (!c) {
-    return;
-  }
-
-  TObject* obj;
-  TIter next(c->GetListOfPrimitives());
-  while ((obj = next())) {
-    if (obj->InheritsFrom("TH1")) {
-      TH1* hist = dynamic_cast<TH1*>(obj);
-      updateTitle(hist, suffix);
-    }
-  }
-}
-
-static std::string getCurrentTime()
-{
-  time_t t;
-  time(&t);
-
-  struct tm* tmp;
-  tmp = localtime(&t);
-
-  char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%d/%m/%Y - %R)", tmp);
-
-  std::string result = timestr;
-  return result;
-}
-
 void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
-  updateTitle(dynamic_cast<TCanvas*>(mo->getObject()), currentTime);
-
   if (mo->getName().find("Occupancy_Elec") != std::string::npos ||
       mo->getName().find("OccupancySignal_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
@@ -268,61 +226,30 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       return;
     }
 
-    float scaleMin{ 0 };
-    float scaleMax{ 0 };
-    if (mo->getName().find("MeanRateRefRatio") != std::string::npos) {
-      scaleMin = 1.0 - mMaxRateDelta * 2.0;
-      scaleMax = 1.0 + mMaxRateDelta * 2.0;
-      h->GetYaxis()->SetTitle("rate / reference");
-    } else {
-      scaleMin = mRatePlotScaleMin;
-      scaleMax = mRatePlotScaleMax;
-      h->GetYaxis()->SetTitle("rate (kHz)");
-    }
+    double scaleMin{ mRatePlotScaleMin };
+    double scaleMax{ mRatePlotScaleMax };
     h->SetMinimum(scaleMin);
     h->SetMaximum(scaleMax);
+    h->GetYaxis()->SetTitle("rate (kHz)");
 
     addChamberDelimiters(h, scaleMin, scaleMax);
+    addDEBinLabels(h);
 
-    if (mo->getName().find("MeanRateRefRatio") != std::string::npos) {
-      // draw horizontal limits
-      TLine* l = new TLine(0, 1, h->GetXaxis()->GetXmax(), 1);
-      l->SetLineColor(kBlack);
-      l->SetLineStyle(kDotted);
-      h->GetListOfFunctions()->Add(l);
-
-      if (h->GetEntries() > 0) {
-        l = new TLine(0, 1.0 - mMaxRateDelta, h->GetXaxis()->GetXmax(), 1.0 - mMaxRateDelta);
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(kDashed);
-        h->GetListOfFunctions()->Add(l);
-
-        l = new TLine(0, 1.0 + mMaxRateDelta, h->GetXaxis()->GetXmax(), 1.0 + mMaxRateDelta);
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(kDashed);
-        h->GetListOfFunctions()->Add(l);
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mMeanRateHistName)) {
+      if (checkResult == Quality::Good) {
+        h->SetFillColor(kGreen);
+      } else if (checkResult == Quality::Bad) {
+        h->SetFillColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        h->SetFillColor(kOrange);
       }
-    } else {
-      // draw horizontal limits
-      TLine* l = new TLine(0, mMinRate, h->GetXaxis()->GetXmax(), mMinRate);
-      l->SetLineColor(kBlue);
-      l->SetLineStyle(kDashed);
-      h->GetListOfFunctions()->Add(l);
+      h->SetLineColor(kBlack);
 
-      l = new TLine(0, mMaxRate, h->GetXaxis()->GetXmax(), mMaxRate);
-      l->SetLineColor(kBlue);
-      l->SetLineStyle(kDashed);
-      h->GetListOfFunctions()->Add(l);
+      drawThresholdsPerStation(h, mMinRatePerStation, mMinRate);
+      drawThresholdsPerStation(h, mMaxRatePerStation, mMaxRate);
     }
-
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      h->SetFillColor(kOrange);
-    }
-    h->SetLineColor(kBlack);
   }
 
   if (mo->getName().find("GoodChannelsFraction") != std::string::npos) {
@@ -332,55 +259,28 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
 
     float scaleMin{ 0 };
-    float scaleMax{ 0 };
-    if (mo->getName().find("GoodChannelsFractionRefRatio") != std::string::npos) {
-      scaleMin = 1.0 - mMaxGoodFractionDelta * 2.0;
-      scaleMax = 1.0 + mMaxGoodFractionDelta * 2.0;
-      h->GetYaxis()->SetTitle("fraction / reference");
-    } else {
-      scaleMin = 0;
-      scaleMax = 1.05;
-      h->GetYaxis()->SetTitle("fraction");
-    }
+    float scaleMax{ 1.05 };
     h->SetMinimum(scaleMin);
     h->SetMaximum(scaleMax);
+    h->GetYaxis()->SetTitle("fraction");
 
     addChamberDelimiters(h, scaleMin, scaleMax);
+    addDEBinLabels(h);
 
-    if (mo->getName().find("GoodChannelsFractionRefRatio") != std::string::npos) {
-      // draw horizontal limits
-      TLine* l = new TLine(0, 1, h->GetXaxis()->GetXmax(), 1);
-      l->SetLineColor(kBlack);
-      l->SetLineStyle(kDotted);
-      h->GetListOfFunctions()->Add(l);
-
-      if (h->GetEntries() > 0) {
-        l = new TLine(0, 1.0 - mMaxGoodFractionDelta, h->GetXaxis()->GetXmax(), 1.0 - mMaxGoodFractionDelta);
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(kDashed);
-        h->GetListOfFunctions()->Add(l);
-
-        l = new TLine(0, 1.0 + mMaxGoodFractionDelta, h->GetXaxis()->GetXmax(), 1.0 + mMaxGoodFractionDelta);
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(kDashed);
-        h->GetListOfFunctions()->Add(l);
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mGoodChanFracHistName)) {
+      if (checkResult == Quality::Good) {
+        h->SetFillColor(kGreen);
+      } else if (checkResult == Quality::Bad) {
+        h->SetFillColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        h->SetFillColor(kOrange);
       }
-    } else {
-      // draw horizontal limits
-      TLine* l = new TLine(0, mMinGoodFraction, h->GetXaxis()->GetXmax(), mMinGoodFraction);
-      l->SetLineColor(kBlue);
-      l->SetLineStyle(kDashed);
-      h->GetListOfFunctions()->Add(l);
-    }
+      h->SetLineColor(kBlack);
 
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      h->SetFillColor(kOrange);
+      drawThresholdsPerStation(h, mMinGoodFractionPerStation, mMinGoodFraction);
     }
-    h->SetLineColor(kBlack);
   }
 
   // update quality flags for each DE
@@ -391,6 +291,7 @@ void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     }
 
     addChamberDelimiters(h);
+    addDEBinLabels(h);
 
     for (int deId = 0; deId < mQualityChecker.mQuality.size(); deId++) {
       float ybin = 0;

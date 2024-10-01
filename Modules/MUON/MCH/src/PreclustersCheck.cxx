@@ -40,15 +40,13 @@ void PreclustersCheck::configure()
 
 void PreclustersCheck::startOfActivity(const Activity& activity)
 {
-  mMinEfficiency = getConfigurationParameter<double>(mCustomParameters, "MinEfficiency", mMinEfficiency, activity);
-  mMaxEffDelta = getConfigurationParameter<double>(mCustomParameters, "MaxEfficiencyDelta", mMaxEffDelta, activity);
+  getThresholdsPerStation(mCustomParameters, activity, "MinEfficiency", mMinEfficiencyPerStation, mMinEfficiency);
+
   mPseudoeffPlotScaleMin = getConfigurationParameter<double>(mCustomParameters, "PseudoeffPlotScaleMin", mPseudoeffPlotScaleMin, activity);
   mPseudoeffPlotScaleMax = getConfigurationParameter<double>(mCustomParameters, "PseudoeffPlotScaleMax", mPseudoeffPlotScaleMax, activity);
 
   mMeanEffHistNameB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffHistNameB", mMeanEffHistNameB, activity);
   mMeanEffHistNameNB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffHistNameNB", mMeanEffHistNameNB, activity);
-  mMeanEffRatioHistNameB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffRatioHistNameB", mMeanEffRatioHistNameB, activity);
-  mMeanEffRatioHistNameNB = getConfigurationParameter<std::string>(mCustomParameters, "MeanEffRatioHistNameNB", mMeanEffRatioHistNameNB, activity);
 
   mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
   mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
@@ -98,7 +96,6 @@ std::array<Quality, getNumDE()> checkPlot(TH1F* h, Lambda check)
   for (auto de : o2::mch::constants::deIdsForAllMCH) {
     int chamberId = (de - 100) / 100;
     int stationId = chamberId / 2;
-    int chamberIdInStation = chamberId % 2;
 
     int deId = getDEindex(de);
     if (deId < 0) {
@@ -107,7 +104,7 @@ std::array<Quality, getNumDE()> checkPlot(TH1F* h, Lambda check)
     int bin = deId + 1;
 
     double val = h->GetBinContent(bin);
-    if (check(val)) {
+    if (check(val, stationId)) {
       result[deId] = Quality::Good;
     } else {
       result[deId] = Quality::Bad;
@@ -119,12 +116,16 @@ std::array<Quality, getNumDE()> checkPlot(TH1F* h, Lambda check)
 
 std::array<Quality, getNumDE()> PreclustersCheck::checkMeanEfficiencies(TH1F* h)
 {
-  return checkPlot(h, [&](double val) -> bool { return (val >= mMinEfficiency); });
-}
-
-std::array<Quality, getNumDE()> PreclustersCheck::checkMeanEfficienciesRatio(TH1F* h)
-{
-  return checkPlot(h, [&](double val) -> bool { return (std::abs(val - 1) <= mMaxEffDelta); });
+  auto checkFunction = [&](double val, int station) -> bool {
+    auto minEfficiency = mMinEfficiency;
+    if (station >= 0 && station < 5) {
+      if (mMinEfficiencyPerStation[station]) {
+        minEfficiency = mMinEfficiencyPerStation[station].value();
+      }
+    }
+    return (val >= minEfficiency);
+  };
+  return checkPlot(h, checkFunction);
 }
 
 Quality PreclustersCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -146,14 +147,6 @@ Quality PreclustersCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
         mQualityChecker.addCheckResult(q);
       }
     }
-
-    if (matchHistName(mo->getName(), mMeanEffRatioHistNameB) || matchHistName(mo->getName(), mMeanEffRatioHistNameNB)) {
-      TH1F* h = getHisto<TH1F>(mo);
-      if (h && h->GetEntries() > 0) {
-        auto q = checkMeanEfficienciesRatio(h);
-        mQualityChecker.addCheckResult(q);
-      }
-    }
   }
 
   return mQualityChecker.getQuality();
@@ -161,67 +154,18 @@ Quality PreclustersCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
 
 std::string PreclustersCheck::getAcceptedType() { return "TH1"; }
 
-static void updateTitle(TH1* hist, std::string suffix)
-{
-  if (!hist) {
-    return;
-  }
-  TString title = hist->GetTitle();
-  title.Append(" ");
-  title.Append(suffix.c_str());
-  hist->SetTitle(title);
-}
-
-static void updateTitle(TCanvas* c, std::string suffix)
-{
-  if (!c) {
-    return;
-  }
-
-  TObject* obj;
-  TIter next(c->GetListOfPrimitives());
-  while ((obj = next())) {
-    if (obj->InheritsFrom("TH1")) {
-      TH1* hist = dynamic_cast<TH1*>(obj);
-      updateTitle(hist, suffix);
-    }
-  }
-}
-
-static std::string getCurrentTime()
-{
-  time_t t;
-  time(&t);
-
-  struct tm* tmp;
-  tmp = localtime(&t);
-
-  char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%d/%m/%Y - %R)", tmp);
-
-  std::string result = timestr;
-  return result;
-}
-
 void PreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
-  updateTitle(dynamic_cast<TCanvas*>(mo->getObject()), currentTime);
-
   if ((mo->getName().find("ChargeMPV") != std::string::npos)) {
     TH1F* h = getHisto<TH1F>(mo);
     if (!h) {
       return;
     }
-    if ((mo->getName().find("ChargeMPVRefRatio") != std::string::npos)) {
-      h->SetMinimum(0.5);
-      h->SetMaximum(1.5);
-    } else {
-      h->SetMinimum(0);
-      h->SetMaximum(2000);
-    }
+
+    h->SetMinimum(0);
+    h->SetMaximum(2000);
     addChamberDelimiters(h, h->GetMinimum(), h->GetMaximum());
+    addDEBinLabels(h);
   }
 
   if ((mo->getName().find("MeanClusterSize") != std::string::npos)) {
@@ -229,14 +173,11 @@ void PreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     if (!h) {
       return;
     }
-    if ((mo->getName().find("MeanClusterSizeRefRatio") != std::string::npos)) {
-      h->SetMinimum(0.8);
-      h->SetMaximum(1.2);
-    } else {
-      h->SetMinimum(0);
-      h->SetMaximum(20);
-    }
+
+    h->SetMinimum(0);
+    h->SetMaximum(20);
     addChamberDelimiters(h, h->GetMinimum(), h->GetMaximum());
+    addDEBinLabels(h);
   }
 
   if ((mo->getName().find("MeanEfficiency") != std::string::npos) ||
@@ -251,42 +192,17 @@ void PreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
         (mo->getName().find("MeanEfficiencyNB") != std::string::npos)) {
       h->SetMinimum(mPseudoeffPlotScaleMin);
       h->SetMaximum(1.2);
-
-      // draw horizontal limits
-      TLine* l = new TLine(0, mMinEfficiency, h->GetXaxis()->GetXmax(), mMinEfficiency);
-      l->SetLineColor(kBlue);
-      l->SetLineStyle(kDashed);
-      h->GetListOfFunctions()->Add(l);
-    } else if ((mo->getName().find("MeanEfficiencyRefRatio") != std::string::npos)) {
-      h->SetMinimum(1.0 - mMaxEffDelta * 2.0);
-      h->SetMaximum(1.0 + mMaxEffDelta * 2.0);
-
-      // draw horizontal limits
-      TLine* l = new TLine(0, 1, h->GetXaxis()->GetXmax(), 1);
-      l->SetLineColor(kBlack);
-      l->SetLineStyle(kDotted);
-      h->GetListOfFunctions()->Add(l);
-
-      if (h->GetEntries() > 0) {
-        l = new TLine(0, 1.0 - mMaxEffDelta, h->GetXaxis()->GetXmax(), 1.0 - mMaxEffDelta);
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(kDashed);
-        h->GetListOfFunctions()->Add(l);
-
-        l = new TLine(0, 1.0 + mMaxEffDelta, h->GetXaxis()->GetXmax(), 1.0 + mMaxEffDelta);
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(kDashed);
-        h->GetListOfFunctions()->Add(l);
-      }
     } else {
       h->SetMinimum(0);
       h->SetMaximum(1.05 * h->GetMaximum());
     }
-    addChamberDelimiters(h, h->GetMinimum(), h->GetMaximum());
 
-    if ((mo->getName().find("MeanEfficiencyB") != std::string::npos) ||
-        (mo->getName().find("MeanEfficiencyNB") != std::string::npos) ||
-        (mo->getName().find("MeanEfficiencyRefRatio") != std::string::npos)) {
+    addChamberDelimiters(h, h->GetMinimum(), h->GetMaximum());
+    addDEBinLabels(h);
+
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mMeanEffHistNameB) || matchHistName(mo->getName(), mMeanEffHistNameNB)) {
       if (checkResult == Quality::Good) {
         h->SetFillColor(kGreen);
       } else if (checkResult == Quality::Bad) {
@@ -295,6 +211,8 @@ void PreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality check
         h->SetFillColor(kOrange);
       }
       h->SetLineColor(kBlack);
+
+      drawThresholdsPerStation(h, mMinEfficiencyPerStation, mMinEfficiency);
     }
   }
 

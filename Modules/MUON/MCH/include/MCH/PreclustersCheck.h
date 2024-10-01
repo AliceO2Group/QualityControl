@@ -53,12 +53,10 @@ class PreclustersCheck : public o2::quality_control::checker::CheckInterface
 
   std::string mMeanEffHistNameB{ "Efficiency/LastCycle/MeanEfficiencyB" };
   std::string mMeanEffHistNameNB{ "Efficiency/LastCycle/MeanEfficiencyNB" };
-  std::string mMeanEffRatioHistNameB{ "Efficiency/LastCycle/MeanEfficiencyRefRatioB" };
-  std::string mMeanEffRatioHistNameNB{ "Efficiency/LastCycle/MeanEfficiencyRefRatioNB" };
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
   double mMinEfficiency{ 0.8 };
-  double mMaxEffDelta{ 0.2 };
+  std::array<std::optional<double>, 5> mMinEfficiencyPerStation;
   double mPseudoeffPlotScaleMin{ 0.0 };
   double mPseudoeffPlotScaleMax{ 1.0 };
 

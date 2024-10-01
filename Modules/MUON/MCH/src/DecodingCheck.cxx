@@ -42,8 +42,8 @@ void DecodingCheck::startOfActivity(const Activity& activity)
   mGoodFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracHistName", mGoodFracHistName, activity);
   mSyncFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracHistName", mSyncFracHistName, activity);
 
-  mMinGoodErrorFrac = getConfigurationParameter<double>(mCustomParameters, "MinGoodErrorFrac", mMinGoodErrorFrac, activity);
-  mMinGoodSyncFrac = getConfigurationParameter<double>(mCustomParameters, "MinGoodSyncFrac", mMinGoodSyncFrac, activity);
+  getThresholdsPerStation(mCustomParameters, activity, "MinGoodErrorFrac", mMinGoodErrorFracPerStation, mMinGoodErrorFrac);
+  getThresholdsPerStation(mCustomParameters, activity, "MinGoodSyncFrac", mMinGoodSyncFracPerStation, mMinGoodSyncFrac);
 
   mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
   mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
@@ -70,9 +70,24 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         return result;
       }
 
-      for (int deId = 0; deId < getNumDE(); deId++) {
+      for (auto de : o2::mch::constants::deIdsForAllMCH) {
+        int chamberId = (de - 100) / 100;
+        int stationId = chamberId / 2;
+
+        int deId = getDEindex(de);
+        if (deId < 0) {
+          continue;
+        }
+
+        auto minGoodErrorFrac = mMinGoodErrorFrac;
+        if (stationId >= 0 && stationId < 5) {
+          if (mMinGoodErrorFracPerStation[stationId]) {
+            minGoodErrorFrac = mMinGoodErrorFracPerStation[stationId].value();
+          }
+        }
+
         double val = h->GetBinContent(deId + 1);
-        if (val < mMinGoodErrorFrac) {
+        if (val < minGoodErrorFrac) {
           errorsQuality[deId] = Quality::Bad;
         } else {
           errorsQuality[deId] = Quality::Good;
@@ -87,9 +102,24 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         return result;
       }
 
-      for (int deId = 0; deId < getNumDE(); deId++) {
+      for (auto de : o2::mch::constants::deIdsForAllMCH) {
+        int chamberId = (de - 100) / 100;
+        int stationId = chamberId / 2;
+
+        int deId = getDEindex(de);
+        if (deId < 0) {
+          continue;
+        }
+
+        auto minGoodSyncFrac = mMinGoodSyncFrac;
+        if (stationId >= 0 && stationId < 5) {
+          if (mMinGoodSyncFracPerStation[stationId]) {
+            minGoodSyncFrac = mMinGoodSyncFracPerStation[stationId].value();
+          }
+        }
+
         double val = h->GetBinContent(deId + 1);
-        if (val < mMinGoodSyncFrac) {
+        if (val < minGoodSyncFrac) {
           syncQuality[deId] = Quality::Bad;
         } else {
           syncQuality[deId] = Quality::Good;
@@ -103,37 +133,8 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
 std::string DecodingCheck::getAcceptedType() { return "TH1"; }
 
-static void updateTitle(TH1* hist, std::string suffix)
-{
-  if (!hist) {
-    return;
-  }
-  TString title = hist->GetTitle();
-  title.Append(" ");
-  title.Append(suffix.c_str());
-  hist->SetTitle(title);
-}
-
-static std::string getCurrentTime()
-{
-  time_t t;
-  time(&t);
-
-  struct tm* tmp;
-  tmp = localtime(&t);
-
-  char timestr[500];
-  strftime(timestr, sizeof(timestr), "(%d/%m/%Y - %R)", tmp);
-
-  std::string result = timestr;
-  return result;
-}
-
 void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto currentTime = getCurrentTime();
-  updateTitle(dynamic_cast<TH1*>(mo->getObject()), currentTime);
-
   if (mo->getName().find("DecodingErrorsPerDE") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (!h) {
@@ -193,21 +194,22 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->GetYaxis()->SetTitle("good boards fraction");
 
     addChamberDelimiters(h, scaleMin, scaleMax);
+    addDEBinLabels(h);
 
-    // draw horizontal limits
-    TLine* l = new TLine(0, mMinGoodErrorFrac, h->GetXaxis()->GetXmax(), mMinGoodErrorFrac);
-    l->SetLineColor(kBlue);
-    l->SetLineStyle(kDashed);
-    h->GetListOfFunctions()->Add(l);
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mGoodFracHistName)) {
+      if (checkResult == Quality::Good) {
+        h->SetFillColor(kGreen);
+      } else if (checkResult == Quality::Bad) {
+        h->SetFillColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        h->SetFillColor(kOrange);
+      }
+      h->SetLineColor(kBlack);
 
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      h->SetFillColor(kOrange);
+      drawThresholdsPerStation(h, mMinGoodErrorFracPerStation, mMinGoodErrorFrac);
     }
-    h->SetLineColor(kBlack);
   }
 
   if (mo->getName().find("SyncedBoardsFractionPerDE") != std::string::npos) {
@@ -222,21 +224,22 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->SetMaximum(scaleMax);
 
     addChamberDelimiters(h, scaleMin, scaleMax);
+    addDEBinLabels(h);
 
-    // draw horizontal limits
-    TLine* l = new TLine(0, mMinGoodSyncFrac, h->GetXaxis()->GetXmax(), mMinGoodSyncFrac);
-    l->SetLineColor(kBlue);
-    l->SetLineStyle(kDashed);
-    h->GetListOfFunctions()->Add(l);
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mSyncFracHistName)) {
+      if (checkResult == Quality::Good) {
+        h->SetFillColor(kGreen);
+      } else if (checkResult == Quality::Bad) {
+        h->SetFillColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        h->SetFillColor(kOrange);
+      }
+      h->SetLineColor(kBlack);
 
-    if (checkResult == Quality::Good) {
-      h->SetFillColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      h->SetFillColor(kRed);
-    } else if (checkResult == Quality::Medium) {
-      h->SetFillColor(kOrange);
+      drawThresholdsPerStation(h, mMinGoodSyncFracPerStation, mMinGoodSyncFrac);
     }
-    h->SetLineColor(kBlack);
   }
 }
 
