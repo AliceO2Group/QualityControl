@@ -497,19 +497,23 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
 
 ReferenceComparatorPlot::ReferenceComparatorPlot(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption1D, const std::string& drawOption2D)
 {
-  if (referenceHistogram->IsA() == TClass::GetClass<TH1F>() || referenceHistogram->InheritsFrom("TH1F")) {
+  // histograms with integer values are promoted to floating point or double to allow correctly scaling the reference and computing the ratios
+
+  // 1-D histograms
+  if (referenceHistogram->InheritsFrom("TH1C") || referenceHistogram->InheritsFrom("TH1S") || referenceHistogram->InheritsFrom("TH1F")) {
     mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1F>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption1D);
   }
 
-  if (referenceHistogram->IsA() == TClass::GetClass<TH1D>() || referenceHistogram->InheritsFrom("TH1D")) {
+  if (referenceHistogram->InheritsFrom("TH1I") || referenceHistogram->InheritsFrom("TH1D")) {
     mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1D>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption1D);
   }
 
-  if (referenceHistogram->IsA() == TClass::GetClass<TH2F>() || referenceHistogram->InheritsFrom("TH2F")) {
+  // 2-D histograms
+  if (referenceHistogram->InheritsFrom("TH2C") || referenceHistogram->InheritsFrom("TH2S") || referenceHistogram->InheritsFrom("TH2F")) {
     mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2F>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption2D);
   }
 
-  if (referenceHistogram->IsA() == TClass::GetClass<TH2D>() || referenceHistogram->InheritsFrom("TH2D")) {
+  if (referenceHistogram->InheritsFrom("TH2I") || referenceHistogram->InheritsFrom("TH2D")) {
     mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2D>>(referenceHistogram, outputPath, scaleReference, drawRatioOnly, drawOption2D);
   }
 }
