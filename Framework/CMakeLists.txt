@@ -22,10 +22,12 @@ target_include_directories(
 
 target_link_libraries(O2QualityControlTypes
   PUBLIC
-  ROOT::Hist
-  AliceO2::Common
-  O2::DataFormatsQualityControl
   AliceO2::BookkeepingApi
+  AliceO2::Common
+  AliceO2::InfoLogger
+  O2::DataFormatsQualityControl
+  ROOT::Hist
+
 )
 
 add_root_dictionary(O2QualityControlTypes
