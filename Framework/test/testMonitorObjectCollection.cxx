@@ -16,8 +16,8 @@
 
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/QcInfoLogger.h"
 
+#include <TH1.h>
 #include <TH1I.h>
 #include <TH2I.h>
 #include <TH2I.h>
@@ -25,6 +25,7 @@
 #include <Mergers/MergerAlgorithm.h>
 
 #include <catch_amalgamated.hpp>
+#include <iostream>
 
 using namespace o2::mergers;
 
@@ -94,6 +95,46 @@ TEST_CASE("monitor_object_collection_merge")
   CHECK(resultTH2I->GetBinContent(resultTH2I->FindBin(5, 5)) == 1);
 
   delete target;
+}
+
+TEST_CASE("monitor_object_collection_merge_different_id")
+{
+
+  auto toHisto = [](std::unique_ptr<MonitorObjectCollection>& collection) -> TH1I* {
+    return dynamic_cast<TH1I*>(dynamic_cast<MonitorObject*>(collection->At(0))->getObject());
+  };
+
+  const size_t bins = 10;
+  const size_t min = 0;
+  const size_t max = 10;
+
+  // Setting up the target. Histo 1D
+  auto target = std::make_unique<MonitorObjectCollection>();
+
+  auto* targetTH1I = new TH1I("histo 1d", "original", bins, min, max);
+  targetTH1I->Fill(5);
+  targetTH1I->Print();
+  auto* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
+  targetMoTH1I->setActivity({ 123, "PHYSICS", "LHC32x", "apass2", "qc_async", gInvalidValidityInterval });
+  targetMoTH1I->setIsOwner(true);
+  target->Add(targetMoTH1I);
+
+  // Setting up the other. Histo 1D + Histo 2D
+  auto other = std::make_unique<MonitorObjectCollection>();
+  other->SetOwner(true);
+
+  auto* otherTH1I = new TH1I("histo 1d", "input", bins, min, max);
+  otherTH1I->Fill(2);
+  auto* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
+  otherMoTH1I->setActivity({ 1234, "PHYSICS", "LHC32x", "apass2", "qc_async", { 43, 60 } });
+  otherMoTH1I->setIsOwner(true);
+  other->Add(otherMoTH1I);
+
+  std::cout << toHisto(target)->GetTitle() << "\n";
+  std::cout << toHisto(other)->GetTitle() << "\n";
+  CHECK_NOTHROW(algorithm::merge(target.get(), other.get()));
+  std::cout << toHisto(target)->GetTitle() << "\n";
+  std::cout << toHisto(other)->GetTitle() << "\n";
 }
 
 TEST_CASE("monitor_object_collection_post_deserialization")
