@@ -36,6 +36,7 @@ PostProcessingConfigZDC::PostProcessingConfigZDC(std::string name, const boost::
   }
 
   // Data source configuration
+  // ADC
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSourcesADC")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
@@ -50,6 +51,7 @@ PostProcessingConfigZDC::PostProcessingConfigZDC(std::string name, const boost::
       throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSourcesADC'");
     }
   }
+  // TDC Time
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSourcesTDC")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
@@ -61,7 +63,52 @@ PostProcessingConfigZDC::PostProcessingConfigZDC(std::string name, const boost::
       dataSourcesTDC.push_back({ dataSourceConfig.second.get<std::string>("path"),
                                  dataSourceConfig.second.get<std::string>("name") });
     } else {
-      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSourcesADC'");
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSourcesTDC'");
+    }
+  }
+  // TDC Amplitude
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSourcesTDCA")) {
+    if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
+      for (const auto& sourceName : sourceNames.value()) {
+        dataSourcesTDCA.push_back({ dataSourceConfig.second.get<std::string>("path"),
+                                    sourceName.second.data() });
+      }
+    } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
+      // "name" : [ "something" ] would return an empty string here
+      dataSourcesTDCA.push_back({ dataSourceConfig.second.get<std::string>("path"),
+                                  dataSourceConfig.second.get<std::string>("name") });
+    } else {
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSourcesTDCA'");
+    }
+  }
+  // Peak 1n TDC Amplitude
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSourcesPeak1n")) {
+    if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
+      for (const auto& sourceName : sourceNames.value()) {
+        dataSourcesPeak1n.push_back({ dataSourceConfig.second.get<std::string>("path"),
+                                      sourceName.second.data() });
+      }
+    } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
+      // "name" : [ "something" ] would return an empty string here
+      dataSourcesPeak1n.push_back({ dataSourceConfig.second.get<std::string>("path"),
+                                    dataSourceConfig.second.get<std::string>("name") });
+    } else {
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSourcesPeak1n'");
+    }
+  }
+  // Peak 1p TDC Amplitude
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSourcesPeak1p")) {
+    if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
+      for (const auto& sourceName : sourceNames.value()) {
+        dataSourcesPeak1p.push_back({ dataSourceConfig.second.get<std::string>("path"),
+                                      sourceName.second.data() });
+      }
+    } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
+      // "name" : [ "something" ] would return an empty string here
+      dataSourcesPeak1p.push_back({ dataSourceConfig.second.get<std::string>("path"),
+                                    dataSourceConfig.second.get<std::string>("name") });
+    } else {
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSourcesPeak1p'");
     }
   }
 }

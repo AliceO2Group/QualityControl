@@ -49,6 +49,9 @@ struct PostProcessingConfigZDC : PostProcessingConfig {
   std::map<std::string, std::string> parameters;
   std::vector<DataSource> dataSourcesADC;
   std::vector<DataSource> dataSourcesTDC;
+  std::vector<DataSource> dataSourcesTDCA;
+  std::vector<DataSource> dataSourcesPeak1n;
+  std::vector<DataSource> dataSourcesPeak1p;
 };
 
 } // namespace o2::quality_control_modules::zdc

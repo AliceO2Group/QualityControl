@@ -405,10 +405,10 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADCSUMvsTC", "h_ADC_ZNC_ZEM1", "ADC  ZNC TC vs ADC  ZEM1", "ADC", "ZEM1", "ADC", "ZNCC", 0);
   addNewHisto("ADCSUMvsTC", "h_ADC_ZNC_ZEM2", "ADC  ZNC TC vs ADC  ZEM2", "ADC", "ZEM2", "ADC", "ZNCC", 0);
 
-  addNewHisto("ADCSUMvsTC", "h_ADC_ZNA_ZEM1", "ADC  ZPA TC vs ADC  ZEM1", "ADC", "ZEM1", "ADC", "ZPAC", 0);
-  addNewHisto("ADCSUMvsTC", "h_ADC_ZNA_ZEM2", "ADC  ZPA TC vs ADC  ZEM2", "ADC", "ZEM2", "ADC", "ZPAC", 0);
-  addNewHisto("ADCSUMvsTC", "h_ADC_ZNC_ZEM1", "ADC  ZPC TC vs ADC  ZEM1", "ADC", "ZEM1", "ADC", "ZPCC", 0);
-  addNewHisto("ADCSUMvsTC", "h_ADC_ZNC_ZEM2", "ADC  ZPC TC vs ADC  ZEM2", "ADC", "ZEM2", "ADC", "ZPCC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZPA_ZEM1", "ADC  ZPA TC vs ADC  ZEM1", "ADC", "ZEM1", "ADC", "ZPAC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZPA_ZEM2", "ADC  ZPA TC vs ADC  ZEM2", "ADC", "ZEM2", "ADC", "ZPAC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZPC_ZEM1", "ADC  ZPC TC vs ADC  ZEM1", "ADC", "ZEM1", "ADC", "ZPCC", 0);
+  addNewHisto("ADCSUMvsTC", "h_ADC_ZPC_ZEM2", "ADC  ZPC TC vs ADC  ZEM2", "ADC", "ZEM2", "ADC", "ZPCC", 0);
 
   if (auto param = mCustomParameters.find("ADCvsTDCT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - ADCvsTDCT: " << param->second << ENDM;
@@ -502,10 +502,10 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC_A_A", "h_TDC_ZNC_ZEM1", "ZNC TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZNCC", 0);
   addNewHisto("TDC_A_A", "h_TDC_ZNC_ZEM2", "ZNC TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZNCC", 0);
 
-  addNewHisto("TDC_A_A", "h_TDC_ZPA_ZEM1", "ZNA TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZPAC", 0);
-  addNewHisto("TDC_A_A", "h_TDC_ZPA_ZEM2", "ZNA TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZPAC", 0);
-  addNewHisto("TDC_A_A", "h_TDC_ZPC_ZEM1", "ZNC TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZPCC", 0);
-  addNewHisto("TDC_A_A", "h_TDC_ZPC_ZEM2", "ZNC TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZPCC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZPA_ZEM1", "ZPA TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZPAC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZPA_ZEM2", "ZPA TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZPAC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZPC_ZEM1", "ZPC TDC amplitude vs ZEM1 TDC amplitude", "TDCA", "ZEM1", "TDCA", "ZPCC", 0);
+  addNewHisto("TDC_A_A", "h_TDC_ZPC_ZEM2", "ZPC TDC amplitude vs ZEM2 TDC amplitude", "TDCA", "ZEM2", "TDCA", "ZPCC", 0);
 
   // msg histo
   setBinHisto2D(26, -0.5, 26.0 - 0.5, 19, -0.5, 19.0 - 0.5);
