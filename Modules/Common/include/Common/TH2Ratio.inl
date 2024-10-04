@@ -277,8 +277,16 @@ void TH2Ratio<T>::update()
   }
 
   T::Reset();
-  mHistoNum->GetXaxis()->Copy(*T::GetXaxis());
-  mHistoNum->GetYaxis()->Copy(*T::GetYaxis());
+  if (mHistoNum->GetXaxis()->IsVariableBinSize()) {
+    T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXbins()->GetArray());
+  } else {
+    T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
+  }
+  if (mHistoNum->GetYaxis()->IsVariableBinSize()) {
+    T::GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXbins()->GetArray());
+  } else {
+    T::GetYaxis()->Set(mHistoNum->GetYaxis()->GetNbins(), mHistoNum->GetYaxis()->GetXmin(), mHistoNum->GetYaxis()->GetXmax());
+  }
   T::SetBinsLength();
 
   // Copy bin labels between histograms.
