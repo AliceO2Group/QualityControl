@@ -16,6 +16,7 @@
 ///
 
 #include "Common/BigScreen.h"
+#include "Common/Utils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/ActivityHelpers.h"
@@ -54,46 +55,22 @@ std::string getParameter(o2::quality_control::core::CustomParameters customParam
 
 void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework::ServiceRegistryRef services)
 {
-  int nRows = 1;
-  int nCols = 1;
-  int borderWidth = 5;
+  int nRows = getFromExtendedConfig<int>(t.activity, mCustomParameters, "nRows", 1);
+  int nCols = getFromExtendedConfig<int>(t.activity, mCustomParameters, "nCols", 1);
+  int borderWidth = getFromExtendedConfig<int>(t.activity, mCustomParameters, "borderWidth", 5);
+  int foregroundColor = getFromExtendedConfig<int>(t.activity, mCustomParameters, "foregroundColor", 1);
+  int backgroundColor = getFromExtendedConfig<int>(t.activity, mCustomParameters, "backgroundColor", 0);
 
-  std::string parValue;
-  parValue = getParameter(mCustomParameters, "nRows", t.activity);
-  if (!parValue.empty()) {
-    nRows = std::stoi(parValue);
-  }
+  mMaxObjectTimeShift = getFromExtendedConfig<int>(t.activity, mCustomParameters, "maxObjectTimeShift", mMaxObjectTimeShift);
+  mIgnoreActivity = getFromExtendedConfig<bool>(t.activity, mCustomParameters, "maxObjectTimeShift", mIgnoreActivity);
 
-  parValue = getParameter(mCustomParameters, "nCols", t.activity);
-  if (!parValue.empty()) {
-    nCols = std::stoi(parValue);
-  }
-
-  parValue = getParameter(mCustomParameters, "borderWidth", t.activity);
-  if (!parValue.empty()) {
-    borderWidth = std::stoi(parValue);
-  }
-
-  parValue = getParameter(mCustomParameters, "maxObjectTimeShift", t.activity);
-  if (!parValue.empty()) {
-    mMaxObjectTimeShift = std::stoi(parValue);
-  }
-
-  parValue = getParameter(mCustomParameters, "ignoreActivity", t.activity);
-  if (!parValue.empty()) {
-    mIgnoreActivity = (std::stoi(parValue) != 0);
-  }
-
-  // get the list of labels
-  parValue = getParameter(mCustomParameters, "labels", t.activity);
-  auto labels = o2::utils::Str::tokenize(parValue, ',', false, false);
-
+  auto labels = o2::utils::Str::tokenize(getFromExtendedConfig<std::string>(t.activity, mCustomParameters, "labels"), ',', false, false);
   if (labels.size() > (nRows * nCols)) {
-    ILOG(Warning, Support) << "Number of labels larger than nRos*nCols, some labels will not be displayed correctly" << ENDM;
+    ILOG(Warning, Support) << "Number of labels larger than nRows*nCols, some labels will not be displayed correctly" << ENDM;
   }
 
   mCanvas.reset();
-  mCanvas = std::make_unique<BigScreenCanvas>("BigScreen", "QC Big Screen", nRows, nCols, borderWidth);
+  mCanvas = std::make_unique<BigScreenCanvas>("BigScreen", "QC Big Screen", nRows, nCols, borderWidth, foregroundColor, backgroundColor);
 
   int index = 0;
   // add the paves associated to each quality source

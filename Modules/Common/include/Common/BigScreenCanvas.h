@@ -31,7 +31,8 @@ struct BigScreenElement;
 class BigScreenCanvas : public TCanvas
 {
  public:
-  BigScreenCanvas(std::string name, std::string title, int nRows, int nCols, int borderWidth);
+  BigScreenCanvas(std::string name, std::string title, int nRows, int nCols, int borderWidth,
+                  int foregroundColor = kBlack, int backgroundColor = kWhite);
   ~BigScreenCanvas() = default;
 
   /// \brief add a box in the canvas at a given index, with "name" displayed above the box
@@ -60,6 +61,9 @@ class BigScreenCanvas : public TCanvas
   float mLabelOffset{ 0.05 };
   /// \brief colors associated to each quality state (Good/Medium/Bad/Null)
   std::unordered_map<std::string, int> mColors;
+  int mForegroundColor{ kBlack };      /// ROOT color index for the foreground text
+  int mBackgroundColor{ kWhite };      /// ROOT color index for the canvas backgound
+  std::shared_ptr<TPad> mBackgoundPad; /// TPad used to draw the background color
   /// \brief elements (colored boxes + labels) displayed in the canvas
   std::unordered_map<std::string, std::shared_ptr<BigScreenElement>> mBoxes;
 };
