@@ -455,25 +455,37 @@ FROM (SELECT substring(ccdb_paths.path from '^qc\/\w*\/') as task,
 
 Get the total number of versions and size from QCDB.
 
+This can also be done on the MC machine : http://ali-qcdbmc-gpn.cern.ch:8083/browse/?report=true
+Then the metadata for the run number is 1048595861
+But of course stuff linked to run numbers won't work.
+
 List the detectors and the number of objects for each (in a list of runs produced in BK), replace MO by QO for the number of quality objects
 ```sql
-select substring(path from '^qc_async\/\w*\/MO\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('545367','545345','545312','545311','545289','545262','545249','545246','545223','545222','545210','545185','545184','545171','544991','544968','544963','544947','544917','544896','544886','544868','544813','544794','544742','544693','544583','544582','544551','544549','544518','544491','544476','544474','544454','544391','544389','543873','543872','543818','543734','543733','543732','543536','543515','543469','543467') group by task;
+select substring(path from '^qc_async\/\w*\/MO\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('557926','557876','557862','557744','555259','555254','555232','555226','555208','555202','555187','555172','555160','555156','555124','555121','555071') group by task;
 ```
 
 List the detectors and the number of versions (Qo+MO)
 ```sql
-select substring(path from '^qc_async\/\w*\/') as task, count( path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('545367','545345','545312','545311','545289','545262','545249','545246','545223','545222','545210','545185','545184','545171','544991','544968','544963','544947','544917','544896','544886','544868','544813','544794','544742','544693','544583','544582','544551','544549','544518','544491','544476','544474','544454','544391','544389','543873','543872','543818','543734','543733','543732','543536','543515','543469','543467') group by task;
+select substring(path from '^qc_async\/\w*\/') as task, count( path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('557926','557876','557862','557744','555259','555254','555232','555226','555208','555202','555187','555172','555160','555156','555124','555121','555071') group by task;
 ```
 
 List the tasks and the number of objects for each (in a number of runs)
+--> this gives the number of tasks in general as well (number of rows)
+--> replace MO by QO to see the checks
 ```sql
-select substring(path from '^qc_async\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('545367','545345','545312','545311','545289','545262','545249','545246','545223','545222','545210','545185','545184','545171','544991','544968','544963','544947','544917','544896','544886','544868','544813','544794','544742','544693','544583','544582','544551','544549','544518','544491','544476','544474','544454','544391','544389','543873','543872','543818','543734','543733','543732','543536','543515','543469','543467') group by task;
+select substring(path from '^qc_async\/\w*\/MO\/\w*\/') as task, count(distinct path) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb.metadata -> '1048595860' in  ('557926','557876','557862','557744','555259','555254','555232','555226','555208','555202','555187','555172','555160','555156','555124','555121','555071') group by task;
 ```
 Replace the | with tab in a text editor and paste in Excel to then manipulate it to know the number of tasks per det.
 
 Total number of paths
 ```sql
 select count(distinct ccdb_paths.pathid) from ccdb, ccdb_paths where ccdb_paths.pathid = ccdb.pathid AND ccdb_paths.path like 'qc/%';
+```
+
+Total number of tasks and checks
+```sql
+select distinct(substring(path from '^qc_mc\/\w*\/MO\/\w*\/')) as task from ccdb_paths;
+select distinct(substring(path from '^qc_mc\/\w*\/QO\/\w*\/')) as task from ccdb_paths;
 ```
 
 ### Merge and upload QC results for all subjobs of a grid job
