@@ -18,6 +18,8 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/ObjectMetadataKeys.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "Common/Utils.h"
 #include "MCHRawElecMap/Mapper.h"
 #include <TLine.h>
 #include <TLine.h>
@@ -145,6 +147,29 @@ int getDEindex(int deId)
   }
 
   return idx.first + offset;
+}
+
+//_________________________________________________________________________________________
+
+void getThresholdsPerStation(o2::quality_control::core::CustomParameters customParameters,
+                             const o2::quality_control::core::Activity& activity,
+                             std::string parKey,
+                             std::array<std::optional<double>, 5>& thresholds,
+                             double& defaultThreshold)
+{
+  defaultThreshold = common::getFromExtendedConfig<double>(activity, customParameters, parKey, defaultThreshold);
+
+  for (int stationIndex = 0; stationIndex < 5; stationIndex++) {
+    auto parKeyForStation = parKey + ":ST" + std::to_string(stationIndex + 1);
+    auto parValue = common::getFromExtendedConfig<std::string>(activity, customParameters, parKeyForStation, "");
+    if (!parValue.empty()) {
+      try {
+        thresholds[stationIndex] = std::stod(parValue);
+      } catch (std::exception& exception) {
+        ILOG(Error, Support) << "Cannot convert value for key \"" << parKey << "\" to double, string is " << parValue << ENDM;
+      }
+    }
+  }
 }
 
 //_________________________________________________________________________________________
@@ -378,6 +403,40 @@ void addChamberDelimiters(TH2F* h)
     label->SetTextFont(42);
     label->SetTextAlign(22);
     h->GetListOfFunctions()->Add(label);
+  }
+}
+
+//_________________________________________________________________________________________
+
+void drawThresholdsPerStation(TH1* histogram, const std::array<std::optional<double>, 5>& thresholdsPerStation, double defaultThreshold)
+{
+  double xmin = 0;
+  double xmax = 0;
+  for (int stationIndex = 0; stationIndex < 5; stationIndex++) {
+    // draw threshold line for this station
+    double threshold = defaultThreshold;
+    if (thresholdsPerStation[stationIndex]) {
+      threshold = thresholdsPerStation[stationIndex].value();
+    }
+    xmax = static_cast<double>(getChamberOffset((stationIndex + 1) * 2));
+
+    TLine* l = new TLine(xmin, threshold, xmax, threshold);
+    l->SetLineColor(kBlue);
+    l->SetLineStyle(kDashed);
+    histogram->GetListOfFunctions()->Add(l);
+
+    xmin = xmax;
+  }
+}
+
+//_________________________________________________________________________________________
+
+void addDEBinLabels(TH1* histogram)
+{
+  for (auto de : o2::mch::constants::deIdsForAllMCH) {
+    int bin = getDEindex(de) + 1;
+    auto binLabel = std::string("DE") + std::to_string(de);
+    histogram->GetXaxis()->SetBinLabel(bin, binLabel.c_str());
   }
 }
 

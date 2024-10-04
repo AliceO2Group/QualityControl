@@ -21,6 +21,7 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
 #include <string>
+#include <array>
 
 namespace o2::quality_control::core
 {
@@ -55,16 +56,15 @@ class DigitsCheck : public o2::quality_control::checker::CheckInterface
   std::array<Quality, getNumDE()> checkBadChannelsRatio(TH1F* h);
 
   std::string mMeanRateHistName{ "RatesSignal/LastCycle/MeanRate" };
-  std::string mMeanRateRatioHistName{ "RatesSignal/LastCycle/MeanRateRefRatio" };
   std::string mGoodChanFracHistName{ "RatesSignal/LastCycle/GoodChannelsFraction" };
-  std::string mGoodChanFracRatioHistName{ "RatesSignal/LastCycle/GoodChannelsFractionRefRatio" };
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
   double mMinRate{ 0.001 };
+  std::array<std::optional<double>, 5> mMinRatePerStation;
   double mMaxRate{ 10 };
-  double mMaxRateDelta{ 0.2 };
+  std::array<std::optional<double>, 5> mMaxRatePerStation;
   double mMinGoodFraction{ 0.9 };
-  double mMaxGoodFractionDelta{ 0.2 };
+  std::array<std::optional<double>, 5> mMinGoodFractionPerStation;
   double mRatePlotScaleMin{ 0 };
   double mRatePlotScaleMax{ 10 };
 

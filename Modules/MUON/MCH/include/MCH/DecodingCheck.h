@@ -52,7 +52,9 @@ class DecodingCheck : public o2::quality_control::checker::CheckInterface
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
   double mMinGoodErrorFrac{ 0.9 };
+  std::array<std::optional<double>, 5> mMinGoodErrorFracPerStation;
   double mMinGoodSyncFrac{ 0.9 };
+  std::array<std::optional<double>, 5> mMinGoodSyncFracPerStation;
 
   QualityChecker mQualityChecker;
 
