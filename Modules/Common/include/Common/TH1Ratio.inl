@@ -218,7 +218,11 @@ void TH1Ratio<T>::update()
   }
 
   T::Reset();
-  mHistoNum->GetXaxis()->Copy(*T::GetXaxis());
+  if (mHistoNum->GetXaxis()->IsVariableBinSize()) {
+    T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXbins()->GetArray());
+  } else {
+    T::GetXaxis()->Set(mHistoNum->GetXaxis()->GetNbins(), mHistoNum->GetXaxis()->GetXmin(), mHistoNum->GetXaxis()->GetXmax());
+  }
   T::SetBinsLength();
 
   // Copy bin labels between histograms.
