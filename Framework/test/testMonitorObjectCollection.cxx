@@ -25,7 +25,6 @@
 #include <Mergers/MergerAlgorithm.h>
 
 #include <catch_amalgamated.hpp>
-#include <iostream>
 
 using namespace o2::mergers;
 
@@ -99,42 +98,73 @@ TEST_CASE("monitor_object_collection_merge")
 
 TEST_CASE("monitor_object_collection_merge_different_id")
 {
-
-  auto toHisto = [](std::unique_ptr<MonitorObjectCollection>& collection) -> TH1I* {
+  const auto toHisto = [](std::unique_ptr<MonitorObjectCollection>& collection) -> TH1I* {
     return dynamic_cast<TH1I*>(dynamic_cast<MonitorObject*>(collection->At(0))->getObject());
   };
 
-  const size_t bins = 10;
-  const size_t min = 0;
-  const size_t max = 10;
+  constexpr size_t bins = 10;
+  constexpr size_t min = 0;
+  constexpr size_t max = 10;
 
-  // Setting up the target. Histo 1D
-  auto target = std::make_unique<MonitorObjectCollection>();
+  SECTION("other has higher run number than target")
+  {
+    auto target = std::make_unique<MonitorObjectCollection>();
 
-  auto* targetTH1I = new TH1I("histo 1d", "original", bins, min, max);
-  targetTH1I->Fill(5);
-  targetTH1I->Print();
-  auto* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
-  targetMoTH1I->setActivity({ 123, "PHYSICS", "LHC32x", "apass2", "qc_async", gInvalidValidityInterval });
-  targetMoTH1I->setIsOwner(true);
-  target->Add(targetMoTH1I);
+    auto* targetTH1I = new TH1I("histo 1d", "original", bins, min, max);
+    targetTH1I->Fill(5);
+    auto* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
+    targetMoTH1I->setActivity({ 123, "PHYSICS", "LHC32x", "apass2", "qc_async", { 10, 20 } });
+    targetMoTH1I->setIsOwner(true);
+    target->Add(targetMoTH1I);
 
-  // Setting up the other. Histo 1D + Histo 2D
-  auto other = std::make_unique<MonitorObjectCollection>();
-  other->SetOwner(true);
+    auto other = std::make_unique<MonitorObjectCollection>();
+    other->SetOwner(true);
 
-  auto* otherTH1I = new TH1I("histo 1d", "input", bins, min, max);
-  otherTH1I->Fill(2);
-  auto* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
-  otherMoTH1I->setActivity({ 1234, "PHYSICS", "LHC32x", "apass2", "qc_async", { 43, 60 } });
-  otherMoTH1I->setIsOwner(true);
-  other->Add(otherMoTH1I);
+    auto* otherTH1I = new TH1I("histo 1d", "input", bins, min, max);
+    otherTH1I->Fill(2);
+    auto* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
+    otherMoTH1I->setActivity({ 1234, "PHYSICS", "LHC32x", "apass2", "qc_async", { 43, 60 } });
+    otherMoTH1I->setIsOwner(true);
+    other->Add(otherMoTH1I);
 
-  std::cout << toHisto(target)->GetTitle() << "\n";
-  std::cout << toHisto(other)->GetTitle() << "\n";
-  CHECK_NOTHROW(algorithm::merge(target.get(), other.get()));
-  std::cout << toHisto(target)->GetTitle() << "\n";
-  std::cout << toHisto(other)->GetTitle() << "\n";
+    CHECK_NOTHROW(algorithm::merge(target.get(), other.get()));
+    auto* h1orig = toHisto(target);
+    auto* h1other = toHisto(other);
+    REQUIRE(h1orig->GetAt(3) == 1);
+    for (size_t i = 0; i != h1orig->GetSize(); ++i) {
+      REQUIRE(h1orig->GetAt(i) == h1other->GetAt(i));
+    }
+  }
+
+  SECTION("other has lower run number than target")
+  {
+    auto target = std::make_unique<MonitorObjectCollection>();
+
+    auto* targetTH1I = new TH1I("histo 1d", "original", bins, min, max);
+    targetTH1I->Fill(5);
+    auto* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
+    targetMoTH1I->setActivity({ 1234, "PHYSICS", "LHC32x", "apass2", "qc_async", { 10, 20 } });
+    targetMoTH1I->setIsOwner(true);
+    target->Add(targetMoTH1I);
+
+    auto other = std::make_unique<MonitorObjectCollection>();
+    other->SetOwner(true);
+
+    auto* otherTH1I = new TH1I("histo 1d", "input", bins, min, max);
+    otherTH1I->Fill(2);
+    auto* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
+    otherMoTH1I->setActivity({ 123, "PHYSICS", "LHC32x", "apass2", "qc_async", { 43, 60 } });
+    otherMoTH1I->setIsOwner(true);
+    other->Add(otherMoTH1I);
+
+    CHECK_NOTHROW(algorithm::merge(target.get(), other.get()));
+    auto* h1orig = toHisto(target);
+    auto* h1other = toHisto(other);
+    REQUIRE(h1orig->At(h1orig->FindBin(5)) == 1);
+    REQUIRE(h1other->At(h1other->FindBin(5)) == 0);
+    REQUIRE(h1orig->At(h1orig->FindBin(2)) == 0);
+    REQUIRE(h1other->At(h1other->FindBin(2)) == 1);
+  }
 }
 
 TEST_CASE("monitor_object_collection_post_deserialization")

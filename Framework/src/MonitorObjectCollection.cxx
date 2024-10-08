@@ -33,6 +33,7 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
     throw std::runtime_error("The other object is not a MonitorObjectCollection");
   }
 
+  bool reportedMismatchingRunNumbers = false;
   auto otherIterator = otherCollection->MakeIterator();
   while (auto otherObject = otherIterator->Next()) {
     auto otherObjectName = otherObject->GetName();
@@ -51,10 +52,23 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
                          << otherMO->getActivity().mId << ") "
                          << "is higher than the one of the target object '"
                          << targetMO->GetName() << "' (" << targetMO->getActivity().mId
-                         << "). I am switching these objects, but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
+                         << "). Replacing the merged object with input, "
+                         << "but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
                          << "QC objects from other setups are reaching this one."
                          << ENDM;
         otherMO->Copy(*targetMO);
+        continue;
+      }
+
+      if (!reportedMismatchingRunNumbers && otherMO->getActivity().mId < targetMO->getActivity().mId) {
+        ILOG(Error, Ops) << "The run number of the input object '" << otherMO->GetName() << "' ("
+                         << otherMO->getActivity().mId << ") "
+                         << "does not match the run number of the target object '"
+                         << targetMO->GetName() << "' (" << targetMO->getActivity().mId
+                         << "). Ignoring this object nad trying to continue, but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
+                         << "QC objects from other setups are reaching this one. Will not report more mismatches in this collection."
+                         << ENDM;
+        reportedMismatchingRunNumbers = true;
         continue;
       }
 
