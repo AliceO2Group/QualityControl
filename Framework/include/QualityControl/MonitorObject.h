@@ -146,7 +146,7 @@ class MonitorObject : public TObject
   void releaseObject();
   void cloneAndSetObject(const MonitorObject&);
 
-  ClassDefOverride(MonitorObject, 12);
+  ClassDefOverride(MonitorObject, 13);
 };
 
 } // namespace o2::quality_control::core
