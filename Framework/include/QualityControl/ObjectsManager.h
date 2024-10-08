@@ -101,8 +101,7 @@ class ObjectsManager
    * @param obj
    * @throw ObjectNotFoundError if object is not found.
    */
-  void
-    stopPublishing(TObject* obj);
+  void stopPublishing(TObject* obj);
 
   /**
    * Stop publishing this object
