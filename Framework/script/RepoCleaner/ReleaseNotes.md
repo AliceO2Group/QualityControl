@@ -1,7 +1,10 @@
 # Release notes
 
 New
--
+- 
+
+1.9
+- [QC-1229] - Repocleaner policy for the moving windows
 
 1.8
 - 3 small fixes (https://github.com/AliceO2Group/QualityControl/pull/2308)
