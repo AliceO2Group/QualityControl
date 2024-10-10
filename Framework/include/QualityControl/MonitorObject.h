@@ -48,7 +48,7 @@ class MonitorObject : public TObject
   MonitorObject();
   MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "qc");
   /// Destructor
-  ~MonitorObject() override;
+  virtual ~MonitorObject() override;
 
   // /// Copy constructor
   MonitorObject(const MonitorObject& other);
