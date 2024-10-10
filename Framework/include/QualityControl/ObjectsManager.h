@@ -86,14 +86,17 @@ class ObjectsManager
   template <bool IgnoreMergeable = false, typename T>
   void startPublishing(T obj, PublicationPolicy policy = PublicationPolicy::Forever)
   {
-    // We don't want to do this compile time check in PostProcessing
+    // We don't want to do this compile time check in PostProcessing, and we want to turn off runtime check as well
+    bool ignoreMergeableRuntime = IgnoreMergeable;
 #ifndef QUALITYCONTROL_POSTPROCESSINTERFACE_H
     static_assert(std::same_as<std::remove_pointer_t<T>, TObject> ||
                     IgnoreMergeable || mergers::Mergeable<T>,
                   "you are trying to startPublishing object that is not mergeable."
                   " If you know what you are doing use startPublishing<true>(...)");
+#else
+    ignoreMergeableRuntime = true;
 #endif
-    startPublishingImpl(obj, policy, IgnoreMergeable);
+    startPublishingImpl(obj, policy, ignoreMergeableRuntime);
   }
 
   /**
