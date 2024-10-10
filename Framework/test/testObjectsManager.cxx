@@ -53,12 +53,12 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
   config.consulUrl = "";
   ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
-  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(&s, PublicationPolicy::Forever));
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever));
   BOOST_REQUIRE(objectsManager.getMonitorObject("content") != nullptr);
 
   TObjString s2("content");
-  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(&s2, PublicationPolicy::Forever));
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing<true>(&s2, PublicationPolicy::Forever));
   auto mo2 = objectsManager.getMonitorObject("content");
   BOOST_REQUIRE(mo2 != nullptr);
   BOOST_REQUIRE(mo2->getObject() != &s);
@@ -73,8 +73,8 @@ BOOST_AUTO_TEST_CASE(is_being_published_test)
   ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
   BOOST_CHECK(!objectsManager.isBeingPublished("content"));
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
-  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(&s, PublicationPolicy::Forever));
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever));
   BOOST_CHECK(objectsManager.isBeingPublished("content"));
 }
 
@@ -84,11 +84,11 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
   config.taskName = "test";
   ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
   objectsManager.stopPublishing(&s);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
   objectsManager.stopPublishing("content");
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
   BOOST_CHECK_THROW(objectsManager.stopPublishing("asdf"), ObjectNotFoundError);
 
   // unpublish all
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
   objectsManager.stopPublishingAll();
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
 
   // unpublish after deletion
   auto s2 = new TObjString("content");
-  objectsManager.startPublishing(s2, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(s2, PublicationPolicy::Forever);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
   delete s2;
   objectsManager.stopPublishing(s2);
@@ -112,18 +112,18 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
 
   // unpublish for publication policy
   auto s3 = new TObjString("content3");
-  objectsManager.startPublishing(s3, PublicationPolicy::Once);
+  objectsManager.startPublishing<true>(s3, PublicationPolicy::Once);
   auto s4 = new TObjString("content4");
-  objectsManager.startPublishing(s4, PublicationPolicy::Once);
+  objectsManager.startPublishing<true>(s4, PublicationPolicy::Once);
   auto s5 = new TObjString("content5");
-  objectsManager.startPublishing(s5, PublicationPolicy::ThroughStop);
+  objectsManager.startPublishing<true>(s5, PublicationPolicy::ThroughStop);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 3);
   objectsManager.stopPublishing(PublicationPolicy::Once);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
   objectsManager.stopPublishing(PublicationPolicy::ThroughStop);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
 
-  objectsManager.startPublishing(s3, PublicationPolicy::Once);
+  objectsManager.startPublishing<true>(s3, PublicationPolicy::Once);
   objectsManager.stopPublishing(s3);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
   BOOST_CHECK_NO_THROW(objectsManager.stopPublishing(PublicationPolicy::Once));
@@ -145,8 +145,8 @@ BOOST_AUTO_TEST_CASE(getters_test)
   TObjString s("content");
   TH1F h("histo", "h", 100, 0, 99);
 
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
-  objectsManager.startPublishing(&h, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&h, PublicationPolicy::Forever);
 
   // basic gets
   BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("content"));
@@ -174,8 +174,8 @@ BOOST_AUTO_TEST_CASE(metadata_test)
 
   TObjString s("content");
   TH1F h("histo", "h", 100, 0, 99);
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
-  objectsManager.startPublishing(&h, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&h, PublicationPolicy::Forever);
 
   objectsManager.addMetadata("content", "aaa", "bbb");
   BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("content")->getMetadataMap().at("aaa"), "bbb");
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(feed_with_nullptr)
   config.consulUrl = "";
   ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
 
-  BOOST_CHECK_NO_THROW(objectsManager.startPublishing(nullptr, PublicationPolicy::Forever));
+  BOOST_CHECK_NO_THROW(objectsManager.startPublishing<true>(nullptr, PublicationPolicy::Forever));
   BOOST_CHECK_NO_THROW(objectsManager.setDefaultDrawOptions(nullptr, ""));
   BOOST_CHECK_NO_THROW(objectsManager.setDisplayHint(nullptr, ""));
   BOOST_CHECK_NO_THROW(objectsManager.stopPublishing(nullptr));
