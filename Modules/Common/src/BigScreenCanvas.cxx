@@ -26,7 +26,8 @@ namespace o2::quality_control_modules::common
 {
 
 struct BigScreenElement {
-  BigScreenElement(std::string name, int index, float padding, float labelOffset, int borderWidth)
+  BigScreenElement(std::string name, int index, float padding, float labelOffset, int borderWidth,
+                   int foregroundColor)
     : mLabel(padding, 1.0 - padding, name.c_str()),
       mPave(padding, padding, 1.0 - padding, 1.0 - padding - labelOffset, "NB NDC"),
       mBox(padding, padding, 1.0 - padding, 1.0 - padding - labelOffset),
@@ -36,6 +37,7 @@ struct BigScreenElement {
     mLabel.SetTextAlign(11);
     mLabel.SetTextSize(0.2);
     mLabel.SetTextFont(42);
+    mLabel.SetTextColor(foregroundColor);
 
     mPave.SetBorderSize(0);
     mPave.SetFillColor(kWhite);
@@ -45,9 +47,9 @@ struct BigScreenElement {
     mBox.SetFillStyle(0);
   }
 
-  void DrawInCanvas(TCanvas& c)
+  void DrawInCanvas(TPad* c)
   {
-    c.cd(mPadIndex);
+    c->cd(mPadIndex);
     mPave.Draw();
     mBox.Draw();
     mLabel.Draw();
@@ -59,18 +61,27 @@ struct BigScreenElement {
   int mPadIndex;
 };
 
-BigScreenCanvas::BigScreenCanvas(std::string name, std::string title, int nRows, int nCols, int borderWidth)
-  : TCanvas(name.c_str(), title.c_str(), 800, 600), mNRows(nRows), mNCols(nCols), mBorderWidth(borderWidth)
+BigScreenCanvas::BigScreenCanvas(std::string name, std::string title, int nRows, int nCols, int borderWidth,
+                                 int foregroundColor, int backgroundColor)
+  : TCanvas(name.c_str(), title.c_str(), 800, 600), mNRows(nRows), mNCols(nCols), mBorderWidth(borderWidth), mForegroundColor(foregroundColor), mBackgroundColor(backgroundColor)
 {
   mColors[Quality::Null.getName()] = kViolet - 6;
   mColors[Quality::Bad.getName()] = kRed;
   mColors[Quality::Medium.getName()] = kOrange - 3;
   mColors[Quality::Good.getName()] = kGreen + 2;
+
+  // TPad filling the whole canvas and used to draw the background color
+  mBackgoundPad = std::make_shared<TPad>((name + "_pad").c_str(), (title + "_pad").c_str(), 0, 0, 1, 1);
+  mBackgoundPad->SetBorderSize(0);
+  mBackgoundPad->SetBorderMode(0);
+  mBackgoundPad->SetMargin(0, 0, 0, 0);
+  mBackgoundPad->SetFillColor(mBackgroundColor);
+  mBackgoundPad->Draw();
 }
 
 void BigScreenCanvas::addBox(std::string boxName, int index)
 {
-  mBoxes[boxName] = std::make_shared<BigScreenElement>(boxName, index, mPadding, mLabelOffset, mBorderWidth);
+  mBoxes[boxName] = std::make_shared<BigScreenElement>(boxName, index, mPadding, mLabelOffset, mBorderWidth, mForegroundColor);
 }
 
 void BigScreenCanvas::setText(std::string boxName, int color, std::string text)
@@ -95,11 +106,17 @@ void BigScreenCanvas::setQuality(std::string boxName, Quality quality)
 
 void BigScreenCanvas::update()
 {
-  Clear();
-  Divide(mNCols, mNRows);
+  mBackgoundPad->Clear();
+  mBackgoundPad->Divide(mNCols, mNRows, 0, 0);
+
+  // set the sub-pads as fully transparent to show the color of the main backgound pad
+  for (int padIndex = 1; padIndex <= (mNCols * mNRows); padIndex++) {
+    mBackgoundPad->cd(padIndex);
+    gPad->SetFillStyle(4000);
+  }
 
   for (auto& [key, box] : mBoxes) {
-    box->DrawInCanvas(*this);
+    box->DrawInCanvas(mBackgoundPad.get());
   }
 }
 

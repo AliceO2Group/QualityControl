@@ -890,6 +890,8 @@ The system names are displayed above each box, while the quality flag is display
 
 In addition, the boxes are filled with a grey color is the corresponding QualityObjects cannot be retrieved or are too old.
 
+The color of the canvas background and of the detector labels can be customized with the `"foregroundColor"` and `"backgroundColor"` parameters. They accept interger values corresponding to the indexes of the [default ROOT colors](https://root.cern.ch/doc/master/classTColor.html#C01) or the indexes defined in the [color wheel](https://root.cern.ch/doc/master/classTColor.html#C02). The example below shows a color combination with white text over a dark gray background.
+
 The task is configured as follows:
 ```json
 {
@@ -909,6 +911,9 @@ The task is configured as follows:
               "nRows": "4",
               "nCols": "5",
               "borderWidth": "1",
+              "": "white text over dark gray background",
+              "foregroundColor": "0",
+              "backgroundColor": "923",
               "maxObjectTimeShift": "10000",
               "ignoreActivity": "0",
               "labels": "CPV,EMC,FDD,FT0,FV0,HMP,ITS,MCH,MFT,MID,PHS,TPC,TOF,TRD,,TRK,MTK,VTX,PID"
