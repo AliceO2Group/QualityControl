@@ -24,7 +24,7 @@ target_link_libraries(O2QualityControlTypes
   PUBLIC
   AliceO2::BookkeepingApi
   AliceO2::Common
-  # AliceO2::InfoLogger
+  AliceO2::InfoLogger
   O2::DataFormatsQualityControl
   ROOT::Hist
 

@@ -17,7 +17,7 @@
 #include "QualityControl/MonitorObject.h"
 #include <TObject.h>
 #include "QualityControl/RepoPathUtils.h"
-// #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <iostream>
 
@@ -90,14 +90,14 @@ void MonitorObject::Draw(Option_t* option)
   if (mObject) {
     mObject->Draw(option);
   } else {
-    // ILOG(Error, Devel) << "MonitorObject::Draw() : You are trying to draw MonitorObject with no internal TObject" << ENDM;
+    ILOG(Error, Devel) << "MonitorObject::Draw() : You are trying to draw MonitorObject with no internal TObject" << ENDM;
   }
 }
 
 TObject* MonitorObject::DrawClone(Option_t* option) const
 {
   if (!mObject) {
-    // ILOG(Error, Devel) << "MonitorObject::DrawClone() : You are trying to draw MonitorObject with no internal TObject" << ENDM;
+    ILOG(Error, Devel) << "MonitorObject::DrawClone() : You are trying to draw MonitorObject with no internal TObject" << ENDM;
     return nullptr;
   }
 
@@ -115,7 +115,7 @@ const std::string MonitorObject::getName() const
 const char* MonitorObject::GetName() const
 {
   if (!mObject) {
-    // ILOG(Error, Ops) << "MonitorObject::getName() : No object in this MonitorObject, returning empty string" << ENDM;
+    ILOG(Error, Ops) << "MonitorObject::getName() : No object in this MonitorObject, returning empty string" << ENDM;
     return "";
   }
   return mObject->GetName();
