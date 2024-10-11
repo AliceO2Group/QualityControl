@@ -19,6 +19,7 @@
 
 #include <catch_amalgamated.hpp>
 #include <chrono>
+#include <TH1.h>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TSystem.h>
@@ -65,6 +66,207 @@ TEST_CASE("mo_save")
   ILOG(Info, Support) << "name : " << mo->GetName() << ENDM;
   ILOG(Info, Support) << "name : " << mo->getName() << ENDM;
   gSystem->Unlink(filename.data());
+}
+
+TEST_CASE("mo_clone")
+{
+  auto th1 = std::make_unique<TNamed>("name", "title");
+  TObject* obj = th1.get();
+  auto* cloned = obj->Clone();
+  auto* secondCloned = cloned->Clone();
+  delete cloned;
+  delete secondCloned;
+}
+
+TEST_CASE("mo_copy")
+{
+  auto compareWithoutObject = [](const MonitorObject& lhs, const MonitorObject& rhs) {
+    REQUIRE(lhs.getName() == rhs.getName());
+    REQUIRE(lhs.getTaskName() == rhs.getTaskName());
+    REQUIRE(lhs.getDetectorName() == rhs.getDetectorName());
+    REQUIRE(lhs.getTaskClass() == rhs.getTaskClass());
+    REQUIRE(lhs.isIsOwner() == rhs.isIsOwner());
+    REQUIRE(lhs.getActivity() == rhs.getActivity());
+    REQUIRE(lhs.getCreateMovingWindow() == rhs.getCreateMovingWindow());
+    REQUIRE(lhs.getDescription() == rhs.getDescription());
+    REQUIRE(lhs.getMetadataMap() == rhs.getMetadataMap());
+  };
+
+  SECTION("Empty orignal MO")
+  {
+    MonitorObject original{};
+
+    SECTION("copy of non owning object returns same pointer")
+    {
+      auto compareShallowNonOwning = [&compareWithoutObject](const MonitorObject& lhs, const MonitorObject& rhs) {
+        compareWithoutObject(lhs, rhs);
+        // we expect shallow rhs when lhs does not own the underlying object
+        REQUIRE(lhs.getObject() == nullptr);
+        REQUIRE(rhs.getObject() == nullptr);
+      };
+
+      SECTION("copy constructor")
+      {
+        MonitorObject copy{ original };
+        compareShallowNonOwning(original, copy);
+      }
+
+      SECTION("copy assignment operator")
+      {
+        MonitorObject copy{};
+        copy = original;
+        compareShallowNonOwning(original, copy);
+      }
+
+      SECTION("Copy method")
+      {
+        MonitorObject copy{};
+        original.Copy(copy);
+        compareShallowNonOwning(original, copy);
+      }
+    }
+
+    SECTION("copy of object owned by MO returns deep copy, non nullptr init")
+    {
+      auto compareTNamed = [](const MonitorObject& lhs, const MonitorObject& rhs) {
+        REQUIRE(lhs.getObject() == nullptr);
+        REQUIRE(rhs.getObject() == nullptr);
+      };
+
+      SECTION("copy owning object before")
+      {
+        MonitorObject copy{};
+        copy.setObject(new TNamed("copy named", "title copy"));
+        copy.setIsOwner(true);
+
+        SECTION("copy assignment operator")
+        {
+          copy = original;
+          compareTNamed(original, copy);
+        }
+
+        SECTION("Copy method")
+        {
+          original.Copy(copy);
+          compareTNamed(original, copy);
+        }
+      }
+    }
+  }
+
+  SECTION("original MO with data")
+  {
+
+    MonitorObject original{};
+
+    original.setTaskName("taskName");
+    original.setTaskClass("taskClass");
+    original.setDescription("description");
+    original.setDetectorName("TST");
+    original.setActivity({ 123, "type", "periodName", "passName", "provenance", gFullValidityInterval, "beamType", "partitionName", 2 });
+    original.setCreateMovingWindow(true);
+
+    SECTION("copy of non owning object returns same pointer")
+    {
+      auto compareShallowNonOwning = [&compareWithoutObject](const MonitorObject& lhs, const MonitorObject& rhs) {
+        compareWithoutObject(lhs, rhs);
+        // we expect shallow rhs when lhs does not own the underlying object
+        REQUIRE((lhs.getObject() != nullptr && lhs.getObject() == rhs.getObject()));
+      };
+
+      auto th1 = TH1I("name", "title", 10, 0, 10);
+      th1.Fill(8);
+      original.setObject(&th1);
+      original.setIsOwner(false);
+
+      SECTION("copy constructor")
+      {
+        MonitorObject copy{ original };
+        compareShallowNonOwning(original, copy);
+      }
+
+      SECTION("copy assignment operator")
+      {
+        MonitorObject copy{};
+        copy = original;
+        compareShallowNonOwning(original, copy);
+      }
+
+      SECTION("Copy method")
+      {
+        MonitorObject copy{};
+        original.Copy(copy);
+        compareShallowNonOwning(original, copy);
+      }
+    }
+
+    SECTION("copy of object owned by MO returns deep copy, init from nullptr")
+    {
+      auto compareTNamed = [](const MonitorObject& lhs, const MonitorObject& rhs) {
+        auto* namedoriginal = static_cast<TNamed*>(lhs.getObject());
+        auto* namedcopy = static_cast<TNamed*>(rhs.getObject());
+        REQUIRE(std::string(namedoriginal->GetName()) == std::string(namedcopy->GetName()));
+        REQUIRE(std::string(namedoriginal->GetTitle()) == std::string(namedcopy->GetTitle()));
+      };
+
+      auto* named = new TNamed("named", "title");
+      original.setObject(named);
+      original.setIsOwner(true);
+
+      SECTION("copy constructor")
+      {
+        MonitorObject copy{ original };
+        compareTNamed(original, copy);
+      }
+
+      SECTION("copy assignment operator")
+      {
+        MonitorObject copy{};
+        copy = original;
+        compareTNamed(original, copy);
+      }
+
+      SECTION("Copy method")
+      {
+        MonitorObject copy{};
+        original.Copy(copy);
+        compareTNamed(original, copy);
+      }
+    }
+
+    SECTION("copy of object owned by MO returns deep copy, non nullptr init")
+    {
+      auto compareTNamed = [](const MonitorObject& lhs, const MonitorObject& rhs) {
+        auto* namedoriginal = static_cast<TNamed*>(lhs.getObject());
+        auto* namedcopy = static_cast<TNamed*>(rhs.getObject());
+        REQUIRE(std::string(namedoriginal->GetName()) == std::string(namedcopy->GetName()));
+        REQUIRE(std::string(namedoriginal->GetTitle()) == std::string(namedcopy->GetTitle()));
+      };
+
+      auto* named = new TNamed("named", "title");
+      original.setObject(named);
+      original.setIsOwner(true);
+
+      SECTION("copy owning object before")
+      {
+        MonitorObject copy{};
+        copy.setObject(new TNamed("copy named", "title copy"));
+        copy.setIsOwner(true);
+
+        SECTION("copy assignment operator")
+        {
+          copy = original;
+          compareTNamed(original, copy);
+        }
+
+        SECTION("Copy method")
+        {
+          original.Copy(copy);
+          compareTNamed(original, copy);
+        }
+      }
+    }
+  }
 }
 
 TEST_CASE("metadata")
