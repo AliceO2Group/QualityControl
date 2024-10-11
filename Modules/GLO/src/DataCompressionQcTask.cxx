@@ -70,8 +70,8 @@ void DataCompressionQcTask::initialize(o2::framework::InitContext&)
     mEntropyCompressionCanvas->DivideSquare(mCompressionHists.size());
     mCompressionCanvas->DivideSquare(mCompressionHists.size());
 
-    getObjectsManager()->startPublishing(mEntropyCompressionCanvas.get());
-    getObjectsManager()->startPublishing(mCompressionCanvas.get());
+    getObjectsManager()->startPublishing<true>(mEntropyCompressionCanvas.get());
+    getObjectsManager()->startPublishing<true>(mCompressionCanvas.get());
   }
 }
 
