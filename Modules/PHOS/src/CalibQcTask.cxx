@@ -263,7 +263,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (mMode == 0) { // Bad map
     if (hasCalibDiff) {
       auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
-      char relid[3];
+      int8_t relid[3];
       for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
         o2::phos::Geometry::absToRelNumbering(absId, relid);
         mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
@@ -272,7 +272,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   } else if (mMode == 1) { // Pedestal
     if (hasCalibDiff) {
       auto diff = ctx.inputs().get<gsl::span<short>>("calibdiff");
-      char relid[3];
+      int8_t relid[3];
       for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
         o2::phos::Geometry::absToRelNumbering(absId, relid);
         mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
@@ -281,7 +281,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     if (hasPedestals) {
       auto peds = o2::framework::DataRefUtils::as<o2::framework::CCDBSerialized<o2::phos::Pedestals>>(ctx.inputs().get<o2::framework::DataRef>("peds"));
-      char relid[3];
+      int8_t relid[3];
       for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
         o2::phos::Geometry::absToRelNumbering(absId, relid);
         mHist2D[kValueHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], peds->getHGPedestal(absId));
@@ -293,7 +293,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   } else if (mMode == 2) { // LED
     if (hasCalibDiff) {
       auto diff = ctx.inputs().get<gsl::span<float>>("calibdiff");
-      char relid[3];
+      int8_t relid[3];
       for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
         o2::phos::Geometry::absToRelNumbering(absId, relid);
         mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
@@ -301,7 +301,7 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     if (hasCalibPars) {
       auto calibParams = o2::framework::DataRefUtils::as<o2::framework::CCDBSerialized<o2::phos::CalibParams>>(ctx.inputs().get<o2::framework::DataRef>("calibpars"));
-      char relid[3];
+      int8_t relid[3];
       for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
         o2::phos::Geometry::absToRelNumbering(absId, relid);
         mHist2D[kValueHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], calibParams->getHGLGRatio(absId));
