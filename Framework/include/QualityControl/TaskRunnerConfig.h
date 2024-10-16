@@ -66,6 +66,7 @@ struct TaskRunnerConfig {
   std::shared_ptr<o2::globaltracking::DataRequest> globalTrackingDataRequest;
   std::vector<std::string> movingWindows;
   bool disableLastCycle = false;
+  std::unordered_map<std::string, std::string> database;
 };
 
 } // namespace o2::quality_control::core

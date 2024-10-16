@@ -43,6 +43,7 @@ struct AggregatorConfig {
   framework::OutputSpec qoSpec{ "XXX", "INVALID" };
   std::vector<AggregatorSource> sources;
   std::string conditionUrl{};
+  std::unordered_map<std::string, std::string> database;
 };
 
 } // namespace o2::quality_control::checker

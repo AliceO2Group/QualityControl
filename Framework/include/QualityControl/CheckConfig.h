@@ -41,6 +41,7 @@ struct CheckConfig {
   framework::Inputs inputSpecs{};
   framework::OutputSpec qoSpec{ "XXX", "INVALID" };
   std::string conditionUrl{};
+  std::unordered_map<std::string, std::string> database;
 };
 
 } // namespace o2::quality_control::checker

@@ -51,6 +51,7 @@ struct PostProcessingConfig {
   bool matchAnyRunNumber = false;
   bool critical;
   core::CustomParameters customParameters;
+  std::unordered_map<std::string, std::string> database;
 };
 
 } // namespace o2::quality_control::postprocessing

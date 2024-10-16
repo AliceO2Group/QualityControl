@@ -62,7 +62,7 @@ using namespace o2::configuration;
  * It is expected to terminate as soon as all task publish for the first time.
  */
 
-class Receiver : public framework::Task
+class Receiver : public o2::framework::Task
 {
  public:
   Receiver(std::string configurationSource)
@@ -78,7 +78,7 @@ class Receiver : public framework::Task
   ~Receiver() override{};
 
   /// \brief Receiver process callback
-  void run(framework::ProcessingContext& pctx) override
+  void run(o2::framework::ProcessingContext& pctx) override
   {
     std::vector<std::string> namesToErase;
 
