@@ -509,15 +509,15 @@ std::string CheckOfSlices::createMetaData(const std::vector<std::string>& pointM
   std::string expectedValueString = "";
   std::string rangeString = "";
 
-  for (int i; i < pointMetaData.size(); i++) {
+  for (int i = 0; i < pointMetaData.size(); i++) {
     if (pointMetaData.at(i).find("MeanCheck") != std::string::npos) {
-      meanString += " " + std::to_string(i + 1) + ",";
+      meanString += " " + std::to_string(i) + ",";
     }
     if (pointMetaData.at(i).find("ExpectedValueCheck") != std::string::npos) {
-      expectedValueString += " " + std::to_string(i + 1) + ",";
+      expectedValueString += " " + std::to_string(i) + ",";
     }
     if (pointMetaData.at(i).find("RangeCheck") != std::string::npos) {
-      rangeString += " " + std::to_string(i + 1) + ",";
+      rangeString += " " + std::to_string(i) + ",";
     }
   }
 
