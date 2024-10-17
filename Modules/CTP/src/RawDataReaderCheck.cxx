@@ -40,30 +40,30 @@ void RawDataReaderCheck::configure()
   // reading the parameters from the config.json
   // if not available, setting a default value
   // the threshold values are nSigma
-  std::string param = mCustomParameters.atOrDefaultValue("thresholdRateBad", "3");
+  std::string param = mCustomParameters["thresholdRateBad"];
   mThresholdRateBad = std::stof(param);
   if (mThresholdRateBad > 4 || mThresholdRateBad < 0) {
     mThresholdRateBad = 3;
   }
 
-  param = mCustomParameters.atOrDefaultValue("thresholdRateMedium", "2");
+  param = mCustomParameters["thresholdRateMedium"];
   mThresholdRateMedium = std::stof(param);
   if (mThresholdRateMedium > 4 || mThresholdRateMedium < 0) {
     mThresholdRateMedium = 2;
   }
 
-  param = mCustomParameters.atOrDefaultValue("thresholdRateRatioBad", "3");
+  param = mCustomParameters["thresholdRateRatioBad"];
   mThresholdRateRatioBad = std::stof(param);
   if (mThresholdRateRatioBad > 4 || mThresholdRateRatioBad < 0) {
     mThresholdRateRatioBad = 3;
   }
-  param = mCustomParameters.atOrDefaultValue("thresholdRateRatioMedium", "2");
+  param = mCustomParameters["thresholdRateRatioMedium"];
   mThresholdRateRatioMedium = std::stof(param);
   if (mThresholdRateRatioMedium > 4 || mThresholdRateRatioMedium < 0) {
     mThresholdRateRatioMedium = 2;
   }
 
-  param = mCustomParameters.atOrDefaultValue("nSigmaBC", "2");
+  param = mCustomParameters["nSigmaBC"];
   mNSigBC = std::stof(param);
   if (mNSigBC < 0) {
     mNSigBC = 2;
