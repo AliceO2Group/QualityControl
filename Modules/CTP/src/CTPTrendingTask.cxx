@@ -24,6 +24,10 @@
 #include <CCDB/BasicCCDBManager.h>
 #include <DataFormatsCTP/Configuration.h>
 // #include "DataFormatsCTP/RunManager.h"
+#include "Common/Utils.h"
+#include <CommonUtils/StringUtils.h>
+
+using namespace o2::quality_control_modules::common;
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -74,63 +78,53 @@ void CTPTrendingTask::initCTP(Trigger& t)
     mCTPconfigFound = true;
   }
 
-  try {
-    mClassNames[0] = std::stof(mCustomParameters.at("minBias1Class", "default"));
-  } catch (const std::exception& e) {
+  mClassNames[0] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias1Class", "CMTVX-B-NOPF");
+  if (mClassNames[0] == "") {
     mClassNames[0] = mClassNamesDefault[0];
   }
 
-  try {
-    mClassNames[1] = std::stof(mCustomParameters.at("minBias2Class", "default"));
-  } catch (const std::exception& e) {
+  mClassNames[1] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias2Class", "CMVBA-B-NOPF");
+  if (mClassNames[1] == "") {
     mClassNames[1] = mClassNamesDefault[1];
   }
 
-  try {
-    mClassNames[2] = std::stof(mCustomParameters.at("minBisDMCclass", "default"));
-  } catch (const std::exception& e) {
+  mClassNames[2] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBisDMCclass", "CTVXDMC-B-NOPF-EMC");
+  if (mClassNames[2] == "") {
     mClassNames[2] = mClassNamesDefault[2];
   }
 
-  try {
-    mClassNames[3] = std::stof(mCustomParameters.at("minBiasEMCclass", "default"));
-  } catch (const std::exception& e) {
+  mClassNames[3] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasEMCclass", "CTVXEMC-B-NOPF-EMC");
+  if (mClassNames[3] == "") {
     mClassNames[3] = mClassNamesDefault[3];
   }
 
-  try {
-    mClassNames[4] = std::stof(mCustomParameters.at("minBiasPHOclass", "default"));
-  } catch (const std::exception& e) {
+  mClassNames[4] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasPHOclass", "CTVXPH0-B-NOPF-PHSCPV");
+  if (mClassNames[4] == "") {
     mClassNames[4] = mClassNamesDefault[4];
   }
 
-  try {
-    mInputNames[0] = std::stof(mCustomParameters.at("minBias1Input", "default"));
-  } catch (const std::exception& e) {
+  mInputNames[0] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias1Input", "MTVX");
+  if (mInputNames[0] == "") {
     mInputNames[0] = mInputNamesDefault[0];
   }
 
-  try {
-    mInputNames[1] = std::stof(mCustomParameters.at("minBias2Input", "default"));
-  } catch (const std::exception& e) {
+  mInputNames[1] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias2Input", "MVBA");
+  if (mInputNames[1] == "") {
     mInputNames[1] = mInputNamesDefault[1];
   }
 
-  try {
-    mInputNames[2] = std::stof(mCustomParameters.at("minBisDMCInput", "default"));
-  } catch (const std::exception& e) {
+  mInputNames[2] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBisDMCInput", "0DMC");
+  if (mInputNames[2] == "") {
     mInputNames[2] = mInputNamesDefault[2];
   }
 
-  try {
-    mInputNames[3] = std::stof(mCustomParameters.at("minBiasEMCInput", "default"));
-  } catch (const std::exception& e) {
+  mInputNames[3] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasEMCInput", "0EMC");
+  if (mInputNames[3] == "") {
     mInputNames[3] = mInputNamesDefault[3];
   }
 
-  try {
-    mInputNames[4] = std::stof(mCustomParameters.at("minBiasPHOInput", "default"));
-  } catch (const std::exception& e) {
+  mInputNames[4] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasPHOInput", "0PH0");
+  if (mInputNames[4] == "") {
     mInputNames[4] = mInputNamesDefault[4];
   }
 
