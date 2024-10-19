@@ -149,8 +149,8 @@ static std::optional<std::pair<double, double>> getGraphStatistics(TGraph* graph
   // index of the starting point for the mean and stadrad deviation computation
   int pointIndexMin = (nPointsForAverage > 0 && pointIndexMax >= nPointsForAverage) ? pointIndexMax - nPointsForAverage + 1 : 0;
   // number of points used for the computation, must be greater than one
-  int N = pointIndexMax - pointIndexMin + 1;
-  if (N < 2) {
+  int nPointsForStats = pointIndexMax - pointIndexMin + 1;
+  if (nPointsForStats < 2) {
     return result;
   }
 
@@ -159,7 +159,7 @@ static std::optional<std::pair<double, double>> getGraphStatistics(TGraph* graph
   for (int pointIndex = pointIndexMin; pointIndex <= pointIndexMax; pointIndex++) {
     mean += graph->GetPointY(pointIndex);
   }
-  mean /= N;
+  mean /= nPointsForStats;
 
   // compute the standard deviation of the points
   double stdDev = 0;
@@ -167,7 +167,7 @@ static std::optional<std::pair<double, double>> getGraphStatistics(TGraph* graph
     double delta = graph->GetPointY(pointIndex) - mean;
     stdDev += delta * delta;
   }
-  stdDev /= (N - 1) * N;
+  stdDev /= (nPointsForStats - 1) * nPointsForStats;
   stdDev = std::sqrt(stdDev);
 
   result = std::make_pair(mean, stdDev);
