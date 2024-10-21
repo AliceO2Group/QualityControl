@@ -1723,6 +1723,145 @@ The number of cycles during which we tolerate increasing (or not respectively) t
 ```
 In the example above, the quality goes to bad when there are 3 cycles in a row with no increase in the number of entries. 
 
+## Common check `TrendCheck`
+
+This check compares the last point of a trending plot with some minimum and maximum thresholds. 
+
+The thresholds can be defined in different ways, controlled by the `trendCheckMode` parameter:
+
+* `"trendCheckMode": "ExpectedRange"` ==> fixed threshold values: the thresholds represent the minimum and maximum allowed values for the last point
+* `"trendCheckMode": "DeviationFromMean"` ==> the thresholds represent the relative variation with respect to the mean of the N points preceding the last one (which is checked)
+For example:
+
+```
+    "thresholdsBad": "-0.1,0.2",
+```
+
+means that the last point should not be lower than `(mean - 0.1 * |mean|)` and not higher than `(mean + 0.2 * |mean|)`.
+* `"trendCheckMode": "StdDeviation"` ==> the thresholds represent the relative variation with respect to the total error of the N points preceding the last one (which is checked)
+For example:
+
+```
+    "thresholdsBad": "-1,2",
+```
+
+means that the last point should not be lower than `(mean - 1 * TotError)` and not higher than `(mean + 2 * TotError)`.
+The total error takes into account the standard deviation of the N points before the current one, as well as the error associated to the current point.
+
+
+In general, the threshold values are configured separately for the Bad and Medium qualities, like this:
+
+```
+    "thresholdsBad": "min,max",
+    "thresholdsMedium": "min,max",
+```
+
+It is also possible to customize the threshold values for specific plots:
+
+```
+    "thresholdsBad:PlotName": "min,max",
+    "thresholdsMedium:PlotName": "min,max",
+```
+Here `PlotName` represents the name of the plot, stripped from all the QCDB path.
+
+The position and size of the text label that shows the check result can also be customized in the configuration:
+
+```
+    "qualityLabelPosition": "0.5,0.8",
+    "qualityLabelSize": "0.5,0.1"
+```
+The values are relative to the canvas size, so in the example above the label width is 50% of the canvas width and the label height is 10% of the canvas height.
+
+
+#### Full configuration example
+
+```json
+      "MyTrendingCheckFixed": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::TrendCheck",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+                "trendCheckMode": "ExpectedRange",
+                "nPointsForAverage": "3",
+                "": "default threshold values not specifying the plot name",
+                "thresholdsMedium": "3000,7000",
+                "thresholdsBad": "2000,8000"
+                "": "thresholds  specific to one plot",
+                "thresholdsBad:mean_of_histogram_2": "1000,9000",
+                "": "customize the position and size of the text label showing the quality"
+                "qualityLabelPosition": "0.5,0.8",
+                "qualityLabelSize": "0.5,0.1"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "MyTrendingTask",
+            "MOs" : [
+              "mean_of_histogram_1", "mean_of_histogram_2"
+            ]
+          }
+        ]
+      },
+      "MyTrendingCheckMean": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::TrendCheck",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+                "trendCheckMode": "DeviationFromMean",
+                "nPointsForAverage": "3",  
+                "thresholdsBad": "-0.2,0.5",      "": "from -20% to +50%",
+                "thresholdsMedium": "-0.1,0.25"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "MyTrendingTask",
+            "MOs" : [
+              "mean_of_histogram_3"
+            ]
+          }
+        ]
+      },
+      "MyTrendingCheckStdDev": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::TrendCheck",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+                "trendCheckMode": "StdDeviation",
+                "nPointsForAverage": "5",  
+                "thresholdsBad:mean_of_histogram_3": "-2,5",      "": "from -2sigma to +5sigma",
+                "thresholdsMedium:mean_of_histogram_3": "-1,2.5"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "MyTrendingTask",
+            "MOs" : [
+              "mean_of_histogram_4"
+            ]
+          }
+        ]
+      }
+```
+
 ## Update the shmem segment size of a detector
 
 In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
