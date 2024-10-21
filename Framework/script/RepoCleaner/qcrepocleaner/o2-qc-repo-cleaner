@@ -101,6 +101,8 @@ def parseArgs():
                         help='Number of parallel workers.')
     parser.add_argument('--only-path-no-subdir', action='store_true', default=False, help='Set to true if the '
                           'only-path points to an object rather than a folder or if subdirectories must be ignored.')
+    parser.add_argument('--ignore-last-execution', dest='ignore_last_execution', action='store_true', default=False,
+                        help='Do not check when was the last execution, run from timestamp 0.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -183,7 +185,7 @@ def downloadConfigFromConsul(consul_url: str, consul_port: str, file_name: str):
     logging.debug(f"config file from consul : \n{data['Value']}")
     text = data["Value"].decode()
     logging.debug(f"config file from consul : \n{text}")
-    path = "/tmp/repoCleanerConfig.yaml"
+    path = "/tmp/" + file_name
     with open(path, 'w') as f:
         f.write(text)
     logging.info(f"Config path : {path}")
@@ -214,12 +216,16 @@ filepath = tempfile.gettempdir() + "/repoCleaner.txt"
 currentTimeStamp = int(time.time() * 1000)
 
 
-def getTimestampLastExecution():
+def getTimestampLastExecution(ignore_last_execution: bool):
     """
     Returns the timestamp of the last execution.
     It is stored in a file in $TMP/repoCleaner.txt.
     :return: the timestampe of the last execution or 0 if it cannot find it.
     """
+    if ignore_last_execution:
+        logging.info(f"Option ignore_last_execution set, we return 0 as timestamp.")
+        return 0
+
     try:
         f = open(filepath, "r")
     except IOError as e:
@@ -371,7 +377,7 @@ def run(args, ccdb_url, rules):
     ccdb.logger = logging.getLogger
     ccdb.set_adjustable_eov = args.set_adjustableEOV
     logging.info(f"ccdb.set_adjustable_eov: {ccdb.set_adjustable_eov}")
-    paths = ccdb.getObjectsList(getTimestampLastExecution(), args.only_path, args.only_path_no_subdir)
+    paths = ccdb.getObjectsList(getTimestampLastExecution(args.ignore_last_execution), args.only_path, args.only_path_no_subdir)
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
