@@ -130,10 +130,7 @@ class ITSTrackTask : public TaskInterface
   //analysis for its-only residual
   o2::its::GeometryTGeo* mGeom;
 
-  double FitStepSize0 = 0.3;
-  double FitStepSize1 = 1.0e-5;
-  double FitStepSize2 = 1.0e-5;
-  double FitStepSize3 = 1.0e-5;
+  std::vector<double> FitStepSize{0.3, 1.0e-5, 1.0e-5, 1.0e-5};
 
   double FitTolerance = 1.0e-8;
   double ITS_AbsBz = 0.5; //T
@@ -148,10 +145,8 @@ class ITSTrackTask : public TaskInterface
   Int_t mResMonNclMin = 0;
   float mResMonTrackMinPt = 0;
 
-  TH1D* hResidualRealTimePerTrackwFinerBin;
-  TH1D* hResidualCPUTimePerTrackwFinerBin;
-  std::array<std::unique_ptr<TH2D>, NLayer> hdxySensor{};//[NLayer];
-  std::array<std::unique_ptr<TH2D>, NLayer> hdzSensor{};//[NLayer];
+  std::array<std::unique_ptr<TH2I>, NLayer> hResidualXY{};//[NLayer];
+  std::array<std::unique_ptr<TH2I>, NLayer> hResidualZD{};//[NLayer];
 
   void circleFitXY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step = 0);
 
@@ -197,7 +192,7 @@ class ITSTrackTask : public TaskInterface
       if(L<0 || L>=NLayer) return 1;
       double aL   = sigma_meas[axis][L]*1e-4; //um -> cm
       double bL   = sigma_msc[axis][L]*1e-4;  //um -> cm
-      double Beff = 0.3*B;
+      double Beff = 0.299792458*B;
       double sigma = std::sqrt( std::pow(aL,2) + std::pow(bL,2)/(std::pow(Beff,2)*std::pow(R*1e-2,2)));
 
       return sigma;
@@ -251,18 +246,18 @@ class ITSTrackTask : public TaskInterface
 
   void lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate);
 
-  double sigma_meas[2][NLayer] = {{45,45,45,55,55,55,55},
+  double mSigmaMeas[2][NLayer] = {{45,45,45,55,55,55,55},
                                   {40,40,40,40,40,40,40}}; //um unit
-  double sigma_msc[2][NLayer]  = {{30,30,30,110,110,110,110},
+  double mSigmaMsc[2][NLayer]  = {{30,30,30,110,110,110,110},
                                   {25,25,25,75,75,75,75}}; //um unit
 
   double getsigma(double R, int L, double B, int axis){
     //R : cm
     //B : T
     if(L<0 || L>=NLayer) return 1;
-    double aL   = sigma_meas[axis][L]*1e-4; //um -> cm
-    double bL   = sigma_msc[axis][L]*1e-4;  //um -> cm
-    double Beff = 0.3*B;
+    double aL   = mSigmaMeas[axis][L]*1e-4; //um -> cm
+    double bL   = mSigmaMsc[axis][L]*1e-4;  //um -> cm
+    double Beff = 0.299792458*B;
     double sigma = std::sqrt( std::pow(aL,2) + std::pow(bL,2)/(std::pow(Beff,2)*std::pow(R*1e-2,2)));
 
     return sigma;

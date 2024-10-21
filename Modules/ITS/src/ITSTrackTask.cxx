@@ -77,16 +77,16 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
     std::vector<int> vMomResParMSC2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMSC2", ""));
 
     for(int l = 0; l < NLayer; l++){
-      sigma_meas[0][l] = (double)vMomResParMEAS1[l];
-      sigma_meas[1][l] = (double)vMomResParMEAS2[l];
-      sigma_msc[0][l] = (double)vMomResParMSC1[l];
-      sigma_msc[1][l] = (double)vMomResParMSC2[l];
+      mSigmaMeas[0][l] = (double)vMomResParMEAS1[l];
+      mSigmaMeas[1][l] = (double)vMomResParMEAS2[l];
+      mSigmaMsc[0][l] = (double)vMomResParMSC1[l];
+      mSigmaMsc[1][l] = (double)vMomResParMSC2[l];
     }
   }
   mResMonNclMin = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResidualMonitorNclMin", mResMonNclMin);
   mResMonTrackMinPt = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "ResidualMonitorTrackMinPt", mResMonTrackMinPt);
 
-  fitfuncXY.loadparameters(sigma_meas, sigma_msc);
+  fitfuncXY.loadparameters(mSigmaMeas, mSigmaMsc);
 
   // pt bins definition: 20 MeV/c width up to 1 GeV/c, 100 MeV/c afterwards
   ptBins[0] = 0.;
@@ -122,10 +122,15 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mDict = TaskInterface::retrieveConditionAny<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary", metadata, ts);
     ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
 
-    o2::its::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::its::GeometryTGeo>("ITS/Config/Geometry", metadata, ts));
-    mGeom = o2::its::GeometryTGeo::Instance();
-    //mGeom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
-    ILOG(Debug, Devel) << "Loaded new instance of mGeom" << ENDM;
+    if(mAlignmentMonitor == 1) {
+      o2::its::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::its::GeometryTGeo>("ITS/Config/Geometry", metadata, ts));
+      mGeom = o2::its::GeometryTGeo::Instance();
+      if (!mGeom) {
+        ILOG(Fatal, Support) << "Can't retrive ITS geometry from ccdb - timestamp: " << ts << ENDM;
+        throw std::runtime_error("Can't retrive ITS geometry from ccdb!");
+      }
+      ILOG(Debug, Devel) << "Loaded new instance of mGeom (for ITS alignment monitoring)" << ENDM;
+    }
   }
 
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
@@ -263,6 +268,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         const int index = clusIdx[track.getFirstClusterEntry() + icluster];
         auto& cluster = clusArr[index];
         auto ChipID = cluster.getSensorID();
+        int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
 
         int layer = 0;
         while (ChipID >= ChipBoundary[layer] && layer <= NLayer){
@@ -270,8 +276,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
         layer--;
 
-        double clusterSizeWithCorrection = (double)clSize[index] * (std::cos(std::atan(out.getTgl())));
         if (mPublishMore) {
+          double clusterSizeWithCorrection = (double)clSize[index] * (std::cos(std::atan(out.getTgl())));
           hNClusterVsChipITS->Fill(ChipID + 1, clusterSizeWithCorrection);
         }
 
@@ -279,9 +285,20 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
 
           if(layer < 0 || layer >= NLayer) continue;
-          hitUpdate[layer] = true;
 
-          auto locC   = mDict->getClusterCoordinates(cluster);
+          o2::math_utils::Point3D<float> locC; // local coordinates
+          if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
+            if (!mDict->isGroup(ClusterID)) {
+              locC = mDict->getClusterCoordinates(cluster);
+            } else {
+              o2::itsmft::ClusterPattern patt(pattIt);
+              locC = mDict->getClusterCoordinates(cluster, patt, true);
+            }
+          } else { // invalid pattern
+            continue; 
+          }
+
+          hitUpdate[layer] = true;
           auto gloC   = mGeom->getMatrixL2G(ChipID) * locC;
           inputG_C[3*layer + 0] = gloC.X(); 
           inputG_C[3*layer + 1] = gloC.Y(); 
@@ -293,6 +310,12 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       //Residual Monitoring
       if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
+        int NclValid = 0;
+        for (int iLayer = 0; iLayer < NLayer; iLayer++) {
+          if(hitUpdate[iLayer]) NclValid++;
+        }
+        if(NclValid<mResMonNclMin) continue;
+
         for (int ipar = 0; ipar < 6; ipar++) FitparXY[ipar] = 0;
 
         double Cost_Fit = 0;
@@ -308,21 +331,21 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (int ipar = 0; ipar < 2; ipar++) FitparDZ[ipar] = 0;
         double z_meas[NLayer];
         double beta[NLayer];
-        for(int l = 0; l < NLayer; l++) {
-          z_meas[l]     = inputG_C[3*l + 2];
-          beta[l]       = std::atan2(inputG_C[3*l + 1] - CircleYc, inputG_C[3*l + 0] - CircleXc);
+        for (int iLayer = 0; iLayer < NLayer; iLayer++) {
+          z_meas[iLayer]     = inputG_C[3*iLayer + 2];
+          beta[iLayer]       = std::atan2(inputG_C[3*iLayer + 1] - CircleYc, inputG_C[3*iLayer + 0] - CircleXc);
         }
 
         lineFitDZ(z_meas, beta, FitparDZ, RecRadius, false, hitUpdate);
       
-        for(int l=0; l<NLayer; l++) {
-          if(chipIDs[l]<0) continue;
-          double meas_GXc = inputG_C[(3*l)+0]; //alpha
-          double meas_GYc = inputG_C[(3*l)+1]; //beta
-          double meas_GZc = inputG_C[(3*l)+2]; //gamma                                  
-          double proj_GXc = RecRadius*std::cos(beta[l]) + CircleXc;
-          double proj_GYc = RecRadius*std::sin(beta[l]) + CircleYc;
-          double proj_GZc = (FitparDZ[0])*(beta[l]) + (FitparDZ[1]); 
+        for (int iLayer = 0; iLayer < NLayer; iLayer++) {
+          if(chipIDs[iLayer]<0) continue;
+          double meas_GXc = inputG_C[(3*iLayer)+0]; //alpha
+          double meas_GYc = inputG_C[(3*iLayer)+1]; //beta
+          double meas_GZc = inputG_C[(3*iLayer)+2]; //gamma                                  
+          double proj_GXc = RecRadius*std::cos(beta[iLayer]) + CircleXc;
+          double proj_GYc = RecRadius*std::sin(beta[iLayer]) + CircleYc;
+          double proj_GZc = (FitparDZ[0])*(beta[iLayer]) + (FitparDZ[1]); 
           TVector3 measXY(meas_GXc, meas_GYc, 0);
           TVector3 projXY(proj_GXc, proj_GYc, 0);
           double sign = +1;
@@ -331,8 +354,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
           double dxy = sign*std::sqrt(std::pow(proj_GXc-meas_GXc,2) + std::pow(proj_GYc-meas_GYc,2));
           double dz  = proj_GZc - meas_GZc;
 
-          hdxySensor[l]->Fill(dxy,chipIDs[l]);
-          hdzSensor[l]->Fill(dz,chipIDs[l]);
+          hResidualXY[iLayer]->Fill(dxy,chipIDs[iLayer]);
+          hResidualZD[iLayer]->Fill(dz,chipIDs[iLayer]);
         }
       }
 
@@ -536,9 +559,11 @@ void ITSTrackTask::reset()
   hTrackPtVsEta->Reset();
   hTrackPtVsPhi->Reset();
 
-  for (int l = 0; l < NLayer; l++) {
-    hdxySensor[l]->Reset();
-    hdzSensor[l]->Reset();
+  if(mAlignmentMonitor == 1) {
+    for (int l = 0; l < NLayer; l++) {
+      hResidualXY[l]->Reset();
+      hResidualZD[l]->Reset();
+    }
   }
 }
 
@@ -728,19 +753,23 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hTrackPtVsPhi, "#it{p}_{T} (GeV/#it{c})", "#phi", 1, 1.10);
   hTrackPtVsPhi->SetStats(0);
 
-  for (int l = 0; l < NLayer; l++) {
-    //sensor
-    hdxySensor[l] = std::make_unique<TH2D>(Form("hdxy%dSensor",l), Form("ChipID vs dxy, Layer %d",l), 
-                                           500, -0.05, 0.05, ChipBoundary[l+1] - ChipBoundary[l], ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
-    addObject(hdxySensor[l].get());
-    formatAxes(hdxySensor[l].get(), "dxy(cm)", "chipID", 1, 1.10);
-    hdxySensor[l]->SetStats(0);
+  if(mAlignmentMonitor == 1) {
+    for (int l = 0; l < NLayer; l++) {
+      //sensor
+      int NBinsChipID = (l < NLayerIB) ? (ChipBoundary[l+1] - ChipBoundary[l]) : (ChipBoundary[l+1] - ChipBoundary[l])/14;
 
-    hdzSensor[l] = std::make_unique<TH2D>(Form("hdz%dSensor",l), Form("ChipID vs dz, Layer %d",l),
-                                          500, -0.05, 0.05, ChipBoundary[l+1] - ChipBoundary[l], ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
-    addObject(hdzSensor[l].get());
-    formatAxes(hdzSensor[l].get(), "dz(cm)", "chipID", 1, 1.10);
-    hdzSensor[l]->SetStats(0);
+      hResidualXY[l] = std::make_unique<TH2I>(Form("hResidualXY%d",l), Form("ChipID vs dxy, Layer %d",l), 
+                                              500, -0.05, 0.05, NBinsChipID, ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
+      addObject(hResidualXY[l].get());
+      formatAxes(hResidualXY[l].get(), "dxy(cm)", (l < NLayerIB) ? "ChipID(Sensor Unit)" : "ChipID(HIC Unit)", 1, 1.10);
+      hResidualXY[l]->SetStats(0);
+
+      hResidualZD[l] = std::make_unique<TH2I>(Form("hResidualZD%d",l), Form("ChipID vs dz, Layer %d",l),
+                                              500, -0.05, 0.05, NBinsChipID, ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
+      addObject(hResidualZD[l].get());
+      formatAxes(hResidualZD[l].get(), "dz(cm)", (l < NLayerIB) ? "ChipID(Sensor Unit)" : "ChipID(HIC Unit)", 1, 1.10);
+      hResidualZD[l]->SetStats(0);
+    }
   }
 }
 
@@ -910,18 +939,18 @@ void ITSTrackTask::circleFitXY(double* input, double* par, double &MSEvalue, std
 
   double pStartA[4] = {temp_parA[0],temp_parA[1], 0, 0};
   fitterA.SetFCN(fcn,pStartA);
-  fitterA.Config().ParSettings(0).SetStepSize(FitStepSize0);
-  fitterA.Config().ParSettings(1).SetStepSize(FitStepSize1);
-  fitterA.Config().ParSettings(2).SetStepSize(FitStepSize2);
-  fitterA.Config().ParSettings(3).SetStepSize(FitStepSize3);  
+  fitterA.Config().ParSettings(0).SetStepSize((float)FitStepSize[0]);
+  fitterA.Config().ParSettings(1).SetStepSize((float)FitStepSize[1]);
+  fitterA.Config().ParSettings(2).SetStepSize((float)FitStepSize[2]);
+  fitterA.Config().ParSettings(3).SetStepSize((float)FitStepSize[3]);  
   fitterA.Config().ParSettings(0).SetLimits(+1.0e-10, +1.0e-1); // + side
 
   double pStartB[4] = {temp_parB[0],temp_parB[1], 0, 0};  
   fitterB.SetFCN(fcn,pStartB);
-  fitterB.Config().ParSettings(0).SetStepSize(FitStepSize0);
-  fitterB.Config().ParSettings(1).SetStepSize(FitStepSize1);
-  fitterB.Config().ParSettings(2).SetStepSize(FitStepSize2);
-  fitterB.Config().ParSettings(3).SetStepSize(FitStepSize3);  
+  fitterB.Config().ParSettings(0).SetStepSize((float)FitStepSize[0]);
+  fitterB.Config().ParSettings(1).SetStepSize((float)FitStepSize[1]);
+  fitterB.Config().ParSettings(2).SetStepSize((float)FitStepSize[2]);
+  fitterB.Config().ParSettings(3).SetStepSize((float)FitStepSize[3]);  
   fitterB.Config().ParSettings(0).SetLimits(-1.0e-1, -1.0e-10); // - side
 
   ROOT::Math::MinimizerOptions minOpt;
