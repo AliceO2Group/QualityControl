@@ -1,10 +1,8 @@
-from datetime import datetime
-from datetime import timedelta
 import logging
-from typing import Dict
 
 from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-
+from qcrepocleaner import policies_utils
+from typing import Dict, List
 
 logger = logging  # default logger
 
@@ -31,22 +29,25 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     deletion_list: List[ObjectVersion] = []
 
     for v in versions:
-        if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):  # grace period
-            logger.debug(f"not in the grace period")
+        logger.debug(f"Processing version {v}")
+        if policies_utils.in_grace_period(v, delay):
+            logger.debug(f"     in grace period, skip this version")
+            preservation_list.append(v)
+        else:
+            logger.debug(f"     not in the grace period")
             if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
-                logger.debug(f"in the allowed period (from,to), we delete {v}")
+                logger.debug(f"     in the allowed period (from,to), we delete it")
                 deletion_list.append(v)
                 ccdb.deleteVersion(v)
                 continue
-        preservation_list.append(v)
 
     logger.debug("deleted : ")
     for v in deletion_list:
-        logger.debug(f"   {v} - {v.validFrom}")
+        logger.debug(f"   {v}")
 
     logger.debug("preserved : ")
     for v in preservation_list:
-        logger.debug(f"   {v} - {v.validFrom}")
+        logger.debug(f"   {v}")
 
     return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": 0}
     
