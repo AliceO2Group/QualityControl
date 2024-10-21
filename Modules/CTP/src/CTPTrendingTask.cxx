@@ -78,54 +78,15 @@ void CTPTrendingTask::initCTP(Trigger& t)
     mCTPconfigFound = true;
   }
 
-  mClassNames[0] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias1Class", "CMTVX-B-NOPF");
-  if (mClassNames[0] == "") {
-    mClassNames[0] = mClassNamesDefault[0];
-  }
-
-  mClassNames[1] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias2Class", "CMVBA-B-NOPF");
-  if (mClassNames[1] == "") {
-    mClassNames[1] = mClassNamesDefault[1];
-  }
-
-  mClassNames[2] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBisDMCclass", "CTVXDMC-B-NOPF-EMC");
-  if (mClassNames[2] == "") {
-    mClassNames[2] = mClassNamesDefault[2];
-  }
-
-  mClassNames[3] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasEMCclass", "CTVXEMC-B-NOPF-EMC");
-  if (mClassNames[3] == "") {
-    mClassNames[3] = mClassNamesDefault[3];
-  }
-
-  mClassNames[4] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasPHOclass", "CTVXPH0-B-NOPF-PHSCPV");
-  if (mClassNames[4] == "") {
-    mClassNames[4] = mClassNamesDefault[4];
-  }
-
-  mInputNames[0] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias1Input", "MTVX");
-  if (mInputNames[0] == "") {
-    mInputNames[0] = mInputNamesDefault[0];
-  }
-
-  mInputNames[1] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBias2Input", "MVBA");
-  if (mInputNames[1] == "") {
-    mInputNames[1] = mInputNamesDefault[1];
-  }
-
-  mInputNames[2] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBisDMCInput", "0DMC");
-  if (mInputNames[2] == "") {
-    mInputNames[2] = mInputNamesDefault[2];
-  }
-
-  mInputNames[3] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasEMCInput", "0EMC");
-  if (mInputNames[3] == "") {
-    mInputNames[3] = mInputNamesDefault[3];
-  }
-
-  mInputNames[4] = getFromExtendedConfig<string>(t.activity, mCustomParameters, "minBiasPHOInput", "0PH0");
-  if (mInputNames[4] == "") {
-    mInputNames[4] = mInputNamesDefault[4];
+  for (int i = 0; i < 5; i++) {
+    mClassNames[i] = getFromExtendedConfig<string>(t.activity, mCustomParameters, mClassParameters[i], mClassNamesDefault[i]);
+    if (mClassNames[i] == "") {
+      mClassNames[i] = mClassNamesDefault[i];
+    }
+    mInputNames[i] = getFromExtendedConfig<string>(t.activity, mCustomParameters, mInputParameters[i], mInputNamesDefault[i]);
+    if (mInputNames[i] == "") {
+      mInputNames[i] = mInputNamesDefault[i];
+    }
   }
 
   // get the indices of the classes we want to trend
@@ -142,13 +103,8 @@ void CTPTrendingTask::initCTP(Trigger& t)
     }
   }
 
-  for (size_t i = 0; i < sizeof(ctpinputs) / sizeof(std::string); i++) {
-    for (size_t j = 0; j < mNumberOfInputs; j++) {
-      if (ctpinputs[i].find(mInputNames[j]) != std::string::npos) {
-        mInputIndex[j] = i + 1;
-        break;
-      }
-    }
+  for (int i = 0; i < 5; i++) {
+    mInputIndex[i] = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(mInputNames[i]);
   }
 
   // Preparing data structure of TTree
@@ -249,7 +205,7 @@ void CTPTrendingTask::generatePlots()
     indexClassRatio = -1;
     for (int i = 0; i < 5; i++) {
       if (plot.varexp.find(mTrendedInputNames[i]) != std::string::npos) {
-        if (mInputIndex[i] == 49) {
+        if (mInputIndex[i] == 255) {
           ILOG(Info, Support) << "Input " << mInputNames[i] << " is not trended." << ENDM;
           indexInput = -10;
         } else {
@@ -266,7 +222,7 @@ void CTPTrendingTask::generatePlots()
       }
       if (i < 4) {
         if (plot.varexp.find(mTrendedInputRatioNames[i]) != std::string::npos) {
-          if (mInputIndex[i + 1] == 49 || mInputIndex[0] == 49) {
+          if (mInputIndex[i + 1] == 255 || mInputIndex[0] == 255) {
             ILOG(Info, Support) << "Input ratio " << mInputNames[i + 1] << " / " << mInputNames[0] << " is not trended." << ENDM;
             indexInputRatio = -10;
           } else {
