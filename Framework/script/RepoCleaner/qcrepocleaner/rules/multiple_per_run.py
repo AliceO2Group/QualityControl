@@ -38,7 +38,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         Go through the map: for each run (resp. run+pass+period)
             Get SOR (validity of first object)
 
-            if SOR < now - mw_deletion_delay
+            if mw_deletion_delay != -1 and SOR < now - mw_deletion_delay
                 delete the data for this run
 
             if SOR < now - delay
@@ -106,7 +106,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         elif not (from_timestamp < first_object.createdAt < to_timestamp):  # not in the allowed period
             logger.debug(f"     not in the allowed period, skip this bucket")
             preservation_list.extend(run_versions)
-        elif first_object.createdAtDt < datetime.now() - timedelta(minutes=mw_deletion_delay):
+        elif mw_deletion_delay != -1 and first_object.createdAtDt < datetime.now() - timedelta(minutes=mw_deletion_delay): # moving windows case
             logger.debug(f"     after mw_deletion_delay period, delete this bucket")
             for v in run_versions:
                 if "/mw/" in v.path: # this is because we really don't want to take the risk of batch deleting non moving windows
