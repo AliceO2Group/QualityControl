@@ -27,6 +27,8 @@
 #include <DataFormatsParameters/GRPLHCIFData.h>
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DetectorsBase/GRPGeomHelper.h>
+#include "Common/Utils.h"
+#include <CommonUtils/StringUtils.h>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -40,31 +42,27 @@ void RawDataReaderCheck::configure()
   // reading the parameters from the config.json
   // if not available, setting a default value
   // the threshold values are nSigma
-  std::string param = mCustomParameters["thresholdRateBad"];
-  mThresholdRateBad = std::stof(param);
+  mThresholdRateBad = common::getFromConfig<float>(mCustomParameters, "thresholdRateBad", 3.);
   if (mThresholdRateBad > 4 || mThresholdRateBad < 0) {
     mThresholdRateBad = 3;
   }
 
-  param = mCustomParameters["thresholdRateMedium"];
-  mThresholdRateMedium = std::stof(param);
+  mThresholdRateMedium = common::getFromConfig<float>(mCustomParameters, "thresholdRateMedium", 2.);
   if (mThresholdRateMedium > 4 || mThresholdRateMedium < 0) {
     mThresholdRateMedium = 2;
   }
 
-  param = mCustomParameters["thresholdRateRatioBad"];
-  mThresholdRateRatioBad = std::stof(param);
+  mThresholdRateRatioBad = common::getFromConfig<float>(mCustomParameters, "thresholdRateRatioBad", 3.);
   if (mThresholdRateRatioBad > 4 || mThresholdRateRatioBad < 0) {
     mThresholdRateRatioBad = 3;
   }
-  param = mCustomParameters["thresholdRateRatioMedium"];
-  mThresholdRateRatioMedium = std::stof(param);
+
+  mThresholdRateRatioMedium = common::getFromConfig<float>(mCustomParameters, "thresholdRateRatioMedium", 2.);
   if (mThresholdRateRatioMedium > 4 || mThresholdRateRatioMedium < 0) {
     mThresholdRateRatioMedium = 2;
   }
 
-  param = mCustomParameters["nSigmaBC"];
-  mNSigBC = std::stof(param);
+  mNSigBC = common::getFromConfig<float>(mCustomParameters, "nSigmaBC", 2.);
   if (mNSigBC < 0) {
     mNSigBC = 2;
   }
@@ -287,7 +285,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->GetListOfFunctions()->Add(msg->Clone());
       for (size_t i = 0; i < mVecIndexBad.size(); i++) {
         if (mFlagInput) {
-          msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(mVecIndexBad[i + 1]).c_str(), groupName.c_str()));
+          msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(mVecIndexBad[i] + 1).c_str(), groupName.c_str()));
         } else {
           msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", groupName.c_str(), h->GetXaxis()->GetBinLabel(mVecIndexBad[i] + 1)));
         }
