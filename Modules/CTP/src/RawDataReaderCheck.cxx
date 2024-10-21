@@ -266,7 +266,12 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
     if (mFlagInput) {
       for (size_t i = 0; i < h->GetXaxis()->GetNbins(); i++) {
-        h->GetXaxis()->SetBinLabel(i + 1, ctpinputs[i]);
+        std::string label = o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(i + 1);
+        if (label == "none") {
+          h->GetXaxis()->SetBinLabel(i + 1, Form("%i", i + 1));
+        } else {
+          h->GetXaxis()->SetBinLabel(i + 1, label.c_str());
+        }
       }
       h->GetXaxis()->SetLabelSize(0.045);
       h->GetXaxis()->LabelsOption("v");
@@ -282,7 +287,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       h->GetListOfFunctions()->Add(msg->Clone());
       for (size_t i = 0; i < mVecIndexBad.size(); i++) {
         if (mFlagInput) {
-          msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", ctpinputs[mVecIndexBad[i]], groupName.c_str()));
+          msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(mVecIndexBad[i + 1]).c_str(), groupName.c_str()));
         } else {
           msg = std::make_shared<TLatex>(0.45, 0.65 - i * 0.05, Form("Check %s %s", groupName.c_str(), h->GetXaxis()->GetBinLabel(mVecIndexBad[i] + 1)));
         }
