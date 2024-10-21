@@ -125,6 +125,14 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   std::string nameInput1 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB1inputName", "MTVX");
   std::string nameInput2 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB2inputName", "MT0A");
 
+  auto input1Tokens = o2::utils::Str::tokenize(nameInput1, ':', false, true);
+  if (input1Tokens.size() > 0) {
+    nameInput1 = input1Tokens[0];
+  }
+  if (input1Tokens.size() > 1) {
+    mScaleInput1 = std::stod(input1Tokens[1]);
+  }
+
   auto input2Tokens = o2::utils::Str::tokenize(nameInput2, ':', false, true);
   if (input2Tokens.size() > 0) {
     nameInput2 = input2Tokens[0];
@@ -192,7 +200,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
           if (i == indexMB1 - 1) {
-            mHistoBCMinBias1->Fill(bcid);
+            mHistoBCMinBias1->Fill(bcid, 1. / mScaleInput1);
             mHistoInputRatios->getDen()->Fill(0., 1);
           }
           if (i == indexMB2 - 1) {
