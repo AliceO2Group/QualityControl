@@ -15,8 +15,12 @@
 ///
 
 #include "QualityControl/UserCodeInterface.h"
+#include <thread>
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DatabaseFactory.h"
 
 using namespace o2::ccdb;
+using namespace std;
 
 namespace o2::quality_control::core
 {
@@ -27,8 +31,24 @@ void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
   configure();
 }
 
-const std::string& UserCodeInterface::getName() const { return mName; }
+const std::string& UserCodeInterface::getName() const {
+  return mName;
+}
 
-void UserCodeInterface::setName(const std::string& name) { mName = name; }
+void UserCodeInterface::setName(const std::string& name) {
+  mName = name;
+}
+
+void UserCodeInterface::setDatabase(std::unordered_map<std::string, std::string> dbConfig)
+{
+  if(dbConfig.count("implementation") == 0 || dbConfig.count("host") == 0) {
+    ILOG(Error, Devel) << "dbConfig is incomplete, we don't build the user code database instance" << ENDM;
+    throw std::invalid_argument("Cannot set database in UserCodeInterface");
+  }
+
+  mDatabase = repository::DatabaseFactory::create(dbConfig.at("implementation"));
+  mDatabase->connect(dbConfig);
+  ILOG(Debug, Devel) << "Database that is going to be used > Implementation : " << dbConfig.at("implementation") << " / Host : " << dbConfig.at("host") << ENDM;
+}
 
 } // namespace o2::quality_control::core
