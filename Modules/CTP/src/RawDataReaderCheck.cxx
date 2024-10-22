@@ -266,7 +266,7 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       for (size_t i = 0; i < h->GetXaxis()->GetNbins(); i++) {
         std::string label = o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(i + 1);
         if (label == "none") {
-          h->GetXaxis()->SetBinLabel(i + 1, Form("%i", i + 1));
+          h->GetXaxis()->SetBinLabel(i + 1, Form("%zu", i + 1));
         } else {
           h->GetXaxis()->SetBinLabel(i + 1, label.c_str());
         }
