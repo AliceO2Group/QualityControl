@@ -61,6 +61,8 @@ class CTPRawDataReaderTask final : public TaskInterface
   int indexMB2 = -1;
   static const int ninps = o2::ctp::CTP_NINPUTS + 1;
   static const int nclasses = o2::ctp::CTP_NCLASSES + 1;
+  double mScaleInput1 = 1;
+  double mScaleInput2 = 1;
   long int mTimestamp;
   std::string classNames[nclasses];
   int mIndexMBclass = -1; // index for the MB ctp class, which is used as scaling for the ratios

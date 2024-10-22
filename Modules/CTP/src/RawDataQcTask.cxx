@@ -27,6 +27,10 @@
 // #include "DataFormatsCTP/RunManager.h"
 #include <Framework/InputRecord.h>
 #include "Framework/TimingInfo.h"
+#include "Common/Utils.h"
+#include <CommonUtils/StringUtils.h>
+
+using namespace o2::quality_control_modules::common;
 
 namespace o2::quality_control_modules::ctp
 {
@@ -76,7 +80,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
 
-  auto MBclassName = mCustomParameters.atOrDefaultValue("MBclassName", "CMTVX-B-NOPF", activity);
+  auto MBclassName = getFromExtendedConfig<string>(activity, mCustomParameters, "MBclassName", "CMTVX-B-NOPF");
 
   std::string run = std::to_string(mRunNumber);
   std::string ccdbName = mCustomParameters["ccdbName"];
@@ -115,18 +119,37 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     ILOG(Warning, Support) << "CTP config not found, run:" << run << ENDM;
   }
   if (mIndexMBclass == -1) {
+    MBclassName = "CMBV0 (default)";
     mIndexMBclass = 1;
   }
-  std::string nameInput1 = mCustomParameters.atOrDefaultValue("MB1inputName", "MTVX", activity);
-  std::string nameInput2 = mCustomParameters.atOrDefaultValue("MB2inputName", "MT0A", activity);
+  std::string nameInput1 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB1inputName", "MTVX");
+  std::string nameInput2 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB2inputName", "MT0A");
+
+  auto input1Tokens = o2::utils::Str::tokenize(nameInput1, ':', false, true);
+  if (input1Tokens.size() > 0) {
+    nameInput1 = input1Tokens[0];
+  }
+  if (input1Tokens.size() > 1) {
+    mScaleInput1 = std::stod(input1Tokens[1]);
+  }
+
+  auto input2Tokens = o2::utils::Str::tokenize(nameInput2, ':', false, true);
+  if (input2Tokens.size() > 0) {
+    nameInput2 = input2Tokens[0];
+  }
+  if (input2Tokens.size() > 1) {
+    mScaleInput2 = std::stod(input2Tokens[1]);
+  }
 
   indexMB1 = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput1);
   indexMB2 = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput2);
   if (indexMB1 == -1) {
     indexMB1 = 3; // 3 is the MTVX index
+    nameInput1 = "MTVX (default)";
   }
   if (indexMB2 == -1) {
     indexMB2 = 5; // 5 is the MTCE index
+    nameInput2 = "MTCE (default)";
   }
   for (int i = 0; i < nclasses; i++) {
     if (classNames[i] == "") {
@@ -144,6 +167,11 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
 
   mHistoBCMinBias1->SetTitle(Form("BC position %s", nameInput1.c_str()));
   mHistoBCMinBias2->SetTitle(Form("BC position %s", nameInput2.c_str()));
+  if (mScaleInput2 > 1) {
+    mHistoBCMinBias2->SetTitle(Form("BC position %s scaled 1/%g", nameInput2.c_str(), mScaleInput2));
+  }
+  mHistoClassRatios->SetTitle(Form("Class Ratio to %s", MBclassName.c_str()));
+  mHistoInputRatios->SetTitle(Form("Input Ratio to %s", nameInput1.c_str()));
 }
 
 void CTPRawDataReaderTask::startOfCycle()
@@ -172,11 +200,11 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
           if (i == indexMB1 - 1) {
-            mHistoBCMinBias1->Fill(bcid);
+            mHistoBCMinBias1->Fill(bcid, 1. / mScaleInput1);
             mHistoInputRatios->getDen()->Fill(0., 1);
           }
           if (i == indexMB2 - 1) {
-            mHistoBCMinBias2->Fill(bcid);
+            mHistoBCMinBias2->Fill(bcid, 1. / mScaleInput2);
           }
         }
       }
