@@ -52,6 +52,7 @@ void Aggregator::init()
     mAggregatorInterface->setName(mAggregatorConfig.name);
     mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
     mAggregatorInterface->setCcdbUrl(mAggregatorConfig.conditionUrl);
+    mAggregatorInterface->setDatabase(mAggregatorConfig.database);
     mAggregatorInterface->configure();
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
@@ -217,18 +218,20 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
   }
 
   return {
-    aggregatorSpec.aggregatorName,
     aggregatorSpec.moduleName,
     aggregatorSpec.className,
     aggregatorSpec.detectorName,
+    commonSpec.consulUrl,
     aggregatorSpec.customParameters,
+    commonSpec.conditionDBUrl,
+    commonSpec.database,
+    aggregatorSpec.aggregatorName,
     updatePolicy,
     std::move(objectNames),
     checkAllObjects,
     std::move(inputs),
     createOutputSpec(aggregatorSpec.detectorName, aggregatorSpec.aggregatorName),
-    sources,
-    commonSpec.conditionDBUrl
+    sources
   };
 }
 

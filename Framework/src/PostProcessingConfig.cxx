@@ -24,12 +24,6 @@ namespace o2::quality_control::postprocessing
 PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::property_tree::ptree& config) //
   : id(id),
     taskName(config.get<std::string>("qc.postprocessing." + id + ".taskName", id)),
-    moduleName(config.get<std::string>("qc.postprocessing." + id + ".moduleName")),
-    className(config.get<std::string>("qc.postprocessing." + id + ".className")),
-    detectorName(config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC")),
-    qcdbUrl(config.get<std::string>("qc.config.database.implementation") == "CCDB" ? config.get<std::string>("qc.config.database.host") : ""),
-    ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", "")),
-    consulUrl(config.get<std::string>("qc.config.consul.url", "")),
     activity(config.get<int>("qc.config.Activity.number", 0),
              config.get<std::string>("qc.config.Activity.type", "NONE"),
              config.get<std::string>("qc.config.Activity.periodName", ""),
@@ -40,6 +34,17 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
     matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false)),
     critical(true)
 {
+  moduleName = config.get<std::string>("qc.postprocessing." + id + ".moduleName");
+  className = config.get<std::string>("qc.postprocessing." + id + ".className");
+  detectorName = config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC");
+  consulUrl = config.get<std::string>("qc.config.consul.url", "");
+  conditionUrl = config.get<std::string>("qc.config.conditionDB.url", "");
+  std::unordered_map<std::string, std::string> dbConfig {
+    {"implementation", config.get<std::string>("qc.config.database.implementation")},
+    {"host", config.get<std::string>("qc.config.database.host")}
+  };
+  database = dbConfig;
+
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }

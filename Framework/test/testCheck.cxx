@@ -144,14 +144,18 @@ TEST_CASE("test_check_postprocessing")
 
 TEST_CASE("test_check_activity")
 {
-  Check check({ "test",
-                "QcSkeleton",
+  Check check({      "QcSkeleton",
                 "o2::quality_control_modules::skeleton::SkeletonCheck",
                 "TST",
+                "",
                 {},
+                "",
+                {},
+                "test",
                 UpdatePolicyType::OnAny,
                 {},
-                true });
+                true }
+ );
 
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap{
     { "abcTask/test1", dummyMO("test1") },
