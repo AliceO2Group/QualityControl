@@ -31,17 +31,19 @@ void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
   configure();
 }
 
-const std::string& UserCodeInterface::getName() const {
+const std::string& UserCodeInterface::getName() const
+{
   return mName;
 }
 
-void UserCodeInterface::setName(const std::string& name) {
+void UserCodeInterface::setName(const std::string& name)
+{
   mName = name;
 }
 
 void UserCodeInterface::setDatabase(std::unordered_map<std::string, std::string> dbConfig)
 {
-  if(dbConfig.count("implementation") == 0 || dbConfig.count("host") == 0) {
+  if (dbConfig.count("implementation") == 0 || dbConfig.count("host") == 0) {
     ILOG(Error, Devel) << "dbConfig is incomplete, we don't build the user code database instance" << ENDM;
     throw std::invalid_argument("Cannot set database in UserCodeInterface");
   }
