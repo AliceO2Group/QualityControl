@@ -24,6 +24,10 @@
 #include <CCDB/BasicCCDBManager.h>
 #include <DataFormatsCTP/Configuration.h>
 // #include "DataFormatsCTP/RunManager.h"
+#include "Common/Utils.h"
+#include <CommonUtils/StringUtils.h>
+
+using namespace o2::quality_control_modules::common;
 
 #include <TCanvas.h>
 #include <TH1.h>
@@ -74,64 +78,15 @@ void CTPTrendingTask::initCTP(Trigger& t)
     mCTPconfigFound = true;
   }
 
-  try {
-    mClassNames[0] = std::stof(mCustomParameters.at("minBias1Class", "default"));
-  } catch (const std::exception& e) {
-    mClassNames[0] = mClassNamesDefault[0];
-  }
-
-  try {
-    mClassNames[1] = std::stof(mCustomParameters.at("minBias2Class", "default"));
-  } catch (const std::exception& e) {
-    mClassNames[1] = mClassNamesDefault[1];
-  }
-
-  try {
-    mClassNames[2] = std::stof(mCustomParameters.at("minBisDMCclass", "default"));
-  } catch (const std::exception& e) {
-    mClassNames[2] = mClassNamesDefault[2];
-  }
-
-  try {
-    mClassNames[3] = std::stof(mCustomParameters.at("minBiasEMCclass", "default"));
-  } catch (const std::exception& e) {
-    mClassNames[3] = mClassNamesDefault[3];
-  }
-
-  try {
-    mClassNames[4] = std::stof(mCustomParameters.at("minBiasPHOclass", "default"));
-  } catch (const std::exception& e) {
-    mClassNames[4] = mClassNamesDefault[4];
-  }
-
-  try {
-    mInputNames[0] = std::stof(mCustomParameters.at("minBias1Input", "default"));
-  } catch (const std::exception& e) {
-    mInputNames[0] = mInputNamesDefault[0];
-  }
-
-  try {
-    mInputNames[1] = std::stof(mCustomParameters.at("minBias2Input", "default"));
-  } catch (const std::exception& e) {
-    mInputNames[1] = mInputNamesDefault[1];
-  }
-
-  try {
-    mInputNames[2] = std::stof(mCustomParameters.at("minBisDMCInput", "default"));
-  } catch (const std::exception& e) {
-    mInputNames[2] = mInputNamesDefault[2];
-  }
-
-  try {
-    mInputNames[3] = std::stof(mCustomParameters.at("minBiasEMCInput", "default"));
-  } catch (const std::exception& e) {
-    mInputNames[3] = mInputNamesDefault[3];
-  }
-
-  try {
-    mInputNames[4] = std::stof(mCustomParameters.at("minBiasPHOInput", "default"));
-  } catch (const std::exception& e) {
-    mInputNames[4] = mInputNamesDefault[4];
+  for (int i = 0; i < 5; i++) {
+    mClassNames[i] = getFromExtendedConfig<string>(t.activity, mCustomParameters, mClassParameters[i], mClassNamesDefault[i]);
+    if (mClassNames[i] == "") {
+      mClassNames[i] = mClassNamesDefault[i];
+    }
+    mInputNames[i] = getFromExtendedConfig<string>(t.activity, mCustomParameters, mInputParameters[i], mInputNamesDefault[i]);
+    if (mInputNames[i] == "") {
+      mInputNames[i] = mInputNamesDefault[i];
+    }
   }
 
   // get the indices of the classes we want to trend
@@ -148,13 +103,8 @@ void CTPTrendingTask::initCTP(Trigger& t)
     }
   }
 
-  for (size_t i = 0; i < sizeof(ctpinputs) / sizeof(std::string); i++) {
-    for (size_t j = 0; j < mNumberOfInputs; j++) {
-      if (ctpinputs[i].find(mInputNames[j]) != std::string::npos) {
-        mInputIndex[j] = i + 1;
-        break;
-      }
-    }
+  for (int i = 0; i < 5; i++) {
+    mInputIndex[i] = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(mInputNames[i]);
   }
 
   // Preparing data structure of TTree
@@ -236,11 +186,10 @@ void CTPTrendingTask::generatePlots()
     return;
   }
 
-  int index = 0; // for keeping track what is trended:
-                 // 0 <= index < 5 - absolute input rates are trended
-                 // 5 <= index < 10 - absolute class rates are trended
-                 // 10 <= index < 15 - input rate ratios are trended
-                 // 15 <= index < 19 - class rate ratios are trended
+  int indexInput = -1;
+  int indexClass = -1;
+  int indexInputRatio = -1;
+  int indexClassRatio = -1;
   for (const auto& plot : mConfig.plots) {
 
     // Before we generate any new plots, we have to delete existing under the same names.
@@ -250,27 +199,53 @@ void CTPTrendingTask::generatePlots()
       mPlots[plot.name] = nullptr;
     }
 
-    if (index < 5 && mInputIndex[index] == 49) { // if the input index == 49, this input won't be trended
-      ILOG(Info, Support) << "Input " << mInputNames[index] << " is not trended." << ENDM;
-      index++;
-      continue;
+    indexInput = -1;
+    indexClass = -1;
+    indexInputRatio = -1;
+    indexClassRatio = -1;
+    for (int i = 0; i < 5; i++) {
+      if (plot.varexp.find(mTrendedInputNames[i]) != std::string::npos) {
+        if (mInputIndex[i] == 255) {
+          ILOG(Info, Support) << "Input " << mInputNames[i] << " is not trended." << ENDM;
+          indexInput = -10;
+        } else {
+          indexInput = i;
+        }
+      }
+      if (plot.varexp.find(mTrendedClassNames[i]) != std::string::npos) {
+        if (mClassIndex[i] == 65) {
+          ILOG(Info, Support) << "Class " << mClassNames[i] << " is not trended." << ENDM;
+          indexClass = -10;
+        } else {
+          indexClass = i;
+        }
+      }
+      if (i < 4) {
+        if (plot.varexp.find(mTrendedInputRatioNames[i]) != std::string::npos) {
+          if (mInputIndex[i + 1] == 255 || mInputIndex[0] == 255) {
+            ILOG(Info, Support) << "Input ratio " << mInputNames[i + 1] << " / " << mInputNames[0] << " is not trended." << ENDM;
+            indexInputRatio = -10;
+          } else {
+            indexInputRatio = i;
+          }
+        }
+        if (plot.varexp.find(mTrendedClassRatioNames[i]) != std::string::npos) {
+          if (mClassIndex[i + 1] == 65) {
+            ILOG(Info, Support) << "Class ratio " << mClassNames[i + 1] << " / " << mClassNames[0] << " is not trended." << ENDM;
+            indexClassRatio = -10;
+          } else {
+            indexClassRatio = i;
+          }
+        }
+      }
     }
 
-    if (index > 4 && index < 10 && mClassIndex[index - 5] == 65) { // if the class index == 65, this ctp class is not defined in the CTPconfig, so it won't be trended
-      ILOG(Info, Support) << "Class " << mClassNames[index - 5] << " is not trended." << ENDM;
-      index++;
+    if (indexInput == -10 || indexClass == -10)
       continue;
-    }
-
-    if (index > 9 && index < 14 && (mInputIndex[index - 9] == 49 || mInputIndex[0] == 49)) { // if the input index == 49, this ctp input won't be trended
-      ILOG(Info, Support) << "Input ratio " << mInputNames[index - 13] << " / " << mInputNames[0] << " is not trended." << ENDM;
-      index++;
+    if (indexClassRatio == -10 || indexInputRatio == -10)
       continue;
-    }
-
-    if (index > 13 && (mClassIndex[index - 13] == 65 || mClassIndex[0] == 65)) { // if the class index == 65, this ctp class is not defined in the CTPconfig, so it won't be trended
-      ILOG(Info, Support) << "Class ratio " << mClassNames[index - 13] << " / " << mClassNames[0] << " is not trended." << ENDM;
-      index++;
+    if (indexInput == -1 && indexClass == -1 && indexInputRatio == -1 && indexClassRatio == -1) {
+      ILOG(Warning, Support) << "Wrongly defined variable: " << plot.varexp << ENDM;
       continue;
     }
 
@@ -280,19 +255,23 @@ void CTPTrendingTask::generatePlots()
     c->SetName(plot.name.c_str());
 
     if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
-      if (index < 5) {
-        histo->SetTitle(mInputNames[index].c_str());
-      } else if (index < 10) {
-        histo->SetTitle(mClassNames[index - 5].c_str());
-      } else if (index < 14) {
-        histo->SetTitle(Form("%s/%s", mInputNames[index - 9].c_str(), mInputNames[0].c_str()));
-      } else {
-        histo->SetTitle(Form("%s/%s", mClassNames[index - 13].c_str(), mClassNames[0].c_str()));
+      if (indexInput > -1) {
+        histo->SetTitle(mInputNames[indexInput].c_str());
+      }
+      if (indexClass > -1) {
+        histo->SetTitle(mClassNames[indexClass].c_str());
+      }
+      if (indexInputRatio > -1) {
+        histo->SetTitle(Form("%s/%s", mInputNames[indexInputRatio + 1].c_str(), mInputNames[0].c_str()));
+      }
+      if (indexClassRatio > -1) {
+        histo->SetTitle(Form("%s/%s", mClassNames[indexClassRatio + 1].c_str(), mClassNames[0].c_str()));
       }
 
-      if (index < 10) {
+      if (indexInput > -1 || indexClass > -1) {
         histo->GetYaxis()->SetTitle("rate [kHz]");
-      } else {
+      }
+      if (indexInputRatio > -1 || indexClassRatio > -1) {
         histo->GetYaxis()->SetTitle("rate ratio");
       }
       c->Update();
@@ -315,7 +294,5 @@ void CTPTrendingTask::generatePlots()
 
     mPlots[plot.name] = c;
     getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
-
-    index++;
   }
 }
