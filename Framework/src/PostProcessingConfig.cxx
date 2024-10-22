@@ -39,9 +39,9 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   detectorName = config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC");
   consulUrl = config.get<std::string>("qc.config.consul.url", "");
   conditionUrl = config.get<std::string>("qc.config.conditionDB.url", "");
-  std::unordered_map<std::string, std::string> dbConfig {
-    {"implementation", config.get<std::string>("qc.config.database.implementation")},
-    {"host", config.get<std::string>("qc.config.database.host")}
+  std::unordered_map<std::string, std::string> dbConfig{
+    { "implementation", config.get<std::string>("qc.config.database.implementation") },
+    { "host", config.get<std::string>("qc.config.database.host") }
   };
   database = dbConfig;
 
