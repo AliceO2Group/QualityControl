@@ -44,12 +44,14 @@ void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
 {
   // TODO bail if we are in async
   ILOG(Debug, Devel) << "Enabling CTP scalers" << ENDM;
+  mCtpFetcher = make_shared<o2::ctp::CTPRateFetcher>();
   mScalersEnabled = true;
   auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
   ccdbManager.setURL(ccdbUrl);
-  mCtpFetcher->setupRun(runNumber, &ccdbManager, getCurrentTimestamp(), false);
+  mCtpFetcher->setupRun(runNumber, &ccdbManager, /*1726300234140*/ getCurrentTimestamp(), false);
 
   mScalersLastUpdate = std::chrono::steady_clock::time_point::min();
+  cout << "mScalersLastUpdate : " << std::chrono::duration_cast<std::chrono::nanoseconds>(mScalersLastUpdate.time_since_epoch()).count() << endl;
   getScalers(); // initial value
   ILOG(Debug, Devel) << "Enabled CTP scalers" << ENDM;
 }
@@ -72,15 +74,17 @@ void UserCodeInterface::getScalers()
 
   auto now = std::chrono::steady_clock::now();
   auto minutesSinceLast = std::chrono::duration_cast<std::chrono::minutes>(now - mScalersLastUpdate);
+  cout << "now : " << std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count() << endl;
+  cout << "minutesSinceLast : " << minutesSinceLast << endl;
 
   // TODO get the interval from config
-  if (minutesSinceLast.count() < 5) {
+  if (minutesSinceLast.count() >= 0 /*first time it is neg*/ && minutesSinceLast.count() < 5) {
     ILOG(Debug, Devel) << "getScalers was called less than 5 minutes ago, use the cached value" << ENDM;
     return;
   }
 
   std::map<std::string, std::string> meta;
-  void* rawResult = mDatabase->retrieveAny(typeid(o2::ctp::CTPRunScalers), "qc/CTP/Scalers", meta); // TODO make sure we get the last one.
+  void* rawResult = mDatabase->retrieveAny(typeid(o2::ctp::CTPRunScalers), "qc/CTP/Scalers", meta);
   o2::ctp::CTPRunScalers* ctpScalers = static_cast<o2::ctp::CTPRunScalers*>(rawResult);
   mCtpFetcher->updateScalers(*ctpScalers);
   mScalersLastUpdate = now;
@@ -91,7 +95,7 @@ double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumb
 {
   if(!mScalersEnabled) {
     ILOG(Error, Ops) << "CTP scalers not enabled, impossible to get the value." << ENDM;
-    return 0; // TODO should we throw ? probably yes
+    return 0;
   }
   getScalers(); // from QCDB
   auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
@@ -103,6 +107,8 @@ double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumb
 void UserCodeInterface::setDatabase(std::unordered_map<std::string, std::string> dbConfig)
 {
   // TODO one could really argue that it would be easier to have a singleton for the QCDB... because here we will build and save a database object
+
+  // TODO could we rather provide the general config to the User Code ? it would be useful for other stuff like the ccdb url
 
   cout << "dbConfig.count(\"implementation\") " << dbConfig.count("implementation")  << "    dbConfig.count(\"host\") : " << dbConfig.count("host") << endl;
   if(dbConfig.count("implementation") == 0 || dbConfig.count("host") == 0) {
