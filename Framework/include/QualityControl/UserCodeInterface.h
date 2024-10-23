@@ -25,7 +25,8 @@
 #include "QualityControl/CustomParameters.h"
 #include "QualityControl/DatabaseInterface.h"
 
-namespace o2::ctp {
+namespace o2::ctp
+{
 class CTPRateFetcher;
 }
 
@@ -61,7 +62,7 @@ class UserCodeInterface : public ConditionAccess
   /// \brief Retrieve fresh scalers from the QCDB (with cache)
   void updateScalers();
   std::shared_ptr<o2::ctp::CTPRateFetcher> mCtpFetcher;
-  std::chrono::steady_clock::time_point  mScalersLastUpdate;
+  std::chrono::steady_clock::time_point mScalersLastUpdate;
   bool mScalersEnabled = false;
 
  protected:
