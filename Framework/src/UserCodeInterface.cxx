@@ -43,6 +43,13 @@ void UserCodeInterface::setName(const std::string& name) {
 void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
 {
   // TODO bail if we are in async
+
+  auto deploymentMode = framework::DefaultsHelpers::deploymentMode();
+  if(deploymentMode == framework::DeploymentMode::Grid) {
+    ILOG(Info, Ops) << "Async mode detected, CTP scalers cannot be enabled." << ENDM;
+    return;
+  }
+
   ILOG(Debug, Devel) << "Enabling CTP scalers" << ENDM;
   mCtpFetcher = make_shared<o2::ctp::CTPRateFetcher>();
   mScalersEnabled = true;
