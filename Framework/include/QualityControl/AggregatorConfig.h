@@ -24,25 +24,20 @@
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/UpdatePolicyType.h"
 #include "QualityControl/AggregatorSource.h"
-#include "QualityControl/CustomParameters.h"
+#include "QualityControl/UserCodeConfig.h"
 
 namespace o2::quality_control::checker
 {
 
 /// \brief  Container for the configuration of an Aggregator.
-struct AggregatorConfig {
+struct AggregatorConfig : public o2::quality_control::core::UserCodeConfig {
   std::string name;
-  std::string moduleName;
-  std::string className;
-  std::string detectorName = "MISC"; // intended to be the 3 letters code;
-  core::CustomParameters customParameters;
   UpdatePolicyType policyType = UpdatePolicyType::OnAny;
   std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var // fixme: duplicates "sources"
   bool allObjects = false;
   framework::Inputs inputSpecs{};
   framework::OutputSpec qoSpec{ "XXX", "INVALID" };
   std::vector<AggregatorSource> sources;
-  std::string conditionUrl{};
 };
 
 } // namespace o2::quality_control::checker

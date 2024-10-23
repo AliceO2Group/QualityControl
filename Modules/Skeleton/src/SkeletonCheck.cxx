@@ -49,6 +49,9 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
 
+  auto t0vtx = getScalersValue("T0VTX", mActivity->mId);
+  ILOG(Info, Devel) << "\"T0VTX\" : " << t0vtx << ENDM;
+
   // This is an example of accessing the histogram 'example' created by SkeletonTask
   for (auto& [moName, mo] : *moMap) {
     if (mo->getName() == "example") {
@@ -124,6 +127,7 @@ void SkeletonCheck::startOfActivity(const Activity& activity)
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
   mActivity = make_shared<Activity>(activity);
+  enableCtpScalers(activity.mId, "alice-ccdb.cern.ch"); // TODO get it from the config
 }
 
 void SkeletonCheck::endOfActivity(const Activity& activity)
