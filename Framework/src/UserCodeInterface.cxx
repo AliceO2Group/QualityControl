@@ -58,13 +58,13 @@ void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
 
 void UserCodeInterface::updateScalers()
 {
-  if(!mScalersEnabled) {
+  if (!mScalersEnabled) {
     ILOG(Error, Ops) << "CTP scalers not enabled, impossible to get them." << ENDM;
     return; // TODO should we throw ? probably yes
   }
   ILOG(Debug, Devel) << "Updating scalers." << ENDM;
 
-  if(! mDatabase) {
+  if (!mDatabase) {
     ILOG(Error, Devel) << "Database not set ! Cannot update scalers." << ENDM;
     mScalersEnabled = false;
 
@@ -91,7 +91,7 @@ void UserCodeInterface::updateScalers()
 
 double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumber)
 {
-  if(!mScalersEnabled) {
+  if (!mScalersEnabled) {
     ILOG(Error, Ops) << "CTP scalers not enabled, impossible to get the value." << ENDM;
     return 0;
   }
