@@ -127,15 +127,15 @@ class ITSTrackTask : public TaskInterface
   o2::itsmft::TopologyDictionary* mDict;
 
  private:
-  //analysis for its-only residual
+  // analysis for its-only residual
   o2::its::GeometryTGeo* mGeom;
 
-  std::vector<double> FitStepSize{0.3, 1.0e-5, 1.0e-5, 1.0e-5};
+  std::vector<double> FitStepSize{ 0.3, 1.0e-5, 1.0e-5, 1.0e-5 };
 
   double FitTolerance = 1.0e-8;
-  double ITS_AbsBz = 0.5; //T
+  double ITS_AbsBz = 0.5; // T
 
-  double inputG_C[3*NLayer];
+  double inputG_C[3 * NLayer];
   double FitparXY[6];
   double FitparDZ[2];
   ROOT::Fit::Fitter fitterA;
@@ -145,124 +145,131 @@ class ITSTrackTask : public TaskInterface
   Int_t mResMonNclMin = 0;
   float mResMonTrackMinPt = 0;
 
-  std::array<std::unique_ptr<TH2I>, NLayer> hResidualXY{};//[NLayer];
-  std::array<std::unique_ptr<TH2I>, NLayer> hResidualZD{};//[NLayer];
+  std::array<std::unique_ptr<TH2F>, NLayer> hResidualXY{}; //[NLayer];
+  std::array<std::unique_ptr<TH2F>, NLayer> hResidualZD{}; //[NLayer];
 
-  void circleFitXY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step = 0);
+  void circleFitXY(double* input, double* par, double& MSEvalue, std::vector<bool> hitUpdate, int step = 0);
 
-  //default setting
-  // function Object to be minimized
+  // default setting
+  //  function Object to be minimized
   struct se_circlefitXY {
     // the TGraph is a data member of the object
     std::vector<TVector3> fHits;
     double thetaR;
     double Bz;
-    double sigma_meas[2][NLayer] = {{45,45,45,55,55,55,55},
-                                    {40,40,40,40,40,40,40}}; //um unit
-    double sigma_msc[2][NLayer]  = {{30,30,30,110,110,110,110},
-                                    {25,25,25,75,75,75,75}}; //um unit
+    double sigma_meas[2][NLayer] = { { 45, 45, 45, 55, 55, 55, 55 },
+                                     { 40, 40, 40, 40, 40, 40, 40 } }; // um unit
+    double sigma_msc[2][NLayer] = { { 30, 30, 30, 110, 110, 110, 110 },
+                                    { 25, 25, 25, 75, 75, 75, 75 } }; // um unit
 
     se_circlefitXY() = default;
-    se_circlefitXY(std::vector<TVector3> &h, double tR, double bz) : fHits(h), thetaR(tR), Bz(bz) { };
+    se_circlefitXY(std::vector<TVector3>& h, double tR, double bz) : fHits(h), thetaR(tR), Bz(bz) {};
 
-    void loadparameters(double arrpar_meas[][NLayer], double arrpar_msc[][NLayer]){
-      for(int a = 0; a < 2; a++){
-        for(int l = 0; l < NLayer; l++){
+    void loadparameters(double arrpar_meas[][NLayer], double arrpar_msc[][NLayer])
+    {
+      for (int a = 0; a < 2; a++) {
+        for (int l = 0; l < NLayer; l++) {
           sigma_meas[a][l] = arrpar_meas[a][l];
           sigma_msc[a][l] = arrpar_msc[a][l];
         }
       }
     };
 
-    void init(){
+    void init()
+    {
       fHits.clear();
       thetaR = 0;
       Bz = 0;
     };
 
-    void set(std::vector<TVector3> &h, double tR, double bz){
+    void set(std::vector<TVector3>& h, double tR, double bz)
+    {
       fHits = h;
       thetaR = tR;
       Bz = bz;
     };
 
-    double getsigma(double R, int L, double B, int axis){
-      //R : cm
-      //B : T
-      if(L<0 || L>=NLayer) return 1;
-      double aL   = sigma_meas[axis][L]*1e-4; //um -> cm
-      double bL   = sigma_msc[axis][L]*1e-4;  //um -> cm
-      double Beff = 0.299792458*B;
-      double sigma = std::sqrt( std::pow(aL,2) + std::pow(bL,2)/(std::pow(Beff,2)*std::pow(R*1e-2,2)));
+    double getsigma(double R, int L, double B, int axis)
+    {
+      // R : cm
+      // B : T
+      if (L < 0 || L >= NLayer)
+        return 1;
+      double aL = sigma_meas[axis][L] * 1e-4; // um -> cm
+      double bL = sigma_msc[axis][L] * 1e-4;  // um -> cm
+      double Beff = 0.299792458 * B;
+      double sigma = std::sqrt(std::pow(aL, 2) + std::pow(bL, 2) / (std::pow(Beff, 2) * std::pow(R * 1e-2, 2)));
 
       return sigma;
     };
 
     // calculate distance line-point
-    double distance2(double x, double y, const double *p, double tR, int charge) {
+    double distance2(double x, double y, const double* p, double tR, int charge)
+    {
 
-      double R = std::abs(1/p[0]);
-    
-      double Xc  = p[0] > 0 ? R*std::cos(p[1] + tR + 0.5*TMath::Pi()) : R*std::cos(p[1] + tR - 0.5*TMath::Pi());
-      double Yc  = p[0] > 0 ? R*std::sin(p[1] + tR + 0.5*TMath::Pi()) : R*std::sin(p[1] + tR - 0.5*TMath::Pi());   
-    
+      double R = std::abs(1 / p[0]);
+
+      double Xc = p[0] > 0 ? R * std::cos(p[1] + tR + 0.5 * TMath::Pi()) : R * std::cos(p[1] + tR - 0.5 * TMath::Pi());
+      double Yc = p[0] > 0 ? R * std::sin(p[1] + tR + 0.5 * TMath::Pi()) : R * std::sin(p[1] + tR - 0.5 * TMath::Pi());
+
       double dx = x - (Xc + p[2]);
-      double dy = y - (Yc + p[3]);    
-      double dxy = R - std::sqrt(dx*dx + dy*dy);
-    
-      double d2 = dxy*dxy;
+      double dy = y - (Yc + p[3]);
+      double dxy = R - std::sqrt(dx * dx + dy * dy);
+
+      double d2 = dxy * dxy;
       return d2;
     };
 
     // implementation of the function to be minimized
-    double operator() (const double *par) { //const double -> double
-      assert(fHits != 0);    
+    double operator()(const double* par)
+    { // const double -> double
+      assert(fHits != 0);
 
-      int nhits       = fHits.size();
-      double sum      = 0;
+      int nhits = fHits.size();
+      double sum = 0;
 
-      double charge    = par[0]>0 ? +1 : -1;
-      double RecRadius = std::abs(1/par[0]);
+      double charge = par[0] > 0 ? +1 : -1;
+      double RecRadius = std::abs(1 / par[0]);
 
       double Sigma_tot[NLayer];
       double sum_Sigma_tot = 0;
-      for(int l = 0; l < nhits; l++){
-        Sigma_tot[l] = getsigma(RecRadius, fHits[l].Z(), Bz, 1);
-        sum_Sigma_tot += 1/(std::pow(Sigma_tot[l],2));
-      } 
-    
       for (int l = 0; l < nhits; l++) {
-         double d = distance2(fHits[l].X(), fHits[l].Y(), par, thetaR, charge)/(std::pow(Sigma_tot[l],2));  
-         sum += d;
+        Sigma_tot[l] = getsigma(RecRadius, fHits[l].Z(), Bz, 1);
+        sum_Sigma_tot += 1 / (std::pow(Sigma_tot[l], 2));
+      }
+
+      for (int l = 0; l < nhits; l++) {
+        double d = distance2(fHits[l].X(), fHits[l].Y(), par, thetaR, charge) / (std::pow(Sigma_tot[l], 2));
+        sum += d;
       }
       sum = sum / sum_Sigma_tot;
 
       return sum;
     };
-
   };
 
   se_circlefitXY fitfuncXY;
 
   void lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate);
 
-  double mSigmaMeas[2][NLayer] = {{45,45,45,55,55,55,55},
-                                  {40,40,40,40,40,40,40}}; //um unit
-  double mSigmaMsc[2][NLayer]  = {{30,30,30,110,110,110,110},
-                                  {25,25,25,75,75,75,75}}; //um unit
+  double mSigmaMeas[2][NLayer] = { { 45, 45, 45, 55, 55, 55, 55 },
+                                   { 40, 40, 40, 40, 40, 40, 40 } }; // um unit
+  double mSigmaMsc[2][NLayer] = { { 30, 30, 30, 110, 110, 110, 110 },
+                                  { 25, 25, 25, 75, 75, 75, 75 } }; // um unit
 
-  double getsigma(double R, int L, double B, int axis){
-    //R : cm
-    //B : T
-    if(L<0 || L>=NLayer) return 1;
-    double aL   = mSigmaMeas[axis][L]*1e-4; //um -> cm
-    double bL   = mSigmaMsc[axis][L]*1e-4;  //um -> cm
-    double Beff = 0.299792458*B;
-    double sigma = std::sqrt( std::pow(aL,2) + std::pow(bL,2)/(std::pow(Beff,2)*std::pow(R*1e-2,2)));
+  double getsigma(double R, int L, double B, int axis)
+  {
+    // R : cm
+    // B : T
+    if (L < 0 || L >= NLayer)
+      return 1;
+    double aL = mSigmaMeas[axis][L] * 1e-4; // um -> cm
+    double bL = mSigmaMsc[axis][L] * 1e-4;  // um -> cm
+    double Beff = 0.299792458 * B;
+    double sigma = std::sqrt(std::pow(aL, 2) + std::pow(bL, 2) / (std::pow(Beff, 2) * std::pow(R * 1e-2, 2)));
 
     return sigma;
   };
-
 };
 } // namespace o2::quality_control_modules::its
 

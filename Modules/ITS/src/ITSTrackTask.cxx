@@ -67,16 +67,16 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mInvMasses = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "InvMasses", mInvMasses);
   mPublishMore = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishMore", mPublishMore);
 
-  //analysis for its-only residual
+  // analysis for its-only residual
   mAlignmentMonitor = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doAlignmentMonitor", mAlignmentMonitor);
   mDefaultMomResPar = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "UseDefaultMomResPar", mDefaultMomResPar);
-  if(mAlignmentMonitor == 1 && mDefaultMomResPar == 0){
+  if (mAlignmentMonitor == 1 && mDefaultMomResPar == 0) {
     std::vector<int> vMomResParMEAS1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMEAS1", ""));
     std::vector<int> vMomResParMEAS2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMEAS2", ""));
     std::vector<int> vMomResParMSC1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMSC1", ""));
     std::vector<int> vMomResParMSC2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMSC2", ""));
 
-    for(int l = 0; l < NLayer; l++){
+    for (int l = 0; l < NLayer; l++) {
       mSigmaMeas[0][l] = (double)vMomResParMEAS1[l];
       mSigmaMeas[1][l] = (double)vMomResParMEAS2[l];
       mSigmaMsc[0][l] = (double)vMomResParMSC1[l];
@@ -122,7 +122,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mDict = TaskInterface::retrieveConditionAny<o2::itsmft::TopologyDictionary>("ITS/Calib/ClusterDictionary", metadata, ts);
     ILOG(Debug, Devel) << "Dictionary size: " << mDict->getSize() << ENDM;
 
-    if(mAlignmentMonitor == 1) {
+    if (mAlignmentMonitor == 1) {
       o2::its::GeometryTGeo::adopt(TaskInterface::retrieveConditionAny<o2::its::GeometryTGeo>("ITS/Config/Geometry", metadata, ts));
       mGeom = o2::its::GeometryTGeo::Instance();
       if (!mGeom) {
@@ -259,9 +259,10 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       nClusterCntTrack += track.getNumberOfClusters();
 
       std::vector<bool> hitUpdate;
-      int chipIDs[7] = {-1, -1, -1, -1, -1, -1, -1};
-      if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
-        for (int iLayer = 0; iLayer < NLayer; iLayer++) hitUpdate.push_back(false);
+      int chipIDs[7] = { -1, -1, -1, -1, -1, -1, -1 };
+      if (mAlignmentMonitor == 1 && out.getPt() > mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
+        for (int iLayer = 0; iLayer < NLayer; iLayer++)
+          hitUpdate.push_back(false);
       }
 
       for (int icluster = 0; icluster < track.getNumberOfClusters(); icluster++) {
@@ -271,7 +272,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
         int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
 
         int layer = 0;
-        while (ChipID >= ChipBoundary[layer] && layer <= NLayer){
+        while (ChipID >= ChipBoundary[layer] && layer <= NLayer) {
           layer++;
         }
         layer--;
@@ -281,12 +282,13 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
           hNClusterVsChipITS->Fill(ChipID + 1, clusterSizeWithCorrection);
         }
 
-        //Residual Monitoring
-        if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
+        // Residual Monitoring
+        if (mAlignmentMonitor == 1 && out.getPt() > mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
 
-          if(layer < 0 || layer >= NLayer) continue;
+          if (layer < 0 || layer >= NLayer)
+            continue;
 
-          o2::math_utils::Point3D<float> locC; // local coordinates
+          o2::math_utils::Point3D<float> locC;                          // local coordinates
           if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
             if (!mDict->isGroup(ClusterID)) {
               locC = mDict->getClusterCoordinates(cluster);
@@ -295,67 +297,74 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
               locC = mDict->getClusterCoordinates(cluster, patt, true);
             }
           } else { // invalid pattern
-            continue; 
+            continue;
           }
 
           hitUpdate[layer] = true;
-          auto gloC   = mGeom->getMatrixL2G(ChipID) * locC;
-          inputG_C[3*layer + 0] = gloC.X(); 
-          inputG_C[3*layer + 1] = gloC.Y(); 
-          inputG_C[3*layer + 2] = gloC.Z(); 
+          auto gloC = mGeom->getMatrixL2G(ChipID) * locC;
+          inputG_C[3 * layer + 0] = gloC.X();
+          inputG_C[3 * layer + 1] = gloC.Y();
+          inputG_C[3 * layer + 2] = gloC.Z();
 
           chipIDs[layer] = ChipID;
         }
       }
 
-      //Residual Monitoring
-      if(mAlignmentMonitor == 1 && out.getPt()>mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
+      // Residual Monitoring
+      if (mAlignmentMonitor == 1 && out.getPt() > mResMonTrackMinPt && track.getNumberOfClusters() >= mResMonNclMin) {
         int NclValid = 0;
         for (int iLayer = 0; iLayer < NLayer; iLayer++) {
-          if(hitUpdate[iLayer]) NclValid++;
+          if (hitUpdate[iLayer])
+            NclValid++;
         }
-        if(NclValid<mResMonNclMin) continue;
+        if (NclValid < mResMonNclMin)
+          continue;
 
-        for (int ipar = 0; ipar < 6; ipar++) FitparXY[ipar] = 0;
+        for (int ipar = 0; ipar < 6; ipar++)
+          FitparXY[ipar] = 0;
 
         double Cost_Fit = 0;
         circleFitXY(inputG_C, FitparXY, Cost_Fit, hitUpdate, 0);
 
-        double RecRadius = std::abs(1/FitparXY[0]);
-        double CircleXc  = FitparXY[0] >0 ? RecRadius*std::cos(FitparXY[1]+FitparXY[4] + 0.5*TMath::Pi()) : RecRadius*std::cos(FitparXY[1]+FitparXY[4] - 0.5*TMath::Pi());
-        double CircleYc  = FitparXY[0] >0 ? RecRadius*std::sin(FitparXY[1]+FitparXY[4] + 0.5*TMath::Pi()) : RecRadius*std::sin(FitparXY[1]+FitparXY[4] - 0.5*TMath::Pi()); 
-   
+        double RecRadius = std::abs(1 / FitparXY[0]);
+        double CircleXc = FitparXY[0] > 0 ? RecRadius * std::cos(FitparXY[1] + FitparXY[4] + 0.5 * TMath::Pi()) : RecRadius * std::cos(FitparXY[1] + FitparXY[4] - 0.5 * TMath::Pi());
+        double CircleYc = FitparXY[0] > 0 ? RecRadius * std::sin(FitparXY[1] + FitparXY[4] + 0.5 * TMath::Pi()) : RecRadius * std::sin(FitparXY[1] + FitparXY[4] - 0.5 * TMath::Pi());
+
         CircleXc += FitparXY[2];
         CircleYc += FitparXY[3];
 
-        for (int ipar = 0; ipar < 2; ipar++) FitparDZ[ipar] = 0;
+        for (int ipar = 0; ipar < 2; ipar++)
+          FitparDZ[ipar] = 0;
         double z_meas[NLayer];
         double beta[NLayer];
         for (int iLayer = 0; iLayer < NLayer; iLayer++) {
-          z_meas[iLayer]     = inputG_C[3*iLayer + 2];
-          beta[iLayer]       = std::atan2(inputG_C[3*iLayer + 1] - CircleYc, inputG_C[3*iLayer + 0] - CircleXc);
+          z_meas[iLayer] = inputG_C[3 * iLayer + 2];
+          beta[iLayer] = std::atan2(inputG_C[3 * iLayer + 1] - CircleYc, inputG_C[3 * iLayer + 0] - CircleXc);
         }
 
         lineFitDZ(z_meas, beta, FitparDZ, RecRadius, false, hitUpdate);
-      
+
         for (int iLayer = 0; iLayer < NLayer; iLayer++) {
-          if(chipIDs[iLayer]<0) continue;
-          double meas_GXc = inputG_C[(3*iLayer)+0]; //alpha
-          double meas_GYc = inputG_C[(3*iLayer)+1]; //beta
-          double meas_GZc = inputG_C[(3*iLayer)+2]; //gamma                                  
-          double proj_GXc = RecRadius*std::cos(beta[iLayer]) + CircleXc;
-          double proj_GYc = RecRadius*std::sin(beta[iLayer]) + CircleYc;
-          double proj_GZc = (FitparDZ[0])*(beta[iLayer]) + (FitparDZ[1]); 
+          if (chipIDs[iLayer] < 0)
+            continue;
+          double meas_GXc = inputG_C[(3 * iLayer) + 0]; // alpha
+          double meas_GYc = inputG_C[(3 * iLayer) + 1]; // beta
+          double meas_GZc = inputG_C[(3 * iLayer) + 2]; // gamma
+          double proj_GXc = RecRadius * std::cos(beta[iLayer]) + CircleXc;
+          double proj_GYc = RecRadius * std::sin(beta[iLayer]) + CircleYc;
+          double proj_GZc = (FitparDZ[0]) * (beta[iLayer]) + (FitparDZ[1]);
           TVector3 measXY(meas_GXc, meas_GYc, 0);
           TVector3 projXY(proj_GXc, proj_GYc, 0);
           double sign = +1;
-          if(measXY.Cross(projXY).Z()>0) sign = +1;
-          else sign = -1;
-          double dxy = sign*std::sqrt(std::pow(proj_GXc-meas_GXc,2) + std::pow(proj_GYc-meas_GYc,2));
-          double dz  = proj_GZc - meas_GZc;
+          if (measXY.Cross(projXY).Z() > 0)
+            sign = +1;
+          else
+            sign = -1;
+          double dxy = sign * std::sqrt(std::pow(proj_GXc - meas_GXc, 2) + std::pow(proj_GYc - meas_GYc, 2));
+          double dz = proj_GZc - meas_GZc;
 
-          hResidualXY[iLayer]->Fill(dxy,chipIDs[iLayer]);
-          hResidualZD[iLayer]->Fill(dz,chipIDs[iLayer]);
+          hResidualXY[iLayer]->Fill(dxy, chipIDs[iLayer]);
+          hResidualZD[iLayer]->Fill(dz, chipIDs[iLayer]);
         }
       }
 
@@ -559,7 +568,7 @@ void ITSTrackTask::reset()
   hTrackPtVsEta->Reset();
   hTrackPtVsPhi->Reset();
 
-  if(mAlignmentMonitor == 1) {
+  if (mAlignmentMonitor == 1) {
     for (int l = 0; l < NLayer; l++) {
       hResidualXY[l]->Reset();
       hResidualZD[l]->Reset();
@@ -753,19 +762,19 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hTrackPtVsPhi, "#it{p}_{T} (GeV/#it{c})", "#phi", 1, 1.10);
   hTrackPtVsPhi->SetStats(0);
 
-  if(mAlignmentMonitor == 1) {
+  if (mAlignmentMonitor == 1) {
     for (int l = 0; l < NLayer; l++) {
-      //sensor
-      int NBinsChipID = (l < NLayerIB) ? (ChipBoundary[l+1] - ChipBoundary[l]) : (ChipBoundary[l+1] - ChipBoundary[l])/14;
+      // sensor
+      int NBinsChipID = (l < NLayerIB) ? (ChipBoundary[l + 1] - ChipBoundary[l]) : (ChipBoundary[l + 1] - ChipBoundary[l]) / 14;
 
-      hResidualXY[l] = std::make_unique<TH2I>(Form("hResidualXY%d",l), Form("ChipID vs dxy, Layer %d",l), 
-                                              500, -0.05, 0.05, NBinsChipID, ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
+      hResidualXY[l] = std::make_unique<TH2F>(Form("hResidualXY%d", l), Form("ChipID vs dxy, Layer %d", l),
+                                              500, -0.05, 0.05, NBinsChipID, ChipBoundary[l] - 0.5, ChipBoundary[l + 1] - 0.5);
       addObject(hResidualXY[l].get());
       formatAxes(hResidualXY[l].get(), "dxy(cm)", (l < NLayerIB) ? "ChipID(Sensor Unit)" : "ChipID(HIC Unit)", 1, 1.10);
       hResidualXY[l]->SetStats(0);
 
-      hResidualZD[l] = std::make_unique<TH2I>(Form("hResidualZD%d",l), Form("ChipID vs dz, Layer %d",l),
-                                              500, -0.05, 0.05, NBinsChipID, ChipBoundary[l] - 0.5, ChipBoundary[l+1] - 0.5);
+      hResidualZD[l] = std::make_unique<TH2F>(Form("hResidualZD%d", l), Form("ChipID vs dz, Layer %d", l),
+                                              500, -0.05, 0.05, NBinsChipID, ChipBoundary[l] - 0.5, ChipBoundary[l + 1] - 0.5);
       addObject(hResidualZD[l].get());
       formatAxes(hResidualZD[l].get(), "dz(cm)", (l < NLayerIB) ? "ChipID(Sensor Unit)" : "ChipID(HIC Unit)", 1, 1.10);
       hResidualZD[l]->SetStats(0);
@@ -791,125 +800,135 @@ void ITSTrackTask::publishHistos()
   }
 }
 
-
-void ITSTrackTask::circleFitXY(double* input, double* par, double &MSEvalue, std::vector<bool> hitUpdate, int step){
+void ITSTrackTask::circleFitXY(double* input, double* par, double& MSEvalue, std::vector<bool> hitUpdate, int step)
+{
 
   int hitentries = 0;
-  for(int a=0; a<hitUpdate.size(); a++){
-     if(hitUpdate[a]==true) hitentries++;
+  for (int a = 0; a < hitUpdate.size(); a++) {
+    if (hitUpdate[a] == true)
+      hitentries++;
   }
 
-  std::vector<TVector3> hr; 
- 
+  std::vector<TVector3> hr;
+
   double frphiX = 0;
   double frphiY = 0;
-  int    nfrdet = 0;
-  for(int a=0; a<hitUpdate.size();a++){
-    if(hitUpdate[a]==false) continue;
-    if(a!=2) continue;
+  int nfrdet = 0;
+  for (int a = 0; a < hitUpdate.size(); a++) {
+    if (hitUpdate[a] == false)
+      continue;
+    if (a != 2)
+      continue;
 
-    frphiX += input[(3*a)+0];
-    frphiY += input[(3*a)+1];   
+    frphiX += input[(3 * a) + 0];
+    frphiY += input[(3 * a) + 1];
     nfrdet++;
   }
-  frphiX /=nfrdet;
-  frphiY /=nfrdet;
-  
-  double FitFrame = std::atan2(frphiY,frphiX) - TMath::Pi()/4.;
-  TMatrixD RotF(2,2);
-  RotF[0] = { TMath::Cos(FitFrame),	TMath::Sin(FitFrame)};
-  RotF[1] = {-TMath::Sin(FitFrame),	TMath::Cos(FitFrame)};    
+  frphiX /= nfrdet;
+  frphiY /= nfrdet;
 
-  TMatrixD RotFInv(2,2);
-  RotFInv[0] = { TMath::Cos(FitFrame), -TMath::Sin(FitFrame)};
-  RotFInv[1] = { TMath::Sin(FitFrame),	TMath::Cos(FitFrame)};  
+  double FitFrame = std::atan2(frphiY, frphiX) - TMath::Pi() / 4.;
+  TMatrixD RotF(2, 2);
+  RotF[0] = { TMath::Cos(FitFrame), TMath::Sin(FitFrame) };
+  RotF[1] = { -TMath::Sin(FitFrame), TMath::Cos(FitFrame) };
 
-  std::vector<double> i, j, k;  		//[hitentries]
-  std::vector<double> irot, jrot; 		//[hitentries]
+  TMatrixD RotFInv(2, 2);
+  RotFInv[0] = { TMath::Cos(FitFrame), -TMath::Sin(FitFrame) };
+  RotFInv[1] = { TMath::Sin(FitFrame), TMath::Cos(FitFrame) };
 
-  int fa=0;  
-  int index[7] = {-1, -1, -1, -1, -1, -1, -1};
-  for(int a=0; a<hitUpdate.size();a++){
-    if(hitUpdate[a]==false) continue;
-    i.push_back(input[(3*a)+0]);
-    j.push_back(input[(3*a)+1]);
-    k.push_back(input[(3*a)+2]);
-    
+  std::vector<double> i, j, k;    //[hitentries]
+  std::vector<double> irot, jrot; //[hitentries]
+
+  int fa = 0;
+  int index[7] = { -1, -1, -1, -1, -1, -1, -1 };
+  for (int a = 0; a < hitUpdate.size(); a++) {
+    if (hitUpdate[a] == false)
+      continue;
+    i.push_back(input[(3 * a) + 0]);
+    j.push_back(input[(3 * a) + 1]);
+    k.push_back(input[(3 * a) + 2]);
+
     TMatrixD gloX[2];
-    gloX[0].ResizeTo(1,2);
-    gloX[0][0] = { i[fa], j[fa]};
+    gloX[0].ResizeTo(1, 2);
+    gloX[0][0] = { i[fa], j[fa] };
     gloX[0].T();
-    gloX[1].ResizeTo(2,1);
+    gloX[1].ResizeTo(2, 1);
     gloX[1] = RotF * gloX[0];
-    gloX[1].T();  
-    
+    gloX[1].T();
+
     irot.push_back(gloX[1][0][0]);
     jrot.push_back(gloX[1][0][1]);
-    hr.push_back(TVector3(irot[fa], jrot[fa], a));     
-    index[a]=fa;       
-    fa++;    
+    hr.push_back(TVector3(irot[fa], jrot[fa], a));
+    index[a] = fa;
+    fa++;
   }
 
-  int cntR[] = {0, 0};
+  int cntR[] = { 0, 0 };
   std::vector<TVector3> initR;
 
-  //standard seeding
-  //012 + (2)34(5) + 56
-  int hit1[] = {0, 1, 2};
-  int hit2[] = {3, 4, 5, 2}; bool hit_mid = false;
-  int hit3[] = {6, 5};
-  for(int i1 = 0; i1 < 3; i1++){
+  // standard seeding
+  // 012 + (2)34(5) + 56
+  int hit1[] = { 0, 1, 2 };
+  int hit2[] = { 3, 4, 5, 2 };
+  bool hit_mid = false;
+  int hit3[] = { 6, 5 };
+  for (int i1 = 0; i1 < 3; i1++) {
     // i1 -> hit1[i1]
-    for(int i2 = 0; i2 < 4; i2++){
+    for (int i2 = 0; i2 < 4; i2++) {
       // i2 -> hit2[i2]
-      if(hit_mid==true && i2>= 2) continue;
-      for(int i3 = 0; i3 < 2; i3++){
+      if (hit_mid == true && i2 >= 2)
+        continue;
+      for (int i3 = 0; i3 < 2; i3++) {
         // i3 -> hit3[i3]
-        if(hit1[i1]==hit2[i2] || hit2[i2]==hit3[i3]) continue;
-        //if(hit_mid==true) continue;
-        if(hitUpdate[hit1[i1]]==false) continue;
-        if(hitUpdate[hit2[i2]]==false) continue;
-        if(hitUpdate[hit3[i3]]==false) continue;
-        double hitX[3] = {i[index[hit1[i1]]], i[index[hit2[i2]]], i[index[hit3[i3]]]};
-        double hitY[3] = {j[index[hit1[i1]]], j[index[hit2[i2]]], j[index[hit3[i3]]]};
+        if (hit1[i1] == hit2[i2] || hit2[i2] == hit3[i3])
+          continue;
+        // if(hit_mid==true) continue;
+        if (hitUpdate[hit1[i1]] == false)
+          continue;
+        if (hitUpdate[hit2[i2]] == false)
+          continue;
+        if (hitUpdate[hit3[i3]] == false)
+          continue;
+        double hitX[3] = { i[index[hit1[i1]]], i[index[hit2[i2]]], i[index[hit3[i3]]] };
+        double hitY[3] = { j[index[hit1[i1]]], j[index[hit2[i2]]], j[index[hit3[i3]]] };
 
-        double d12 = -(hitX[1] - hitX[0])/(hitY[1] - hitY[0]);
-        double d23 = -(hitX[2] - hitX[1])/(hitY[2] - hitY[1]);
+        double d12 = -(hitX[1] - hitX[0]) / (hitY[1] - hitY[0]);
+        double d23 = -(hitX[2] - hitX[1]) / (hitY[2] - hitY[1]);
 
-        double x12 = 0.5*(hitX[0] + hitX[1]);
-        double x23 = 0.5*(hitX[1] + hitX[2]);
-        double y12 = 0.5*(hitY[0] + hitY[1]);
-        double y23 = 0.5*(hitY[1] + hitY[2]);
+        double x12 = 0.5 * (hitX[0] + hitX[1]);
+        double x23 = 0.5 * (hitX[1] + hitX[2]);
+        double y12 = 0.5 * (hitY[0] + hitY[1]);
+        double y23 = 0.5 * (hitY[1] + hitY[2]);
 
-        double CenterX = ((-d23*x23 + d12*x12) + (y23 - y12))/(-d23 + d12);
-        double CenterY = d12*(CenterX - x12) + y12;
+        double CenterX = ((-d23 * x23 + d12 * x12) + (y23 - y12)) / (-d23 + d12);
+        double CenterY = d12 * (CenterX - x12) + y12;
 
-        double temp_R = std::sqrt(std::pow(CenterX - hitX[0],2) + std::pow(CenterY - hitY[0],2));
-        initR.push_back(TVector3(CenterX,CenterY,temp_R));
-        if(i2<2) {
-           hit_mid=true; // mid hit is successfully used. Do not find inner or outer hits for initial radius searching
+        double temp_R = std::sqrt(std::pow(CenterX - hitX[0], 2) + std::pow(CenterY - hitY[0], 2));
+        initR.push_back(TVector3(CenterX, CenterY, temp_R));
+        if (i2 < 2) {
+          hit_mid = true; // mid hit is successfully used. Do not find inner or outer hits for initial radius searching
         }
         cntR[0]++;
-      }  
+      }
     }
   }
 
-  if(initR.size()==0) {
-    initR.push_back(TVector3(0,0,10000));
+  if (initR.size() == 0) {
+    initR.push_back(TVector3(0, 0, 10000));
     cntR[0]++;
   }
 
-  double mean_X[] = {0, 0};
-  double mean_Y[] = {0, 0};
-  double mean_R[] = {0, 0};
-  for(int i = 0; i < cntR[0]; i++) {
-    mean_X[0] += initR[i].X()/(double)cntR[0];
-    mean_Y[0] += initR[i].Y()/(double)cntR[0];
-    mean_R[0] += initR[i](2)/(double)cntR[0];
+  double mean_X[] = { 0, 0 };
+  double mean_Y[] = { 0, 0 };
+  double mean_R[] = { 0, 0 };
+  for (int i = 0; i < cntR[0]; i++) {
+    mean_X[0] += initR[i].X() / (double)cntR[0];
+    mean_Y[0] += initR[i].Y() / (double)cntR[0];
+    mean_R[0] += initR[i](2) / (double)cntR[0];
   }
 
-  for(int i = 0; i < cntR[0]; i++) {
-    if(std::abs(mean_R[0] - initR[i](2)) < mean_R[0]) {
+  for (int i = 0; i < cntR[0]; i++) {
+    if (std::abs(mean_R[0] - initR[i](2)) < mean_R[0]) {
       mean_X[1] += initR[i].X();
       mean_Y[1] += initR[i].Y();
       mean_R[1] += initR[i](2);
@@ -918,270 +937,274 @@ void ITSTrackTask::circleFitXY(double* input, double* par, double &MSEvalue, std
   }
   mean_R[1] /= cntR[1];
 
-  mean_R[1] *= std::pow(sqrt(10),step);
-  if(mean_R[1]<1.0e+1) mean_R[1] = 1.0e+1;
-  if(mean_R[1]>1.0e+6) mean_R[1] = 1.0e+6;
+  mean_R[1] *= std::pow(sqrt(10), step);
+  if (mean_R[1] < 1.0e+1)
+    mean_R[1] = 1.0e+1;
+  if (mean_R[1] > 1.0e+6)
+    mean_R[1] = 1.0e+6;
 
-  double thetaR = std::atan2( jrot[0], irot[0]);
-  
+  double thetaR = std::atan2(jrot[0], irot[0]);
+
   double temp_parA[4];
-  temp_parA[0] = + 1/mean_R[1];
-  temp_parA[1] = 0;  
+  temp_parA[0] = +1 / mean_R[1];
+  temp_parA[1] = 0;
 
   double temp_parB[4];
-  temp_parB[0] = - 1/mean_R[1];
-  temp_parB[1] = 0;  
+  temp_parB[0] = -1 / mean_R[1];
+  temp_parB[1] = 0;
 
   // make the functor object
   fitfuncXY.init();
   fitfuncXY.set(hr, thetaR, ITS_AbsBz);
   ROOT::Math::Functor fcn(fitfuncXY, 4);
 
-  double pStartA[4] = {temp_parA[0],temp_parA[1], 0, 0};
-  fitterA.SetFCN(fcn,pStartA);
+  double pStartA[4] = { temp_parA[0], temp_parA[1], 0, 0 };
+  fitterA.SetFCN(fcn, pStartA);
   fitterA.Config().ParSettings(0).SetStepSize((float)FitStepSize[0]);
   fitterA.Config().ParSettings(1).SetStepSize((float)FitStepSize[1]);
   fitterA.Config().ParSettings(2).SetStepSize((float)FitStepSize[2]);
-  fitterA.Config().ParSettings(3).SetStepSize((float)FitStepSize[3]);  
+  fitterA.Config().ParSettings(3).SetStepSize((float)FitStepSize[3]);
   fitterA.Config().ParSettings(0).SetLimits(+1.0e-10, +1.0e-1); // + side
 
-  double pStartB[4] = {temp_parB[0],temp_parB[1], 0, 0};  
-  fitterB.SetFCN(fcn,pStartB);
+  double pStartB[4] = { temp_parB[0], temp_parB[1], 0, 0 };
+  fitterB.SetFCN(fcn, pStartB);
   fitterB.Config().ParSettings(0).SetStepSize((float)FitStepSize[0]);
   fitterB.Config().ParSettings(1).SetStepSize((float)FitStepSize[1]);
   fitterB.Config().ParSettings(2).SetStepSize((float)FitStepSize[2]);
-  fitterB.Config().ParSettings(3).SetStepSize((float)FitStepSize[3]);  
+  fitterB.Config().ParSettings(3).SetStepSize((float)FitStepSize[3]);
   fitterB.Config().ParSettings(0).SetLimits(-1.0e-1, -1.0e-10); // - side
 
   ROOT::Math::MinimizerOptions minOpt;
-  for(int iTol = 0; iTol < 4; iTol++){
+  for (int iTol = 0; iTol < 4; iTol++) {
 
-    minOpt.SetTolerance(std::pow(10,iTol)*FitTolerance);
+    minOpt.SetTolerance(std::pow(10, iTol) * FitTolerance);
 
     fitterA.Config().SetMinimizerOptions(minOpt);
-    fitterB.Config().SetMinimizerOptions(minOpt);  
+    fitterB.Config().SetMinimizerOptions(minOpt);
     bool okA = fitterA.FitFCN();
     bool okB = fitterB.FitFCN();
-  
+
     if (!okA) {
-      if(!okB) {
-        const ROOT::Fit::FitResult & resultA = fitterA.Result();  
-        const double * parFitA = resultA.GetParams();        
-        double MSEvalueA = resultA.MinFcnValue();        
-        const ROOT::Fit::FitResult & resultB = fitterB.Result();
-        const double * parFitB = resultB.GetParams();
-        double MSEvalueB = resultB.MinFcnValue(); 
-      
+      if (!okB) {
+        const ROOT::Fit::FitResult& resultA = fitterA.Result();
+        const double* parFitA = resultA.GetParams();
+        double MSEvalueA = resultA.MinFcnValue();
+        const ROOT::Fit::FitResult& resultB = fitterB.Result();
+        const double* parFitB = resultB.GetParams();
+        double MSEvalueB = resultB.MinFcnValue();
+
         TMatrixD vxyA[2];
-        vxyA[0].ResizeTo(1,2);
-        vxyA[0][0] = { parFitA[2], parFitA[3]};
+        vxyA[0].ResizeTo(1, 2);
+        vxyA[0][0] = { parFitA[2], parFitA[3] };
         vxyA[0].T();
-        vxyA[1].ResizeTo(2,1);
+        vxyA[1].ResizeTo(2, 1);
         vxyA[1] = RotFInv * vxyA[0];
-        vxyA[1].T();   
-        
+        vxyA[1].T();
+
         TMatrixD vxyB[2];
-        vxyB[0].ResizeTo(1,2);
-        vxyB[0][0] = { parFitB[2], parFitB[3]};
+        vxyB[0].ResizeTo(1, 2);
+        vxyB[0][0] = { parFitB[2], parFitB[3] };
         vxyB[0].T();
-        vxyB[1].ResizeTo(2,1);
-        vxyB[1] = RotFInv * vxyB[0];      
+        vxyB[1].ResizeTo(2, 1);
+        vxyB[1] = RotFInv * vxyB[0];
         vxyB[1].T();
 
-        if(MSEvalueA<MSEvalueB){
+        if (MSEvalueA < MSEvalueB) {
           MSEvalue = MSEvalueA;
-          par[0]=parFitA[0];
-          par[1]=parFitA[1];  
-          par[2]=vxyA[1][0][0];
-          par[3]=vxyA[1][0][1];
-          par[4]= thetaR + FitFrame;       
-          par[5]= iTol*10 + okA;
+          par[0] = parFitA[0];
+          par[1] = parFitA[1];
+          par[2] = vxyA[1][0][0];
+          par[3] = vxyA[1][0][1];
+          par[4] = thetaR + FitFrame;
+          par[5] = iTol * 10 + okA;
         } else {
           MSEvalue = MSEvalueB;
-          par[0]=parFitB[0];
-          par[1]=parFitB[1];  
-          par[2]=vxyB[1][0][0];
-          par[3]=vxyB[1][0][1]; 
-          par[4]= thetaR + FitFrame;   
-          par[5]= iTol*10 + okB;    
-        }     
-  
+          par[0] = parFitB[0];
+          par[1] = parFitB[1];
+          par[2] = vxyB[1][0][0];
+          par[3] = vxyB[1][0][1];
+          par[4] = thetaR + FitFrame;
+          par[5] = iTol * 10 + okB;
+        }
+
       } else {
-        const ROOT::Fit::FitResult & resultB = fitterB.Result();
-        const double * parFitB = resultB.GetParams();
-        MSEvalue = resultB.MinFcnValue();  
+        const ROOT::Fit::FitResult& resultB = fitterB.Result();
+        const double* parFitB = resultB.GetParams();
+        MSEvalue = resultB.MinFcnValue();
 
         TMatrixD vxyB[2];
-        vxyB[0].ResizeTo(1,2);
-        vxyB[0][0] = { parFitB[2], parFitB[3]};
+        vxyB[0].ResizeTo(1, 2);
+        vxyB[0][0] = { parFitB[2], parFitB[3] };
         vxyB[0].T();
-        vxyB[1].ResizeTo(2,1);
-        vxyB[1] = RotFInv * vxyB[0];     
+        vxyB[1].ResizeTo(2, 1);
+        vxyB[1] = RotFInv * vxyB[0];
         vxyB[1].T();
-        
-        par[0]=parFitB[0];
-        par[1]=parFitB[1];  
-        par[2]=vxyB[1][0][0];
-        par[3]=vxyB[1][0][1]; 
-        par[4]= thetaR + FitFrame;   
-        par[5]= iTol*10 + okB;      
-        break;    
+
+        par[0] = parFitB[0];
+        par[1] = parFitB[1];
+        par[2] = vxyB[1][0][0];
+        par[3] = vxyB[1][0][1];
+        par[4] = thetaR + FitFrame;
+        par[5] = iTol * 10 + okB;
+        break;
       }
 
     } else {
-      if(!okB){
-        const ROOT::Fit::FitResult & resultA = fitterA.Result();
-        const double * parFitA = resultA.GetParams();
-        MSEvalue = resultA.MinFcnValue(); 
+      if (!okB) {
+        const ROOT::Fit::FitResult& resultA = fitterA.Result();
+        const double* parFitA = resultA.GetParams();
+        MSEvalue = resultA.MinFcnValue();
 
         TMatrixD vxyA[2];
-        vxyA[0].ResizeTo(1,2);
-        vxyA[0][0] = { parFitA[2], parFitA[3]};
+        vxyA[0].ResizeTo(1, 2);
+        vxyA[0][0] = { parFitA[2], parFitA[3] };
         vxyA[0].T();
-        vxyA[1].ResizeTo(2,1);
+        vxyA[1].ResizeTo(2, 1);
         vxyA[1] = RotFInv * vxyA[0];
         vxyA[1].T();
-        
-        par[0]=parFitA[0];
-        par[1]=parFitA[1];  
-        par[2]=vxyA[1][0][0];
-        par[3]=vxyA[1][0][1]; 
-        par[4]= thetaR + FitFrame;       
-        par[5]= iTol*10 + okA;
+
+        par[0] = parFitA[0];
+        par[1] = parFitA[1];
+        par[2] = vxyA[1][0][0];
+        par[3] = vxyA[1][0][1];
+        par[4] = thetaR + FitFrame;
+        par[5] = iTol * 10 + okA;
         break;
-      } else { 
-        const ROOT::Fit::FitResult & resultA = fitterA.Result();  
-        const double * parFitA = resultA.GetParams();        
-        double MSEvalueA = resultA.MinFcnValue();    
-        const ROOT::Fit::FitResult & resultB = fitterB.Result();
-        const double * parFitB = resultB.GetParams();
-        double MSEvalueB = resultB.MinFcnValue();  
+      } else {
+        const ROOT::Fit::FitResult& resultA = fitterA.Result();
+        const double* parFitA = resultA.GetParams();
+        double MSEvalueA = resultA.MinFcnValue();
+        const ROOT::Fit::FitResult& resultB = fitterB.Result();
+        const double* parFitB = resultB.GetParams();
+        double MSEvalueB = resultB.MinFcnValue();
 
         TMatrixD vxyA[2];
-        vxyA[0].ResizeTo(1,2);
-        vxyA[0][0] = { parFitA[2], parFitA[3]};
+        vxyA[0].ResizeTo(1, 2);
+        vxyA[0][0] = { parFitA[2], parFitA[3] };
         vxyA[0].T();
-        vxyA[1].ResizeTo(2,1);
+        vxyA[1].ResizeTo(2, 1);
         vxyA[1] = RotFInv * vxyA[0];
         vxyA[1].T();
-        
+
         TMatrixD vxyB[2];
-        vxyB[0].ResizeTo(1,2);
-        vxyB[0][0] = { parFitB[2], parFitB[3]};
+        vxyB[0].ResizeTo(1, 2);
+        vxyB[0][0] = { parFitB[2], parFitB[3] };
         vxyB[0].T();
-        vxyB[1].ResizeTo(2,1);
-        vxyB[1] = RotFInv * vxyB[0]; 
+        vxyB[1].ResizeTo(2, 1);
+        vxyB[1] = RotFInv * vxyB[0];
         vxyB[1].T();
-        
-        if(MSEvalueA<MSEvalueB){
+
+        if (MSEvalueA < MSEvalueB) {
           MSEvalue = MSEvalueA;
-          par[0]=parFitA[0];
-          par[1]=parFitA[1];  
-          par[2]=vxyA[1][0][0];
-          par[3]=vxyA[1][0][1];  
-          par[4]= thetaR + FitFrame;     
-          par[5]= iTol*10 + okA;  
+          par[0] = parFitA[0];
+          par[1] = parFitA[1];
+          par[2] = vxyA[1][0][0];
+          par[3] = vxyA[1][0][1];
+          par[4] = thetaR + FitFrame;
+          par[5] = iTol * 10 + okA;
         } else {
           MSEvalue = MSEvalueB;
-          par[0]=parFitB[0];
-          par[1]=parFitB[1];  
-          par[2]=vxyB[1][0][0];
-          par[3]=vxyB[1][0][1];  
-          par[4]= thetaR + FitFrame;       
-          par[5]= iTol*10 + okB;
+          par[0] = parFitB[0];
+          par[1] = parFitB[1];
+          par[2] = vxyB[1][0][0];
+          par[3] = vxyB[1][0][1];
+          par[4] = thetaR + FitFrame;
+          par[5] = iTol * 10 + okB;
         }
-        break;  
+        break;
       }
     }
-  }  
+  }
 }
 
-void ITSTrackTask::lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate){
+void ITSTrackTask::lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate)
+{
 
   int hitentries = 0;
-  for(int a=0; a<hitUpdate.size(); a++){
-     if(hitUpdate[a]==true) hitentries++;
+  for (int a = 0; a < hitUpdate.size(); a++) {
+    if (hitUpdate[a] == true)
+      hitentries++;
   }
-  if(vertex==true) hitentries++;  
-  
-  std::vector<double> z, beta; 
+  if (vertex == true)
+    hitentries++;
+
+  std::vector<double> z, beta;
   std::vector<int> index;
 
-  int fa=0;
-  for(int a=0; a<hitUpdate.size(); a++){
-    if(hitUpdate[a]==true){
+  int fa = 0;
+  for (int a = 0; a < hitUpdate.size(); a++) {
+    if (hitUpdate[a] == true) {
       z.push_back(zIn[a]);
       beta.push_back(betaIn[a]);
       index.push_back(a);
-      fa++;    
+      fa++;
     }
   }
-  if(vertex==true){
-    z[fa]=zIn[hitUpdate.size()];
-    beta[fa]=betaIn[hitUpdate.size()];
-    index[fa]=hitUpdate.size();
-    fa++; 
+  if (vertex == true) {
+    z[fa] = zIn[hitUpdate.size()];
+    beta[fa] = betaIn[hitUpdate.size()];
+    index[fa] = hitUpdate.size();
+    fa++;
   }
 
-  int tothits = hitentries;  
-  
-  int last = tothits-1;
-  TMatrixD MatA(tothits,2);
-  TMatrixD MatAT(2,tothits);
-  TMatrixD MatZ(tothits,1);   
+  int tothits = hitentries;
+
+  int last = tothits - 1;
+  TMatrixD MatA(tothits, 2);
+  TMatrixD MatAT(2, tothits);
+  TMatrixD MatZ(tothits, 1);
   double beta2sum = 0;
   double betasum = 0;
-  double nhits = 0;  
+  double nhits = 0;
 
   double Sigma_tot[tothits];
-  for(int l = 0; l < tothits; l++){
-     Sigma_tot[l] = getsigma(Radius, index[l], ITS_AbsBz, 0);
-  } 
-  if(vertex==true){
-    MatAT[0][0] = beta[last]/std::pow(Sigma_tot[last]*1e-4/Radius,2);
-    MatAT[1][0] = 1/std::pow(Sigma_tot[last]*1e-4/Radius,2);
-    
-    MatZ[0]  = { z[last]};
-  
-    beta2sum += beta[last]*beta[last]/std::pow(Sigma_tot[last]*1e-4/Radius,2);
-    betasum  += beta[last]/std::pow(Sigma_tot[last]*1e-4/Radius,2);
-    nhits += 1/std::pow(Sigma_tot[last]*1e-4/Radius,2); 
-  
-    for(int i = 1; i < tothits; i++){
+  for (int l = 0; l < tothits; l++) {
+    Sigma_tot[l] = getsigma(Radius, index[l], ITS_AbsBz, 0);
+  }
+  if (vertex == true) {
+    MatAT[0][0] = beta[last] / std::pow(Sigma_tot[last] * 1e-4 / Radius, 2);
+    MatAT[1][0] = 1 / std::pow(Sigma_tot[last] * 1e-4 / Radius, 2);
 
-      MatAT[0][i]  = beta[i-1]/std::pow(Sigma_tot[i-1]*1e-4/Radius,2);
-      MatAT[1][i]  = 1/std::pow(Sigma_tot[i-1]*1e-4/Radius,2); 
+    MatZ[0] = { z[last] };
 
-      MatZ[i]  = { z[i-1]};  
+    beta2sum += beta[last] * beta[last] / std::pow(Sigma_tot[last] * 1e-4 / Radius, 2);
+    betasum += beta[last] / std::pow(Sigma_tot[last] * 1e-4 / Radius, 2);
+    nhits += 1 / std::pow(Sigma_tot[last] * 1e-4 / Radius, 2);
 
-      beta2sum += beta[i-1]*beta[i-1]/std::pow(Sigma_tot[i-1]*1e-4/Radius,2);
-      betasum  += beta[i-1]/std::pow(Sigma_tot[i-1]*1e-4/Radius,2);  
-      nhits += 1/std::pow(Sigma_tot[i-1]*1e-4/Radius,2);            
+    for (int i = 1; i < tothits; i++) {
+
+      MatAT[0][i] = beta[i - 1] / std::pow(Sigma_tot[i - 1] * 1e-4 / Radius, 2);
+      MatAT[1][i] = 1 / std::pow(Sigma_tot[i - 1] * 1e-4 / Radius, 2);
+
+      MatZ[i] = { z[i - 1] };
+
+      beta2sum += beta[i - 1] * beta[i - 1] / std::pow(Sigma_tot[i - 1] * 1e-4 / Radius, 2);
+      betasum += beta[i - 1] / std::pow(Sigma_tot[i - 1] * 1e-4 / Radius, 2);
+      nhits += 1 / std::pow(Sigma_tot[i - 1] * 1e-4 / Radius, 2);
     }
   } else {
-    for(int i = 0; i < tothits; i++){
-      MatAT[0][i]  = beta[i]/std::pow(Sigma_tot[i]*1e-4/Radius,2);
-      MatAT[1][i]  = 1/std::pow(Sigma_tot[i]*1e-4/Radius,2); 
+    for (int i = 0; i < tothits; i++) {
+      MatAT[0][i] = beta[i] / std::pow(Sigma_tot[i] * 1e-4 / Radius, 2);
+      MatAT[1][i] = 1 / std::pow(Sigma_tot[i] * 1e-4 / Radius, 2);
 
-      MatZ[i]  = { z[i]};  
+      MatZ[i] = { z[i] };
 
-      beta2sum += beta[i]*beta[i]/std::pow(Sigma_tot[i]*1e-4/Radius,2);
-      betasum  += beta[i]/std::pow(Sigma_tot[i]*1e-4/Radius,2);  
-      nhits += 1/std::pow(Sigma_tot[i]*1e-4/Radius,2);            
+      beta2sum += beta[i] * beta[i] / std::pow(Sigma_tot[i] * 1e-4 / Radius, 2);
+      betasum += beta[i] / std::pow(Sigma_tot[i] * 1e-4 / Radius, 2);
+      nhits += 1 / std::pow(Sigma_tot[i] * 1e-4 / Radius, 2);
     }
-  } 
-  TMatrixD MatATAInv(2,2);   
-  double DetATA = nhits*beta2sum - betasum*betasum;
-  MatATAInv[0] = {nhits/DetATA, -betasum/DetATA};
-  MatATAInv[1] = {-betasum/DetATA, beta2sum/DetATA};
-     
-  TMatrixD MatP(2,1);
-    
-  MatP = MatATAInv * MatAT * MatZ;
-  
-  parz[0] = MatP[0][0];
-  parz[1] = MatP[1][0]; 
+  }
+  TMatrixD MatATAInv(2, 2);
+  double DetATA = nhits * beta2sum - betasum * betasum;
+  MatATAInv[0] = { nhits / DetATA, -betasum / DetATA };
+  MatATAInv[1] = { -betasum / DetATA, beta2sum / DetATA };
 
+  TMatrixD MatP(2, 1);
+
+  MatP = MatATAInv * MatAT * MatZ;
+
+  parz[0] = MatP[0][0];
+  parz[1] = MatP[1][0];
 }
 
 } // namespace o2::quality_control_modules::its
