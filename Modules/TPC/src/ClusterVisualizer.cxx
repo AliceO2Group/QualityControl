@@ -161,9 +161,9 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 
   auto calDetIter = 0;
 
-  auto clusterData = mCdbApi.retrieveFromTFileAny<ClustersData>(mPath,
-                                                                mLookupMaps.size() > 1 ? mLookupMaps.at(calDetIter) : mLookupMaps.at(0),
-                                                                mTimestamps.size() > 0 ? mTimestamps.at(calDetIter) : t.timestamp);
+  std::unique_ptr<ClustersData> clusterData(mCdbApi.retrieveFromTFileAny<ClustersData>(mPath,
+                                                                                       mLookupMaps.size() > 1 ? mLookupMaps.at(calDetIter) : mLookupMaps.at(0),
+                                                                                       mTimestamps.size() > 0 ? mTimestamps.at(calDetIter) : t.timestamp));
 
   auto& clusters = clusterData->getClusters();
 
