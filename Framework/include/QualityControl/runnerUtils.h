@@ -86,6 +86,8 @@ uint64_t getCurrentTimestamp();
 
 void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
 
+std::string translateBeamType(const std::string& pdpBeamType);
+
 } // namespace o2::quality_control::core
 
 #endif // QUALITYCONTROL_RUNNERUTILS_H
