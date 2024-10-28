@@ -116,10 +116,9 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
   auto partitionName = computeStringActivityField(services, "environment_id", fallbackActivity.mPartitionName);
   auto periodName = computeStringActivityField(services, "lhc_period", fallbackActivity.mPeriodName);
   auto fillNumber = computeNumericalActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
-  auto beam_type = computeStringActivityField(services, "fill_info_beam_type", fallbackActivity.mBeamType);
   auto beam_type = computeStringActivityField(services, "pdp_beam_type", fallbackActivity.mBeamType);
   beam_type = translateBeamType(beam_type);
-  
+
   Activity activity(
     runNumber,
     runType,
