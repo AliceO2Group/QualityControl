@@ -91,6 +91,23 @@ std::string computeStringActivityField(framework::ServiceRegistryRef services, c
   return property;
 }
 
+std::string translateBeamType(const std::string& pdpBeamType)
+{
+  // convert the beam type received from pdp into the format we use in flp/ecs
+  std::string result = "";
+  if (pdpBeamType == "pp") {
+    result = "PROTON-PROTON";
+  } else if (pdpBeamType == "PbPb") {
+    result = "Pb-Pb";
+  } else if (pdpBeamType == "pPb") {
+    result = "Pb-PROTON";
+  } else {
+    ILOG(Warning, Ops) << "Failed to convert the pdp beam type ('" << pdpBeamType << "'), returning an empty string" << ENDM;
+  }
+  ILOG(Debug, Devel) << "Translated pdp beam type '" << pdpBeamType << "' to '" << result << "'" << ENDM;
+  return result;
+}
+
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
 {
   // for a complete list of the properties provided by ECS, see here: https://github.com/AliceO2Group/Control/blob/master/docs/handbook/configuration.md#variables-pushed-to-controlled-tasks
@@ -102,7 +119,8 @@ Activity computeActivity(framework::ServiceRegistryRef services, const Activity&
   auto partitionName = computeStringActivityField(services, "environment_id", fallbackActivity.mPartitionName);
   auto periodName = computeStringActivityField(services, "lhc_period", fallbackActivity.mPeriodName);
   auto fillNumber = computeNumericalActivityField<int>(services, "fill_info_fill_number", fallbackActivity.mFillNumber);
-  auto beam_type = computeStringActivityField(services, "fill_info_beam_type", fallbackActivity.mBeamType);
+  auto beam_type = computeStringActivityField(services, "pdp_beam_type", fallbackActivity.mBeamType);
+  beam_type = translateBeamType(beam_type);
 
   Activity activity(
     runNumber,
