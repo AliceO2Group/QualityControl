@@ -132,6 +132,9 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   if (input1Tokens.size() > 1) {
     mScaleInput1 = std::stod(input1Tokens[1]);
   }
+  if (input1Tokens.size() > 2) {
+    mShiftInput1 = std::stod(input1Tokens[2]);
+  }
 
   auto input2Tokens = o2::utils::Str::tokenize(nameInput2, ':', false, true);
   if (input2Tokens.size() > 0) {
@@ -139,6 +142,9 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   }
   if (input2Tokens.size() > 1) {
     mScaleInput2 = std::stod(input2Tokens[1]);
+  }
+  if (input2Tokens.size() > 2) {
+    mShiftInput2 = std::stod(input2Tokens[2]);
   }
 
   indexMB1 = o2::ctp::CTPInputsConfiguration::getInputIndexFromName(nameInput1);
@@ -165,11 +171,31 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoClassRatios.get()->GetXaxis()->SetLabelSize(0.025);
   mHistoClassRatios.get()->GetXaxis()->LabelsOption("v");
 
-  mHistoBCMinBias1->SetTitle(Form("BC position %s", nameInput1.c_str()));
-  mHistoBCMinBias2->SetTitle(Form("BC position %s", nameInput2.c_str()));
-  if (mScaleInput2 > 1) {
-    mHistoBCMinBias2->SetTitle(Form("BC position %s scaled 1/%g", nameInput2.c_str(), mScaleInput2));
+  TString title1 = Form("BC position %s", nameInput1.c_str());
+  TString titley1 = Form("Rate");
+  TString titleX1 = Form("BC");
+  if (mScaleInput1 > 1) {
+    title1 += Form(", scaled with 1/%g", mScaleInput1);
+    titley1 += Form(" #times 1/%g", mScaleInput1);
   }
+  if (mShiftInput1 > 0) {
+    title1 += Form(", shifted by - %d", mShiftInput1);
+    titleX1 += Form(" - %d", mShiftInput1);
+  }
+  mHistoBCMinBias1->SetTitle(Form("%s; %s; %s", title1.Data(), titleX1.Data(), titley1.Data()));
+
+  TString title2 = Form("BC position %s", nameInput2.c_str());
+  TString titley2 = Form("Rate");
+  TString titleX2 = Form("BC");
+  if (mScaleInput2 > 1) {
+    title2 += Form(", scaled with 1/%g", mScaleInput2);
+    titley2 += Form(" #times 1/%g", mScaleInput2);
+  }
+  if (mShiftInput2 > 0) {
+    title2 += Form(", shifted by - %d", mShiftInput2);
+    titleX2 += Form(" - %d", mShiftInput2);
+  }
+  mHistoBCMinBias2->SetTitle(Form("%s; %s; %s", title2.Data(), titleX2.Data(), titley2.Data()));
   mHistoClassRatios->SetTitle(Form("Class Ratio to %s", MBclassName.c_str()));
   mHistoInputRatios->SetTitle(Form("Input Ratio to %s", nameInput1.c_str()));
 }
@@ -200,11 +226,11 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
           if (i == indexMB1 - 1) {
-            mHistoBCMinBias1->Fill(bcid, 1. / mScaleInput1);
+            mHistoBCMinBias1->Fill((bcid - mShiftInput1) % 3564, 1. / mScaleInput1);
             mHistoInputRatios->getDen()->Fill(0., 1);
           }
           if (i == indexMB2 - 1) {
-            mHistoBCMinBias2->Fill(bcid, 1. / mScaleInput2);
+            mHistoBCMinBias2->Fill((bcid - mShiftInput2) % 3564, 1. / mScaleInput2);
           }
         }
       }
