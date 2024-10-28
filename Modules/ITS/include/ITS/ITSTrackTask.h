@@ -157,13 +157,16 @@ class ITSTrackTask : public TaskInterface
     std::vector<TVector3> fHits;
     double thetaR;
     double Bz;
-    double sigma_meas[2][NLayer] = { { 45, 45, 45, 55, 55, 55, 55 },
-                                     { 40, 40, 40, 40, 40, 40, 40 } }; // um unit
-    double sigma_msc[2][NLayer] = { { 30, 30, 30, 110, 110, 110, 110 },
-                                    { 25, 25, 25, 75, 75, 75, 75 } }; // um unit
+    double sigma_meas[2][NLayer] = { { 45, 45, 45, 55, 55, 55, 55 }, { 40, 40, 40, 40, 40, 40, 40 } };    // um unit
+    double sigma_msc[2][NLayer] = { { 30, 30, 30, 110, 110, 110, 110 }, { 25, 25, 25, 75, 75, 75, 75 } }; // um unit
 
     se_circlefitXY() = default;
-    se_circlefitXY(std::vector<TVector3>& h, double tR, double bz) : fHits(h), thetaR(tR), Bz(bz) {};
+    se_circlefitXY(std::vector<TVector3>& h, double tR, double bz)
+    {
+      fHits = h;
+      thetaR = tR;
+      Bz = bz;
+    };
 
     void loadparameters(double arrpar_meas[][NLayer], double arrpar_msc[][NLayer])
     {
@@ -252,10 +255,8 @@ class ITSTrackTask : public TaskInterface
 
   void lineFitDZ(double* zIn, double* betaIn, double* parz, double Radius, bool vertex, std::vector<bool> hitUpdate);
 
-  double mSigmaMeas[2][NLayer] = { { 45, 45, 45, 55, 55, 55, 55 },
-                                   { 40, 40, 40, 40, 40, 40, 40 } }; // um unit
-  double mSigmaMsc[2][NLayer] = { { 30, 30, 30, 110, 110, 110, 110 },
-                                  { 25, 25, 25, 75, 75, 75, 75 } }; // um unit
+  double mSigmaMeas[2][NLayer] = { { 45, 45, 45, 55, 55, 55, 55 }, { 40, 40, 40, 40, 40, 40, 40 } };    // um unit
+  double mSigmaMsc[2][NLayer] = { { 30, 30, 30, 110, 110, 110, 110 }, { 25, 25, 25, 75, 75, 75, 75 } }; // um unit
 
   double getsigma(double R, int L, double B, int axis)
   {
