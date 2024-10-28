@@ -104,7 +104,7 @@ std::string translateBeamType(const std::string& pdpBeamType)
   } else {
     ILOG(Warning, Ops) << "Failed to convert the pdp beam type ('" << pdpBeamType << "'), returning an empty string" << ENDM;
   }
-  ILOG(Debug, Devel) << "Translated pdp beam type '" << pdpBeamType <<"' to '" << result "'" << ENDM;
+  ILOG(Debug, Devel) << "Translated pdp beam type '" << pdpBeamType << "' to '" << result << "'" << ENDM;
   return result;
 }
 
