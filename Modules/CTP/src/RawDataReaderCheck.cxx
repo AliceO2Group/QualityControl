@@ -222,26 +222,30 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->SetNDC();
       h->GetListOfFunctions()->Add(msg->Clone());
 
+      float messagePos = 0.75;
+      float initialMessagePos = 0.75;
       if (mVecMediumBC.size() > 0) {
-        msg = std::make_shared<TLatex>(0.2, 0.75, Form("BC is expected on following possitions, but inputs are below threshold (%f):", mThreshold));
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, Form("BC is expected on following possitions, but inputs are below threshold (%g):", round(mThreshold)));
         msg->SetTextSize(0.03);
         msg->SetNDC();
         h->GetListOfFunctions()->Add(msg->Clone());
         for (size_t i = 0; i < mVecMediumBC.size(); i++) {
-          msg = std::make_shared<TLatex>(0.2, 0.75 - (i + 1) * 0.02, Form("%d", mVecMediumBC[i]));
+          messagePos = initialMessagePos - (i + 1) * 0.02;
+          msg = std::make_shared<TLatex>(0.2, messagePos, Form("%d", mVecMediumBC[i]));
           msg->SetTextSize(0.02);
           msg->SetNDC();
           h->GetListOfFunctions()->Add(msg->Clone());
         }
       }
-
+      initialMessagePos = messagePos - 0.04;
       if (mVecBadBC.size() > 0) {
-        msg = std::make_shared<TLatex>(0.2, 0.75, Form("BC is not expected on following possitions, but inputs are above threshold (%f):", mThreshold));
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, Form("BC is not expected on following possitions, but inputs are above threshold (%g):", round(mThreshold)));
         msg->SetTextSize(0.03);
         msg->SetNDC();
         h->GetListOfFunctions()->Add(msg->Clone());
         for (size_t i = 0; i < mVecBadBC.size(); i++) {
-          msg = std::make_shared<TLatex>(0.2, 0.75 - (i + 1) * 0.02, Form("%d", mVecBadBC[i]));
+          messagePos = initialMessagePos - (i + 1) * 0.02;
+          msg = std::make_shared<TLatex>(0.2, messagePos, Form("%d", mVecBadBC[i]));
           msg->SetTextSize(0.02);
           msg->SetNDC();
           h->GetListOfFunctions()->Add(msg->Clone());
