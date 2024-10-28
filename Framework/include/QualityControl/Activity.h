@@ -81,7 +81,7 @@ class Activity
   std::string mPartitionName{};
   int mFillNumber{ 0 };
 
-  ClassDef(Activity, 5);
+  ClassDef(Activity, 6);
 };
 
 } // namespace o2::quality_control::core
