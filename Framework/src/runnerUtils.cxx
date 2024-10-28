@@ -94,15 +94,18 @@ std::string computeStringActivityField(framework::ServiceRegistryRef services, c
 std::string translateBeamType(const std::string& pdpBeamType)
 {
   // convert the beam type received from pdp into the format we use in flp/ecs
+  std::string result = "";
   if (pdpBeamType == "pp") {
-    return "PROTON-PROTON";
+    result = "PROTON-PROTON";
   } else if (pdpBeamType == "PbPb") {
-    return "Pb-Pb";
+    result = "Pb-Pb";
   } else if (pdpBeamType == "pPb") {
-    return "Pb-PROTON";
+    result = "Pb-PROTON";
   } else {
-    return "";
+    ILOG(Warning, Ops) << "Failed to convert the pdp beam type ('" << pdpBeamType << "'), returning an empty string" << ENDM;
   }
+  ILOG(Debug, Devel) << "Translated pdp beam type '" << pdpBeamType <<"' to '" << result "'" << ENDM;
+  return result;
 }
 
 Activity computeActivity(framework::ServiceRegistryRef services, const Activity& fallbackActivity)
