@@ -59,6 +59,8 @@ class CTPRawDataReaderTask final : public TaskInterface
   int mRunNumber;
   int indexMB1 = -1;
   int indexMB2 = -1;
+  int mShiftInput1 = 0;
+  int mShiftInput2 = 0;
   static const int ninps = o2::ctp::CTP_NINPUTS + 1;
   static const int nclasses = o2::ctp::CTP_NCLASSES + 1;
   double mScaleInput1 = 1;
