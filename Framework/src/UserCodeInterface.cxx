@@ -58,25 +58,25 @@ void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
   mCtpFetcher->setupRun(runNumber, &ccdbManager, /*1726300234140*/ getCurrentTimestamp(), false);
 
   mScalersLastUpdate = std::chrono::steady_clock::time_point::min();
-  cout << "mScalersLastUpdate : " << std::chrono::duration_cast<std::chrono::nanoseconds>(mScalersLastUpdate.time_since_epoch()).count() << endl;
-  updateScalers(); // initial value
-  ILOG(Debug, Devel) << "Enabled CTP scalers" << ENDM;
+  if(updateScalers(runNumber)) { // initial value
+    ILOG(Debug, Devel) << "Enabled CTP scalers" << ENDM;
+  } else {
+    ILOG(Debug, Devel) << "CTP scalers not enabled, failure to get them." << ENDM;
+  }
 }
 
-void UserCodeInterface::updateScalers()
+bool UserCodeInterface::updateScalers(size_t runNumber)
 {
   if (!mScalersEnabled) {
-    ILOG(Error, Ops) << "CTP scalers not enabled, impossible to get them." << ENDM;
-    return; // TODO should we throw ? probably yes
+    ILOG(Error, Ops) << "CTP scalers not enabled, impossible to update them." << ENDM;
+    return false;
   }
   ILOG(Debug, Devel) << "Updating scalers." << ENDM;
 
   if (!mDatabase) {
     ILOG(Error, Devel) << "Database not set ! Cannot update scalers." << ENDM;
     mScalersEnabled = false;
-
-    return;
-    // todo handle the case when database is not set
+    return false;
   }
 
   auto now = std::chrono::steady_clock::now();
@@ -85,15 +85,26 @@ void UserCodeInterface::updateScalers()
   // TODO get the interval from config
   if (minutesSinceLast.count() >= 0 /*first time it is neg*/ && minutesSinceLast.count() < 5) {
     ILOG(Debug, Devel) << "getScalers was called less than 5 minutes ago, use the cached value" << ENDM;
-    return;
+    return true;
   }
 
   std::map<std::string, std::string> meta;
-  void* rawResult = mDatabase->retrieveAny(typeid(o2::ctp::CTPRunScalers), "qc/CTP/Scalers", meta);
+  meta["runNumber"] = std::to_string(runNumber);
+  std::map<std::string, std::string> headers;
+  auto validity = mDatabase->getLatestObjectValidity("qc/CTP/Scalers", meta);
+  void* rawResult = mDatabase->retrieveAny(typeid(o2::ctp::CTPRunScalers), "qc/CTP/Scalers", meta, validity.getMax() - 1, &headers);
+  if (!rawResult) {
+    ILOG(Error, Devel) << "Could not retrieve the CTP Scalers" << ENDM;
+    return false;
+  } else {
+    ILOG(Debug, Devel) << "object retrieved" << ENDM;
+  }
+
   o2::ctp::CTPRunScalers* ctpScalers = static_cast<o2::ctp::CTPRunScalers*>(rawResult);
   mCtpFetcher->updateScalers(*ctpScalers);
   mScalersLastUpdate = now;
   ILOG(Debug, Devel) << "Scalers updated." << ENDM;
+  return true;
 }
 
 double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumber)
@@ -102,9 +113,12 @@ double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumb
     ILOG(Error, Ops) << "CTP scalers not enabled, impossible to get the value." << ENDM;
     return 0;
   }
-  updateScalers(); // from QCDB
+  if(!updateScalers(runNumber)) { // from QCDB
+    ILOG(Debug, Devel) << "Could not update the scalers, returning 0" << ENDM;
+    return 0;
+  }
   auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
-  auto result = mCtpFetcher->fetchNoPuCorr(&ccdbManager, getCurrentTimestamp(), runNumber, sourceName);
+  auto result = mCtpFetcher->fetchNoPuCorr(&ccdbManager, getCurrentTimestamp()*1000, runNumber, sourceName);
   ILOG(Debug, Devel) << "Returning scaler value : " << result << ENDM;
   return result;
 }

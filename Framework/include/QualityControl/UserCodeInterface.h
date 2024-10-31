@@ -60,7 +60,8 @@ class UserCodeInterface : public ConditionAccess
   /// \brief Just the callback for the thread for the scalers retrieval.
   void regularCallback(int intervalMinutes);
   /// \brief Retrieve fresh scalers from the QCDB (with cache)
-  void updateScalers();
+  /// \return true if success, false if failure
+  bool updateScalers(size_t runNumber);
   std::shared_ptr<o2::ctp::CTPRateFetcher> mCtpFetcher;
   std::chrono::steady_clock::time_point mScalersLastUpdate;
   bool mScalersEnabled = false;
