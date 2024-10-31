@@ -49,8 +49,8 @@ bool DCSPTempReductor::update(ConditionRetriever& retriever)
     std::vector<float> sideData[3]; // 0 mean, 1 gradX, 2 gradY
 
     // A-Side
-    for (const auto& value : dcstemp->statsA.data) { // why is this loop needed
-      sideData[0].push_back(value.value.mean);       // will not work with the loop above
+    for (const auto& value : dcstemp->statsA.data) {
+      sideData[0].push_back(value.value.mean);
       sideData[1].push_back(value.value.gradX);
       sideData[2].push_back(value.value.gradY);
     }
@@ -64,8 +64,8 @@ bool DCSPTempReductor::update(ConditionRetriever& retriever)
     }
 
     // C-Side
-    for (const auto& value : dcstemp->statsC.data) { // why is this loop needed
-      sideData[0].push_back(value.value.mean);       // will not work with the loop above
+    for (const auto& value : dcstemp->statsC.data) {
+      sideData[0].push_back(value.value.mean);
       sideData[1].push_back(value.value.gradX);
       sideData[2].push_back(value.value.gradY);
     }

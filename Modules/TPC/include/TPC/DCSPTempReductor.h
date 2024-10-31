@@ -29,9 +29,9 @@ namespace o2::quality_control_modules::tpc
 /// It produces a branch in the format:
 /// "tempSensor[18]/F:tempSensorErr[18]:tempMeanPerSide[2]:tempMeanPerSideErr[2]:tempGradXPerSide[2]:tempGradXPerSideErr[2]:tempGradYPerSide[2]:tempGradYPerSideErr[2]"
 /// tempSensor[i] is the raw sensor temperature for each of the 18 sensores
-/// tempMeanPerSide[i] is the mean temperatue per TPC-Side (0: A-Side, 1: C-Side)
-/// tempGradXPerSide[i] is the temperatue gradient in x direction per TPC-Side (0: A-Side, 1: C-Side)
-/// tempGradYPerSide[i] is the temperatue gradient in y direction per TPC-Side (0: A-Side, 1: C-Side)
+/// tempMeanPerSide[i] is the mean temperature per TPC-Side (0: A-Side, 1: C-Side)
+/// tempGradXPerSide[i] is the temperature gradient in x direction per TPC-Side (0: A-Side, 1: C-Side)
+/// tempGradYPerSide[i] is the temperature gradient in y direction per TPC-Side (0: A-Side, 1: C-Side)
 
 class DCSPTempReductor : public quality_control::postprocessing::ReductorConditionAny
 {
@@ -54,7 +54,7 @@ class DCSPTempReductor : public quality_control::postprocessing::ReductorConditi
     Float_t tempGradXPerSide[2];
     Float_t tempGradXPerSideErr[2]; // uncertainties
 
-    Float_t tempGradYPerSide[2];    // uncertainties
+    Float_t tempGradYPerSide[2];
     Float_t tempGradYPerSideErr[2]; // uncertainties
   } mStats;
 
