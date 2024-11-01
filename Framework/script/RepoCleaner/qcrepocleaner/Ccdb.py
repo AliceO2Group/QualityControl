@@ -26,6 +26,7 @@ class ObjectVersion:
         :param uuid: unique id of the object
         :param validFrom: validity range smaller limit (in ms)
         :param validTo: validity range bigger limit (in ms)
+        :param createdAt: creation timestamp of the object
         '''
         self.path = path
         self.uuid = uuid
@@ -72,7 +73,8 @@ class Ccdb:
         :return A list of strings, each containing a path to an object in the CCDB.
         '''
         url_for_all_obj = self.url + '/latest/' + path
-        url_for_all_obj += '/' if no_wildcard else '/.*'
+        url_for_all_obj += '/' if path else ''
+        url_for_all_obj += '' if no_wildcard else '.*'
         logger.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
         headers = {'Accept': 'application/json', 'If-Not-Before':str(added_since)}
         r = requests.get(url_for_all_obj, headers=headers)

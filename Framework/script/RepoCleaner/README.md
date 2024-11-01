@@ -34,9 +34,16 @@ There can be any number of these rules. The order is important as we use the fir
 The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.md). 
 
 ## Unit Tests
-`cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
-and to test only one of them: `python3 -m unittest tests/test_NewProduction.py -k test_2_runs`
+```
+cd QualityControl/Framework/script/RepoCleaner
+source env/bin/activate
+
+# Run a test: 
+python -m unittest tests.test_Ccdb.TestCcdb.test_getObjectsList
+```
+
+`cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
 In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
 `

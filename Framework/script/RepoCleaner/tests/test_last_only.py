@@ -1,12 +1,9 @@
 import logging
 import time
 import unittest
-from datetime import timedelta, date, datetime
 
-from Ccdb import Ccdb, ObjectVersion
-from rules import last_only
-
-
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.rules import last_only
 
 
 class TestLastOnly(unittest.TestCase):
@@ -28,6 +25,12 @@ class TestLastOnly(unittest.TestCase):
         self.run = 124321
 
 
+    def clean_data(self, path):
+        versions = self.ccdb.getVersionsList(path)
+        for v in versions:
+            self.ccdb.deleteVersion(v)
+
+
     def test_last_only(self):
         """
         59 versions
@@ -39,6 +42,7 @@ class TestLastOnly(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_last_only"
+        self.clean_data(test_path)
         self.prepare_data(test_path, 60)
 
         stats = last_only.process(self.ccdb, test_path, 30, 1, self.in_ten_years, self.extra)
@@ -61,15 +65,16 @@ class TestLastOnly(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_last_only_period"
+        self.clean_data(test_path)
         self.prepare_data(test_path, 60)
         current_timestamp = int(time.time() * 1000)
 
-        stats = last_only.process(self.ccdb, test_path, 0, current_timestamp-41*60*1000, current_timestamp-19*60*1000, self.extra)
-        self.assertEqual(stats["deleted"], 19)
-        self.assertEqual(stats["preserved"], 40)
+        stats = last_only.process(self.ccdb, test_path, 0, current_timestamp-40*60*1000, current_timestamp-20*60*1000, self.extra)
+        self.assertEqual(stats["deleted"], 20)
+        self.assertEqual(stats["preserved"], 39)
 
         objects_versions = self.ccdb.getVersionsList(test_path)
-        self.assertEqual(len(objects_versions), 40)
+        self.assertEqual(len(objects_versions), 39)
 
 
     def prepare_data(self, path, since_minutes):
@@ -90,7 +95,7 @@ class TestLastOnly(unittest.TestCase):
             to_ts = current_timestamp
             metadata = {'RunNumber': str(run)}
             run = run + 1
-            version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
+            version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, createdAt=from_ts, metadata=metadata)
             self.ccdb.putVersion(version=version_info, data=data)
 
         logging.debug(f"counter : {counter}" )
