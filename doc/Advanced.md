@@ -1999,7 +1999,11 @@ In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding t
 ## CTP Scalers
 
 Get a certificate for development : https://alice-doc.github.io/alice-analysis-tutorial/start/cert.html#test-your-certificate
-JAliEn-ROOT
+
+Build JAlien-ROOT
+
+alienv enter QualityControl/latest JAliEn-ROOT/latest
+
 
 
 ---
