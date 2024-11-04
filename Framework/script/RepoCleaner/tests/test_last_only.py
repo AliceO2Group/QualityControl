@@ -4,6 +4,7 @@ import unittest
 
 from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 from qcrepocleaner.rules import last_only
+from tests import test_utils
 
 
 class TestLastOnly(unittest.TestCase):
@@ -19,21 +20,15 @@ class TestLastOnly(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
+        self.ccdb = Ccdb('http://128.142.249.62:8080') # ccdb-test but please use IP to avoid DNS alerts
         self.extra = {}
         self.path = "qc/TST/MO/repo/test"
         self.run = 124321
 
 
-    def clean_data(self, path):
-        versions = self.ccdb.getVersionsList(path)
-        for v in versions:
-            self.ccdb.deleteVersion(v)
-
-
     def test_last_only(self):
         """
-        59 versions
+        60 versions
         grace period of 30 minutes
         """
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
@@ -42,11 +37,11 @@ class TestLastOnly(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_last_only"
-        self.clean_data(test_path)
-        self.prepare_data(test_path, 60)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [60], [0], 123)
 
         stats = last_only.process(self.ccdb, test_path, 30, 1, self.in_ten_years, self.extra)
-        self.assertEqual(stats["deleted"], 30)
+        self.assertEqual(stats["deleted"], 31) # 31 because between the time we produced the 60 versions and now, there is a shift
         self.assertEqual(stats["preserved"], 29)
 
         objects_versions = self.ccdb.getVersionsList(test_path)
@@ -55,7 +50,7 @@ class TestLastOnly(unittest.TestCase):
 
     def test_last_only_period(self):
         """
-        59 versions
+        60 versions
         no grace period
         only 20 minutes in the middle are in the period
         """
@@ -65,40 +60,16 @@ class TestLastOnly(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_last_only_period"
-        self.clean_data(test_path)
-        self.prepare_data(test_path, 60)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [60], [0], 123)
         current_timestamp = int(time.time() * 1000)
 
         stats = last_only.process(self.ccdb, test_path, 0, current_timestamp-40*60*1000, current_timestamp-20*60*1000, self.extra)
         self.assertEqual(stats["deleted"], 20)
-        self.assertEqual(stats["preserved"], 39)
+        self.assertEqual(stats["preserved"], 40)
 
         objects_versions = self.ccdb.getVersionsList(test_path)
-        self.assertEqual(len(objects_versions), 39)
-
-
-    def prepare_data(self, path, since_minutes):
-        """
-        Prepare a data set starting `since_minutes` in the past.
-        1 version per minute
-        Each data has a different run number.
-        """
-
-        current_timestamp = int(time.time() * 1000)
-        data = {'part': 'part'}
-        run = 1234
-        counter = 0
-
-        for x in range(since_minutes):
-            counter = counter + 1
-            from_ts = current_timestamp - x * 60 * 1000
-            to_ts = current_timestamp
-            metadata = {'RunNumber': str(run)}
-            run = run + 1
-            version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, createdAt=from_ts, metadata=metadata)
-            self.ccdb.putVersion(version=version_info, data=data)
-
-        logging.debug(f"counter : {counter}" )
+        self.assertEqual(len(objects_versions), 40)
 
 
 if __name__ == '__main__':
