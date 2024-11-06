@@ -33,11 +33,20 @@ There can be any number of these rules. The order is important as we use the fir
 
 The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.md). 
 
+## Setup virtual environment for development and test (venv)
+
+1. cd Framework/script/RepoCleaner
+2. python3 -m venv env
+3. source env/bin/activate
+4. python -m pip install -r requirements.txt
+5. python3 -m pip install . 
+6. You can execute and work. Next time just do "activate" and then you are good to go
+
 ## Unit Tests
 
 ```
-cd QualityControl/Framework/script/RepoCleaner
-source env/bin/activate
+cd Framework/script/RepoCleaner
+source env/bin/activate  
 
 # Run a test: 
 python -m unittest tests.test_Ccdb.TestCcdb.test_getObjectsList
@@ -82,11 +91,3 @@ Create new version
 2. `python3 setup.py sdist bdist_wheel`
 3. `python3 -m twine upload --repository pypi dist/*`
 
-## Use venv
-
-1. cd Framework/script/RepoCleaner
-2. python3 -m venv env
-3. source env/bin/activate
-4. python -m pip install -r requirements.txt
-5. python3 -m pip install . 
-6. You can execute and work. Next time just do "activate" and then you are good to go
