@@ -6,7 +6,6 @@ idna==3.7
 psutil==6.1.0
 python-consul==1.1.0
 PyYAML==6.0.1
-qcrepocleaner @ file:///Users/bvonhall/dev/alice/QualityControl/Framework/script/RepoCleaner
 requests==2.31.0
 responses==0.25.0
 six==1.16.0
