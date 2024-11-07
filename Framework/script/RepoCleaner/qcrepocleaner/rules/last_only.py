@@ -26,31 +26,31 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     
     logger.debug(f"Plugin last_only processing {object_path}")
 
-    versions = ccdb.getVersionsList(object_path)
+    versions = ccdb.get_versions_list(object_path)
 
     earliest: ObjectVersion = None
     preservation_list: List[ObjectVersion] = []
     deletion_list: List[ObjectVersion] = []
     # find the earliest
     for v in versions:
-        if earliest == None or v.validFromAsDt > earliest.validFromAsDt:
+        if earliest == None or v.valid_from_as_dt > earliest.valid_from_as_dt:
             earliest = v
     logger.debug(f"earliest : {earliest}")
 
     # delete the non-earliest if we are not in the grace period
     for v in versions:
-        logger.debug(f"{v} - {v.validFrom}")
+        logger.debug(f"{v} - {v.valid_from}")
         if v == earliest:
             preservation_list.append(v)
             continue
 
 
-        if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):  # grace period
+        if v.valid_from_as_dt < datetime.now() - timedelta(minutes=delay):  # grace period
             logger.debug(f"   not in the grace period")
-            if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+            if from_timestamp < v.valid_from < to_timestamp:  # in the allowed period
                 logger.debug(f"in the allowed period (from,to), we delete {v}")
                 deletion_list.append(v)
-                ccdb.deleteVersion(v)
+                ccdb.delete_version(v)
                 continue
         preservation_list.append(v)
 

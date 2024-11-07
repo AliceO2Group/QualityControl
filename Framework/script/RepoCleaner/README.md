@@ -56,8 +56,6 @@ python -m unittest tests.test_Ccdb.TestCcdb.test_getObjectsList
 python3 -m unittest discover
 ```
 
-`cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
-
 In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
 `
 qc/TST/MO/repo/test*

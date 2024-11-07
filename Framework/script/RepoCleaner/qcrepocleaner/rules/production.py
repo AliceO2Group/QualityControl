@@ -9,7 +9,7 @@ from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 
 def in_grace_period(version: ObjectVersion, delay: int):
-    return version.validFromAsDt + timedelta(minutes=delay) > datetime.now()
+    return version.valid_from_as_dt + timedelta(minutes=delay) > datetime.now()
 
 
 eor_dict = {}  # to have fake eor numbers
@@ -83,7 +83,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     logger.debug(f"delete_when_no_run : {delete_when_no_run}")
 
     # Find all the runs and group the versions
-    versions = ccdb.getVersionsList(object_path)
+    versions = ccdb.get_versions_list(object_path)
     logger.debug(f"Dispatching versions to runs")
     for v in versions:
         if "RunNumber" in v.metadata:
@@ -110,7 +110,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             continue
         logger.debug(f"   Processing run {run}")
         # TODO get the EOR if it happened, meanwhile we use `eor_dict` or compute first object time + 15 hours
-        eor = eor_dict.get(int(run), run_versions[0].validFromAsDt + timedelta(hours=15))
+        eor = eor_dict.get(int(run), run_versions[0].valid_from_as_dt + timedelta(hours=15))
         logger.debug(f"   EOR : {eor}")
 
         # run is finished for long enough
@@ -128,9 +128,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     temp_deletion_list: List[ObjectVersion] = []
     for v in deletion_list:
         logger.debug(f"   {v}")
-        if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+        if from_timestamp < v.valid_from < to_timestamp:  # in the allowed period
             temp_deletion_list.append(v)   # we will delete any ways
-            ccdb.deleteVersion(v)
+            ccdb.delete_version(v)
         else:  # this should really never happen because we already skipped in the rest of the code but it is to be sure
             preservation_list.append(v)    # we preserve
     deletion_list = temp_deletion_list
@@ -157,8 +157,8 @@ def first_trimming(ccdb, delay_first_trimming, period_btw_versions_first, run_ve
     metadata = {'trim1': 'done'}
 
     for v in run_versions:
-        if not from_timestamp < v.validFrom < to_timestamp: # make sure we are not touching data outside the acceptance period
-            logger.debug(f"          Abort, it is outside the range {v.validFrom}")
+        if not from_timestamp < v.valid_from < to_timestamp: # make sure we are not touching data outside the acceptance period
+            logger.debug(f"          Abort, it is outside the range {v.valid_from}")
             preservation_list.append(v)
             continue
 
@@ -168,10 +168,10 @@ def first_trimming(ccdb, delay_first_trimming, period_btw_versions_first, run_ve
             preservation_list.append(v)
             continue
 
-        if v.validFromAsDt < limit_first_trimming:  # delay for 1st trimming is exhausted
+        if v.valid_from_as_dt < limit_first_trimming:  # delay for 1st trimming is exhausted
             # if it is the first or if it is "far enough" from the previous one
             if last_preserved is None or \
-                    last_preserved.validFromAsDt < v.validFromAsDt - timedelta(minutes=period_btw_versions_first):
+                    last_preserved.valid_from_as_dt < v.valid_from_as_dt - timedelta(minutes=period_btw_versions_first):
                 last_preserved = v
                 preservation_list.append(v)
             else:  # too close to the previous one, delete
@@ -189,17 +189,17 @@ def final_trimming(ccdb, period_btw_versions_final, run_versions, preservation_l
     for v in run_versions:
         logger.debug(f"      Processing {v} ")
 
-        if not from_timestamp < v.validFrom < to_timestamp: # make sure we are not touching data outside the acceptance period
+        if not from_timestamp < v.valid_from < to_timestamp: # make sure we are not touching data outside the acceptance period
             logger.debug("          Abort, it is outside the range")
             preservation_list.append(v)
             continue
 
         # if it is the first or if the last_preserved is older than `period_btw_versions_final`
         if last_preserved is None \
-                or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(minutes=period_btw_versions_final) \
+                or last_preserved.valid_from_as_dt < v.valid_from_as_dt - timedelta(minutes=period_btw_versions_final) \
                 or v == run_versions[-1]:  # v is last element, which we must preserve
             if v == run_versions[-1]:  # last element, won't be extended but we update the metadata
-                ccdb.updateValidity(v, v.validFrom, v.validTo, metadata)
+                ccdb.update_validity(v, v.valid_from, v.validTo, metadata)
                 update_list.append(v)
                 logger.debug(f"      Flag last element with preservation=true")
             last_preserved = v
@@ -233,16 +233,16 @@ def prepare_test_data(ccdb, path, run):
     for x in range(60):
         from_ts = current_timestamp - (60 - x) * 60 * 1000
         to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
-        version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-        ccdb.putVersion(version=version_info, data=data)
+        version_info = ObjectVersion(path=path, valid_from=from_ts, valid_to=to_ts, metadata=metadata)
+        ccdb.put_version(version=version_info, data=data)
     # 1 version every 1 minutes starting 1/2 hour ago WITHOUT run
     current_timestamp = int(time.time() * 1000)
     metadata = {}
     for x in range(30):
         from_ts = current_timestamp - (60 - x) * 60 * 1000
         to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
-        version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-        ccdb.putVersion(version=version_info, data=data)
+        version_info = ObjectVersion(path=path, valid_from=from_ts, valid_to=to_ts, metadata=metadata)
+        ccdb.put_version(version=version_info, data=data)
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.

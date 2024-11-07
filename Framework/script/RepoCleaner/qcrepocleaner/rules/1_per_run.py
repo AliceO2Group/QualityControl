@@ -72,13 +72,13 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():
         # logger.debug(f"- bucket {bucket}")
-        sorted_run_versions = sorted(run_versions, key=lambda x: (x.createdAt))
+        sorted_run_versions = sorted(run_versions, key=lambda x: (x.created_at))
 
         freshest: ObjectVersion = None
         for v in sorted_run_versions:
             if freshest is None:
                 freshest = v
-            elif freshest.createdAtDt < v.createdAtDt:
+            elif freshest.created_at_as_dt < v.created_at_as_dt:
                 if policies_utils.in_grace_period(freshest, delay):
                     preservation_list.append(freshest)
                 else:
@@ -95,9 +95,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
     logger.debug(f"Delete but preserve versions that are not in the period passed to the policy")
     temp_deletion_list: List[ObjectVersion] = []
     for v in deletion_list:
-        if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+        if from_timestamp < v.valid_from < to_timestamp:  # in the allowed period
             temp_deletion_list.append(v)  # we will delete any ways
-            ccdb.deleteVersion(v)
+            ccdb.delete_version(v)
         else:
             preservation_list.append(v)  # we preserve
     deletion_list = temp_deletion_list

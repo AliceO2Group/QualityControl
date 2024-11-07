@@ -7,9 +7,9 @@ from qcrepocleaner.Ccdb import ObjectVersion
 CCDB_TEST_URL = 'http://128.142.249.62:8080'
 
 def clean_data(ccdb, path):
-    versions = ccdb.getVersionsList(path)
+    versions = ccdb.get_versions_list(path)
     for v in versions:
-        ccdb.deleteVersion(v)
+        ccdb.delete_version(v)
 
 
 def prepare_data(ccdb, path, run_durations: List[int], time_till_next_run: List[int], first_run_number: int):
@@ -44,9 +44,9 @@ def prepare_data(ccdb, path, run_durations: List[int], time_till_next_run: List[
         for i in range(run_duration):
             to_ts = cursor + 24 * 60 * 60 * 1000  # a day
             metadata2 = {**metadata, 'Created': str(cursor)}
-            version_info = ObjectVersion(path=path, validFrom=cursor, validTo=to_ts, metadata=metadata2,
-                                         createdAt=cursor)
-            ccdb.putVersion(version=version_info, data=data)
+            version_info = ObjectVersion(path=path, valid_from=cursor, valid_to=to_ts, metadata=metadata2,
+                                         created_at=cursor)
+            ccdb.put_version(version=version_info, data=data)
             cursor += 1 * 60 * 1000
 
         run += 1
