@@ -1,16 +1,16 @@
 import logging
-
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-from qcrepocleaner import policies_utils
 from typing import Dict, List
+
+from qcrepocleaner import policies_utils
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 logger = logging  # default logger
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int, extra_params: Dict[str, str]):
-    '''
+    """
     Process this deletion rule on the object. We use the CCDB passed by argument.
-    
+
     This policy deletes everything after `delay` minutes.
 
     :param ccdb: the ccdb in which objects are cleaned up.
@@ -20,7 +20,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     :param to_timestamp: only objects created before this timestamp are considered.
     :param extra_params: a dictionary containing extra parameters (unused in this rule)
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
-    '''
+    """
     
     logger.debug(f"Plugin 'none' processing {object_path}")
 
@@ -50,11 +50,3 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         logger.debug(f"   {v}")
 
     return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": 0}
-    
-def main():
-    ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    process(ccdb, "asdfasdf/example", 60)
-
-
-if __name__ == "__main__":  # to be able to run the test code above when not imported.
-    main()

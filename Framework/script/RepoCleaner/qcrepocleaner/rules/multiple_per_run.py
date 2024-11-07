@@ -1,20 +1,18 @@
+import logging
 from collections import defaultdict
 from datetime import datetime
 from datetime import timedelta
-import logging
-from typing import Dict, DefaultDict, List
-
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-from qcrepocleaner.policies_utils import in_grace_period, group_versions
+from typing import Dict, DefaultDict, List, Optional
 
 from qcrepocleaner import policies_utils
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 logger = logging  # default logger
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_timestamp: int,
             extra_params: Dict[str, str]):
-    '''
+    """
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects who have been created recently are spared (delay is expressed in minutes).
 
@@ -62,7 +60,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     :param to_timestamp: only objects created before this timestamp are considered.
     :param extra_params: a dictionary containing extra parameters for this rule.
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
-    '''
+    """
     
     logger.debug(f"Plugin multiple_per_run processing {object_path}")
 
@@ -109,7 +107,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         elif mw_deletion_delay != -1 and first_object.created_at_as_dt < datetime.now() - timedelta(minutes=mw_deletion_delay): # moving windows case
             logger.debug(f"     after mw_deletion_delay period, delete this bucket")
             for v in run_versions:
-                if "/mw/" in v.path: # this is because we really don't want to take the risk of batch deleting non moving windows
+                if "/mw/" in v.path: # this is because we really don't want to take the risk of batch deleting non-moving windows
                     logger.debug(f"          deleting {v}")
                     deletion_list.append(v)
                     ccdb.delete_version(v)
@@ -140,7 +138,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
                 ccdb.delete_version(run_versions[0])
                 del run_versions[0]
 
-            last_preserved: ObjectVersion = None
+            last_preserved: Optional[ObjectVersion] = None
             for v in run_versions:
                 logger.debug(f"process {v}")
 
@@ -171,12 +169,3 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         logger.debug(f"   {v}")
 
     return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": len(update_list)}
-
-
-def main():
-    ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    process(ccdb, "asdfasdf/example", 60)
-
-
-if __name__ == "__main__":  # to be able to run the test code above when not imported.
-    main()

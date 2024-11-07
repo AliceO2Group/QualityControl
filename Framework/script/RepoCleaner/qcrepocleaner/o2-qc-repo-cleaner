@@ -277,6 +277,7 @@ def store_crucial_log(message):
     try:
         f = open(logs_filename, "a")
         f.write(message+"\n")
+        f.close()
     except IOError as e:
         logging.error(f"Could not write crucial log to {logs_filename} : {e}")
 

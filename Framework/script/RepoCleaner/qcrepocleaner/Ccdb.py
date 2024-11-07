@@ -159,7 +159,7 @@ class Ccdb:
             r = requests.delete(url_delete, headers=headers)
             r.raise_for_status()
             self.counter_deleted += 1
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in deleteVersion: {traceback.format_exc()}")
 
     @dryable.Dryable()
@@ -176,7 +176,7 @@ class Ccdb:
             r = requests.request("MOVE", url_move, headers=headers)
             r.raise_for_status()
             self.counter_deleted += 1
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in moveVersion: {traceback.format_exc()}")
 
     @dryable.Dryable()
@@ -202,7 +202,7 @@ class Ccdb:
             r = requests.put(full_path, headers=headers)
             r.raise_for_status()
             self.counter_validity_updated += 1
-        except requests.exceptions.RequestException as e:  
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in updateValidity: {traceback.format_exc()}")
 
     @dryable.Dryable()
@@ -219,7 +219,7 @@ class Ccdb:
             headers = {'Connection': 'close'}
             r = requests.put(full_path, headers=headers)
             r.raise_for_status()
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in updateMetadata: {traceback.format_exc()}")
 
     @dryable.Dryable()

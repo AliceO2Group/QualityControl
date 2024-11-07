@@ -54,12 +54,12 @@ class Test1PerHour(unittest.TestCase):
 
     def test_1_per_hour_period(self):
         """
-        120 versions
-        no grace period
-        period of acceptance: 1 hour in the middle
+        120 versions.
+        no grace period.
+        period of acceptance: 1 hour in the middle.
         We have therefore 60 versions in the acceptance period.
         Only 1 of them, the one 1 hour after the first version in the set, will be preserved, the others are deleted.
-        Thus we have 59 deletion. Everything outside the acceptance period is kept.
+        Thus, we have 59 deletion. Everything outside the acceptance period is kept.
         """
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%d-%b-%y %H:%M:%S')

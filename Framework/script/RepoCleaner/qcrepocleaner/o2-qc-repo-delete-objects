@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-import logging
 import argparse
+import logging
+
 import dryable
+
 from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.binUtils import prepare_main_logger
 

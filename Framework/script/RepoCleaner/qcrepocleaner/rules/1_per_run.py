@@ -1,12 +1,9 @@
-from datetime import datetime
-from datetime import timedelta
 import logging
 from collections import defaultdict
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-import dryable
-from typing import Dict, List, DefaultDict
-from qcrepocleaner.policies_utils import in_grace_period, group_versions
+from typing import Dict, List, DefaultDict, Optional
+
 from qcrepocleaner import policies_utils
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 logger = logging  # default logger
 
@@ -72,9 +69,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():
         # logger.debug(f"- bucket {bucket}")
-        sorted_run_versions = sorted(run_versions, key=lambda x: (x.created_at))
+        sorted_run_versions = sorted(run_versions, key=lambda x: x.created_at)
 
-        freshest: ObjectVersion = None
+        freshest: Optional[ObjectVersion] = None
         for v in sorted_run_versions:
             if freshest is None:
                 freshest = v
@@ -115,14 +112,3 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
         logger.debug(f"   {v}")
 
     return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": len(update_list)}
-
-
-def main():
-    logger.getLogger().setLevel(int(10))
-    dryable.set(True)
-    ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    process(ccdb, "qc/testRunCleanup", 0)
-
-
-if __name__ == "__main__":  # to be able to run the test code above when not imported.
-    main()
