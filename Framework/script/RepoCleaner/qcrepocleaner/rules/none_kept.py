@@ -24,7 +24,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     
     logger.debug(f"Plugin 'none' processing {object_path}")
 
-    versions = ccdb.getVersionsList(object_path)
+    versions = ccdb.get_versions_list(object_path)
     preservation_list: List[ObjectVersion] = []
     deletion_list: List[ObjectVersion] = []
 
@@ -35,10 +35,10 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
             preservation_list.append(v)
         else:
             logger.debug(f"     not in the grace period")
-            if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+            if from_timestamp < v.valid_from < to_timestamp:  # in the allowed period
                 logger.debug(f"     in the allowed period (from,to), we delete it")
                 deletion_list.append(v)
-                ccdb.deleteVersion(v)
+                ccdb.delete_version(v)
                 continue
 
     logger.debug("deleted : ")

@@ -50,9 +50,10 @@ source env/bin/activate
 
 # Run a test: 
 python -m unittest tests.test_Ccdb.TestCcdb.test_getObjectsList
-```
 
-`cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
+# Run all tests:
+cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
+```
 
 In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
 `

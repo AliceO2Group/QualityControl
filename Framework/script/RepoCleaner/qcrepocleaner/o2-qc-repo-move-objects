@@ -34,9 +34,9 @@ def run(args):
 
     nb_moved = 0
     # we have to make sure we take all objects in the subfolders --> we add `/.*` at the end
-    versions = ccdb.getVersionsList(args.path + "/.*", "", "")
+    versions = ccdb.get_versions_list(args.path + "/.*", "", "")
     # we also want to have all the versions at the root
-    versions += ccdb.getVersionsList(args.path, "", "")
+    versions += ccdb.get_versions_list(args.path, "", "")
 
     logging.info("Here are the objects that are going to be moved: ")
     for v in versions:
@@ -58,14 +58,14 @@ def run(args):
         if args.one_by_one:
             answer = input("  Continue? y/n\n  ")
             if answer.lower() in ["y", "yes"]:
-                ccdb.moveVersion(v, version_new_path)
+                ccdb.move_version(v, version_new_path)
                 nb_moved += 1
             elif answer.lower() in ["n", "no"]:
                 logging.info("   skipping")
             else:
                 logging.error("   wrong input, skipping")
         else:
-            ccdb.moveVersion(v, version_new_path)
+            ccdb.move_version(v, version_new_path)
             nb_moved += 1
 
     logging.info(f"Moved items: {nb_moved}")

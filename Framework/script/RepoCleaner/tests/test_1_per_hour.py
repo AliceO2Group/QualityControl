@@ -48,7 +48,7 @@ class Test1PerHour(unittest.TestCase):
         self.assertEqual(stats["deleted"], 104)
         self.assertEqual(stats["preserved"], 16)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 16)
 
 
@@ -77,7 +77,7 @@ class Test1PerHour(unittest.TestCase):
         self.assertEqual(stats["deleted"], 59)
         self.assertEqual(stats["preserved"], 61)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 61)
 
 
