@@ -1,9 +1,10 @@
+import logging
 import time
 from typing import List
-import logging
 
 from qcrepocleaner.Ccdb import ObjectVersion
 
+CCDB_TEST_URL = 'http://128.142.249.62:8080'
 
 def clean_data(ccdb, path):
     versions = ccdb.getVersionsList(path)

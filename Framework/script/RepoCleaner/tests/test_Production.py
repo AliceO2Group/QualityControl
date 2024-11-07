@@ -6,6 +6,7 @@ from datetime import timedelta, datetime
 from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 from qcrepocleaner.rules import production
 from tests import test_utils
+from tests.test_utils import CCDB_TEST_URL
 
 
 class TestProduction(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestProduction(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://128.142.249.62:8080')
+        self.ccdb = Ccdb(CCDB_TEST_URL)
         self.extra = {"delay_first_trimming": "30", "period_btw_versions_first": "10", "delay_final_trimming": "60",
                       "period_btw_versions_final": "60"}
         self.path = "qc/TST/MO/repo/test"

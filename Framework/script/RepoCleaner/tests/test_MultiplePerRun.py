@@ -1,8 +1,8 @@
 import logging
 import time
 import unittest
-import test_utils
 
+import test_utils
 from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.rules import multiple_per_run
 
@@ -20,7 +20,7 @@ class TestMultiplePerRun(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://128.142.249.62:8080') # ccdb-test but please use IP to avoid DNS alerts
+        self.ccdb = Ccdb(test_utils.CCDB_TEST_URL) # ccdb-test but please use IP to avoid DNS alerts
         self.extra = {"interval_between_versions": "90", "migrate_to_EOS": False}
         self.path = "qc/TST/MO/repo/test"
 

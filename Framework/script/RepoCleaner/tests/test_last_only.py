@@ -2,9 +2,10 @@ import logging
 import time
 import unittest
 
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.rules import last_only
 from tests import test_utils
+from tests.test_utils import CCDB_TEST_URL
 
 
 class TestLastOnly(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestLastOnly(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://128.142.249.62:8080') # ccdb-test but please use IP to avoid DNS alerts
+        self.ccdb = Ccdb(CCDB_TEST_URL) # ccdb-test but please use IP to avoid DNS alerts
         self.extra = {}
         self.path = "qc/TST/MO/repo/test"
         self.run = 124321

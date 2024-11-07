@@ -1,11 +1,12 @@
-import unittest
-import yaml
-
 import importlib
-from importlib.util import spec_from_loader, module_from_spec
-from importlib.machinery import SourceFileLoader
 import os
 import sys
+import unittest
+from importlib.machinery import SourceFileLoader
+from importlib.util import spec_from_loader
+
+import yaml
+
 
 def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
     module_name = os.path.basename(path).replace('-', '_')

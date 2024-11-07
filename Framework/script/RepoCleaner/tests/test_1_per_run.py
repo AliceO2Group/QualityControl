@@ -1,11 +1,11 @@
 import logging
-import os
 import time
 import unittest
 from importlib import import_module
 
 from qcrepocleaner.Ccdb import Ccdb
 from tests import test_utils
+from tests.test_utils import CCDB_TEST_URL
 
 one_per_run =  import_module(".1_per_run", "qcrepocleaner.rules") # file names should not start with a number...
 
@@ -22,7 +22,7 @@ class Test1PerRun(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://128.142.249.62:8080')
+        self.ccdb = Ccdb(CCDB_TEST_URL)
         self.path = "qc/TST/MO/repo/test"
         self.run = 124321
         self.extra = {}
