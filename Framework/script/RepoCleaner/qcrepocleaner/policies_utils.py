@@ -1,9 +1,9 @@
+import logging
 from datetime import datetime
 from datetime import timedelta
-import logging
 from typing import DefaultDict, List
 
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.Ccdb import ObjectVersion
 
 logger = logging  # default logger
 

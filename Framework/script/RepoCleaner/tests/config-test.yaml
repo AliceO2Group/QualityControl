@@ -11,4 +11,4 @@ Rules:
     delete_when_no_run: True
 
 Ccdb:
-   Url: http://ccdb-test.cern.ch:8080
+   Url: http://128.142.249.62:8080
