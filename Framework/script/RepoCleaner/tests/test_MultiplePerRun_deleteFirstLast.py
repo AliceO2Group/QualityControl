@@ -38,18 +38,18 @@ class TestMultiplePerRunDeleteFirstLast(unittest.TestCase):
         test_path = self.path + "/test_1_finished_run"
         test_utils.clean_data(self.ccdb, test_path)
         test_utils.prepare_data(self.ccdb, test_path, [150], [22*60], 123)
-        objectsBefore = self.ccdb.get_versions_list(test_path)
+        objects_before = self.ccdb.get_versions_list(test_path)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
-        objectsAfter = self.ccdb.get_versions_list(test_path)
+        objects_after = self.ccdb.get_versions_list(test_path)
 
         self.assertEqual(stats["deleted"], 147)
         self.assertEqual(stats["preserved"], 3)
         self.assertEqual(stats["updated"], 0)
 
-        self.assertEqual(objectsAfter[0].valid_from, objectsBefore[1].valid_from)
-        self.assertEqual(objectsAfter[2].valid_from, objectsBefore[-2].valid_from)
+        self.assertEqual(objects_after[0].valid_from, objects_before[1].valid_from)
+        self.assertEqual(objects_after[2].valid_from, objects_before[-2].valid_from)
 
     def test_2_runs(self):
         """

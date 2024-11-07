@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
-import logging
 import argparse
-import time
+import logging
 
 from qcrepocleaner import binUtils
 from qcrepocleaner.Ccdb import Ccdb
-import sys
-import datetime
 
-def parseArgs():
+
+def parse_args():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
     parser = argparse.ArgumentParser(description='Identify the objects that have less than X versions.')
@@ -57,7 +55,7 @@ def main():
     binUtils.prepare_main_logger()
 
     # Parse arguments
-    args = parseArgs()
+    args = parse_args()
     logging.getLogger().setLevel(int(args.log_level))
 
     run(args)
