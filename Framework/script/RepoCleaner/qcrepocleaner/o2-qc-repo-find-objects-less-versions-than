@@ -33,11 +33,11 @@ def run(args):
     threshold = int(args.threshold)
 
     path = args.path + ".*"
-    objects_paths = ccdb.getObjectsList(path=path)
+    objects_paths = ccdb.get_objects_list(path=path)
     counter = 1
 
     for obj_path in objects_paths:
-        number_of_versions = len(ccdb.getVersionsList(object_path=obj_path))
+        number_of_versions = len(ccdb.get_versions_list(object_path=obj_path))
         logging.debug(f"Number versions for {obj_path} : {number_of_versions}")
         print(f"{counter}/{len(objects_paths)}", end='\r')
         counter += 1

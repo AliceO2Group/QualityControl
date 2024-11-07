@@ -45,7 +45,7 @@ def run(args):
 
     # retrieve all the objects
     path = args.path + ".*"
-    objects = ccdb.getFullObjectsDetails(path=path)
+    objects = ccdb.get_full_objects_details(path=path)
 
     logging.info(f"List of the objects in {args.path} not touched in the past {args.span} days:")
     counter = 0

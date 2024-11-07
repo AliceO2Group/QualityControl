@@ -42,7 +42,7 @@ class Test1PerRun(unittest.TestCase):
         test_utils.clean_data(self.ccdb, test_path)
         test_utils.prepare_data(self.ccdb, test_path, [10, 10, 10, 10, 10, 10], [0, 0, 0, 0, 0, 0], 123)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         created = len(objects_versions)
 
         stats = one_per_run.process(self.ccdb, test_path, 15, 1, self.in_ten_years, self.extra)
@@ -50,7 +50,7 @@ class Test1PerRun(unittest.TestCase):
         self.assertEqual(stats["preserved"], 18)
         self.assertEqual(created, stats["deleted"] + stats["preserved"])
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 18)
 
     def test_1_per_run_period(self):
@@ -75,7 +75,7 @@ class Test1PerRun(unittest.TestCase):
         self.assertEqual(stats["deleted"], 34)
         self.assertEqual(stats["preserved"], 26)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 26)
 
 if __name__ == '__main__':

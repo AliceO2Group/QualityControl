@@ -70,7 +70,7 @@ def run(args):
         path += ".*"
     elif args.path_no_subdir is False:
         path += "/.*"
-    versions = ccdb.getVersionsList(path, args.from_timestamp, "")
+    versions = ccdb.get_versions_list(path, args.from_timestamp, "")
     logging.info(f"Number of versions found: {len(versions)}")
     total_planned += len(versions)
     for version in versions:
@@ -94,12 +94,12 @@ def run(args):
             continue
 
         if args.yes is True:
-            ccdb.updateMetadata(version, {"RunType": run_type})
+            ccdb.update_metadata(version, {"RunType": run_type})
             total_updated += 1
         else:
             answer = input("  Continue? y/n\n  ")
             if answer.lower() in ["y", "yes"]:
-                ccdb.updateMetadata(version, {"RunType": run_type})
+                ccdb.update_metadata(version, {"RunType": run_type})
                 total_updated += 1
             elif answer.lower() in ["n", "no"]:
                 logging.info("   skipping")

@@ -24,7 +24,7 @@ class TestCcdb(unittest.TestCase):
         responses.add(responses.GET, CCDB_TEST_URL + '/latest/.*',
                       self.content_objectslist, status=200)
         # get list of objects
-        objects_list = self.ccdb.getObjectsList()
+        objects_list = self.ccdb.get_objects_list()
         print(f"{objects_list}")
         self.assertEqual(len(objects_list), 3)
         self.assertEqual(objects_list[0], 'Test')
@@ -37,7 +37,7 @@ class TestCcdb(unittest.TestCase):
         responses.add(responses.GET, CCDB_TEST_URL + '/browse/'+object_path,
                       self.content_versionslist, status=200)
         # get versions for object
-        versions_list: List[ObjectVersion] = self.ccdb.getVersionsList(object_path)
+        versions_list: List[ObjectVersion] = self.ccdb.get_versions_list(object_path)
         print(f"{versions_list}")
         self.assertEqual(len(versions_list), 2)
         self.assertEqual(versions_list[0].path, object_path)

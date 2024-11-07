@@ -103,16 +103,16 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
         if policies_utils.in_grace_period(first_object, delay):
             logger.debug(f"     in grace period, skip this bucket")
             preservation_list.extend(run_versions)
-        elif not (from_timestamp < first_object.createdAt < to_timestamp):  # not in the allowed period
+        elif not (from_timestamp < first_object.created_at < to_timestamp):  # not in the allowed period
             logger.debug(f"     not in the allowed period, skip this bucket")
             preservation_list.extend(run_versions)
-        elif mw_deletion_delay != -1 and first_object.createdAtDt < datetime.now() - timedelta(minutes=mw_deletion_delay): # moving windows case
+        elif mw_deletion_delay != -1 and first_object.created_at_as_dt < datetime.now() - timedelta(minutes=mw_deletion_delay): # moving windows case
             logger.debug(f"     after mw_deletion_delay period, delete this bucket")
             for v in run_versions:
                 if "/mw/" in v.path: # this is because we really don't want to take the risk of batch deleting non moving windows
                     logger.debug(f"          deleting {v}")
                     deletion_list.append(v)
-                    ccdb.deleteVersion(v)
+                    ccdb.delete_version(v)
                 else:
                     logger.debug(f"          deletion is aborted as path does not contain `mw` ({v})")
                     preservation_list.append(v)
@@ -121,7 +121,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
 
             if delete_first_last:
                 logger.debug(f"    delete_first_last is set")
-                run_versions.sort(key=lambda x: x.createdAt)
+                run_versions.sort(key=lambda x: x.created_at)
                 # Get flag cleaner_2nd from first object (if there)
                 cleaner_2nd = "cleaner_2nd" in run_versions[0].metadata
                 if cleaner_2nd or len(run_versions) < 4:
@@ -130,14 +130,14 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
                     preservation_list.extend(run_versions)
                     continue
                 # flag second with `cleaner_2nd`
-                ccdb.updateMetadata(run_versions[1], {'cleaner_2nd': 'true'})
+                ccdb.update_metadata(run_versions[1], {'cleaner_2nd': 'true'})
                 # delete first and last versions in the bucket
                 logger.debug(f"        delete the first and last versions")
                 deletion_list.append(run_versions[-1])
-                ccdb.deleteVersion(run_versions[-1])
+                ccdb.delete_version(run_versions[-1])
                 del run_versions[-1]
                 deletion_list.append(run_versions[0])
-                ccdb.deleteVersion(run_versions[0])
+                ccdb.delete_version(run_versions[0])
                 del run_versions[0]
 
             last_preserved: ObjectVersion = None
@@ -146,17 +146,17 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
 
                 # first or next after the period, or last one --> preserve
                 if last_preserved is None or \
-                        last_preserved.createdAtDt < v.createdAtDt - timedelta(minutes=interval_between_versions) or \
+                        last_preserved.created_at_as_dt < v.created_at_as_dt - timedelta(minutes=interval_between_versions) or \
                         v == run_versions[-1]:
                     logger.debug(f" --> preserve")
                     last_preserved = v
                     if migrate_to_EOS:
-                        ccdb.updateMetadata(v, metadata_for_preservation)
+                        ccdb.update_metadata(v, metadata_for_preservation)
                     preservation_list.append(last_preserved)
                 else:  # in between period --> delete
                     logger.debug(f" --> delete")
                     deletion_list.append(v)
-                    ccdb.deleteVersion(v)
+                    ccdb.delete_version(v)
 
     logger.debug(f"deleted ({len(deletion_list)}) : ")
     for v in deletion_list:

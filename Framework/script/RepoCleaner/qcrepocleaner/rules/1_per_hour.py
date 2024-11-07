@@ -28,23 +28,23 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     
     logger.debug(f"Plugin 1_per_hour processing {object_path}")
 
-    versions = ccdb.getVersionsList(object_path)
+    versions = ccdb.get_versions_list(object_path)
 
     last_preserved: ObjectVersion = None
     preservation_list: List[ObjectVersion] = []
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
     for v in versions:
-        if last_preserved is None or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(hours=1):
+        if last_preserved is None or last_preserved.valid_from_as_dt < v.valid_from_as_dt - timedelta(hours=1):
             last_preserved = v
             preservation_list.append(last_preserved)
         else:
-            if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):  # grace period
+            if v.valid_from_as_dt < datetime.now() - timedelta(minutes=delay):  # grace period
                 logger.debug(f"{v} not in the grace period")
-                if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+                if from_timestamp < v.valid_from < to_timestamp:  # in the allowed period
                     logger.debug(f"{v} in the allowed period (from,to), we delete {v}")
                     deletion_list.append(v)
-                    ccdb.deleteVersion(v)
+                    ccdb.delete_version(v)
                     continue
             preservation_list.append(v)
 
