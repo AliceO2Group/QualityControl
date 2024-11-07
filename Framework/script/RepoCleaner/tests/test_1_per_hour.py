@@ -1,26 +1,12 @@
 import logging
 import time
 import unittest
-from datetime import timedelta, date, datetime
+from importlib import import_module
+from qcrepocleaner.Ccdb import Ccdb
+from tests import test_utils
+from tests.test_utils import CCDB_TEST_URL
 
-from Ccdb import Ccdb, ObjectVersion
-from rules import last_only
-import os
-import sys
-import importlib
-
-def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
-    module_name = os.path.basename(path).replace('-', '_')
-    spec = importlib.util.spec_from_loader(
-        module_name,
-        importlib.machinery.SourceFileLoader(module_name, path)
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    sys.modules[module_name] = module
-    return module
-
-one_per_hour = import_path("../qcrepocleaner/rules/1_per_hour.py")
+one_per_hour =  import_module(".1_per_hour", "qcrepocleaner.rules") # file names should not start with a number...
 
 class Test1PerHour(unittest.TestCase):
     """
@@ -35,7 +21,7 @@ class Test1PerHour(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
+        self.ccdb = Ccdb(CCDB_TEST_URL) # ccdb-test but please use IP to avoid DNS alerts
         self.path = "qc/TST/MO/repo/test"
         self.run = 124321
         self.extra = {}
@@ -43,10 +29,10 @@ class Test1PerHour(unittest.TestCase):
 
     def test_1_per_hour(self):
         """
-        60 versions, 2 minutes apart
+        120 versions
         grace period of 15 minutes
-        First version is preserved (always). 7 are preserved during the grace period at the end.
-        One more is preserved after 1 hour. --> 9 preserved
+        First version is preserved (always). 14 are preserved during the grace period at the end.
+        One more is preserved after 1 hour. --> 16 preserved
         """
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%d-%b-%y %H:%M:%S')
@@ -54,24 +40,26 @@ class Test1PerHour(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_1_per_hour"
-        self.prepare_data(test_path, 60, 2)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [120], [0], 123)
 
         stats = one_per_hour.process(self.ccdb, test_path, 15, 1, self.in_ten_years, self.extra)
-        self.assertEqual(stats["deleted"], 51)
-        self.assertEqual(stats["preserved"], 9)
+        logging.info(stats)
+        self.assertEqual(stats["deleted"], 104)
+        self.assertEqual(stats["preserved"], 16)
 
         objects_versions = self.ccdb.getVersionsList(test_path)
-        self.assertEqual(len(objects_versions), 9)
+        self.assertEqual(len(objects_versions), 16)
 
 
     def test_1_per_hour_period(self):
         """
-        60 versions, 2 minutes apart
+        120 versions
         no grace period
         period of acceptance: 1 hour in the middle
-        We have therefore 30 versions in the acceptance period.
+        We have therefore 60 versions in the acceptance period.
         Only 1 of them, the one 1 hour after the first version in the set, will be preserved, the others are deleted.
-        Thus we have 29 deletion. Everything outside the acceptance period is kept.
+        Thus we have 59 deletion. Everything outside the acceptance period is kept.
         """
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
                             datefmt='%d-%b-%y %H:%M:%S')
@@ -79,42 +67,18 @@ class Test1PerHour(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_1_per_hour_period"
-        self.prepare_data(test_path, 60, 2)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [120], [0], 123)
         current_timestamp = int(time.time() * 1000)
-        logging.debug(f"{current_timestamp} - {datetime.today()}")
-
-        objects_versions = self.ccdb.getVersionsList(test_path)
-        created = len(objects_versions)
 
         stats = one_per_hour.process(self.ccdb, test_path, 15, current_timestamp-90*60*1000,
                                      current_timestamp-30*60*1000, self.extra)
-        self.assertEqual(stats["deleted"], 29)
-        self.assertEqual(stats["preserved"], 31)
+        logging.info(stats)
+        self.assertEqual(stats["deleted"], 59)
+        self.assertEqual(stats["preserved"], 61)
 
         objects_versions = self.ccdb.getVersionsList(test_path)
-        self.assertEqual(len(objects_versions), 31)
-
-
-    def prepare_data(self, path, number_versions, minutes_between):
-        """
-        Prepare a data set starting `since_minutes` in the past.
-        1 version per minute
-        """
-
-        current_timestamp = int(time.time() * 1000)
-        data = {'part': 'part'}
-        run = 1234
-        counter = 0
-
-        for x in range(number_versions+1):
-            counter = counter + 1
-            from_ts = current_timestamp - minutes_between * x * 60 * 1000
-            to_ts = current_timestamp
-            metadata = {'RunNumber': str(run)}
-            version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-            self.ccdb.putVersion(version=version_info, data=data)
-
-        logging.debug(f"counter : {counter}")
+        self.assertEqual(len(objects_versions), 61)
 
 
 if __name__ == '__main__':
