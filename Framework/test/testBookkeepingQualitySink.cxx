@@ -15,13 +15,11 @@
 ///
 
 #include <DataFormatsQualityControl/QualityControlFlag.h>
-#include <DataSampling/DataSampling.h>
 #include "QualityControl/BookkeepingQualitySink.h"
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
-using namespace o2::utilities;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
@@ -30,12 +28,8 @@ void customize(std::vector<CompletionPolicy>& policies)
 
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
-#include <Configuration/ConfigurationFactory.h>
-#include <Configuration/ConfigurationInterface.h>
-#include <QualityControl/BookkeepingQualitySink.h>
-#include <QualityControl/QualityObject.h>
-
-using namespace o2::configuration;
+#include "QualityControl/QualityObject.h"
+#include "QualityControl/Quality.h"
 
 void compareFatal(const quality_control::QualityControlFlag& got, const quality_control::QualityControlFlag& expected)
 {
@@ -57,7 +51,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     Inputs{},
     Outputs{ { { "tst-qo" }, "TST", "DATA" } },
     AlgorithmSpec{ [](ProcessingContext& ctx) {
-      auto obj = std::make_unique<core::QualityObject>(0, "testCheckNull", "TST");
+      auto obj = std::make_unique<core::QualityObject>(core::Quality::Null, "testCheckNull", "TST");
       obj->getActivity().mValidity = core::ValidityInterval{ 10, 500 };
       obj->addFlag(FlagTypeFactory::Good(), "I am comment");
       ctx.outputs().snapshot(Output{ "TST", "DATA", 0 }, *obj);
