@@ -1390,6 +1390,9 @@ This is the global structure of the configuration in QC.
     "checks": {
       
     },
+    "aggregators": {
+
+    },
     "postprocessing": {
       
     }
@@ -1401,7 +1404,7 @@ This is the global structure of the configuration in QC.
 }
 ```
 
-There are four QC-related components:
+There are six QC-related components:
 - "config" - contains global configuration of QC which apply to any component. It is required in any configuration
   file.
 - "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
@@ -1409,6 +1412,7 @@ There are four QC-related components:
 - "externalTasks" - contains declarations of external devices which sends objects to the QC to be checked and stored.
 - "checks" - contains declarations of QC Checks. It is mandatory for running topologies with
   Tasks and Checks.
+- "aggregators" - contains declarations of QC Aggregators. It is not mandatory.
 - "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
   run.
 
