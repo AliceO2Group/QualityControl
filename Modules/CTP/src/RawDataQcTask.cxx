@@ -226,11 +226,13 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
           if (i == indexMB1 - 1) {
-            mHistoBCMinBias1->Fill((bcid - mShiftInput1) % 3564, 1. / mScaleInput1);
+            int bc = bcid - mShiftInput1 >= 0 ? bcid - mShiftInput1 : bcid - mShiftInput1 + 3564;
+            mHistoBCMinBias1->Fill(bc, 1. / mScaleInput1);
             mHistoInputRatios->getDen()->Fill(0., 1);
           }
           if (i == indexMB2 - 1) {
-            mHistoBCMinBias2->Fill((bcid - mShiftInput2) % 3564, 1. / mScaleInput2);
+            int bc = bcid - mShiftInput2 >= 0 ? bcid - mShiftInput2 : bcid - mShiftInput2 + 3564;
+            mHistoBCMinBias2->Fill(bc, 1. / mScaleInput2);
           }
         }
       }
