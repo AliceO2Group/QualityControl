@@ -185,4 +185,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTrending_separationpower.json
               run/tpcQCTimeGainCalibTrending.json
               run/tpcDCSPTempTrending.json
+              run/tpcQCAtmosPressureTrending.json
         DESTINATION etc)

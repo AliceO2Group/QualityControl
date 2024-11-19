@@ -38,16 +38,16 @@ bool AtmosPressureReductor::update(ConditionRetriever& retriever)
 
     // pressure 1
     for (const auto& [time, p] : env->mEnvVars["CavernAtmosPressure"]) {
-      pressureValues.push_back(p);
+      pressureValues.emplace_back(p);
     }
-    calcMeanAndStddev(pressureValues, mStats.pressure1, mStats.errPressure1);
+    //calcMeanAndStddev(pressureValues, mStats.pressure1, mStats.errPressure1);
     pressureValues.clear();
 
     // pressure 2
     for (const auto& [time, p] : env->mEnvVars["CavernAtmosPressure2"]) {
-       pressureValues.push_back(p);
+       pressureValues.emplace_back(p);
     }
-    calcMeanAndStddev(pressureValues, mStats.pressure2, mStats.errPressure2);
+    //calcMeanAndStddev(pressureValues, mStats.pressure2, mStats.errPressure2);
     return true;
   }
   return false;
