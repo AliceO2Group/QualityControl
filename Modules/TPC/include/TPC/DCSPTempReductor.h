@@ -57,8 +57,6 @@ class DCSPTempReductor : public quality_control::postprocessing::ReductorConditi
     Float_t tempGradYPerSide[2];
     Float_t tempGradYPerSideErr[2]; // uncertainties
   } mStats;
-
-  void calcMeanAndStddev(std::vector<float>& values, float& mean, float& stddev);
 };
 
 } // namespace o2::quality_control_modules::tpc

@@ -16,6 +16,7 @@
 
 #include "TPC/DCSPTempReductor.h"
 #include "DataFormatsTPC/DCS.h"
+#include "TPC/Utility.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -36,9 +37,9 @@ bool DCSPTempReductor::update(ConditionRetriever& retriever)
 
     int sensorCounter = 0;
     std::vector<float> sensorData[18];
-    for (const auto sensor : dcstemp->raw) {
+    for (const auto& sensor : dcstemp->raw) {
       for (const auto& value : sensor.data) {
-        sensorData[sensorCounter].push_back(value.value);
+        sensorData[sensorCounter].emplace_back(value.value);
       }
       calcMeanAndStddev(sensorData[sensorCounter], mStats.tempSensor[sensorCounter], mStats.tempSensorErr[sensorCounter]);
       sensorCounter++;
@@ -50,9 +51,9 @@ bool DCSPTempReductor::update(ConditionRetriever& retriever)
 
     // A-Side
     for (const auto& value : dcstemp->statsA.data) {
-      sideData[0].push_back(value.value.mean);
-      sideData[1].push_back(value.value.gradX);
-      sideData[2].push_back(value.value.gradY);
+      sideData[0].emplace_back(value.value.mean);
+      sideData[1].emplace_back(value.value.gradX);
+      sideData[2].emplace_back(value.value.gradY);
     }
 
     calcMeanAndStddev(sideData[0], mStats.tempMeanPerSide[0], mStats.tempMeanPerSideErr[0]);
@@ -65,9 +66,9 @@ bool DCSPTempReductor::update(ConditionRetriever& retriever)
 
     // C-Side
     for (const auto& value : dcstemp->statsC.data) {
-      sideData[0].push_back(value.value.mean);
-      sideData[1].push_back(value.value.gradX);
-      sideData[2].push_back(value.value.gradY);
+      sideData[0].emplace_back(value.value.mean);
+      sideData[1].emplace_back(value.value.gradX);
+      sideData[2].emplace_back(value.value.gradY);
     }
 
     calcMeanAndStddev(sideData[0], mStats.tempMeanPerSide[1], mStats.tempMeanPerSideErr[1]);
@@ -77,29 +78,6 @@ bool DCSPTempReductor::update(ConditionRetriever& retriever)
     return true;
   }
   return false;
-}
-
-void DCSPTempReductor::calcMeanAndStddev(std::vector<float>& values, float& mean, float& stddev)
-{
-  if (values.size() == 0) {
-    mean = 0.;
-    stddev = 0.;
-    return;
-  }
-
-  // Mean
-  float sum = std::accumulate(values.begin(), values.end(), 0.0);
-  mean = sum / values.size();
-
-  // Stddev
-  if (values.size() == 1) { // we only have one point -> no stddev
-    stddev = 0.;
-  } else { // for >= 2 points, we calculate the spread
-    std::vector<double> diff(values.size());
-    std::transform(values.begin(), values.end(), diff.begin(), [mean](double x) { return x - mean; });
-    double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-    stddev = std::sqrt(sq_sum / (values.size() * (values.size() - 1.)));
-  }
 }
 
 } // namespace o2::quality_control_modules::tpc
