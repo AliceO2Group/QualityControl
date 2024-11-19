@@ -341,4 +341,27 @@ void retrieveStatistics(std::vector<double>& values, std::vector<double>& errors
   }
 }
 
+void calcMeanAndStddev(const std::vector<float>& values, float& mean, float& stddev)
+{
+  if (values.size() == 0) {
+    mean = 0.;
+    stddev = 0.;
+    return;
+  }
+
+  // Mean
+  const float sum = std::accumulate(values.begin(), values.end(), 0.0);
+  mean = sum / values.size();
+
+  // Stddev
+  if (values.size() == 1) { // we only have one point -> no stddev
+    stddev = 0.;
+  } else { // for >= 2 points, we calculate the spread
+    std::vector<float> diff(values.size());
+    std::transform(values.begin(), values.end(), diff.begin(), [mean](auto x) { return x - mean; });
+    const auto sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.f);
+    stddev = std::sqrt(sq_sum / (values.size() * (values.size() - 1.)));
+  }
+}
+
 } // namespace o2::quality_control_modules::tpc
