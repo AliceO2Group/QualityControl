@@ -22,6 +22,8 @@ Advanced topics
    * [Critical, resilient and non-critical tasks](#critical-resilient-and-non-critical-tasks)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
+   * [Propagating Check results to RCT in Bookkeeping](#propagating-check-results-to-rct-in-bookkeeping)
+      * [Conversion details](#conversion-details)
 * [Solving performance issues](#solving-performance-issues)
    * [Dispatcher](#dispatcher)
    * [QC Tasks](#qc-tasks-1)
@@ -584,6 +586,72 @@ the directories listed in the logs:
 ```
 Notice that by default the executable will ignore the directory structure in the input file and upload all objects to one directory.
 If you need the directory structure preserved, add the argument `--preserve-directories`.
+
+## Propagating Check results to RCT in Bookkeeping
+
+The framework allows to propagate Quality Objects (QOs) produced by Checks and Aggregators to RCT in Bookkeeping.
+The synchronisation is done once, at the end of workflow runtime, i.e. at the End of Run or in the last stage of QC merging on Grid.
+Propagation can be enabled by adding the following key-value pair to Check/Aggregator configuration:
+```json
+    "exportToBookkeeping": "true"
+```
+Using it for Aggregators is discouraged, as the information on which exact Check failed is lost or at least obfuscated.
+
+Check results are converted into Flags, which are documented in [O2/DataFormats/QualityControl](https://github.com/AliceO2Group/AliceO2/tree/dev/DataFormats/QualityControl).
+Information about the object validity is preserved, which allows for time-based flagging of good/bad data.
+
+### Conversion details
+
+Below we describe some details of how the conversion is done.
+Good QOs are marked with green, Medium QOs are marked with orange and Bad QOs are marked with red.
+Null QOs are marked with purple.
+
+- **Good QOs with no Flags associated are not converted to any Flags.**
+  According to the preliminary design for Data Tagging, "bad" Flags always win, thus there is no need for explicit "good" Flags.
+  It also implies that there is no need to explicitly add Good Flag to Good Quality.
+
+![](images/qo_flag_conversion_01.svg)
+
+- **Bad and Medium QOs with no Flags are converted to Flag 14 (Unknown).**
+  This means that Medium Quality data is by default bad for Analysis.
+
+![](images/qo_flag_conversion_02.svg)
+
+- **Null QOs with no Flags are converted to Flag 1 (Unknown Quality).**
+
+![](images/qo_flag_conversion_03.svg)
+
+- **All QOs with Flags are converted to Flags, while the Quality is ignored.**
+  As a consequence, one can customize the meaning of any Quality (Medium in particular) in terms of data usability.
+  A warning is printed if a Check associates a good Flag to bad Quality or a bad Flag to good Quality.
+
+![](images/qo_flag_conversion_04.svg)
+
+- **Timespans not covered by a given QO are filled with Flag 1 (Unknown Quality).**
+  In other words, if an object was missing during a part of the run, we can state that the data quality is not known.
+
+![](images/qo_flag_conversion_05.svg)
+
+- **Overlapping or adjacent Flags with the same ID, comment and source (QO name) are merged.**.
+  This happens even if they were associated with different Qualities, e.g. Bad and Medium.
+  Order of Flag arrival does not matter.
+
+![](images/qo_flag_conversion_06.svg)
+![](images/qo_flag_conversion_07.svg)
+
+- **Flag 1 (Unknown Quality) is overwritten by any other Flag.**
+  This allows us to return Null Quality when there is not enough statistics to determine data quality, but it can be suppressed later, once we can return Good/Medium/Bad.
+
+![](images/qo_flag_conversion_08.svg)
+
+- **Good and Bad flags do not affect each other, they may coexist.**
+
+![](images/qo_flag_conversion_09.svg)
+
+- **Flags for different QOs (QO names) do not affect each other.
+  Flag 1 (Unknown Quality) is added separately for each.**
+
+![](images/qo_flag_conversion_10.svg)
 
 # Solving performance issues
 
