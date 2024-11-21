@@ -47,6 +47,10 @@ ITSClusterTask::~ITSClusterTask()
     if (!mEnableLayers[iLayer])
       continue;
 
+    if (iLayer < NLayerIB) {
+      delete hLongClustersPerChip[iLayer];
+      delete hMultPerChipWhenLongClusters[iLayer];
+    }
     delete hClusterSizeLayerSummary[iLayer];
     delete hClusterTopologyLayerSummary[iLayer];
     delete hGroupedClusterSizeLayerSummary[iLayer];
@@ -400,6 +404,8 @@ void ITSClusterTask::reset()
     hClusterTopologyLayerSummary[iLayer]->Reset();
 
     if (iLayer < NLayerIB) {
+      hLongClustersPerChip[iLayer]->Reset();
+      hMultPerChipWhenLongClusters[iLayer]->Reset();
       hAverageClusterOccupancySummaryIB[iLayer]->Reset();
       hAverageClusterSizeSummaryIB[iLayer]->Reset();
       if (mDoPublish1DSummary == 1) {
