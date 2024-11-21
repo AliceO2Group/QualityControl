@@ -465,7 +465,7 @@ void ITSClusterTask::createAllHistos()
       hLongClustersPerChip[iLayer] = new TH2D(Form("Anomalies/Layer%d/LongClusters", iLayer), Form("Layer%d/LongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 21, 0, 21);
       hMultPerChipWhenLongClusters[iLayer] = new TH2D(Form("Anomalies/Layer%d/HitsWhenLongClusters", iLayer), Form("Layer%d/HitsWhenLongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 150, 0, 15000);
       addObject(hLongClustersPerChip[iLayer]);
-      formatAxes(hLongClustersPerChip[iLayer], "Chip ID", "events with long clusters", 1, 1.10);
+      formatAxes(hLongClustersPerChip[iLayer], "Chip ID", "number of long clusters", 1, 1.10);
       hLongClustersPerChip[iLayer]->SetStats(0);
       addObject(hMultPerChipWhenLongClusters[iLayer]);
       formatAxes(hMultPerChipWhenLongClusters[iLayer], "Chip ID", "Sum of clusters size (events w/ long clus)", 1, 1.10);
