@@ -22,10 +22,10 @@
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief A Reductor for atmospheric pressure
+/// \brief A reductor for atmospheric pressure
 ///
-/// A Reductor for atmospheric pressure
-/// It produces a branch in the format: "pressure1/F:errPressure1:pressure2:errPressure2"
+/// A reductor for atmospheric pressure
+/// It produces a branch in the format: "cavernPressure1/F:errCavernPressure1:cavernPressure2:errCavernPressure2:surfacePressure:errSurfacePressure"
 
 class AtmosPressureReductor : public quality_control::postprocessing::ReductorConditionAny
 {
@@ -39,10 +39,12 @@ class AtmosPressureReductor : public quality_control::postprocessing::ReductorCo
 
  private:
   struct {
-    Float_t pressure1;
-    Float_t errPressure1;
-    Float_t pressure2;
-    Float_t errPressure2;
+    Float_t cavernPressure1;
+    Float_t errCavernPressure1;
+    Float_t cavernPressure2;
+    Float_t errCavernPressure2;
+    Float_t surfacePressure;
+    Float_t errSurfacePressure;
   } mStats;
 };
 

@@ -28,26 +28,33 @@ void* AtmosPressureReductor::getBranchAddress()
 
 const char* AtmosPressureReductor::getBranchLeafList()
 {
-  return "pressure1/F:errPressure1:pressure2:errPressure2";
+  return "cavernPressure1/F:errCavernPressure1:cavernPressure2:errCavernPressure2:surfacePressure:errSurfacePressure";
 }
 
 bool AtmosPressureReductor::update(ConditionRetriever& retriever)
 {
   if (auto env = retriever.retrieve<o2::grp::GRPEnvVariables>()) {
-    std::vector<float> pressureValues; 
+    std::vector<float> pressureValues;
 
-    // pressure 1
+    // Cavern pressure 1
     for (const auto& [time, p] : env->mEnvVars["CavernAtmosPressure"]) {
-      pressureValues.emplace_back(p);
+      pressureValues.emplace_back((float)p);
     }
-    //calcMeanAndStddev(pressureValues, mStats.pressure1, mStats.errPressure1);
+    calcMeanAndStddev(pressureValues, mStats.cavernPressure1, mStats.errCavernPressure1);
     pressureValues.clear();
 
-    // pressure 2
+    // Cavern pressure 2
     for (const auto& [time, p] : env->mEnvVars["CavernAtmosPressure2"]) {
-       pressureValues.emplace_back(p);
+      pressureValues.emplace_back((float)p);
     }
-    //calcMeanAndStddev(pressureValues, mStats.pressure2, mStats.errPressure2);
+    calcMeanAndStddev(pressureValues, mStats.cavernPressure2, mStats.errCavernPressure2);
+    pressureValues.clear();
+
+    // Surface pressure
+    for (const auto& [time, p] : env->mEnvVars["SurfaceAtmosPressure"]) {
+      pressureValues.emplace_back((float)p);
+    }
+    calcMeanAndStddev(pressureValues, mStats.surfacePressure, mStats.errSurfacePressure);
     return true;
   }
   return false;

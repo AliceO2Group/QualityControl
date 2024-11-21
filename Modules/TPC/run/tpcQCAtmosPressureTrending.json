@@ -47,21 +47,21 @@
           "plots": [
             {
               "name": "atmosPressure1_Trending",
-              "title": "Trend of atmospheric pressure 1 over time",
-              "varexp": "EnvVars.pressure1:time",
+              "title": "Trend of atmospheric cavern pressure 1 over time",
+              "varexp": "EnvVars.cavernPressure1:time",
               "selection": "",
               "option": "*L",
-              "graphAxisLabel": "atmos. Pressure:time",
-              "graphErrors": "EnvVars.errPressure1:0"
+              "graphAxisLabel": "atmospheric Cavern Pressure:time",
+              "graphErrors": "EnvVars.errCavernPressure1:0"
             },
             {
               "name": "atmosPressure2_Trending",
-              "title": "Trend of atmospheric pressure 2 over time",
-              "varexp": "EnvVars.pressure2:time",
+              "title": "Trend of atmospheric cavern pressure 2 over time",
+              "varexp": "EnvVars.cavernPressure2:time",
               "selection": "",
               "option": "*L",
-              "graphAxisLabel": "atmos. Pressure:time",
-              "graphErrors": "EnvVars.errPressure2:0"
+              "graphAxisLabel": "atmospheric Cavern Pressure:time",
+              "graphErrors": "EnvVars.errCavernPressure2:0"
             }
           ],
           "initTrigger": [
