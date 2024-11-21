@@ -137,8 +137,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
 
-  int ChipIDprev = -1;
-
   // Reset this histo to have the latest picture
   hEmptyLaneFractionGlobal->Reset("ICES");
 
@@ -153,6 +151,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
     int nClustersForBunchCrossing = 0;
+    int nLongClusters[ChipBoundary[NLayerIB]] = { 0 };
+    int nHitsFromClusters[ChipBoundary[NLayerIB]] = { 0 }; // only IB is implemented at the moment
+
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
       auto& cluster = clusArr[icl];
@@ -160,13 +161,15 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
       int lay, sta, ssta, mod, chip, lane;
 
-      if (ChipID != ChipIDprev) {
+      if (ChipID != -1) { // TODO: is this needed?
         mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
         mod = mod + (ssta * (mNHicPerStave[lay] / 2));
         int chipIdLocal = (ChipID - ChipBoundary[lay]) % (14 * mNHicPerStave[lay]);
         lane = (chipIdLocal % (14 * mNHicPerStave[lay])) / (14 / 2);
       }
       int npix = -1;
+      int colspan = -1;
+      int rowspan = -1;
       int isGrouped = -1;
 
       o2::math_utils::Point3D<float> locC; // local coordinates
@@ -174,6 +177,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
         if (!mDict->isGroup(ClusterID)) {
           npix = mDict->getNpixels(ClusterID);
+          // to do: is there way other than calling the pattern?
+          colspan = mDict->getPattern(ClusterID).getColumnSpan();
+          rowspan = mDict->getPattern(ClusterID).getRowSpan();
           if (mDoPublishDetailedSummary == 1) {
             locC = mDict->getClusterCoordinates(cluster);
           }
@@ -181,6 +187,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         } else {
           o2::itsmft::ClusterPattern patt(pattIt);
           npix = patt.getNPixels();
+          colspan = patt.getColumnSpan();
+          rowspan = patt.getRowSpan();
           if (mDoPublishDetailedSummary == 1) {
             locC = mDict->getClusterCoordinates(cluster, patt, true);
           }
@@ -190,6 +198,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       } else { // invalid pattern
         o2::itsmft::ClusterPattern patt(pattIt);
         npix = patt.getNPixels();
+        colspan = patt.getColumnSpan();
+        rowspan = patt.getRowSpan();
         isGrouped = 0;
         if (mDoPublishDetailedSummary == 1) {
           locC = mDict->getClusterCoordinates(cluster, patt, false);
@@ -198,6 +208,15 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (npix > 2) {
         nClustersForBunchCrossing++;
+      }
+
+      if (lay < NLayerIB) {
+        nHitsFromClusters[ChipID] += npix;
+      }
+
+      if (lay < NLayerIB && colspan > 127 && rowspan < 30) {
+        // definition of long cluster. 127 is driven by o2::itsmft::ClusterPattern::MaxColSpan = 128
+        nLongClusters[ChipID]++;
       }
 
       if (lay < NLayerIB) {
@@ -249,6 +268,23 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     hClusterVsBunchCrossing->Fill(bcdata.bc, nClustersForBunchCrossing); // we count only the number of clusters, not their sizes
+
+    // filling these anomaly plots once per ROF, ignoring chips w/o long clusters
+    for (int ichip = 0; ichip < ChipBoundary[NLayerIB]; ichip++) {
+
+      int nLong = nLongClusters[ichip] <= 20 ? nLongClusters[ichip] : 21;
+
+      if (nLong < 1) {
+        continue;
+      }
+
+      int ilayer = -1;
+      while (ichip >= ChipBoundary[ilayer + 1]) {
+        ilayer++;
+      }
+      hLongClustersPerChip[ilayer]->Fill(ichip, nLong);
+      hMultPerChipWhenLongClusters[ilayer]->Fill(ichip, nHitsFromClusters[ichip]);
+    }
   }
 
   if ((int)clusRofArr.size() > 0) {
@@ -396,7 +432,7 @@ void ITSClusterTask::reset()
 
 void ITSClusterTask::createAllHistos()
 {
-  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusters", "BunchCrossingIDvsClusters", nBCbins, 0, 4095, 100, 0, 1000);
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusters", "BunchCrossingIDvsClusters", nBCbins, 0, 4095, 100, 0, 2000);
   hClusterVsBunchCrossing->SetTitle("#clusters vs BC id for clusters with npix > 2");
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters with npix > 2 in ROF", 1, 1.10);
@@ -418,6 +454,17 @@ void ITSClusterTask::createAllHistos()
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
       continue;
+
+    if (iLayer < NLayerIB) {
+      hLongClustersPerChip[iLayer] = new TH2D(Form("Anomalies/Layer%d/LongClusters", iLayer), Form("Layer%d/LongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 21, 0, 21);
+      hMultPerChipWhenLongClusters[iLayer] = new TH2D(Form("Anomalies/Layer%d/HitsWhenLongClusters", iLayer), Form("Layer%d/HitsWhenLongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 150, 0, 15000);
+      addObject(hLongClustersPerChip[iLayer]);
+      formatAxes(hLongClustersPerChip[iLayer], "Chip ID", "events with long clusters", 1, 1.10);
+      hLongClustersPerChip[iLayer]->SetStats(0);
+      addObject(hMultPerChipWhenLongClusters[iLayer]);
+      formatAxes(hMultPerChipWhenLongClusters[iLayer], "Chip ID", "Sum of clusters size (events w/ long clus)", 1, 1.10);
+      hMultPerChipWhenLongClusters[iLayer]->SetStats(0);
+    }
 
     hClusterSizeLayerSummary[iLayer] = new TH1D(Form("Layer%d/AverageClusterSizeSummary", iLayer), Form("Layer%dAverageClusterSizeSummary", iLayer), 100, 0, 100);
     hClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for Layer %d", iLayer));
