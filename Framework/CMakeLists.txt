@@ -5,8 +5,22 @@ configure_file("include/QualityControl/Version.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
                @ONLY)
 
-# ---- Library for the types ----
+ # ---- Library for IL ----
+add_library(O2QualityControlInfoLogger STATIC
+  src/QcInfoLogger.cxx
+)
 
+target_include_directories(O2QualityControlInfoLogger
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries(O2QualityControlInfoLogger
+  PUBLIC
+  AliceO2::InfoLogger
+)
+
+# ---- Library for the types ----
 add_library(O2QualityControlTypes
   src/MonitorObject.cxx
   src/QualityObject.cxx
@@ -21,11 +35,13 @@ target_include_directories(
 )
 
 target_link_libraries(O2QualityControlTypes
+  PRIVATE
+  O2QualityControlInfoLogger
   PUBLIC
-  ROOT::Hist
+  AliceO2::BookkeepingApi
   AliceO2::Common
   O2::DataFormatsQualityControl
-  AliceO2::BookkeepingApi
+  ROOT::Hist
 )
 
 add_root_dictionary(O2QualityControlTypes
@@ -70,7 +86,6 @@ add_library(O2QualityControl
   src/AggregatorInterface.cxx
   src/DatabaseFactory.cxx
   src/CcdbDatabase.cxx
-  src/QcInfoLogger.cxx
   src/TaskFactory.cxx
   src/TaskRunner.cxx
   src/TaskRunnerFactory.cxx
@@ -141,7 +156,6 @@ target_link_libraries(O2QualityControl
                              ROOT::Hist
                              ROOT::TreePlayer
                              AliceO2::Common
-                             AliceO2::InfoLogger
                              AliceO2::Monitoring
                              AliceO2::Configuration
                              AliceO2::Occ
@@ -159,6 +173,7 @@ target_link_libraries(O2QualityControl
                              ${RDKAFKA_LIB}
                       PRIVATE Boost::system
                               CURL::libcurl
+                              O2QualityControlInfoLogger
                               )
 
 add_root_dictionary(O2QualityControl
