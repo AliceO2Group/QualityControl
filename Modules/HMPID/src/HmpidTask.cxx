@@ -194,7 +194,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Error messages
   CheckerMessages = new TCanvas("CheckerMessages");
-  getObjectsManager()->startPublishing(CheckerMessages);
+  getObjectsManager()->startPublishing<true>(CheckerMessages);
 
   // TH2 to check HV
   hCheckHV = new TH2F("hCheckHV", "hCheckHV", 42, -0.5, 41.5, 4, 0, 4);

@@ -62,7 +62,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
       mHistInputRate[i]->Draw();
       mHistInputRate[i]->SetBit(TObject::kCanDelete);
     }
-    getObjectsManager()->startPublishing(mTCanvasInputs);
+    getObjectsManager()->startPublishing<true>(mTCanvasInputs);
   }
 
   {
@@ -79,7 +79,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
       mHistClassRate[i]->Draw();
       mHistClassRate[i]->SetBit(TObject::kCanDelete);
     }
-    getObjectsManager()->startPublishing(mTCanvasClasses);
+    getObjectsManager()->startPublishing<true>(mTCanvasClasses);
   }
 
   {
@@ -100,7 +100,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
         mHistClassRate[k]->Draw();
         mHistClassRate[k]->SetBit(TObject::kCanDelete);
       }*/
-      getObjectsManager()->startPublishing(mTCanvasClassRates[j]);
+      getObjectsManager()->startPublishing<true>(mTCanvasClassRates[j]);
     }
   }
 
@@ -136,7 +136,7 @@ void CTPCountersTask::initialize(o2::framework::InitContext& /*ctx*/)
       mHistClassTotalCounts[i]->Draw();
       mHistClassTotalCounts[i]->SetBit(TObject::kCanDelete);
     }
-    getObjectsManager()->startPublishing(mTCanvasTotalCountsClasses);
+    getObjectsManager()->startPublishing<true>(mTCanvasTotalCountsClasses);
   }
 }
 

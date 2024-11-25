@@ -60,7 +60,7 @@ void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> ob
   for (const auto& canvName : canvNames) {
     canVec.emplace_back(std::make_unique<TCanvas>(canvName.data()));
     auto canvas = canVec.back().get();
-    objectsManager->startPublishing(canvas);
+    objectsManager->startPublishing<true>(canvas);
     if (metaData.size() != 0) {
       for (const auto& [key, value] : metaData) {
         objectsManager->addMetadata(canvas->GetName(), key, value);
