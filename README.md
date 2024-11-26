@@ -6,7 +6,7 @@
 
 <!--  \endcond  --> 
 
-This is the repository of the data quality control (QC) software for the ALICE O<sup>2</sup> system. 
+This is the repository of the data quality control (QC) software for the ALICE O² system. 
  
 For a general overview of our (O2) software, organization and processes, please see this [page](https://aliceo2group.github.io/).
 
