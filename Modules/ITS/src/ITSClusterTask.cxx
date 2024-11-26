@@ -155,8 +155,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
     int nClustersForBunchCrossing = 0;
-    int nLongClusters[ChipBoundary[NLayerIB]] = { 0 };
-    int nHitsFromClusters[ChipBoundary[NLayerIB]] = { 0 }; // only IB is implemented at the moment
+    int nLongClusters[ChipBoundary[3]] = {};
+    int nHitsFromClusters[ChipBoundary[3]] = {}; // only IB is implemented at the moment
 
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
@@ -165,12 +165,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
       int lay, sta, ssta, mod, chip, lane;
 
-      if (ChipID != -1) { // TODO: is this needed?
-        mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
-        mod = mod + (ssta * (mNHicPerStave[lay] / 2));
-        int chipIdLocal = (ChipID - ChipBoundary[lay]) % (14 * mNHicPerStave[lay]);
-        lane = (chipIdLocal % (14 * mNHicPerStave[lay])) / (14 / 2);
-      }
+      // TODO: avoid call Geom if ChipID is the same as previous cluster
+      mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
+      mod = mod + (ssta * (mNHicPerStave[lay] / 2));
+      int chipIdLocal = (ChipID - ChipBoundary[lay]) % (14 * mNHicPerStave[lay]);
+      lane = (chipIdLocal % (14 * mNHicPerStave[lay])) / (14 / 2);
+
       int npix = -1;
       int colspan = -1;
       int rowspan = -1;
@@ -181,7 +181,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
         if (!mDict->isGroup(ClusterID)) {
           npix = mDict->getNpixels(ClusterID);
-          // to do: is there way other than calling the pattern?
+          // TODO: is there way other than calling the pattern?
           colspan = mDict->getPattern(ClusterID).getColumnSpan();
           rowspan = mDict->getPattern(ClusterID).getRowSpan();
           if (mDoPublishDetailedSummary == 1) {
