@@ -218,8 +218,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         nHitsFromClusters[ChipID] += npix;
       }
 
-      if (lay < NLayerIB && colspan > 127 && rowspan < 30) {
-        // definition of long cluster. 127 is driven by o2::itsmft::ClusterPattern::MaxColSpan = 128
+      if (lay < NLayerIB && colspan >= minColSpanLongCluster && rowspan <= maxRowSpanLongCluster) {
+        // definition of long cluster
         nLongClusters[ChipID]++;
       }
 
@@ -276,7 +276,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     // filling these anomaly plots once per ROF, ignoring chips w/o long clusters
     for (int ichip = 0; ichip < ChipBoundary[NLayerIB]; ichip++) {
 
-      int nLong = nLongClusters[ichip] <= 20 ? nLongClusters[ichip] : 21;
+      int nLong = TMath::Min(nLongClusters[ichip], 21);
 
       if (nLong < 1) {
         continue;
@@ -463,7 +463,7 @@ void ITSClusterTask::createAllHistos()
 
     if (iLayer < NLayerIB) {
       hLongClustersPerChip[iLayer] = new TH2D(Form("Anomalies/Layer%d/LongClusters", iLayer), Form("Layer%d/LongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 21, 0, 21);
-      hMultPerChipWhenLongClusters[iLayer] = new TH2D(Form("Anomalies/Layer%d/HitsWhenLongClusters", iLayer), Form("Layer%d/HitsWhenLongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 150, 0, 15000);
+      hMultPerChipWhenLongClusters[iLayer] = new TH2D(Form("Anomalies/Layer%d/HitsWhenLongClusters", iLayer), Form("Layer%d/HitsWhenLongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 200, 0, 20000);
       addObject(hLongClustersPerChip[iLayer]);
       formatAxes(hLongClustersPerChip[iLayer], "Chip ID", "number of long clusters", 1, 1.10);
       hLongClustersPerChip[iLayer]->SetStats(0);

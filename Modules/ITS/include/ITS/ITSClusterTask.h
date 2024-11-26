@@ -137,6 +137,9 @@ class ITSClusterTask : public TaskInterface
   std::string mLaneStatusFlag[NFlags] = { "IB", "ML", "OL", "Total" };
   int mDoPublishDetailedSummary = 0;
 
+  int minColSpanLongCluster = 128; // driven by o2::itsmft::ClusterPattern::MaxColSpan = 128
+  int maxRowSpanLongCluster = 29;
+
   const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   const int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
