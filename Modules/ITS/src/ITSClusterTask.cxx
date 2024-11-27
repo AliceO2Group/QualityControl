@@ -155,8 +155,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
     int nClustersForBunchCrossing = 0;
-    int nLongClusters[ChipBoundary[3]] = {};
-    int nHitsFromClusters[ChipBoundary[3]] = {}; // only IB is implemented at the moment
+    int nLongClusters[ChipBoundary[NLayerIB]] = {};
+    int nHitsFromClusters[ChipBoundary[NLayerIB]] = {}; // only IB is implemented at the moment
 
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
@@ -181,9 +181,11 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID) { // Normal (frequent) cluster shapes
         if (!mDict->isGroup(ClusterID)) {
           npix = mDict->getNpixels(ClusterID);
+
           // TODO: is there way other than calling the pattern?
           colspan = mDict->getPattern(ClusterID).getColumnSpan();
           rowspan = mDict->getPattern(ClusterID).getRowSpan();
+
           if (mDoPublishDetailedSummary == 1) {
             locC = mDict->getClusterCoordinates(cluster);
           }
@@ -277,11 +279,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (int ichip = 0; ichip < ChipBoundary[NLayerIB]; ichip++) {
 
       int nLong = TMath::Min(nLongClusters[ichip], 21);
-
       if (nLong < 1) {
         continue;
       }
-
       int ilayer = -1;
       while (ichip >= ChipBoundary[ilayer + 1]) {
         ilayer++;
