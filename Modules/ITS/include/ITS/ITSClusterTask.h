@@ -92,10 +92,14 @@ class ITSClusterTask : public TaskInterface
   std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryOB[NLayer];
   std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryOB[NLayer];
 
-  // Layer synnary
+  // Layer summary
   TH1D* hClusterSizeLayerSummary[NLayer] = { nullptr };
   TH1D* hClusterTopologyLayerSummary[NLayer] = { nullptr };
   TH1D* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
+
+  // Anomalies plots
+  TH2D* hLongClustersPerChip[3] = { nullptr };
+  TH2D* hMultPerChipWhenLongClusters[3] = { nullptr };
 
   // General
   TH2D* hClusterVsBunchCrossing = nullptr;
@@ -133,13 +137,16 @@ class ITSClusterTask : public TaskInterface
   std::string mLaneStatusFlag[NFlags] = { "IB", "ML", "OL", "Total" };
   int mDoPublishDetailedSummary = 0;
 
-  const int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
-  const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
-  const int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
-  const int mNLanePerHic[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
-  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
-  const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  const float mLength[NLayer] = { 14., 14., 14., 43., 43., 74., 74. };
+  int minColSpanLongCluster = 128; // driven by o2::itsmft::ClusterPattern::MaxColSpan = 128
+  int maxRowSpanLongCluster = 29;
+
+  static constexpr int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
+  static constexpr int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
+  static constexpr int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
+  static constexpr int mNLanePerHic[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
+  static constexpr int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
+  static constexpr int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  static constexpr float mLength[NLayer] = { 14., 14., 14., 43., 43., 74., 74. };
   const std::string mYlabels[NLayer * 2] = { "L6B(S24#rightarrow47)", "L5B(S21#rightarrow41)", "L4B(S15#rightarrow29)", "L3B(S12#rightarrow23)", "L2B(S10#rightarrow19)", "L1B(S08#rightarrow15)", "L0B(S06#rightarrow11)", "L0T(S00#rightarrow05)", "L1T(S00#rightarrow07)", "L2T(S00#rightarrow09)", "L3T(S00#rightarrow11)", "L4T(S00#rightarrow14)", "L5T(S00#rightarrow20)", "L6T(S00#rightarrow23)" };
 
   int mEnableLayers[NLayer] = { 0 };
