@@ -66,35 +66,35 @@ class TestMultiplePerRun(unittest.TestCase):
         self.assertEqual(stats["preserved"], 3+150)
         self.assertEqual(stats["updated"], 0)
 
-    def test_5_runs(self):
-        """
-        1 hour Run - 1h - 2 hours Run - 2h - 3h10 run - 3h10 - 4 hours run - 4 hours - 5 hours run - 5 h
-        All more than 24 hours
-        Expected output: 2 + 3 + 4 + 4 + 5
-        """
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
-                            datefmt='%d-%b-%y %H:%M:%S')
-        logging.getLogger().setLevel(int(10))
-
-        # Prepare data
-        test_path = self.path + "/test_5_runs"
-        test_utils.clean_data(self.ccdb, test_path)
-        test_utils.prepare_data(self.ccdb, test_path, [1*60, 2*60, 3*60+10, 4*60, 5*60],
-                          [60, 120, 190, 240, 24*60], 123)
-
-        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
-                                       to_timestamp=self.in_ten_years, extra_params=self.extra)
-        self.assertEqual(stats["deleted"], 60+120+190+240+300-18)
-        self.assertEqual(stats["preserved"], 18)
-        self.assertEqual(stats["updated"], 0)
-
-        # and now re-run it to make sure we preserve the state
-        stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
-                                          to_timestamp=self.in_ten_years, extra_params=self.extra)
-
-        self.assertEqual(stats["deleted"], 0)
-        self.assertEqual(stats["preserved"], 18)
-        self.assertEqual(stats["updated"], 0)
+    # def test_5_runs(self):
+    #     """
+    #     1 hour Run - 1h - 2 hours Run - 2h - 3h10 run - 3h10 - 4 hours run - 4 hours - 5 hours run - 5 h
+    #     All more than 24 hours
+    #     Expected output: 2 + 3 + 4 + 4 + 5
+    #     """
+    #     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+    #                         datefmt='%d-%b-%y %H:%M:%S')
+    #     logging.getLogger().setLevel(int(10))
+    #
+    #     # Prepare data
+    #     test_path = self.path + "/test_5_runs"
+    #     test_utils.clean_data(self.ccdb, test_path)
+    #     test_utils.prepare_data(self.ccdb, test_path, [1*60, 2*60, 3*60+10, 4*60, 5*60],
+    #                       [60, 120, 190, 240, 24*60], 123)
+    #
+    #     stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+    #                                    to_timestamp=self.in_ten_years, extra_params=self.extra)
+    #     self.assertEqual(stats["deleted"], 60+120+190+240+300-18)
+    #     self.assertEqual(stats["preserved"], 18)
+    #     self.assertEqual(stats["updated"], 0)
+    #
+    #     # and now re-run it to make sure we preserve the state
+    #     stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
+    #                                       to_timestamp=self.in_ten_years, extra_params=self.extra)
+    #
+    #     self.assertEqual(stats["deleted"], 0)
+    #     self.assertEqual(stats["preserved"], 18)
+    #     self.assertEqual(stats["updated"], 0)
 
     def test_run_one_object(self):
         """

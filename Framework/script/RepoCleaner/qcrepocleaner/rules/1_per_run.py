@@ -1,12 +1,9 @@
-from datetime import datetime
-from datetime import timedelta
 import logging
 from collections import defaultdict
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-import dryable
-from typing import Dict, List, DefaultDict
-from qcrepocleaner.policies_utils import in_grace_period, group_versions
+from typing import Dict, List, DefaultDict, Optional
+
 from qcrepocleaner import policies_utils
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
 
 logger = logging  # default logger
 
@@ -72,13 +69,13 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
     # Dispatch the versions to deletion and preservation lists
     for bucket, run_versions in versions_buckets_dict.items():
         # logger.debug(f"- bucket {bucket}")
-        sorted_run_versions = sorted(run_versions, key=lambda x: (x.createdAt))
+        sorted_run_versions = sorted(run_versions, key=lambda x: x.created_at)
 
-        freshest: ObjectVersion = None
+        freshest: Optional[ObjectVersion] = None
         for v in sorted_run_versions:
             if freshest is None:
                 freshest = v
-            elif freshest.createdAtDt < v.createdAtDt:
+            elif freshest.created_at_as_dt < v.created_at_as_dt:
                 if policies_utils.in_grace_period(freshest, delay):
                     preservation_list.append(freshest)
                 else:
@@ -95,9 +92,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
     logger.debug(f"Delete but preserve versions that are not in the period passed to the policy")
     temp_deletion_list: List[ObjectVersion] = []
     for v in deletion_list:
-        if from_timestamp < v.validFrom < to_timestamp:  # in the allowed period
+        if from_timestamp < v.valid_from < to_timestamp:  # in the allowed period
             temp_deletion_list.append(v)  # we will delete any ways
-            ccdb.deleteVersion(v)
+            ccdb.delete_version(v)
         else:
             preservation_list.append(v)  # we preserve
     deletion_list = temp_deletion_list
@@ -115,14 +112,3 @@ def process(ccdb: Ccdb, object_path: str, delay: int, from_timestamp: int, to_ti
         logger.debug(f"   {v}")
 
     return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": len(update_list)}
-
-
-def main():
-    logger.getLogger().setLevel(int(10))
-    dryable.set(True)
-    ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    process(ccdb, "qc/testRunCleanup", 0)
-
-
-if __name__ == "__main__":  # to be able to run the test code above when not imported.
-    main()

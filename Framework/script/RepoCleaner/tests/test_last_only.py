@@ -45,7 +45,7 @@ class TestLastOnly(unittest.TestCase):
         self.assertEqual(stats["deleted"], 31) # 31 because between the time we produced the 60 versions and now, there is a shift
         self.assertEqual(stats["preserved"], 29)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 29)
 
 
@@ -69,7 +69,7 @@ class TestLastOnly(unittest.TestCase):
         self.assertEqual(stats["deleted"], 20)
         self.assertEqual(stats["preserved"], 40)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 40)
 
 

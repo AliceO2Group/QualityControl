@@ -51,7 +51,7 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 26)
         self.assertEqual(stats["updated"], 0)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 26)
 
         self.extra = {"delay_first_trimming": "5", "period_btw_versions_first": "10", "delay_final_trimming": "60",
@@ -124,7 +124,7 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 35)
         self.assertEqual(stats["updated"], 3)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 35)
         self.assertTrue("trim1" in objects_versions[0].metadata)
 
@@ -150,7 +150,7 @@ class TestProduction(unittest.TestCase):
         first_ts = self.prepare_data_for_prod_test(test_path, 90)
         logging.getLogger().debug(f"first_ts : {first_ts}")
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         created = len(objects_versions)
 
         production.eor_dict.pop(int(self.run), None)
@@ -160,7 +160,7 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["updated"], 2)
         self.assertEqual(created, stats["deleted"]+stats["preserved"])
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 41)
         self.assertTrue("trim1" in objects_versions[0].metadata)
 
@@ -186,7 +186,7 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 4)
         self.assertEqual(stats["updated"], 4)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 4)
         self.assertTrue("trim1" not in objects_versions[0].metadata)
         self.assertTrue("preservation" in objects_versions[0].metadata)
@@ -215,7 +215,7 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["preserved"], 7)
         self.assertEqual(stats["updated"], 3)
 
-        objects_versions = self.ccdb.getVersionsList(test_path)
+        objects_versions = self.ccdb.get_versions_list(test_path)
         self.assertEqual(len(objects_versions), 7)
         logging.debug(f"{objects_versions[0].metadata}")
         self.assertTrue("trim1" in objects_versions[0].metadata) # we did not touch this data thus it is not processed
@@ -251,8 +251,8 @@ class TestProduction(unittest.TestCase):
                 if first_ts > from_ts:
                     first_ts = from_ts
                 to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
-                version_info = ObjectVersion(path=path, validFrom=from_ts, createdAt=from_ts, validTo=to_ts, metadata=metadata)
-                self.ccdb.putVersion(version=version_info, data=data)
+                version_info = ObjectVersion(path=path, valid_from=from_ts, created_at=from_ts, valid_to=to_ts, metadata=metadata)
+                self.ccdb.put_version(version=version_info, data=data)
             cursor = cursor + duration_first_part * 60 * 1000
 
         # 1 version every 1 minutes starting after and lasting `minutes_second_part` minutes
@@ -266,8 +266,8 @@ class TestProduction(unittest.TestCase):
                 if first_ts > from_ts:
                     first_ts = from_ts
                 to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
-                version_info = ObjectVersion(path=path, validFrom=from_ts, createdAt=from_ts, validTo=to_ts, metadata=metadata)
-                self.ccdb.putVersion(version=version_info, data=data)
+                version_info = ObjectVersion(path=path, valid_from=from_ts, created_at=from_ts, valid_to=to_ts, metadata=metadata)
+                self.ccdb.put_version(version=version_info, data=data)
 
         return first_ts
 
