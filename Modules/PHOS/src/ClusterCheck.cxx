@@ -126,7 +126,7 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       for (int ix = 1; ix <= 64; ix++) {
         for (int iz = 1; iz <= 56; iz++) {
           float cont = h->GetBinContent(ix, iz);
-          char relid[3] = { char(m), char(ix), char(iz) };
+          int8_t relid[3] = { int8_t(m), int8_t(ix), int8_t(iz) };
           short absId;
           o2::phos::Geometry::relToAbsNumbering(relid, absId);
           if (cont > 0) {
