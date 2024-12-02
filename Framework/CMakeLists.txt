@@ -169,6 +169,7 @@ target_link_libraries(O2QualityControl
                              O2::DataFormatsQualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
+                             O2::DataFormatsCTP
                              O2QualityControlKafkaProtos
                              ${RDKAFKA_LIB}
                       PRIVATE Boost::system

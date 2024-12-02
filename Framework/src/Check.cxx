@@ -28,6 +28,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/HashDataDescription.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <QualityControl/AggregatorRunner.h>
 
@@ -70,6 +71,7 @@ void Check::init()
   try {
     mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
     mCheckInterface->setName(mCheckConfig.name);
+    mCheckInterface->setDatabase(mCheckConfig.database);
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
     mCheckInterface->setCcdbUrl(mCheckConfig.conditionUrl);
   } catch (...) {
@@ -250,18 +252,20 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
   }
 
   return {
-    checkSpec.checkName,
     checkSpec.moduleName,
     checkSpec.className,
     checkSpec.detectorName,
+    commonSpec.consulUrl,
     checkSpec.customParameters,
+    commonSpec.conditionDBUrl,
+    commonSpec.database,
+    checkSpec.checkName,
     updatePolicy,
     std::move(objectNames),
     checkAllObjects,
     allowBeautify,
     std::move(inputs),
     createOutputSpec(checkSpec.detectorName, checkSpec.checkName),
-    commonSpec.conditionDBUrl
   };
 }
 

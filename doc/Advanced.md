@@ -1938,6 +1938,13 @@ The values are relative to the canvas size, so in the example above the label wi
 
 In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
 
+## CTP Scalers
+
+Get a certificate for development : https://alice-doc.github.io/alice-analysis-tutorial/start/cert.html#test-your-certificate
+
+Build JAlien-ROOT
+
+alienv enter QualityControl/latest JAliEn-ROOT/latest
 
 
 
