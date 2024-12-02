@@ -63,6 +63,7 @@ class Clusters /*final*/ : public TaskInterface // todo add back the "final" whe
   std::vector<std::unique_ptr<TCanvas>> mSigmaTimeCanvasVec{}; ///< summary canvases of the SigmaTime object
   std::vector<std::unique_ptr<TCanvas>> mSigmaPadCanvasVec{};  ///< summary canvases of the SigmaPad object
   std::vector<std::unique_ptr<TCanvas>> mTimeBinCanvasVec{};   ///< summary canvases of the TimeBin object
+  std::vector<std::unique_ptr<TCanvas>> mOccupancyCanvasVec{}; ///< summary canvases of the Occupancy object
 
   void processClusterNative(o2::framework::InputRecord& inputs);
   void processKrClusters(o2::framework::InputRecord& inputs);

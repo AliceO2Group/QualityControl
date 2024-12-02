@@ -20,6 +20,8 @@
 #include "DataFormatsTPC/ClusterNative.h"
 #include "TPCBase/Painter.h"
 #include "Framework/InputRecordWalker.h"
+#include "DataFormatsParameters/GRPECSObject.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -73,6 +75,7 @@ void Clusters::initialize(InitContext& /*ctx*/)
     mWrapperVector.emplace_back(&mQCClusters.getClusters().getSigmaTime());
     mWrapperVector.emplace_back(&mQCClusters.getClusters().getSigmaPad());
     mWrapperVector.emplace_back(&mQCClusters.getClusters().getTimeBin());
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getOccupancy());
 
     addAndPublish(getObjectsManager(), mNClustersCanvasVec, { "c_Sides_N_Clusters", "c_ROCs_N_Clusters_1D", "c_ROCs_N_Clusters_2D" });
     addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });
@@ -80,6 +83,7 @@ void Clusters::initialize(InitContext& /*ctx*/)
     addAndPublish(getObjectsManager(), mSigmaTimeCanvasVec, { "c_Sides_Sigma_Time", "c_ROCs_Sigma_Time_1D", "c_ROCs_Sigma_Time_2D" });
     addAndPublish(getObjectsManager(), mSigmaPadCanvasVec, { "c_Sides_Sigma_Pad", "c_ROCs_Sigma_Pad_1D", "c_ROCs_Sigma_Pad_2D" });
     addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
+    addAndPublish(getObjectsManager(), mOccupancyCanvasVec, { "c_Sides_Occupancy", "c_ROCs_Occupancy_1D", "c_ROCs_Occupancy_2D" });
 
     for (auto& wrapper : mWrapperVector) {
       getObjectsManager()->startPublishing<true>(&wrapper);
@@ -123,6 +127,7 @@ void Clusters::processClusterNative(InputRecord& inputs)
       }
     }
   }
+  mQCClusters.getClusters().endTF();
 }
 
 void Clusters::processKrClusters(InputRecord& inputs)
@@ -138,16 +143,25 @@ void Clusters::processKrClusters(InputRecord& inputs)
       mQCClusters.getClusters().processCluster(cl, Sector(cl.sector), int(cl.meanRow));
     }
   }
+  mQCClusters.getClusters().endTF();
 }
 
 void Clusters::monitorData(ProcessingContext& ctx)
 {
   mQCClusters.getClusters().denormalize();
 
+  //get grpECS object here grpecs:GRP/GRPECS
+  //auto const& grpECS = ctx.inputs().get<o2::parameters::GRPECSObject*>("grpecs");
+  const auto nHBF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+  std::cout<<" NHBFs = ""<< nHBF" << std::endl;
+  std::cout<<" NHBFs = "<< nHBF << std::endl;
+   std::cout<<" NHBFs = ""<< nHBF" << std::endl;
+  mQCClusters.getClusters().setnHBFperTF(nHBF);
   processClusterNative(ctx.inputs());
   processKrClusters(ctx.inputs());
 
   if (!mIsMergeable) {
+    mQCClusters.getClusters().normalize();
     mQCClusters.getClusters().normalize();
 
     fillCanvases(mQCClusters.getClusters().getNClusters(), mNClustersCanvasVec, mCustomParameters, "NClusters");
@@ -156,12 +170,14 @@ void Clusters::monitorData(ProcessingContext& ctx)
     fillCanvases(mQCClusters.getClusters().getSigmaTime(), mSigmaTimeCanvasVec, mCustomParameters, "SigmaPad");
     fillCanvases(mQCClusters.getClusters().getSigmaPad(), mSigmaPadCanvasVec, mCustomParameters, "SigmaTime");
     fillCanvases(mQCClusters.getClusters().getTimeBin(), mTimeBinCanvasVec, mCustomParameters, "TimeBin");
+    fillCanvases(mQCClusters.getClusters().getTimeBin(), mOccupancyCanvasVec, mCustomParameters, "Occupancy");
   }
 }
 
 void Clusters::endOfCycle()
 {
-  ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "Processed TFs: " << mQCClusters.getClusters().getProcessedTFs() << ENDM;
 
   if (mIsMergeable) {
     mQCClusters.getClusters().normalize();
@@ -188,6 +204,7 @@ void Clusters::reset()
     clearCanvases(mSigmaTimeCanvasVec);
     clearCanvases(mSigmaPadCanvasVec);
     clearCanvases(mTimeBinCanvasVec);
+    clearCanvases(mOccupancyCanvasVec);
   }
 }
 

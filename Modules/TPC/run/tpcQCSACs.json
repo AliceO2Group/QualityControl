@@ -40,7 +40,7 @@
                                 "If you want to pick the latest file in the CCDB manually, you can use -1."
         ],
         "timestamps": [
-          { "SACZero":"1686390443945" },
+          { "SACZero":"-1" },
           { "SACOne":"-1" },
           { "SACDelta":"-1" },
           { "SACFourierCoeffs":"-1" }
