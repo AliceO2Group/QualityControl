@@ -76,6 +76,15 @@ void ZDCRawDataTask::startOfActivity(const Activity& activity)
 void ZDCRawDataTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+
+  // Reset at each QC cycle of the trending plot data for the rate measurement
+  for (int i = 0; i < o2::zdc::NModules; i++) {
+    for (int j = 0; j < o2::zdc::NChPerModule; j++) {
+      for (int k = 0; k < (int)fMatrixHistoCounts_a[i][j].size(); k++) {
+        fMatrixHistoCounts_a[i][j].at(k).histo->Reset();
+      }
+    }
+  }
   fNumCycle++;
   fNumCycleErr++;
 }
@@ -324,6 +333,18 @@ void ZDCRawDataTask::initHisto()
 
   addNewHisto("COUNTS", "hcounts-ZEM1_TR", "Counts ZEM1", "ZEM1_TR", "LBC");
   addNewHisto("COUNTS", "hcounts-ZEM2_TR", "Counts ZEM2", "ZEM2_TR", "LBC");
+
+  addNewHisto("COUNTSA", "hcounts_ZNA_TC_TR", "Counts ZNA TC istantaneous", "ZNA_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNA_SUM", "Counts ZNA SUM istantaneous", "ZNA_SUM", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNC_TC_TR", "Counts ZNC TC istantaneous", "ZNC_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNC_SUM", "Counts ZNC SUM istantaneous", "ZNC_SUM", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPA_TC_TR", "Counts ZPA TC istantaneous", "ZPA_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPA_SUM", "Counts ZPA SUM istantaneous", "ZPA_SUM", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPC_TC_TR", "Counts ZPC TC istantaneous", "ZPC_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPC_SUM", "Counts ZPC SUM istantaneous", "ZPC_SUM", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZEM1_TR", "Counts ZEM1 istantaneous", "ZEM1_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZEM2_TR", "Counts ZEM2 istantaneous", "ZEM2_TR", "LBC");
+
   // Histograms Signal
   int nBCAheadTrig = 3;
   int nbx = (nBCAheadTrig + 1 + 12) * o2::zdc::NTimeBinsPerBC;
@@ -780,8 +801,15 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     if (fSummaryError && (f.error)) {
       fSummaryError->Fill(fMatrixAlign[f.board][f.ch].bin - 1, 0);
     }
+
+    // Fill counts
     for (int i = 0; i < (int)fMatrixHistoCounts[f.board][f.ch].size(); i++) {
       fMatrixHistoCounts[f.board][f.ch].at(i).histo->Fill(f.hits & 0xfff);
+    }
+
+    // Fill counts for trending
+    for (int i = 0; i < (int)fMatrixHistoCounts_a[f.board][f.ch].size(); i++) {
+      fMatrixHistoCounts_a[f.board][f.ch].at(i).histo->Fill(f.hits & 0xfff);
     }
 
     // Fill Summary
@@ -952,12 +980,46 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return true;
       }
     }
+
+    if (type == "COUNTSA") {
+      // Check if Histogram Exist
+      if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
+        fNameHisto.push_back(name);
+        h1d.histo = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
+        h1d.condHisto.push_back(condition);
+        ih = (int)fMatrixHistoCounts_a[mod][ch].size();
+        fMatrixHistoCounts_a[mod][ch].push_back(h1d);
+
+        if (ih < (int)fMatrixHistoCounts_a[mod][ch].size()) {
+          getObjectsManager()->startPublishing(fMatrixHistoCounts_a[mod][ch].at(ih).histo);
+          try {
+            getObjectsManager()->addMetadata(fMatrixHistoCounts_a[mod][ch].at(ih).histo->GetName(), fMatrixHistoCounts_a[mod][ch].at(ih).histo->GetName(), "34");
+            return true;
+          } catch (...) {
+            ILOG(Warning, Support) << "Metadata could not be added to " << fMatrixHistoCounts_a[mod][ch].at(ih).histo->GetName() << ENDM;
+            return false;
+          }
+
+          delete h1d.histo;
+          h1d.condHisto.clear();
+        }
+        return true;
+      } else {
+        for (int i = 0; i < (int)fMatrixHistoCounts_a[mod][ch].size(); i++) {
+          fMatrixHistoCounts_a[mod][ch].at(i).histo->Reset();
+        }
+        return true;
+      }
+    }
+
     // SIGNAL
     if (type == "SIGNAL") {
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
         fNameHisto.push_back(name);
         h2d.histo = new TH2F(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, fMinBinY, fMaxBinY);
+        h2d.histo->GetXaxis()->SetTitle("Sample number");
+        h2d.histo->GetYaxis()->SetTitle("ADC units");
         h2d.condHisto.push_back(condition);
         ih = (int)fMatrixHistoSignal[mod][ch].size();
         fMatrixHistoSignal[mod][ch].push_back(h2d);
