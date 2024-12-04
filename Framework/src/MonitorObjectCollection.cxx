@@ -46,16 +46,32 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
       if (!otherMO || !targetMO) {
         throw std::runtime_error("The target object or the other object could not be casted to MonitorObject.");
       }
-      if (!reportedMismatchingRunNumbers && targetMO->getActivity().mId != otherMO->getActivity().mId) {
+
+      if (otherMO->getActivity().mId > targetMO->getActivity().mId) {
+        ILOG(Error, Ops) << "The run number of the input object '" << otherMO->GetName() << "' ("
+                         << otherMO->getActivity().mId << ") "
+                         << "is higher than the one of the target object '"
+                         << targetMO->GetName() << "' (" << targetMO->getActivity().mId
+                         << "). Replacing the merged object with input, "
+                         << "but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
+                         << "QC objects from other setups are reaching this one."
+                         << ENDM;
+        otherMO->Copy(*targetMO);
+        continue;
+      }
+
+      if (!reportedMismatchingRunNumbers && otherMO->getActivity().mId < targetMO->getActivity().mId) {
         ILOG(Error, Ops) << "The run number of the input object '" << otherMO->GetName() << "' ("
                          << otherMO->getActivity().mId << ") "
                          << "does not match the run number of the target object '"
                          << targetMO->GetName() << "' (" << targetMO->getActivity().mId
-                         << "). Trying to continue, but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
+                         << "). Ignoring this object and trying to continue, but THIS SHOULD BE IMMEDIATELY ADDRESSED IN PRODUCTION. "
                          << "QC objects from other setups are reaching this one. Will not report more mismatches in this collection."
                          << ENDM;
         reportedMismatchingRunNumbers = true;
+        continue;
       }
+
       // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
       algorithm::merge(targetMO->getObject(), otherMO->getObject());
       if (otherMO->getValidity().isValid()) {

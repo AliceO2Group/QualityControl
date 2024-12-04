@@ -92,7 +92,7 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       if (mLHCBCs.count() == 0) {
         continue;
       }
-      float average = h->GetEntries() / mLHCBCs.count();
+      float average = h->Integral() / mLHCBCs.count();
       mThreshold = average - mNSigBC * sqrt(average);
       if (mThreshold < std::sqrt(average)) {
         mThreshold = average / 2;

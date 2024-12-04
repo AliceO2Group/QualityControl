@@ -1,0 +1,116 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "ccdb-test.cern.ch:8080",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable"
+        },
+        "Activity": {
+          "number": "",
+          "type": "",
+          "start": "", 
+          "end": ""
+        },
+        "monitoring": {
+          "url": "infologger:///debug?qc"
+        },
+        "consul": {
+          "url": ""
+        },
+        "conditionDB": {
+          "url": "ccdb-test.cern.ch:8080"
+        },
+        "postprocessing": {
+          "periodSeconds": "10"
+        }
+      },
+      "postprocessing": {
+        "TemperatureQC": {
+          "active": "true",
+          "resumeTrend": "false", 
+          "className": "o2::quality_control::postprocessing::TrendingTask",
+          "moduleName": "QualityControl",
+          "detectorName": "TPC",
+          "producePlotsOnUpdate": "true",
+          "dataSources": [
+            {
+              "type": "condition",
+              "path": "TPC/Calib/",
+              "names": [ "Temperature" ],
+              "reductorName": "o2::quality_control_modules::tpc::DCSPTempReductor",
+              "moduleName": "QcTPC"
+            }
+          ],
+          "plots": [
+            {
+              "name": "Temp_Mean_ASide",
+              "title": "Mean Temperature A Side",
+              "varexp": "Temperature.tempMeanPerSide[0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean temp A Side:time",
+              "graphErrors": "Temperature.tempMeanPerSideErr[0]:0"
+            },
+            {
+              "name": "Temp_GradX_ASide",
+              "title": "GradX Temperature A Side",
+              "varexp": "Temperature.tempGradXPerSide[0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "gradX temp A Side:time",
+              "graphErrors": "Temperature.tempGradXPerSideErr[0]:0"
+            },
+            {
+              "name": "Temp_GradY_ASide",
+              "title": "GradY Temperature A Side",
+              "varexp": "Temperature.tempGradYPerSide[0]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "gradY temp A Side:time",
+              "graphErrors": "Temperature.tempGradYPerSideErr[0]:0"
+            },
+            {
+              "name": "Temp_Mean_CSide",
+              "title": "Mean Temperature C Side",
+              "varexp": "Temperature.tempMeanPerSide[1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "mean temp C Side:time",
+              "graphErrors": "Temperature.tempMeanPerSideErr[1]:0"
+            },
+            {
+              "name": "Temp_GradX_CSide",
+              "title": "GradX Temperature C Side",
+              "varexp": "Temperature.tempGradXPerSide[1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "gradX temp C Side:time",
+              "graphErrors": "Temperature.tempGradXPerSideErr[1]:0"
+            },
+            {
+              "name": "Temp_GradY_CSide",
+              "title": "GradY Temperature C Side",
+              "varexp": "Temperature.tempGradYPerSide[1]:time",
+              "selection": "",
+              "option": "*L",
+              "graphAxisLabel": "gradY temp C Side:time",
+              "graphErrors": "Temperature.tempGradYPerSideErr[1]:0"
+            }
+          ],
+          "initTrigger": [
+            "userorcontrol"
+          ],
+          "updateTrigger": [
+            "foreachlatest:ccdb:TPC/Calib/Temperature/"
+          ],
+          "stopTrigger": [
+            "userorcontrol"
+          ]
+        }
+      }
+    }
+  }
+  

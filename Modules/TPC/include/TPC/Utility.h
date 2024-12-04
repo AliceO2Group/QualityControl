@@ -107,5 +107,11 @@ void calculateStatistics(const double* yValues, const double* yErrors, bool useE
 /// \param mean double&, reference to double that should store mean
 /// \param stddevOfMean double&, reference to double that should store stddev of mean
 void retrieveStatistics(std::vector<double>& values, std::vector<double>& errors, bool useErrors, double& mean, double& stddevOfMean);
+
+/// \brief Calculates mean and stddev from a vector
+/// \param values std::vector<values>& vector that contains the data points
+/// \param mean float&, reference to float that should store mean
+/// \param stddev float&, reference to float that should store stddev of mean
+void calcMeanAndStddev(const std::vector<float>& values, float& mean, float& stddev);
 } // namespace o2::quality_control_modules::tpc
 #endif // QUALITYCONTROL_TPCUTILITY_H

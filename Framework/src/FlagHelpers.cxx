@@ -64,7 +64,7 @@ std::optional<QualityControlFlag> intersection(const QualityControlFlag& flag, V
     return flag;
   }
   auto intersection = flag.getInterval().getOverlap(interval);
-  if (intersection.isInvalid()) {
+  if (intersection.isInvalid() || intersection.isZeroLength()) {
     return std::nullopt;
   }
   return QualityControlFlag{ intersection.getMin(), intersection.getMax(), flag.getFlag(), flag.getComment(), flag.getSource() };

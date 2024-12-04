@@ -229,9 +229,6 @@ void PulsePositionCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     } else if (checkResult == Quality::Null) {
       ILOG(Debug, Devel) << "Quality::Null, setting to Blue" << ENDM;
       h->SetFillColor(kBlue);
-    } else if (checkResult == Quality::NullLevel) {
-      ILOG(Debug, Devel) << "Quality::Null, setting to Pink" << ENDM;
-      h->SetFillColor(kPink);
     }
     h->SetLineColor(kBlack);
     h->Draw();

@@ -33,7 +33,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   mEtaRatio = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "EtaRatio", mEtaRatio);
   mPhiRatio = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "PhiRatio", mPhiRatio);
 
-  Quality result = 0;
+  Quality result;
   Int_t id = 0;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {

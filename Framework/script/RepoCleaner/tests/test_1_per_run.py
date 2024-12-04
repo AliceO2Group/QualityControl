@@ -1,29 +1,13 @@
 import logging
 import time
 import unittest
-from datetime import timedelta, date, datetime
+from importlib import import_module
 
-from Ccdb import Ccdb, ObjectVersion
-from rules import last_only
-import os
-import sys
-import importlib
+from qcrepocleaner.Ccdb import Ccdb
+from tests import test_utils
+from tests.test_utils import CCDB_TEST_URL
 
-
-def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
-    module_name = os.path.basename(path).replace('-', '_')
-    spec = importlib.util.spec_from_loader(
-        module_name,
-        importlib.machinery.SourceFileLoader(module_name, path)
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    sys.modules[module_name] = module
-    return module
-
-
-one_per_run = import_path("../qcrepocleaner/rules/1_per_run.py")
-
+one_per_run =  import_module(".1_per_run", "qcrepocleaner.rules") # file names should not start with a number...
 
 class Test1PerRun(unittest.TestCase):
     """
@@ -38,15 +22,14 @@ class Test1PerRun(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
+        self.ccdb = Ccdb(CCDB_TEST_URL)
         self.path = "qc/TST/MO/repo/test"
         self.run = 124321
         self.extra = {}
 
     def test_1_per_run(self):
         """
-        60 versions, 1 minute apart
-        6 runs
+        6 runs of 10 versions, versions 1 minute apart
         grace period of 15 minutes
         Preserved: 14 at the end (grace period), 6 for the runs, but 2 are in both sets --> 14+6-2=18 preserved
         """
@@ -56,7 +39,8 @@ class Test1PerRun(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_1_per_run"
-        self.prepare_data(test_path, 60)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [10, 10, 10, 10, 10, 10], [0, 0, 0, 0, 0, 0], 123)
 
         objects_versions = self.ccdb.getVersionsList(test_path)
         created = len(objects_versions)
@@ -71,8 +55,7 @@ class Test1PerRun(unittest.TestCase):
 
     def test_1_per_run_period(self):
         """
-        60 versions 1 minute apart
-        6 runs
+        6 runs of 10 versions each, versions 1 minute apart
         no grace period
         acceptance period is only the 38 minutes in the middle
         preserved: 6 runs + 11 first and 11 last, with an overlap of 2 --> 26
@@ -83,7 +66,8 @@ class Test1PerRun(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_1_per_run_period"
-        self.prepare_data(test_path, 60)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [10, 10, 10, 10, 10, 10], [0, 0, 0, 0, 0, 0], 123)
         current_timestamp = int(time.time() * 1000)
 
         stats = one_per_run.process(self.ccdb, test_path, 0, current_timestamp - 49 * 60 * 1000,
@@ -93,30 +77,6 @@ class Test1PerRun(unittest.TestCase):
 
         objects_versions = self.ccdb.getVersionsList(test_path)
         self.assertEqual(len(objects_versions), 26)
-
-    def prepare_data(self, path, since_minutes):
-        """
-        Prepare a data set starting `since_minutes` in the past.
-        1 version per minute, 1 run every 10 versions
-        """
-
-        current_timestamp = int(time.time() * 1000)
-        data = {'part': 'part'}
-        run = 1234
-        counter = 0
-
-        for x in range(since_minutes + 1):
-            counter = counter + 1
-            from_ts = current_timestamp - x * 60 * 1000
-            to_ts = current_timestamp
-            metadata = {'RunNumber': str(run)}
-            version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-            self.ccdb.putVersion(version=version_info, data=data)
-            if x % 10 == 0:
-                run = run + 1
-
-        logging.debug(f"counter : {counter}")
-
 
 if __name__ == '__main__':
     unittest.main()

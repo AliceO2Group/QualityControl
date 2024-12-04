@@ -26,6 +26,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <BookkeepingApi/QcFlagServiceClient.h>
 #include <BookkeepingApi/BkpClientFactory.h>
+#include <CCDB/BasicCCDBManager.h>
 #include <stdexcept>
 #include <utility>
 
@@ -51,13 +52,18 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
   std::optional<std::string> periodName;
 
   for (auto& [detector, qoMap] : flags) {
-    ILOG(Info, Support) << "Sending " << flags.size() << " flags for detector:  " << detector << ENDM;
+    ILOG(Info, Support) << "Processing flags for detector: " << detector << ENDM;
 
     std::vector<QcFlag> bkpQcFlags{};
     for (auto& [qoName, converter] : qoMap) {
       if (converter == nullptr) {
         continue;
       }
+      if (provenance == Provenance::AsyncQC || provenance == Provenance::MCQC) {
+        auto runDuration = ccdb::BasicCCDBManager::instance().getRunDuration(converter->getRunNumber(), false);
+        converter->updateValidityInterval({ static_cast<uint64_t>(runDuration.first), static_cast<uint64_t>(runDuration.second) });
+      }
+
       auto flagCollection = converter->getResult();
       if (flagCollection == nullptr) {
         continue;
@@ -86,9 +92,9 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
     }
 
     if (bkpQcFlags.empty()) {
+      ILOG(Info, Support) << "No flags for detector '" << detector << "', skipping" << ENDM;
       continue;
     }
-
     try {
       switch (provenance) {
         case Provenance::SyncQC:
@@ -105,6 +111,7 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
       ILOG(Error, Support) << "Failed to send flags for detector: " << detector
                            << " with error: " << err.what() << ENDM;
     }
+    ILOG(Info, Support) << "Sent " << bkpQcFlags.size() << " flags for detector: " << detector << ENDM;
   }
 }
 

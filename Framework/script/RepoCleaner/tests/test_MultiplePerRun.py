@@ -1,14 +1,13 @@
 import logging
 import time
 import unittest
-from datetime import timedelta, date, datetime
-from typing import List
 
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
+import test_utils
+from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.rules import multiple_per_run
 
 
-class TestProduction(unittest.TestCase):
+class TestMultiplePerRun(unittest.TestCase):
     """
     This test pushes data to the CCDB and then run the Rule Production and then check.
     It does it for several use cases.
@@ -21,7 +20,7 @@ class TestProduction(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://137.138.47.222:8080')
+        self.ccdb = Ccdb(test_utils.CCDB_TEST_URL) # ccdb-test but please use IP to avoid DNS alerts
         self.extra = {"interval_between_versions": "90", "migrate_to_EOS": False}
         self.path = "qc/TST/MO/repo/test"
 
@@ -36,7 +35,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_1_finished_run"
-        self.prepare_data(test_path, [150], [22*60], 123)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [150], [22*60], 123)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
@@ -56,7 +56,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_2_runs"
-        self.prepare_data(test_path, [150, 150], [3*60, 20*60], 123)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [150, 150], [3 * 60, 20 * 60], 123)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
@@ -77,7 +78,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_5_runs"
-        self.prepare_data(test_path, [1*60, 2*60, 3*60+10, 4*60, 5*60],
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [1*60, 2*60, 3*60+10, 4*60, 5*60],
                           [60, 120, 190, 240, 24*60], 123)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
@@ -85,11 +87,11 @@ class TestProduction(unittest.TestCase):
         self.assertEqual(stats["deleted"], 60+120+190+240+300-18)
         self.assertEqual(stats["preserved"], 18)
         self.assertEqual(stats["updated"], 0)
-        
+
         # and now re-run it to make sure we preserve the state
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                           to_timestamp=self.in_ten_years, extra_params=self.extra)
-        
+
         self.assertEqual(stats["deleted"], 0)
         self.assertEqual(stats["preserved"], 18)
         self.assertEqual(stats["updated"], 0)
@@ -105,7 +107,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_run_one_object"
-        self.prepare_data(test_path, [1], [25*60], 123)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [1], [25*60], 123)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
@@ -125,7 +128,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_run_two_object"
-        self.prepare_data(test_path, [2], [25*60], 123)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [2], [25*60], 123)
 
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=1,
                                        to_timestamp=self.in_ten_years, extra_params=self.extra)
@@ -145,7 +149,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_3_runs_with_period"
-        self.prepare_data(test_path, [30,30, 30], [120,120,25*60], 123)
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [30,30, 30], [120,120,25*60], 123)
 
         current_timestamp = int(time.time() * 1000)
         stats = multiple_per_run.process(self.ccdb, test_path, delay=60*24, from_timestamp=current_timestamp-29*60*60*1000,
@@ -160,49 +165,8 @@ class TestProduction(unittest.TestCase):
                             datefmt='%d-%b-%y %H:%M:%S')
         logging.getLogger().setLevel(int(10))
         test_path = self.path + "/asdf"
-        self.prepare_data(test_path, [70, 70, 70], [6*60, 6*60, 25*60], 55555)
-
-    def prepare_data(self, path, run_durations: List[int], time_till_next_run: List[int], first_run_number: int):
-        """
-        Prepare a data set populated with a number of runs.
-        run_durations contains the duration of each of these runs in minutes
-        time_till_next_run is the time between two runs in minutes.
-        The first element of time_till_next_run is used to separate the first two runs.
-        Both lists must have the same number of elements.
-        """
-
-        if len(run_durations) != len(time_till_next_run):
-            logging.error(f"run_durations and time_till_next_run must have the same length")
-            exit(1)
-
-        total_duration = 0
-        for a, b in zip(run_durations, time_till_next_run):
-            total_duration += a + b
-        logging.info(f"Total duration : {total_duration}")
-
-        current_timestamp = int(time.time() * 1000)
-        cursor = current_timestamp - total_duration * 60 * 1000
-        first_ts = cursor
-        data = {'part': 'part'}
-        run = first_run_number
-
-        for run_duration, time_till_next in zip(run_durations, time_till_next_run):
-            metadata = {'RunNumber': str(run)}
-            logging.debug(f"cursor: {cursor}")
-            logging.debug(f"time_till_next: {time_till_next}")
-
-            for i in range(run_duration):
-                to_ts = cursor + 24 * 60 * 60 * 1000  # a day
-                metadata2 = {**metadata, 'Created': str(cursor)}
-                version_info = ObjectVersion(path=path, validFrom=cursor, validTo=to_ts, metadata=metadata2,
-                                             createdAt=cursor)
-                self.ccdb.putVersion(version=version_info, data=data)
-                cursor += 1 * 60 * 1000
-
-            run += 1
-            cursor += time_till_next * 60 * 1000
-
-        return first_ts
+        test_utils.clean_data(self.ccdb, test_path)
+        test_utils.prepare_data(self.ccdb, test_path, [70, 70, 70], [6*60, 6*60, 25*60], 55555)
 
 
 if __name__ == '__main__':

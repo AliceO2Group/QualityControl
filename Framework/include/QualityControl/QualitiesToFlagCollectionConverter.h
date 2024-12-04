@@ -46,6 +46,7 @@ class QualitiesToFlagCollectionConverter
 
   size_t getQOsIncluded() const;
   size_t getWorseThanGoodQOs() const;
+  int getRunNumber() const;
 
   /// Sets the provided validity interval, trims affected flags and fills extensions with UnknownQuality
   void updateValidityInterval(const ValidityInterval validityInterval);

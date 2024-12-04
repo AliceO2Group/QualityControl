@@ -15,9 +15,11 @@
 ///
 
 #include "QualityControl/MonitorObject.h"
+#include <TObject.h>
+#include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <iostream>
-#include "QualityControl/RepoPathUtils.h"
 
 using namespace std;
 
@@ -25,11 +27,8 @@ namespace o2::quality_control::core
 {
 
 MonitorObject::MonitorObject()
-  : TObject(),
-    mObject(nullptr),
-    mTaskName(""),
-    mDetectorName(""),
-    mIsOwner(true)
+  : TObject{},
+    mIsOwner{ true }
 {
   mActivity.mProvenance = "qc";
   mActivity.mId = 0;
@@ -37,28 +36,71 @@ MonitorObject::MonitorObject()
 }
 
 MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
-  : TObject(),
-    mObject(object),
-    mTaskName(taskName),
-    mTaskClass(taskClass),
-    mDetectorName(detectorName),
-    mActivity(runNumber, "NONE", periodName, passName, provenance, gInvalidValidityInterval),
-    mIsOwner(true)
+  : TObject{},
+    mObject{ object },
+    mTaskName{ taskName },
+    mTaskClass{ taskClass },
+    mDetectorName{ detectorName },
+    mActivity{ runNumber, "NONE", periodName, passName, provenance, gInvalidValidityInterval },
+    mIsOwner{ true }
 {
+}
+
+MonitorObject::MonitorObject(const MonitorObject& other)
+  : TObject{ other },
+    mObject{},
+    mTaskName{ other.mTaskName },
+    mTaskClass{ other.mTaskClass },
+    mDetectorName{ other.mDetectorName },
+    mUserMetadata{ other.mUserMetadata },
+    mDescription{ other.mDescription },
+    mActivity{ other.mActivity },
+    mCreateMovingWindow{ other.mCreateMovingWindow }
+{
+  cloneAndSetObject(other);
+}
+
+MonitorObject& MonitorObject::operator=(const MonitorObject& other)
+{
+  TObject::operator=(other);
+  mTaskName = other.mTaskName;
+  mTaskClass = other.mTaskClass;
+  mDetectorName = other.mDetectorName;
+  mUserMetadata = other.mUserMetadata;
+  mDescription = other.mDescription;
+  mActivity = other.mActivity;
+  mCreateMovingWindow = other.mCreateMovingWindow;
+  cloneAndSetObject(other);
+
+  return *this;
+}
+
+void MonitorObject::Copy(TObject& object) const
+{
+  static_cast<MonitorObject&>(object) = *this;
 }
 
 MonitorObject::~MonitorObject()
 {
-  if (mIsOwner) {
-    delete mObject;
-    mObject = nullptr;
+  releaseObject();
+}
+
+void MonitorObject::Draw(Option_t* option)
+{
+  if (mObject) {
+    mObject->Draw(option);
+  } else {
+    ILOG(Error, Devel) << "MonitorObject::Draw() : You are trying to draw MonitorObject with no internal TObject" << ENDM;
   }
 }
 
-void MonitorObject::Draw(Option_t* option) { mObject->Draw(option); }
-
 TObject* MonitorObject::DrawClone(Option_t* option) const
 {
+  if (!mObject) {
+    ILOG(Error, Devel) << "MonitorObject::DrawClone() : You are trying to draw MonitorObject with no internal TObject" << ENDM;
+    return nullptr;
+  }
+
   auto* clone = new MonitorObject();
   clone->setTaskName(this->getTaskName());
   clone->setObject(mObject->DrawClone(option));
@@ -72,10 +114,9 @@ const std::string MonitorObject::getName() const
 
 const char* MonitorObject::GetName() const
 {
-  if (mObject == nullptr) {
-    cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string" << endl;
-    static char empty[] = "";
-    return empty;
+  if (!mObject) {
+    ILOG(Error, Ops) << "MonitorObject::getName() : No object in this MonitorObject, returning empty string" << ENDM;
+    return "";
   }
   return mObject->GetName();
 }
@@ -160,6 +201,52 @@ void MonitorObject::updateValidity(validity_time_t value)
   mActivity.mValidity.update(value);
 }
 
+std::string MonitorObject::getFullName() const
+{
+  return getTaskName() + "/" + getName();
+}
+
+TObject* MonitorObject::getObject() const
+{
+  return mObject.get();
+}
+
+void MonitorObject::setObject(TObject* object)
+{
+  releaseObject();
+  mObject.reset(object);
+}
+
+bool MonitorObject::isIsOwner() const
+{
+  return mIsOwner;
+}
+
+void MonitorObject::setIsOwner(bool isOwner)
+{
+  mIsOwner = isOwner;
+}
+
+const std::string& MonitorObject::getTaskName() const
+{
+  return mTaskName;
+}
+
+void MonitorObject::setTaskName(const std::string& taskName)
+{
+  mTaskName = taskName;
+}
+
+const std::string& MonitorObject::getDetectorName() const
+{
+  return mDetectorName;
+}
+
+void MonitorObject::setDetectorName(const std::string& detectorName)
+{
+  mDetectorName = detectorName;
+}
+
 ValidityInterval MonitorObject::getValidity() const
 {
   return mActivity.mValidity;
@@ -183,6 +270,25 @@ void MonitorObject::setCreateMovingWindow(bool flag)
 bool MonitorObject::getCreateMovingWindow() const
 {
   return mCreateMovingWindow;
+}
+
+void MonitorObject::releaseObject()
+{
+  if (!mIsOwner) {
+    void(mObject.release());
+  }
+}
+
+void MonitorObject::cloneAndSetObject(const MonitorObject& other)
+{
+  releaseObject();
+
+  if (auto* otherObject = other.getObject(); otherObject != nullptr && other.isIsOwner()) {
+    mObject.reset(otherObject->Clone());
+  } else {
+    mObject.reset(otherObject);
+  }
+  mIsOwner = other.isIsOwner();
 }
 
 } // namespace o2::quality_control::core

@@ -289,4 +289,9 @@ void QualitiesToFlagCollectionConverter::updateValidityInterval(const ValidityIn
   mConverted->setInterval(interval);
 }
 
+int QualitiesToFlagCollectionConverter::getRunNumber() const
+{
+  return mConverted ? mConverted->getRunNumber() : -1;
+}
+
 } // namespace o2::quality_control::core

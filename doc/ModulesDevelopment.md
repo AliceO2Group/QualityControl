@@ -22,6 +22,7 @@
    * [Check](#check)
       * [Configuration](#configuration)
       * [Implementation](#implementation)
+     * [Results](#results)
    * [Quality Aggregation](#quality-aggregation)
       * [Quick try](#quick-try)
       * [Configuration](#configuration-1)
@@ -300,7 +301,8 @@ A Check is a function (actually `Check::check()`) that determines the quality of
           "type": "Task",
           "name": "QcTask",
           "MOs": ["example", "other"]
-        }]
+        }],
+        "exportToBookkeeping": "false"
       },
       "QcCheck": {
          ...
@@ -323,6 +325,7 @@ A Check is a function (actually `Check::check()`) that determines the quality of
     * _type_ - currently only supported are _Task_ and _ExternalTask_
     * _name_ - name of the _Task_
     * _MOs_ - list of MonitorObjects names or can be omitted to mean that all objects should be taken.
+* __exportToBookkeeping__ - allows to propagate the results of this Check to Bookkeeping, where they are visualized as time-based Flags (disabled by default).
 
 ### Implementation
 After the creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
@@ -333,11 +336,20 @@ void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
 
 ```
 
-The `check()` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
+The `check()` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects.
+It is expected to return Quality of the given MonitorObjects.
+Optionally one can associate one or more Flags to a Quality by using `addFlag` on it.
 
 For each MO or group of MOs, `beautify()` is invoked after `check()` if
 1. the check() did not raise an exception
 2. there is a single `dataSource` in the configuration of the check
+
+### Results
+
+Checks return Qualities with associated Flags.
+The framework wraps them with a QualityObject, then makes it available to Aggregators (see the next section) and stores them in the repository.
+It is also possible to propagate Check results to the Run Condition Table (RCT) in Bookkeeping.
+Details are explained at [Propagating Check results to RCT in Bookkeeping](Advanced.md#propagating-check-results-to-rct-in-bookkeeping)
 
 ## Quality Aggregation
 

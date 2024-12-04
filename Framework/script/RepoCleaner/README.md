@@ -33,10 +33,26 @@ There can be any number of these rules. The order is important as we use the fir
 
 The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.md). 
 
-## Unit Tests
-`cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
+## Setup virtual environment for development and test (venv)
 
-and to test only one of them: `python3 -m unittest tests/test_NewProduction.py -k test_2_runs`
+1. cd Framework/script/RepoCleaner
+2. python3 -m venv env
+3. source env/bin/activate
+4. python -m pip install -r requirements.txt
+5. python3 -m pip install . 
+6. You can execute and work. Next time just do "activate" and then you are good to go
+
+## Unit Tests
+
+```
+cd Framework/script/RepoCleaner
+source env/bin/activate  
+
+# Run a test: 
+python -m unittest tests.test_Ccdb.TestCcdb.test_getObjectsList
+```
+
+`cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
 In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
 `
@@ -75,11 +91,3 @@ Create new version
 2. `python3 setup.py sdist bdist_wheel`
 3. `python3 -m twine upload --repository pypi dist/*`
 
-## Use venv
-
-1. cd Framework/script/RepoCleaner
-2. python3 -m venv env
-3. source env/bin/activate
-4. python -m pip install -r requirements.txt
-5. python3 -m pip install . 
-6. You can execute and work. Next time just do "activate" and then you are good to go

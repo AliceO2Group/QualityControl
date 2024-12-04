@@ -295,4 +295,10 @@ TEST_CASE("intersection")
     REQUIRE(result->getComment() == qcFlag.getComment());
     REQUIRE(result->getSource() == qcFlag.getSource());
   }
+  SECTION("Returns nullopt if the flag and the interval are adjacent")
+  {
+    QualityControlFlag qcFlag{ 15, 25, FlagTypeFactory::BadTracking(), "comment", "source" };
+    REQUIRE_FALSE(intersection(qcFlag, { 10, 15 }).has_value());
+    REQUIRE_FALSE(intersection(qcFlag, { 25, 30 }).has_value());
+  }
 }
