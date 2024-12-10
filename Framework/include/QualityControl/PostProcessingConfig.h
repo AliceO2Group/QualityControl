@@ -17,12 +17,11 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINGCONFIG_H
 #define QUALITYCONTROL_POSTPROCESSINGCONFIG_H
 
-#include "QualityControl/CustomParameters.h"
-
 #include <vector>
 #include <string>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Activity.h"
+#include "QualityControl/UserCodeConfig.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -30,27 +29,20 @@ namespace o2::quality_control::postprocessing
 // todo pretty print
 
 /// \brief  Post-processing configuration structure
-struct PostProcessingConfig {
+struct PostProcessingConfig : public o2::quality_control::core::UserCodeConfig {
   PostProcessingConfig() = default;
   PostProcessingConfig(const std::string& id, const boost::property_tree::ptree& config);
   ~PostProcessingConfig() = default;
   std::string id;
   std::string taskName;
-  std::string moduleName;
-  std::string className;
-  std::string detectorName = "MISC";
   std::vector<std::string> initTriggers = {};
   std::vector<std::string> updateTriggers = {};
   std::vector<std::string> stopTriggers = {};
-  std::string qcdbUrl;
-  std::string ccdbUrl;
-  std::string consulUrl;
   std::string kafkaBrokersUrl;
   std::string kafkaTopic;
   core::Activity activity;
   bool matchAnyRunNumber = false;
   bool critical;
-  core::CustomParameters customParameters;
 };
 
 } // namespace o2::quality_control::postprocessing

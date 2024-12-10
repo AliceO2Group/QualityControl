@@ -83,11 +83,6 @@ class CheckInterface : public core::UserCodeInterface
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
   virtual void endOfActivity(const core::Activity& activity);   // not fully abstract because we don't want to change all the existing subclasses
 
-  void setDatabase(std::shared_ptr<o2::quality_control::repository::DatabaseInterface> database)
-  {
-    mDatabase = database;
-  }
-
  protected:
   /// \brief Called each time mCustomParameters is updated.
   virtual void configure() override;
@@ -99,9 +94,6 @@ class CheckInterface : public core::UserCodeInterface
   /// \param referenceActivity Reference activity (usually a copy of the current activity with a different run number)
   /// \return
   std::shared_ptr<MonitorObject> retrieveReference(std::string path, Activity referenceActivity);
-
- private:
-  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
 
   ClassDef(CheckInterface, 6)
 };
