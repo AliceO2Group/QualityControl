@@ -165,6 +165,8 @@ void ZDCRecDataTask::initVecType()
   insertTypeVec("ADC");
   insertTypeVec("TDCV");
   insertTypeVec("TDCA");
+  insertTypeVec("TDCAC");
+  insertTypeVec("ADCAC");
   insertTypeVec("BC");
   insertTypeVec("INFO");
 }
@@ -292,6 +294,15 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("ADC1D", "h_ADC_ZPC_TC_H", "ADC ZPC TC ZOOM", "ADC", "ZPCC", "", "", 0);
   addNewHisto("ADC1D", "h_ADC_ZPC_SUM_H", "ADC ZPC SUM ZOOM", "ADC", "ZPCS", "", "", 0);
 
+  addNewHisto("ADC1D", "h_ADC_ZPA_TC_H_CUT", "ADC ZPA TC ZOOM with cut", "ADCAC", "ZPAC", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZPA_SUM_H_CUT", "ADC ZPA SUM ZOOM with cut", "ADCAC", "ZPAS", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZPC_TC_H_CUT", "ADC ZPC TC ZOOM with cut", "ADCAC", "ZPCC", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZPC_SUM_H_CUT", "ADC ZPC SUM ZOOM with cut", "ADCAC", "ZPCS", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZNA_TC_H_CUT", "ADC ZNA TC ZOOM with cut", "ADCAC", "ZNAC", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZNA_SUM_H_CUT", "ADC ZNA SUM ZOOM with cut", "ADCAC", "ZNAS", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZNC_TC_H_CUT", "ADC ZNC TC ZOOM with cut", "ADCAC", "ZNCC", "", "", 0);
+  addNewHisto("ADC1D", "h_ADC_ZNC_SUM_H_CUT", "ADC ZNC SUM ZOOM with cut", "ADCAC", "ZNCS", "", "", 0);
+
   if (auto param = mCustomParameters.find("TDCT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - TDCT: " << param->second << ENDM;
     tokenString = tokenLine(param->second, ";");
@@ -350,6 +361,16 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("TDC1D", "h_TDC_ZNC_SUM_A_H", "TDC Amplitude ZNC SUM  ZOOM", "TDCA", "ZNCS", "", "", 0);
   addNewHisto("TDC1D", "h_TDC_ZPC_TC_A_H", "TDC Amplitude ZPC TC  ZOOM", "TDCA", "ZPCC", "", "", 0);
   addNewHisto("TDC1D", "h_TDC_ZPC_SUM_A_H", "TDC Amplitude ZPC SUM  ZOOM", "TDCA", "ZPCS", "", "", 0);
+
+  addNewHisto("TDC1D", "h_TDC_ZPA_TC_A_H_CUT", "TDC Amplitude ZPA TC ZOOM with cut", "TDCAC", "ZPAC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPA_SUM_A_H_CUT", "TDC Amplitude ZPA SUM ZOOM with cut", "TDCAC", "ZPAS", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPC_TC_A_H_CUT", "TDC Amplitude ZPC TC ZOOM with cut", "TDCAC", "ZPCC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZPC_SUM_A_H_CUT", "TDC Amplitude ZPC SUM ZOOM with cut", "TDCAC", "ZPCS", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNA_TC_A_H_CUT", "TDC Amplitude ZNA TC ZOOM with cut", "TDCAC", "ZNAC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNA_SUM_A_H_CUT", "TDC Amplitude ZNA SUM ZOOM with cut", "TDCAC", "ZNAS", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNC_TC_A_H_CUT", "TDC Amplitude ZNC TC ZOOM with cut", "TDCAC", "ZNCC", "", "", 0);
+  addNewHisto("TDC1D", "h_TDC_ZNC_SUM_A_H_CUT", "TDC Amplitude ZNC SUM ZOOM with cut", "TDCAC", "ZNCS", "", "", 0);
+
   // Centroid ZPA
   if (auto param = mCustomParameters.find("CENTR_ZPA"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - CENTR_ZPA: " << param->second << ENDM;
@@ -521,6 +542,8 @@ void ZDCRecDataTask::initHisto()
     setBinHisto2D(200, -2, 2, 200, -2, 2);
   }
   addNewHisto("CENTR_ZNA", "h_CENTR_ZNA", "ZNA Centroid (cm)", "ADC", "CXZNA", "ADC", "CYZNA", 0);
+  addNewHisto("CENTR_ZNA", "h_CENTR_ZNA_cut_ZEM", "ZNA Centroid (cm)", "ADC", "CXZNA", "ADC", "CYZNA", 0);
+
   // Centroid ZNC
   if (auto param = mCustomParameters.find("CENTR_ZNC"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - CENTR_ZNC: " << param->second << ENDM;
@@ -530,6 +553,7 @@ void ZDCRecDataTask::initHisto()
     setBinHisto2D(200, -2, 2, 200, -2, 2);
   }
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
+  addNewHisto("CENTR_ZNC", "h_CENTR_ZNC_cut_ZEM", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
 }
 
 bool ZDCRecDataTask::add1DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, int bin)
@@ -638,8 +662,42 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
     // Histo 1D
     for (int i = 0; i < (int)mHisto1D.size(); i++) {
       // Fill ADC 1D
-      if (mHisto1D.at(i).typeh == "ADC1D" && mHisto1D.at(i).typech == "ADC") {
-        mHisto1D.at(i).histo->Fill(getADCRecValue(mHisto1D.at(i).typech, mHisto1D.at(i).ch));
+      if (mHisto1D.at(i).typeh == "ADC1D" && (mHisto1D.at(i).typech == "ADC" || mHisto1D.at(i).typech == "ADCAC")) {
+
+        if (mHisto1D.at(i).typech == "ADC") {
+          mHisto1D.at(i).histo->Fill(getADCRecValue(mHisto1D.at(i).typech, mHisto1D.at(i).ch));
+        }
+
+        if (mHisto1D.at(i).typech == "ADCAC") {
+          if (mHisto1D.at(i).ch == "ZPAC" || mHisto1D.at(i).ch == "ZPAS") {
+            if (mEv.NtdcA(o2::zdc::TDCZNAC) == 0 && mEv.NtdcA(o2::zdc::TDCZNAS) == 0) {
+              if (getADCRecValue("ADC", mHisto1D.at(i).ch) > -8000) {
+                mHisto1D.at(i).histo->Fill(getADCRecValue("ADC", mHisto1D.at(i).ch));
+              }
+            }
+          }
+          if (mHisto1D.at(i).ch == "ZPCC" || mHisto1D.at(i).ch == "ZPCS") {
+            if (mEv.NtdcA(o2::zdc::TDCZNCC) == 0 && mEv.NtdcA(o2::zdc::TDCZNCS) == 0) {
+              if (getADCRecValue("ADC", mHisto1D.at(i).ch) > -8000) {
+                mHisto1D.at(i).histo->Fill(getADCRecValue("ADC", mHisto1D.at(i).ch));
+              }
+            }
+          }
+          if (mHisto1D.at(i).ch == "ZNAC" || mHisto1D.at(i).ch == "ZNAS") {
+            if (mEv.NtdcA(o2::zdc::TDCZPAC) == 0 && mEv.NtdcA(o2::zdc::TDCZPAS) == 0) {
+              if (getADCRecValue("ADC", mHisto1D.at(i).ch) > -8000) {
+                mHisto1D.at(i).histo->Fill(getADCRecValue("ADC", mHisto1D.at(i).ch));
+              }
+            }
+          }
+          if (mHisto1D.at(i).ch == "ZNCC" || mHisto1D.at(i).ch == "ZNCS") {
+            if (mEv.NtdcA(o2::zdc::TDCZPCC) == 0 && mEv.NtdcA(o2::zdc::TDCZPCS) == 0) {
+              if (getADCRecValue("ADC", mHisto1D.at(i).ch) > -8000) {
+                mHisto1D.at(i).histo->Fill(getADCRecValue("ADC", mHisto1D.at(i).ch));
+              }
+            }
+          }
+        }
       }
 
       // Fill TDC 1D
@@ -657,6 +715,65 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           }
         }
       }
+
+      // Fill TDCA with cut 1D
+      if (mHisto1D.at(i).typeh == "TDC1D" && (mHisto1D.at(i).typech == "TDCAC")) {
+        int tdcid = getIdTDCch("TDCA", mHisto1D.at(i).ch);
+        auto nhitv = mEv.NtdcV(tdcid);
+        if (tdcid == o2::zdc::TDCZPAC || tdcid == o2::zdc::TDCZPAS) {
+          if (mEv.NtdcA(o2::zdc::TDCZNAC) == 0 && mEv.NtdcA(o2::zdc::TDCZNAS) == 0) {
+            if (mEv.NtdcA(tdcid) == nhitv && nhitv > 0) {
+              for (int ihit = 0; ihit < nhitv; ihit++) {
+                if (mHisto1D.at(i).typech == "TDCAC") {
+                  if ((mEv.tdcV(tdcid, ihit) > -2.5 && mEv.tdcV(tdcid, ihit) < 2.5)) {
+                    mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (tdcid == o2::zdc::TDCZPCC || tdcid == o2::zdc::TDCZPCS) {
+          if (mEv.NtdcA(o2::zdc::TDCZNCC) == 0 && mEv.NtdcA(o2::zdc::TDCZNCS) == 0) {
+            if (mEv.NtdcA(tdcid) == nhitv && nhitv > 0) {
+              for (int ihit = 0; ihit < nhitv; ihit++) {
+                if (mHisto1D.at(i).typech == "TDCAC") {
+                  if ((mEv.tdcV(tdcid, ihit) > -2.5 && mEv.tdcV(tdcid, ihit) < 2.5)) {
+                    mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (tdcid == o2::zdc::TDCZNAC || tdcid == o2::zdc::TDCZNAS) {
+          if (mEv.NtdcA(o2::zdc::TDCZPAC) == 0 && mEv.NtdcA(o2::zdc::TDCZPAS) == 0) {
+            if (mEv.NtdcA(tdcid) == nhitv && nhitv > 0) {
+              for (int ihit = 0; ihit < nhitv; ihit++) {
+                if (mHisto1D.at(i).typech == "TDCAC") {
+                  if ((mEv.tdcV(tdcid, ihit) > -2.5 && mEv.tdcV(tdcid, ihit) < 2.5)) {
+                    mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (tdcid == o2::zdc::TDCZNCC || tdcid == o2::zdc::TDCZNCS) {
+          if (mEv.NtdcA(o2::zdc::TDCZPCC) == 0 && mEv.NtdcA(o2::zdc::TDCZPCS) == 0) {
+            if (mEv.NtdcA(tdcid) == nhitv && nhitv > 0) {
+              for (int ihit = 0; ihit < nhitv; ihit++) {
+                if (mHisto1D.at(i).typech == "TDCAC") {
+                  if ((mEv.tdcV(tdcid, ihit) > -2.5 && mEv.tdcV(tdcid, ihit) < 2.5)) {
+                    mHisto1D.at(i).histo->Fill(mEv.tdcA(tdcid, ihit));
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
       // Fill CENTROID ZP
       if (mHisto1D.at(i).typeh == "CENTR_ZPA" && mHisto1D.at(i).typech == "ADC") {
         mHisto1D.at(i).histo->Fill(mEv.xZPA());
@@ -717,15 +834,30 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
         }
       }
       if (mHisto2D.at(i).typeh == "CENTR_ZNA" && mHisto2D.at(i).typech1 == "ADC" && mHisto2D.at(i).typech2 == "ADC") {
-        mEv.centroidZNA(x, y);
-        mHisto2D.at(i).histo->Fill(x, y);
+        if (mHisto2D.at(i).histo->GetName() == TString::Format("h_CENTR_ZNA")) {
+          mEv.centroidZNA(x, y);
+          mHisto2D.at(i).histo->Fill(x, y);
+        } else {
+          // if (( (float)o2::zdc::TDCZEM2 > -2.5 && (float)o2::zdc::TDCZEM2 < 2.5 ) && ( (float)o2::zdc::TDCZEM1 > -2.5 && (float)o2::zdc::TDCZEM1 < 2.5 ) ){
+          if (((float)mEv.tdcV(5, 0) > -2.5 && (float)mEv.tdcV(5, 0) < 2.5) && ((float)mEv.tdcV(4, 0) > -2.5 && (float)mEv.tdcV(4, 0) < 2.5)) {
+            mEv.centroidZNA(x, y);
+            mHisto2D.at(i).histo->Fill(x, y);
+          }
+        }
       }
       if (mHisto2D.at(i).typeh == "CENTR_ZNC" && mHisto2D.at(i).typech1 == "ADC" && mHisto2D.at(i).typech2 == "ADC") {
-        mEv.centroidZNC(x, y);
-        mHisto2D.at(i).histo->Fill(x, y);
+        if (mHisto2D.at(i).histo->GetName() == TString::Format("h_CENTR_ZNC")) {
+          mEv.centroidZNC(x, y);
+          mHisto2D.at(i).histo->Fill(x, y);
+        } else {
+          if (((float)mEv.tdcV(5, 0) > -2.5 && (float)mEv.tdcV(5, 0) < 2.5) && ((float)mEv.tdcV(4, 0) > -2.5 && (float)mEv.tdcV(4, 0) < 2.5)) {
+            mEv.centroidZNC(x, y);
+            mHisto2D.at(i).histo->Fill(x, y);
+          }
+        }
       }
     } // for histo 2D
-  }   // while
+  } // while
   return 0;
 }
 
@@ -809,7 +941,7 @@ float ZDCRecDataTask::getADCRecValue(std::string typech, std::string ch)
   if (typech == "ADC" && ch == "ZEM2") {
     return mEv.EZEM2();
   }
-  return 0.00;
+  return -9000.0;
 }
 
 int ZDCRecDataTask::getIdTDCch(std::string typech, std::string ch)
