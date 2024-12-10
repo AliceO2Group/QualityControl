@@ -23,6 +23,7 @@
 
 #include "QualityControl/ConditionAccess.h"
 #include "QualityControl/CustomParameters.h"
+#include "QualityControl/DatabaseInterface.h"
 
 namespace o2::quality_control::core
 {
@@ -48,12 +49,14 @@ class UserCodeInterface : public ConditionAccess
 
   const std::string& getName() const;
   void setName(const std::string& name);
+  void setDatabase(std::unordered_map<std::string, std::string> dbConfig);
 
  protected:
   CustomParameters mCustomParameters;
   std::string mName;
+  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
 
-  ClassDef(UserCodeInterface, 3)
+  ClassDef(UserCodeInterface, 4)
 };
 
 } // namespace o2::quality_control::core

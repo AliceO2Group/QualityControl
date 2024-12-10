@@ -167,10 +167,15 @@ TEST_CASE("test_invoke_all_TaskRunnerConfig_methods")
 TEST_CASE("test_task_factory")
 {
   TaskRunnerConfig config{
-    "SkeletonTaskRunner",
-    "skeletonTask",
     "QcSkeleton",
     "o2::quality_control_modules::skeleton::SkeletonTask",
+    "TST",
+    "",
+    {},
+    "",
+    {},
+    "SkeletonTaskRunner",
+    "skeletonTask",
     { { 10, 1 } },
     -1,
     true,
