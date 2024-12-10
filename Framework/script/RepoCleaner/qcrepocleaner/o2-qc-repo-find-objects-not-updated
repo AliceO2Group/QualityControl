@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
-import logging
 import argparse
-import time
+import datetime
+import logging
 
 from qcrepocleaner import binUtils
 from qcrepocleaner.Ccdb import Ccdb
-import sys
-import datetime
 
-def parseArgs():
+
+def parse_args():
     """Parse the arguments passed to the script."""
     logging.info("Parsing arguments")
     parser = argparse.ArgumentParser(description='Identify the objects that have not seen an update for a given '
@@ -45,7 +44,7 @@ def run(args):
 
     # retrieve all the objects
     path = args.path + ".*"
-    objects = ccdb.getFullObjectsDetails(path=path)
+    objects = ccdb.get_full_objects_details(path=path)
 
     logging.info(f"List of the objects in {args.path} not touched in the past {args.span} days:")
     counter = 0
@@ -67,7 +66,7 @@ def main():
     binUtils.prepare_main_logger()
 
     # Parse arguments
-    args = parseArgs()
+    args = parse_args()
     logging.getLogger().setLevel(int(args.log_level))
 
     run(args)
