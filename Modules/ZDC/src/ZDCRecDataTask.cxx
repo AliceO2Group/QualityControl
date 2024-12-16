@@ -856,8 +856,8 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           }
         }
       }
-    } // for histo 2D
-  } // while
+    }
+  }
   return 0;
 }
 
