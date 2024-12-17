@@ -241,6 +241,29 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       drawThresholdsPerStation(h, mMinGoodSyncFracPerStation, mMinGoodSyncFrac);
     }
   }
+
+  // update quality flags for each DE
+  if (mo->getName().find("QualityFlagPerDE") != std::string::npos) {
+    TH2F* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (!h) {
+      return;
+    }
+
+    for (int deId = 0; deId < mQualityChecker.mQuality.size(); deId++) {
+      float ybin = 0;
+      if (mQualityChecker.mQuality[deId] == Quality::Good) {
+        ybin = 3;
+      }
+      if (mQualityChecker.mQuality[deId] == Quality::Medium) {
+        ybin = 2;
+      }
+      if (mQualityChecker.mQuality[deId] == Quality::Bad) {
+        ybin = 1;
+      }
+
+      h->SetBinContent(deId + 1, ybin, 1);
+    }
+  }
 }
 
 } // namespace o2::quality_control_modules::muonchambers

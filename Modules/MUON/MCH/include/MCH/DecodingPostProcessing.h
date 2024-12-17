@@ -93,6 +93,8 @@ class DecodingPostProcessing : public PostProcessingInterface
   std::unique_ptr<HeartBeatPacketsPlotter> mHBPacketsPlotterOnCycle;
   std::unique_ptr<FECSyncStatusPlotter> mSyncStatusPlotter;
   std::unique_ptr<FECSyncStatusPlotter> mSyncStatusPlotterOnCycle;
+
+  std::unique_ptr<TH2F> mHistogramQualityPerDE; ///< quality flags for each DE, to be filled by checker task
 };
 
 template <typename T>
