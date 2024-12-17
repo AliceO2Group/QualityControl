@@ -27,15 +27,10 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-RatesTrendsPlotter::RatesTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots) : mPath(path)
+RatesTrendsPlotter::RatesTrendsPlotter(std::string path, bool fullPlots) : mPath(path)
 {
   mReductor = std::make_unique<TH2ElecMapReductor>();
 
-  std::unique_ptr<TH2ElecMapReductor> reductorRef;
-  if (hRef) {
-    reductorRef = std::make_unique<TH2ElecMapReductor>();
-    reductorRef->update(hRef);
-  }
 
   mOrbits = std::make_unique<TrendGraph>(fmt::format("{}Orbits", path), "Orbits", "orbits");
   addCanvas(mOrbits.get(), "");
@@ -49,22 +44,10 @@ RatesTrendsPlotter::RatesTrendsPlotter(std::string path, TH2F* hRef, bool fullPl
     if (deID < 0) {
       continue;
     }
-    if (reductorRef) {
-      mRefValues[deID] = reductorRef->getDeValue(deID);
-      mTrendsDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}Rates_DE{}", path, getHistoPath(de), de),
-                                                     fmt::format("DE{} Rates", de), "rate (kHz)", reductorRef->getDeValue(deID));
-    } else {
-      mTrendsDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}/Rates_DE{}", path, getHistoPath(de), de),
-                                                     fmt::format("DE{} Rates", de), "rate (kHz)");
-    }
+    mTrendsDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}/Rates_DE{}", path, getHistoPath(de), de),
+                                                   fmt::format("DE{} Rates", de), "rate (kHz)");
     if (fullPlots) {
       addCanvas(mTrendsDE[deID].get(), "");
-    }
-
-    mTrendsRefRatioDE[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}RatesRefRatio_DE{}", path, getHistoPath(de), de),
-                                                           fmt::format("DE{} Rates, ratio wrt. reference", de), "ratio");
-    if (fullPlots) {
-      addCanvas(mTrendsRefRatioDE[deID].get(), "");
     }
   }
 
@@ -94,11 +77,6 @@ void RatesTrendsPlotter::update(long time, TH2F* h)
 
   for (size_t de = 0; de < getNumDE(); de++) {
     mTrendsDE[de]->update(time, mReductor->getDeValue(de));
-    float ratio = 1;
-    if (mRefValues[de] && mRefValues[de].value() != 0) {
-      ratio = mReductor->getDeValue(de) / mRefValues[de].value();
-    }
-    mTrendsRefRatioDE[de]->update(time, ratio);
   }
 
   std::array<double, 10> values;

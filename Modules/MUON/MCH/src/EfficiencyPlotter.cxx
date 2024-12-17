@@ -29,7 +29,7 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-EfficiencyPlotter::EfficiencyPlotter(std::string path, TH2F* hRef, bool fullPlots)
+EfficiencyPlotter::EfficiencyPlotter(std::string path, bool fullPlots)
 {
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
   mDet2ElecMapper = createDet2ElecMapper<ElectronicMapperGenerated>();
@@ -38,46 +38,16 @@ EfficiencyPlotter::EfficiencyPlotter(std::string path, TH2F* hRef, bool fullPlot
 
   mElecMapReductor = std::make_unique<TH2ElecMapReductor>();
 
+  //----------------------------------
+  // Mean efficiency histograms
+  //----------------------------------
+
   std::string sc[2] = { "B", "NB" };
   for (int ci = 0; ci < 2; ci++) {
-
-    //----------------------------------
-    // Reference mean rates histogram
-    //----------------------------------
-    if (hRef) {
-      mHistogramMeanEfficiencyPerDERef[ci] =
-        std::make_unique<TH1F>(TString::Format("%sMeanEfficiencyRef%s", path.c_str(), sc[ci].c_str()),
-                               TString::Format("Mean Efficiency vs DE (%s), reference", sc[ci].c_str()),
-                               getNumDE(), 0, getNumDE());
-      mHistogramMeanEfficiencyPerDERef[ci]->SetLineColor(kRed);
-      mHistogramMeanEfficiencyPerDERef[ci]->SetLineStyle(kDashed);
-      mHistogramMeanEfficiencyPerDERef[ci]->SetLineWidth(2);
-
-      TH2ElecMapReductor elecMapReductorRef;
-      elecMapReductorRef.update(hRef);
-
-      for (size_t de = 0; de < mHistogramMeanEfficiencyPerDERef[ci]->GetXaxis()->GetNbins(); de++) {
-        mHistogramMeanEfficiencyPerDERef[ci]->SetBinContent(de + 1, elecMapReductorRef.getDeValue(de, ci));
-        mHistogramMeanEfficiencyPerDERef[ci]->SetBinError(de + 1, 0);
-      }
-    }
-
-    //----------------------------------
-    // Mean rates histograms
-    //----------------------------------
-
-    mHistogramMeanEfficiencyPerDE[ci] = std::make_unique<TH1F>(TString::Format("%sMeanEfficiency%sHist", path.c_str(), sc[ci].c_str()),
+    mHistogramMeanEfficiencyPerDE[ci] = std::make_unique<TH1F>(TString::Format("%sMeanEfficiency%s", path.c_str(), sc[ci].c_str()),
                                                                TString::Format("Mean Efficiency vs DE (%s)", sc[ci].c_str()),
                                                                getNumDE(), 0, getNumDE());
-
-    mHistogramMeanEfficiencyRefRatio[ci] = std::make_unique<TH1F>(TString::Format("%sMeanEfficiencyRefRatio%s", path.c_str(), sc[ci].c_str()),
-                                                                  TString::Format("Mean Efficiency vs DE (%s), ratio wrt reference", sc[ci].c_str()),
-                                                                  getNumDE(), 0, getNumDE());
-    addHisto(mHistogramMeanEfficiencyRefRatio[ci].get(), false, "histo", "histo");
-
-    mCanvasMeanEfficiencyPerDE[ci] = std::make_unique<TCanvas>(TString::Format("%sMeanEfficiency%s", path.c_str(), sc[ci].c_str()),
-                                                               TString::Format("Mean Efficiency vs DE (%s)", sc[ci].c_str()), 800, 600);
-    addCanvas(mCanvasMeanEfficiencyPerDE[ci].get(), mHistogramMeanEfficiencyPerDE[ci].get(), false, "histo", "histo");
+    addHisto(mHistogramMeanEfficiencyPerDE[ci].get(), false, "histo", "histo");
   }
 
   //--------------------------------------------------
@@ -121,27 +91,6 @@ void EfficiencyPlotter::fillAverageHistograms()
     for (size_t de = 0; de < mHistogramMeanEfficiencyPerDE[ci]->GetXaxis()->GetNbins(); de++) {
       mHistogramMeanEfficiencyPerDE[ci]->SetBinContent(de + 1, mElecMapReductor->getDeValue(de, ci));
       mHistogramMeanEfficiencyPerDE[ci]->SetBinError(de + 1, 0.1);
-    }
-
-    mCanvasMeanEfficiencyPerDE[ci]->Clear();
-    mCanvasMeanEfficiencyPerDE[ci]->cd();
-    mHistogramMeanEfficiencyPerDE[ci]->Draw();
-
-    if (mHistogramMeanEfficiencyPerDERef[ci]) {
-      mHistogramMeanEfficiencyPerDERef[ci]->Draw("histsame");
-
-      mHistogramMeanEfficiencyRefRatio[ci]->Reset();
-      mHistogramMeanEfficiencyRefRatio[ci]->Add(mHistogramMeanEfficiencyPerDE[ci].get());
-      mHistogramMeanEfficiencyRefRatio[ci]->Divide(mHistogramMeanEfficiencyPerDERef[ci].get());
-
-      // special handling of bins with zero rate in reference
-      int nbinsx = mHistogramMeanEfficiencyPerDERef[ci]->GetXaxis()->GetNbins();
-      for (int b = 1; b <= nbinsx; b++) {
-        if (mHistogramMeanEfficiencyPerDERef[ci]->GetBinContent(b) == 0) {
-          mHistogramMeanEfficiencyRefRatio[ci]->SetBinContent(b, 1);
-          mHistogramMeanEfficiencyRefRatio[ci]->SetBinError(b, 0);
-        }
-      }
     }
   }
 }
