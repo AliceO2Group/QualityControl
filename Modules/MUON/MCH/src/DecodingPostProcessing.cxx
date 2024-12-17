@@ -150,6 +150,21 @@ void DecodingPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef
   createDecodingErrorsHistos(t, &qcdb);
   createHeartBeatPacketsHistos(t, &qcdb);
   createSyncStatusHistos(t, &qcdb);
+
+  //--------------------------------------------------
+  // Detector quality histogram
+  //--------------------------------------------------
+
+  mHistogramQualityPerDE.reset();
+  mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
+  mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
+  mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
+  mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
+  mHistogramQualityPerDE->SetOption("colz");
+  mHistogramQualityPerDE->SetStats(0);
+  getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
+  getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
 }
 
 //_________________________________________________________________________________________
