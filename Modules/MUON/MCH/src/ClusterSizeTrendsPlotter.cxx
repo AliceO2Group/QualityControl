@@ -27,15 +27,9 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-ClusterSizeTrendsPlotter::ClusterSizeTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots)
+ClusterSizeTrendsPlotter::ClusterSizeTrendsPlotter(std::string path, bool fullPlots)
 {
   mReductor = std::make_unique<ClusterSizeReductor>();
-
-  std::unique_ptr<ClusterSizeReductor> reductorRef;
-  if (hRef) {
-    reductorRef = std::make_unique<ClusterSizeReductor>();
-    reductorRef->update(hRef);
-  }
 
   //--------------------------------------------------
   // Efficiency trends
@@ -47,18 +41,11 @@ ClusterSizeTrendsPlotter::ClusterSizeTrendsPlotter(std::string path, TH2F* hRef,
       continue;
     }
 
-    std::optional<float> refB, refNB, refBNB;
-    if (reductorRef) {
-      refB = reductorRef->getDeValue(deID, 0);
-      refNB = reductorRef->getDeValue(deID, 1);
-      refBNB = reductorRef->getDeValue(deID, 2);
-    }
-
     mTrends[deID] = std::make_unique<TrendMultiGraph>(fmt::format("{}{}/ClusterSize_DE{}", path, getHistoPath(de), de),
                                                       fmt::format("DE{} Cluster Size", de), "cluster size");
-    mTrends[deID]->addGraph("B", "bending    ", refB);
-    mTrends[deID]->addGraph("NB", "non-bending", refNB);
-    mTrends[deID]->addGraph("BNB", "full       ", refBNB);
+    mTrends[deID]->addGraph("B", "bending    ");
+    mTrends[deID]->addGraph("NB", "non-bending");
+    mTrends[deID]->addGraph("BNB", "full       ");
     mTrends[deID]->addLegends();
 
     if (fullPlots) {

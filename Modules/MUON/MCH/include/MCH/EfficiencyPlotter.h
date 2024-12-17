@@ -35,7 +35,7 @@ namespace muonchambers
 class EfficiencyPlotter : public HistPlotter
 {
  public:
-  EfficiencyPlotter(std::string path, TH2F* hRef, bool fullPlots = false);
+  EfficiencyPlotter(std::string path, bool fullPlots = false);
 
   void update(TH2F* hEfficiency);
 
@@ -69,9 +69,6 @@ class EfficiencyPlotter : public HistPlotter
   std::unique_ptr<TH2ElecMapReductor> mElecMapReductor;
 
   std::array<std::unique_ptr<TH1F>, 2> mHistogramMeanEfficiencyPerDE;
-  std::array<std::unique_ptr<TH1F>, 2> mHistogramMeanEfficiencyPerDERef;
-  std::array<std::unique_ptr<TH1F>, 2> mHistogramMeanEfficiencyRefRatio;
-  std::array<std::unique_ptr<TCanvas>, 2> mCanvasMeanEfficiencyPerDE;
 
   std::array<std::map<int, std::shared_ptr<DetectorHistogram>>, 2> mHistogramEfficiencyDE; // 2D hit rate map for each DE
   std::array<std::unique_ptr<GlobalHistogram>, 2> mHistogramEfficiencyGlobal;              // Efficiency histogram (global XY view)

@@ -29,14 +29,9 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-ClusterSizePlotter::ClusterSizePlotter(std::string path, TH2F* hRef, bool fullPlots) : mPath(path)
+ClusterSizePlotter::ClusterSizePlotter(std::string path, bool fullPlots) : mPath(path)
 {
   mClusterSizeReductor = std::make_unique<ClusterSizeReductor>();
-
-  ClusterSizeReductor reductorRef;
-  if (hRef) {
-    reductorRef.update(hRef);
-  }
 
   std::string sc[3] = { "B", "NB", "" };
   std::string sc2[3] = { " (B)", " (NB)", "" };
@@ -44,39 +39,12 @@ ClusterSizePlotter::ClusterSizePlotter(std::string path, TH2F* hRef, bool fullPl
   for (int ci = 0; ci < 3; ci++) {
 
     //----------------------------------
-    // Reference mean cluster size histogram
-    //----------------------------------
-    mHistogramClusterSizePerDERef[ci] =
-      std::make_unique<TH1F>(TString::Format("%sClusterSizeRef%s", mPath.c_str(), sc[ci].c_str()),
-                             TString::Format("Cluster Size vs DE%s, reference", sc2[ci].c_str()),
-                             getNumDE(), 0, getNumDE());
-    mHistogramClusterSizePerDERef[ci]->SetLineColor(kRed);
-    mHistogramClusterSizePerDERef[ci]->SetLineStyle(kDashed);
-    mHistogramClusterSizePerDERef[ci]->SetLineWidth(2);
-
-    if (hRef) {
-      for (size_t de = 0; de < mHistogramClusterSizePerDERef[ci]->GetXaxis()->GetNbins(); de++) {
-        mHistogramClusterSizePerDERef[ci]->SetBinContent(de + 1, reductorRef.getDeValue(de, ci));
-        mHistogramClusterSizePerDERef[ci]->SetBinError(de + 1, 0);
-      }
-    }
-
-    //----------------------------------
     // Mean cluster size histograms
     //----------------------------------
 
-    mHistogramClusterSizePerDE[ci] = std::make_unique<TH1F>(TString::Format("%sMeanClusterSize%sHist", mPath.c_str(), sc[ci].c_str()),
+    mHistogramClusterSizePerDE[ci] = std::make_unique<TH1F>(TString::Format("%sMeanClusterSize%s", mPath.c_str(), sc[ci].c_str()),
                                                             TString::Format("Cluster Size vs DE%s", sc2[ci].c_str()), getNumDE(), 0, getNumDE());
-
-    mHistogramClusterSizePerDERefRatio[ci] = std::make_unique<TH1F>(TString::Format("%sMeanClusterSizeRefRatio%s", mPath.c_str(), sc[ci].c_str()),
-                                                                    TString::Format("Cluster Size vs DE%s, ratio wrt reference", sc2[ci].c_str()),
-                                                                    getNumDE(), 0, getNumDE());
-    addHisto(mHistogramClusterSizePerDERefRatio[ci].get(), false, "histo", "");
-
-    mCanvasClusterSizePerDE[ci] = std::make_unique<TCanvas>(TString::Format("%sMeanClusterSize%s", mPath.c_str(), sc[ci].c_str()),
-                                                            TString::Format("Cluster Size vs DE%s", sc2[ci].c_str()), 800, 600);
-    // mCanvasClusterSizePerDE->SetLogy(kTRUE);
-    addCanvas(mCanvasClusterSizePerDE[ci].get(), mHistogramClusterSizePerDE[ci].get(), false, "histo", "histo");
+    addHisto(mHistogramClusterSizePerDE[ci].get(), false, "histo", "");
 
     for (auto de : o2::mch::constants::deIdsForAllMCH) {
       int deID = getDEindex(de);
@@ -143,27 +111,6 @@ void ClusterSizePlotter::fillHistograms(TH2F* hSize)
     for (size_t de = 0; de < mHistogramClusterSizePerDE[ci]->GetXaxis()->GetNbins(); de++) {
       mHistogramClusterSizePerDE[ci]->SetBinContent(de + 1, mClusterSizeReductor->getDeValue(de, ci));
       mHistogramClusterSizePerDE[ci]->SetBinError(de + 1, 0.1);
-    }
-
-    mCanvasClusterSizePerDE[ci]->Clear();
-    mCanvasClusterSizePerDE[ci]->cd();
-    mHistogramClusterSizePerDE[ci]->Draw();
-
-    if (mHistogramClusterSizePerDERef[ci]) {
-      mHistogramClusterSizePerDERef[ci]->Draw("histsame");
-
-      mHistogramClusterSizePerDERefRatio[ci]->Reset();
-      mHistogramClusterSizePerDERefRatio[ci]->Add(mHistogramClusterSizePerDE[ci].get());
-      mHistogramClusterSizePerDERefRatio[ci]->Divide(mHistogramClusterSizePerDERef[ci].get());
-
-      // special handling of bins with zero rate in reference
-      int nbinsx = mHistogramClusterSizePerDERef[ci]->GetXaxis()->GetNbins();
-      for (int b = 1; b <= nbinsx; b++) {
-        if (mHistogramClusterSizePerDERef[ci]->GetBinContent(b) == 0) {
-          mHistogramClusterSizePerDERefRatio[ci]->SetBinContent(b, 1);
-          mHistogramClusterSizePerDERefRatio[ci]->SetBinError(b, 0);
-        }
-      }
     }
   }
 

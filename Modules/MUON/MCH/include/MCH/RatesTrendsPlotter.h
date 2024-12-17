@@ -36,7 +36,7 @@ namespace muonchambers
 class RatesTrendsPlotter : public HistPlotter
 {
  public:
-  RatesTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots = false);
+  RatesTrendsPlotter(std::string path, bool fullPlots = false);
 
   void update(long time, TH2F* hEfficiency);
 
@@ -51,11 +51,9 @@ class RatesTrendsPlotter : public HistPlotter
 
   // Data reductor
   std::unique_ptr<TH2ElecMapReductor> mReductor;
-  std::array<std::optional<float>, getNumDE()> mRefValues;
   // Trend plots
   std::unique_ptr<TrendGraph> mOrbits;
   std::array<std::unique_ptr<TrendGraph>, getNumDE()> mTrendsDE;
-  std::array<std::unique_ptr<TrendGraph>, getNumDE()> mTrendsRefRatioDE;
   std::array<std::unique_ptr<TrendGraph>, 10> mTrendsChamber;
   std::unique_ptr<TrendMultiGraph> mTrends;
 };

@@ -51,43 +51,23 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   }
 
   //----------------------------------
-  // Reference mean rates histogram
-  //----------------------------------
-
-  TH2F* hElecHistoRef{ nullptr };
-  obj = mCcdbObjectsRef.find(rateSourceName());
-  if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
-    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
-    hElecHistoRef = obj->second.get<TH2F>();
-  }
-
-  TH2F* hElecSignalHistoRef{ nullptr };
-  obj = mCcdbObjectsRef.find(rateSignalSourceName());
-  if (obj != mCcdbObjectsRef.end() && obj->second.update(qcdb, mRefTimeStamp)) {
-    ILOG(Info, Devel) << "Loaded reference plot \"" << obj->second.mObject->getName() << "\", time stamp " << mRefTimeStamp
-                      << AliceO2::InfoLogger::InfoLogger::endm;
-    hElecSignalHistoRef = obj->second.get<TH2F>();
-  }
-
-  //----------------------------------
   // Rate plotters
   //----------------------------------
 
   mRatesPlotter.reset();
-  mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", hElecHistoRef, mChannelRateMin, mChannelRateMax, true, mFullHistos);
+  mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesPlotterOnCycle.reset();
-  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", hElecHistoRef, mChannelRateMin, mChannelRateMax, false, mFullHistos);
+  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
   mRatesPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesPlotterSignal.reset();
-  mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, true, mFullHistos);
+  mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesPlotterSignalOnCycle.reset();
-  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", hElecSignalHistoRef, mChannelRateMin, mChannelRateMax, false, mFullHistos);
+  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
   mRatesPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   //----------------------------------
@@ -95,11 +75,11 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   //----------------------------------
 
   mRatesTrendsPlotter.reset();
-  mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", hElecHistoRef, mFullHistos);
+  mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", mFullHistos);
   mRatesTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
   mRatesTrendsPlotterSignal.reset();
-  mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", hElecSignalHistoRef, mFullHistos);
+  mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", mFullHistos);
   mRatesTrendsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 }
 
@@ -153,9 +133,6 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
 
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
 
-  mRefTimeStamp = getConfigurationParameter<int64_t>(mCustomParameters, "ReferenceTimeStamp", mRefTimeStamp, activity);
-  ILOG(Info, Devel) << "Reference time stamp: " << mRefTimeStamp << ENDM;
-
   mChannelRateMin = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMin", mChannelRateMin, activity);
   mChannelRateMax = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMax", mChannelRateMax, activity);
 
@@ -164,12 +141,6 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
   mCcdbObjects.emplace(rateSignalSourceName(), CcdbObjectHelper());
   mCcdbObjects.emplace(orbitsSourceName(), CcdbObjectHelper());
   mCcdbObjects.emplace(orbitsSignalSourceName(), CcdbObjectHelper());
-
-  mCcdbObjectsRef.clear();
-  if (mRefTimeStamp > 0) {
-    mCcdbObjectsRef.emplace(rateSourceName(), CcdbObjectHelper());
-    mCcdbObjectsRef.emplace(rateSignalSourceName(), CcdbObjectHelper());
-  }
 
   // set objects path from configuration
   for (auto source : mConfig.dataSources) {
@@ -183,12 +154,6 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
     if (obj != mCcdbObjects.end()) {
       obj->second.mPath = source.path;
       obj->second.mName = sourceName;
-    }
-
-    auto objRef = mCcdbObjectsRef.find(sourceType);
-    if (objRef != mCcdbObjectsRef.end()) {
-      objRef->second.mPath = source.path;
-      objRef->second.mName = sourceName;
     }
   }
 

@@ -35,7 +35,7 @@ namespace muonchambers
 class EfficiencyTrendsPlotter : public HistPlotter
 {
  public:
-  EfficiencyTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots = false);
+  EfficiencyTrendsPlotter(std::string path, bool fullPlots = false);
 
   void update(long time, TH2F* hEfficiency);
 

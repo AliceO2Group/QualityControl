@@ -35,7 +35,7 @@ namespace muonchambers
 class RatesPlotter : public HistPlotter
 {
  public:
-  RatesPlotter(std::string path, TH2F* hRef, float rateMin, float rateMax, bool perStationPlots = false, bool fullPlots = false);
+  RatesPlotter(std::string path, float rateMin, float rateMax, bool perStationPlots = false, bool fullPlots = false);
 
   void update(TH2F* hRates);
 
@@ -69,14 +69,8 @@ class RatesPlotter : public HistPlotter
   std::unique_ptr<TH2F> mHistogramRatePerStation;
 
   std::unique_ptr<TH1F> mHistogramMeanRatePerDE;
-  std::unique_ptr<TH1F> mHistogramMeanRatePerDERef;
-  std::unique_ptr<TH1F> mHistogramMeanRateRefRatio;
-  std::unique_ptr<TCanvas> mCanvasMeanRatePerDE;
 
   std::unique_ptr<TH1F> mHistogramGoodChannelsFractionPerDE;
-  std::unique_ptr<TH1F> mHistogramGoodChannelsFractionPerDERef;
-  std::unique_ptr<TH1F> mHistogramGoodChannelsFractionRefRatio;
-  std::unique_ptr<TCanvas> mCanvasGoodChannelsFractionPerDE;
 
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramRateDE[2]; // 2D hit rate map for each DE
   std::shared_ptr<GlobalHistogram> mHistogramRateGlobal[2];              // Rate histogram (global XY view)

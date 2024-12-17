@@ -25,19 +25,9 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-ClusterChargeTrendsPlotter::ClusterChargeTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots)
+ClusterChargeTrendsPlotter::ClusterChargeTrendsPlotter(std::string path, bool fullPlots)
 {
   mReductor = std::make_unique<ClusterChargeReductor>();
-
-  //--------------------------------------------------
-  // Cluster charge reference values
-  //--------------------------------------------------
-
-  std::unique_ptr<ClusterChargeReductor> reductorRef;
-  if (hRef) {
-    reductorRef = std::make_unique<ClusterChargeReductor>();
-    reductorRef->update(hRef);
-  }
 
   //--------------------------------------------------
   // Cluster charge trends
@@ -49,13 +39,8 @@ ClusterChargeTrendsPlotter::ClusterChargeTrendsPlotter(std::string path, TH2F* h
       continue;
     }
 
-    std::optional<float> refVal;
-    if (reductorRef) {
-      refVal = reductorRef->getDeValue(deID);
-    }
-
     mTrends[deID] = std::make_unique<TrendGraph>(fmt::format("{}{}/ClusterCharge_DE{}", path, getHistoPath(de), de),
-                                                 fmt::format("DE{} Cluster Charge MPV", de), "charge (ADC)", refVal);
+                                                 fmt::format("DE{} Cluster Charge MPV", de), "charge (ADC)");
     // mTrends[deID]->setRange(0, 1.2);
     if (fullPlots) {
       addCanvas(mTrends[deID].get(), "");
