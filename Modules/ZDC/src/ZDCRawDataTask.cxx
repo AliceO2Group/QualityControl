@@ -215,6 +215,11 @@ void ZDCRawDataTask::reset()
   if (fOverBc) {
     fOverBc->Reset();
   }
+  // Begin Stefan addition
+  if (fBCalignment) {
+    fBCalignment->Reset();
+  }
+  // End Stefan addition
 }
 
 void ZDCRawDataTask::initHisto()
@@ -334,16 +339,16 @@ void ZDCRawDataTask::initHisto()
   addNewHisto("COUNTS", "hcounts-ZEM1_TR", "Counts ZEM1", "ZEM1_TR", "LBC");
   addNewHisto("COUNTS", "hcounts-ZEM2_TR", "Counts ZEM2", "ZEM2_TR", "LBC");
 
-  addNewHisto("COUNTSA", "hcounts_ZNA_TC_TR", "Counts ZNA TC istantaneous", "ZNA_TC_TR", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZNA_SUM", "Counts ZNA SUM istantaneous", "ZNA_SUM", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZNC_TC_TR", "Counts ZNC TC istantaneous", "ZNC_TC_TR", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZNC_SUM", "Counts ZNC SUM istantaneous", "ZNC_SUM", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZPA_TC_TR", "Counts ZPA TC istantaneous", "ZPA_TC_TR", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZPA_SUM", "Counts ZPA SUM istantaneous", "ZPA_SUM", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZPC_TC_TR", "Counts ZPC TC istantaneous", "ZPC_TC_TR", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZPC_SUM", "Counts ZPC SUM istantaneous", "ZPC_SUM", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZEM1_TR", "Counts ZEM1 istantaneous", "ZEM1_TR", "LBC");
-  addNewHisto("COUNTSA", "hcounts_ZEM2_TR", "Counts ZEM2 istantaneous", "ZEM2_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNA_TC_TR", "Counts ZNA TC istantaneous" , "ZNA_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNA_SUM"  , "Counts ZNA SUM istantaneous", "ZNA_SUM"  , "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNC_TC_TR", "Counts ZNC TC istantaneous" , "ZNC_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZNC_SUM"  , "Counts ZNC SUM istantaneous", "ZNC_SUM"  , "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPA_TC_TR", "Counts ZPA TC istantaneous" , "ZPA_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPA_SUM"  , "Counts ZPA SUM istantaneous", "ZPA_SUM"  , "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPC_TC_TR", "Counts ZPC TC istantaneous" , "ZPC_TC_TR", "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZPC_SUM"  , "Counts ZPC SUM istantaneous", "ZPC_SUM"  , "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZEM1_TR"  , "Counts ZEM1 istantaneous"   , "ZEM1_TR"  , "LBC");
+  addNewHisto("COUNTSA", "hcounts_ZEM2_TR"  , "Counts ZEM2 istantaneous"   , "ZEM2_TR"  , "LBC");
 
   // Histograms Signal
   int nBCAheadTrig = 3;
@@ -543,6 +548,25 @@ void ZDCRawDataTask::initHisto()
   } else {
     fAlignNumEntries = 2000;
   }
+
+  // Begin Stefan addition
+  if (auto param = mCustomParameters.find("CONFIG_BC_ALIGN"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - CONFIG_BC_ALIGN: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    FirstEventBC = atoi(param->second.c_str());
+  } else {
+    FirstEventBC = 0;
+  }
+
+  if (auto param = mCustomParameters.find("BC_ALIGN_PLOT"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - BC_ALIGN_PLOT: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    setBinHisto2D(atoi(tokenString.at(0).c_str()), atof(tokenString.at(1).c_str()), atof(tokenString.at(2).c_str()), atoi(tokenString.at(3).c_str()), atof(tokenString.at(4).c_str()), atof(tokenString.at(5).c_str()));
+  } else {
+    setBinHisto2D(26, 0.5, 26.5, 12, -0.5, 11.5);
+  }
+  addNewHisto("BC_ALIGN_PLOT", "hBCAlignPlot", "BC alignment Plot", "NONE", "NONE");
+  // End Stefan addition
 }
 
 void ZDCRawDataTask::init()
@@ -687,6 +711,14 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
     resetAlign();
     fNumCycle = 0;
   }
+
+  // Begin Stefan addiiton
+  if (fBCalignment && (f.bc > (FirstEventBC -7)) && (f.bc < (FirstEventBC +6))) {
+        if (f.Hit) {
+          fBCalignment->Fill(fMatrixAlign[f.board][f.ch].bin -1, f.bc);
+        }
+    }
+  // End Stefan addition
 
   if ((f.Alice_0 || f.Auto_0 || f.Alice_1 || f.Auto_1 || f.Alice_2 || f.Auto_2 || f.Alice_3 || f.Auto_3 || f.Auto_m) && fTriggerBits && fTriggerBitsHits) {
     if (f.Alice_3) {
@@ -918,6 +950,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     }
     TString hname = TString::Format("%s", name.c_str());
     TString htit = TString::Format("%s", title.c_str());
+
     // BASELINE
     if (type == "BASELINE") {
       // Check if Histogram Exist
@@ -981,6 +1014,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
 
+
     if (type == "COUNTSA") {
       // Check if Histogram Exist
       if (std::find(fNameHisto.begin(), fNameHisto.end(), name) == fNameHisto.end()) {
@@ -1011,6 +1045,8 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         return true;
       }
     }
+
+
 
     // SIGNAL
     if (type == "SIGNAL") {
@@ -1186,7 +1222,15 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
       }
     }
 
-    if ((type == "SUMMARYBASELINE") || (type == "SUMMARYRATE") || (type == "SUMMARY_ALIGN") || (type == "SUMMARY_ALIGN_SHIFT") || (type == "SUMMARY_ERROR")) {
+    if ((type == "SUMMARYBASELINE") || (type == "SUMMARYRATE") || (type == "SUMMARY_ALIGN") || (type == "SUMMARY_ALIGN_SHIFT") || (type == "SUMMARY_ERROR") || (type == "BC_ALIGN_PLOT")) {
+      // Begin Stefan addition
+      if (type == "BC_ALIGN_PLOT"){
+        fBCalignment = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, FirstEventBC -7 - 0.5 , FirstEventBC + 6 - 0.5 );
+        fBCalignment->GetXaxis()->LabelsOption("v");
+        fBCalignment->SetStats(0);
+        fBCalignment->GetYaxis()->SetTitle("Bunch Crossing [#]");
+      }
+      // End Stefan addition
       if (type == "SUMMARYBASELINE") {
         fSummaryPedestal = new TH1F(hname, htit, fNumBinX, fMinBinX, fMaxBinX);
         fSummaryPedestal->GetXaxis()->LabelsOption("v");
@@ -1220,6 +1264,11 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
             continue;
           } else {
             i++;
+            // Begin Stefan addition
+            if (type == "BC_ALIGN_PLOT") {
+              fBCalignment->GetXaxis()->SetBinLabel(fMatrixAlign[imod][ich].bin, TString::Format("%s", fMatrixAlign[imod][ich].name_ch.c_str()));
+            }
+            // Begin Stefan addition
             if (type == "SUMMARYBASELINE") {
               fSummaryPedestal->GetXaxis()->SetBinLabel(i, TString::Format("%s", getNameChannel(imod, ich).c_str()));
             }
@@ -1239,6 +1288,11 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
           }
         }
       }
+      // Begin Stefan addition
+      if (type == "BC_ALIGN_PLOT") {
+        getObjectsManager()->startPublishing(fBCalignment);
+      }
+      // Begin Stefan addition     
       if (type == "SUMMARYBASELINE") {
         getObjectsManager()->startPublishing(fSummaryPedestal);
       }
@@ -1258,6 +1312,11 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         getObjectsManager()->startPublishing(fSummaryError);
       }
       try {
+        // Begin Stefan addition
+        if (type == "BC_ALIGN_PLOT") {
+          getObjectsManager()->addMetadata(fBCalignment->GetName(), fBCalignment->GetName(), "34");
+        }
+        // Begin Stefan addition
         if (type == "SUMMARYBASELINE") {
           getObjectsManager()->addMetadata(fSummaryPedestal->GetName(), fSummaryPedestal->GetName(), "34");
         }
@@ -1275,6 +1334,11 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
         }
         return true;
       } catch (...) {
+        // Begin Stefan addition
+        if (type == "BC_ALIGN_PLOT") {
+          ILOG(Warning, Support) << "Metadata could not be added to " << fBCalignment->GetName() << ENDM;
+        }
+        // Begin Stefan addition
         if (type == "SUMMARYBASELINE") {
           ILOG(Warning, Support) << "Metadata could not be added to " << fSummaryPedestal->GetName() << ENDM;
         }
