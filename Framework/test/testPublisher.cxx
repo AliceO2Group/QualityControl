@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   std::string consulUrl = "invalid";
   ObjectsManager objectsManager(taskName, "taskClass", detectorName, consulUrl, 0, true);
   TObjString s("content");
-  objectsManager.startPublishing(&s, PublicationPolicy::Forever);
+  objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
 
   TObjString* s2 = (TObjString*)(objectsManager.getMonitorObject("content")->getObject());
   BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());

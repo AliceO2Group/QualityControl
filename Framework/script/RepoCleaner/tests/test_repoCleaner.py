@@ -1,11 +1,12 @@
-import unittest
-import yaml
-
 import importlib
-from importlib.util import spec_from_loader, module_from_spec
-from importlib.machinery import SourceFileLoader
 import os
 import sys
+import unittest
+from importlib.machinery import SourceFileLoader
+from importlib.util import spec_from_loader
+
+import yaml
+
 
 def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
     module_name = os.path.basename(path).replace('-', '_')
@@ -18,11 +19,10 @@ def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
     sys.modules[module_name] = module
     return module
 
-
 repoCleaner = import_path("../qcrepocleaner/o2-qc-repo-cleaner")
 parseConfig = repoCleaner.parseConfig
 Rule = repoCleaner.Rule
-findMatchingRule = repoCleaner.findMatchingRule
+findMatchingRules = repoCleaner.findMatchingRules
 
 
 class TestRepoCleaner(unittest.TestCase):
@@ -64,12 +64,12 @@ class TestRepoCleaner(unittest.TestCase):
         rules.append(Rule('task1/obj1', '120', 'policy1'))
         rules.append(Rule('task1/obj1', '120', 'policy2'))
         rules.append(Rule('task2/.*', '120', 'policy3'))
-        self.assertEqual(findMatchingRule(rules, 'task1/obj1').policy, 'policy1')
-        self.assertNotEqual(findMatchingRule(rules, 'task1/obj1').policy, 'policy2')
-        self.assertEqual(findMatchingRule(rules, 'task3/obj1'), None)
-        self.assertEqual(findMatchingRule(rules, 'task2/obj1/obj1').policy, 'policy3')
+        self.assertEqual(findMatchingRules(rules, 'task1/obj1')[0].policy, 'policy1')
+        self.assertNotEqual(findMatchingRules(rules, 'task1/obj1')[0].policy, 'policy2')
+        self.assertEqual(findMatchingRules(rules, 'task3/obj1'), [])
+        self.assertEqual(findMatchingRules(rules, 'task2/obj1/obj1')[0].policy, 'policy3')
         rules.append(Rule('.*', '0', 'policyAll'))
-        self.assertEqual(findMatchingRule(rules, 'task3/obj1').policy, 'policyAll')
+        self.assertEqual(findMatchingRules(rules, 'task3/obj1')[0].policy, 'policyAll')
 
 
 if __name__ == '__main__':

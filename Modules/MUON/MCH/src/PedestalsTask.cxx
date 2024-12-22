@@ -168,7 +168,7 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   mCanvasCheckerMessages = std::make_unique<TCanvas>("CheckerMessages", "Checker Messages", 800, 600);
-  getObjectsManager()->startPublishing(mCanvasCheckerMessages.get());
+  getObjectsManager()->startPublishing<true>(mCanvasCheckerMessages.get());
 
   mPrintLevel = 0;
 }

@@ -60,7 +60,7 @@ void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> ob
   for (const auto& canvName : canvNames) {
     canVec.emplace_back(std::make_unique<TCanvas>(canvName.data()));
     auto canvas = canVec.back().get();
-    objectsManager->startPublishing(canvas);
+    objectsManager->startPublishing<true>(canvas);
     if (metaData.size() != 0) {
       for (const auto& [key, value] : metaData) {
         objectsManager->addMetadata(canvas->GetName(), key, value);
@@ -338,6 +338,29 @@ void retrieveStatistics(std::vector<double>& values, std::vector<double>& errors
       double ratioSumWeight = sumOfSquaredWeights / (sumOfWeights * sumOfWeights);
       stddevOfMean = sqrt((sumSquare / sumOfWeights - mean * mean) * (1. / (1. - ratioSumWeight)) * ratioSumWeight);
     }
+  }
+}
+
+void calcMeanAndStddev(const std::vector<float>& values, float& mean, float& stddev)
+{
+  if (values.size() == 0) {
+    mean = 0.;
+    stddev = 0.;
+    return;
+  }
+
+  // Mean
+  const float sum = std::accumulate(values.begin(), values.end(), 0.0);
+  mean = sum / values.size();
+
+  // Stddev
+  if (values.size() == 1) { // we only have one point -> no stddev
+    stddev = 0.;
+  } else { // for >= 2 points, we calculate the spread
+    std::vector<float> diff(values.size());
+    std::transform(values.begin(), values.end(), diff.begin(), [mean](auto x) { return x - mean; });
+    const auto sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.f);
+    stddev = std::sqrt(sq_sum / (values.size() * (values.size() - 1.)));
   }
 }
 

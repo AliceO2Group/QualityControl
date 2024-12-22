@@ -78,10 +78,10 @@ TEST_CASE("test_invoke_all_methods")
   test::SimpleTestAggregator testAggregator;
 
   // prepare data
-  std::shared_ptr<QualityObject> qo_null = make_shared<QualityObject>(0, "testCheckNull", "TST");
-  std::shared_ptr<QualityObject> qo_good = make_shared<QualityObject>(1, "testCheckGood", "TST");
-  std::shared_ptr<QualityObject> qo_medium = make_shared<QualityObject>(2, "testCheckMedium", "TST");
-  std::shared_ptr<QualityObject> qo_bad = make_shared<QualityObject>(3, "testCheckBad", "TST");
+  std::shared_ptr<QualityObject> qo_null = make_shared<QualityObject>(Quality::Null, "testCheckNull", "TST");
+  std::shared_ptr<QualityObject> qo_good = make_shared<QualityObject>(Quality::Good, "testCheckGood", "TST");
+  std::shared_ptr<QualityObject> qo_medium = make_shared<QualityObject>(Quality::Medium, "testCheckMedium", "TST");
+  std::shared_ptr<QualityObject> qo_bad = make_shared<QualityObject>(Quality::Bad, "testCheckBad", "TST");
   QualityObjectsMapType input;
 
   std::map<std::string, Quality> result1 = testAggregator.aggregate(input);

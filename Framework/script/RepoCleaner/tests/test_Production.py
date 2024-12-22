@@ -1,10 +1,12 @@
 import logging
 import time
 import unittest
-from datetime import timedelta, date, datetime
+from datetime import timedelta, datetime
 
-from Ccdb import Ccdb, ObjectVersion
-from rules import production
+from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
+from qcrepocleaner.rules import production
+from tests import test_utils
+from tests.test_utils import CCDB_TEST_URL
 
 
 class TestProduction(unittest.TestCase):
@@ -20,7 +22,7 @@ class TestProduction(unittest.TestCase):
     one_minute = 60000
 
     def setUp(self):
-        self.ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
+        self.ccdb = Ccdb(CCDB_TEST_URL)
         self.extra = {"delay_first_trimming": "30", "period_btw_versions_first": "10", "delay_final_trimming": "60",
                       "period_btw_versions_final": "60"}
         self.path = "qc/TST/MO/repo/test"
@@ -40,7 +42,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_start_run"
-        self.prepare_data(test_path, 25, 30, True, 60, False)
+        test_utils.clean_data(self.ccdb, test_path)
+        self.prepare_data_for_prod_test(test_path, 25, 30, True, 60, False)
 
         production.eor_dict.pop(int(self.run), None)
         stats = production.process(self.ccdb, test_path, 30, 1, self.in_ten_years, self.extra)
@@ -74,7 +77,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_start_run_period"
-        first_ts = self.prepare_data(test_path, 25, 30, True, 60, False)
+        test_utils.clean_data(self.ccdb, test_path)
+        first_ts = self.prepare_data_for_prod_test(test_path, 25, 30, True, 60, False)
         logging.getLogger().debug(f"first_ts : {first_ts}")
 
         # everything outside the period
@@ -111,7 +115,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_mid_run"
-        self.prepare_data(test_path, 90)
+        test_utils.clean_data(self.ccdb, test_path)
+        self.prepare_data_for_prod_test(test_path, 90)
 
         production.eor_dict.pop(int(self.run), None)
         stats = production.process(self.ccdb, test_path, 30, 1, self.in_ten_years, self.extra)
@@ -141,7 +146,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_mid_run_period"
-        first_ts = self.prepare_data(test_path, 90)
+        test_utils.clean_data(self.ccdb, test_path)
+        first_ts = self.prepare_data_for_prod_test(test_path, 90)
         logging.getLogger().debug(f"first_ts : {first_ts}")
 
         objects_versions = self.ccdb.getVersionsList(test_path)
@@ -171,7 +177,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_run_finished"
-        self.prepare_data(test_path, 290, 190, False, 0, True)
+        test_utils.clean_data(self.ccdb, test_path)
+        self.prepare_data_for_prod_test(test_path, 290, 190, False, 0, True)
 
         production.eor_dict[int(self.run)] = datetime.now() - timedelta(minutes=100)
         stats = production.process(self.ccdb, test_path, 30, 1, self.in_ten_years, self.extra)
@@ -198,7 +205,8 @@ class TestProduction(unittest.TestCase):
 
         # Prepare data
         test_path = self.path + "/test_run_finished_period"
-        first_ts = self.prepare_data(test_path, 290, 190, False, 0, True)
+        test_utils.clean_data(self.ccdb, test_path)
+        first_ts = self.prepare_data_for_prod_test(test_path, 290, 190, False, 0, True)
         logging.getLogger().debug(f"first_ts : {first_ts}")
 
         production.eor_dict[int(self.run)] = datetime.now() - timedelta(minutes=100)
@@ -214,8 +222,9 @@ class TestProduction(unittest.TestCase):
         self.assertTrue("trim1" not in objects_versions[6].metadata)
         self.assertTrue("preservation" in objects_versions[6].metadata)
 
-    def prepare_data(self, path, minutes_since_sor, duration_first_part=30, skip_first_part=False,
-                     minutes_second_part=60, skip_second_part=False):
+
+    def prepare_data_for_prod_test(self, path, minutes_since_sor, duration_first_part=30, skip_first_part=False,
+                                   minutes_second_part=60, skip_second_part=False):
         """
         Prepare a data set starting `minutes_since_sor` in the past.
         The data is layed out in two parts
@@ -242,7 +251,7 @@ class TestProduction(unittest.TestCase):
                 if first_ts > from_ts:
                     first_ts = from_ts
                 to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
-                version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
+                version_info = ObjectVersion(path=path, validFrom=from_ts, createdAt=from_ts, validTo=to_ts, metadata=metadata)
                 self.ccdb.putVersion(version=version_info, data=data)
             cursor = cursor + duration_first_part * 60 * 1000
 
@@ -257,7 +266,7 @@ class TestProduction(unittest.TestCase):
                 if first_ts > from_ts:
                     first_ts = from_ts
                 to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
-                version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
+                version_info = ObjectVersion(path=path, validFrom=from_ts, createdAt=from_ts, validTo=to_ts, metadata=metadata)
                 self.ccdb.putVersion(version=version_info, data=data)
 
         return first_ts

@@ -50,12 +50,12 @@ class MonitorObject : public TObject
   /// Destructor
   ~MonitorObject() override;
 
-  /// Copy constructor
-  MonitorObject(const MonitorObject& other) = default;
+  // /// Copy constructor
+  MonitorObject(const MonitorObject& other);
   /// Move constructor
   MonitorObject(MonitorObject&& other) /*noexcept*/ = default;
   /// Copy assignment operator
-  MonitorObject& operator=(const MonitorObject& other) = default;
+  MonitorObject& operator=(const MonitorObject& other);
   /// Move assignment operator
   MonitorObject& operator=(MonitorObject&& other) /*noexcept*/ = default;
 
@@ -69,19 +69,19 @@ class MonitorObject : public TObject
 
   /// \brief Return joined task name and name of the encapsulated object (if any).
   /// @return The name as "{getTaskName()}/{getName())}.
-  const std::string getFullName() const { return getTaskName() + "/" + getName(); }
+  std::string getFullName() const;
 
-  TObject* getObject() const { return mObject; }
-  void setObject(TObject* object) { mObject = object; }
+  TObject* getObject() const;
+  void setObject(TObject* object);
 
-  bool isIsOwner() const { return mIsOwner; }
-  void setIsOwner(bool isOwner) { mIsOwner = isOwner; }
+  bool isIsOwner() const;
+  void setIsOwner(bool isOwner);
 
-  const std::string& getTaskName() const { return mTaskName; }
-  void setTaskName(const std::string& taskName) { mTaskName = taskName; }
+  const std::string& getTaskName() const;
+  void setTaskName(const std::string& taskName);
 
-  const std::string& getDetectorName() const { return mDetectorName; }
-  void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
+  const std::string& getDetectorName() const;
+  void setDetectorName(const std::string& detectorName);
 
   const std::string& getTaskClass() const;
   void setTaskClass(const std::string& taskClass);
@@ -117,6 +117,8 @@ class MonitorObject : public TObject
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
+  void Copy(TObject& object) const override;
+
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
   /// \return A string containing the path.
@@ -126,7 +128,7 @@ class MonitorObject : public TObject
   void setDescription(const std::string& description);
 
  private:
-  TObject* mObject;
+  std::unique_ptr<TObject> mObject;
   std::string mTaskName;
   std::string mTaskClass;
   std::string mDetectorName;
@@ -141,7 +143,10 @@ class MonitorObject : public TObject
   // tells Merger to create an object with data from the last cycle only on the side of the complete object
   bool mCreateMovingWindow = false;
 
-  ClassDefOverride(MonitorObject, 12);
+  void releaseObject();
+  void cloneAndSetObject(const MonitorObject&);
+
+  ClassDefOverride(MonitorObject, 13);
 };
 
 } // namespace o2::quality_control::core

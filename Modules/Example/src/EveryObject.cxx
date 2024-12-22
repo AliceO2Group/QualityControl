@@ -82,7 +82,7 @@ void EveryObject::initialize(o2::framework::InitContext& /*ctx*/)
       mTCanvasMembers[i]->Draw();
       mTCanvasMembers[i]->SetBit(TObject::kCanDelete);
     }
-    getObjectsManager()->startPublishing(mTCanvas, PublicationPolicy::Forever);
+    getObjectsManager()->startPublishing<true>(mTCanvas, PublicationPolicy::Forever);
   }
 }
 

@@ -82,7 +82,7 @@ void Clusters::initialize(InitContext& /*ctx*/)
     addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
 
     for (auto& wrapper : mWrapperVector) {
-      getObjectsManager()->startPublishing(&wrapper);
+      getObjectsManager()->startPublishing<true>(&wrapper);
     }
   }
 }
