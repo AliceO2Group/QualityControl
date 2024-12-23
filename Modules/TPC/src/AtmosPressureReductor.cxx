@@ -44,7 +44,7 @@ bool AtmosPressureReductor::update(ConditionRetriever& retriever)
     pressureValues.clear();
 
     // Cavern pressure 2
-    for (const auto& [time, p] : env->mEnvVars["CavernAtmosPressure2"]) {
+    for ([[maybe_unused]] const auto& [time, p] : env->mEnvVars["CavernAtmosPressure2"]) {
       pressureValues.emplace_back((float)p);
     }
     calcMeanAndStddev(pressureValues, mStats.cavernPressure2, mStats.errCavernPressure2);
