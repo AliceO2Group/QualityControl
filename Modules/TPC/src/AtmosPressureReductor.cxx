@@ -37,7 +37,7 @@ bool AtmosPressureReductor::update(ConditionRetriever& retriever)
     std::vector<float> pressureValues;
 
     // Cavern pressure 1
-    for (const auto& [time, p] : env->mEnvVars["CavernAtmosPressure"]) {
+    for ([[maybe_unused]] const auto& [time, p] : env->mEnvVars["CavernAtmosPressure"]) {
       pressureValues.emplace_back((float)p);
     }
     calcMeanAndStddev(pressureValues, mStats.cavernPressure1, mStats.errCavernPressure1);
@@ -51,7 +51,7 @@ bool AtmosPressureReductor::update(ConditionRetriever& retriever)
     pressureValues.clear();
 
     // Surface pressure
-    for (const auto& [time, p] : env->mEnvVars["SurfaceAtmosPressure"]) {
+    for ([[maybe_unused]] const auto& [time, p] : env->mEnvVars["SurfaceAtmosPressure"]) {
       pressureValues.emplace_back((float)p);
     }
     calcMeanAndStddev(pressureValues, mStats.surfacePressure, mStats.errSurfacePressure);
