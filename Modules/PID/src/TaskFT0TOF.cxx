@@ -353,16 +353,17 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
   mMyTracks.clear();
 
   // Get FT0 RecPointss
-  // const gsl::span<o2::ft0::RecPoints>* ft0rec = nullptr;
-  const std::vector<o2::ft0::RecPoints>* ft0rec = nullptr;
+  std::vector<o2::ft0::RecPoints> ft0Sorted;
   if (mUseFT0) {
     auto& obj = ctx.inputs().get<const std::vector<o2::ft0::RecPoints>>("recpoints");
-    // const auto& obj = mRecoCont.getFT0RecPoints();
-    ft0rec = &obj;
+    for (const auto& o : obj) {
+      //      ILOG(Info, Support) << "cand -> " << o.mIntRecord.orbit <<ENDM;
+      ft0Sorted.push_back(o);
+    }
   }
 
   if (mUseFT0) {
-    ILOG(Info, Support) << "FT0 rec points loaded, size = " << ft0rec->size() << ENDM;
+    ILOG(Info, Support) << "FT0 rec points loaded, size = " << ft0Sorted.size() << ENDM;
   } else {
     ILOG(Info, Support) << "FT0 rec points NOT available" << ENDM;
   }
@@ -469,11 +470,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
   }   // END if track is ITS-TPC-TRD-TOF
 
   std::vector<MyTrack> tracks;
-  std::vector<o2::ft0::RecPoints> ft0Sorted;
 
-  if (mUseFT0) {
-    ft0Sorted = *ft0rec;
-  }
   std::vector<o2::ft0::RecPoints> ft0Cand;
 
   // sorting matching in time
@@ -481,7 +478,7 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
             [](MyTrack a, MyTrack b) { return a.tofSignalDouble() < b.tofSignalDouble(); });
 
   std::sort(ft0Sorted.begin(), ft0Sorted.end(),
-            [](o2::ft0::RecPoints a, o2::ft0::RecPoints b) { return a.getInteractionRecord().bc2ns() < b.getInteractionRecord().bc2ns(); });
+            [](o2::ft0::RecPoints a, o2::ft0::RecPoints b) { return a.mIntRecord.bc2ns() < b.mIntRecord.bc2ns(); });
 
   int ift0 = 0;
 
@@ -513,12 +510,15 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
         double firstTime = tracks[0].tofSignalDouble() - 8 * o2::tof::Geo::BC_TIME_INPS;
         double lastTime = tracks[ntrk - 1].tofSignalDouble() + 8 * o2::tof::Geo::BC_TIME_INPS;
         for (int j = ift0; j < ft0Sorted.size(); j++) {
-          auto& obj = ft0Sorted[j];
-          if (obj.getInteractionRecord().orbit < ft0firstOrbit) {
+          const auto& obj = ft0Sorted[j];
+          if (obj.mIntRecord.orbit < ft0firstOrbit) {
+            ILOG(Info, Support) << "FT0 orbit comes first the first sampled one -> " << obj.mIntRecord.orbit << " - " << ft0firstOrbit << ENDM;
             continue; // skip FT0 objects from previous orbits
           }
-          uint32_t orbit = obj.getInteractionRecord().orbit - ft0firstOrbit;
-          double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS;
+          uint32_t orbit = obj.mIntRecord.orbit - ft0firstOrbit;
+          double BCtimeFT0 = ((orbit)*o2::constants::lhc::LHCMaxBunches + obj.mIntRecord.bc) * o2::tof::Geo::BC_TIME_INPS;
+
+          //        ILOG(Info, Support) << "orbit " << orbit << "-> time (ps) " << BCtimeFT0 <<ENDM;
 
           if (BCtimeFT0 < firstTime) {
             ift0 = j + 1;
@@ -528,12 +528,12 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
             break;
           }
           //          ILOG(Info, Support) << " TOF first=" << firstTime << " < " << BCtimeFT0 << " < TOF last=" << lastTime << ENDM;
-          //          ILOG(Info, Support) << " orbit=" << obj.getInteractionRecord().orbit << " " << obj.getInteractionRecord().orbit - ft0firstOrbit << " BC=" << obj.getInteractionRecord().bc << ENDM;
+          //          ILOG(Info, Support) << " orbit=" << obj.mIntRecord.orbit << " " << obj.mIntRecord.orbit - ft0firstOrbit << " BC=" << obj.mIntRecord.bc << ENDM;
 
           std::array<short, 4> collTimes = { obj.getCollisionTime(0), obj.getCollisionTime(1), obj.getCollisionTime(2), obj.getCollisionTime(3) };
 
           int pos = ft0Cand.size();
-          ft0Cand.emplace_back(collTimes, 0, 0, o2::InteractionRecord{ obj.getInteractionRecord().bc, orbit }, obj.getTrigger());
+          ft0Cand.emplace_back(collTimes, 0, 0, o2::InteractionRecord{ obj.mIntRecord.bc, orbit }, obj.getTrigger());
         }
       }
 
@@ -557,14 +557,14 @@ void TaskFT0TOF::monitorData(o2::framework::ProcessingContext& ctx)
     if (!ft0.isValidTime(0)) {
       continue; // skip invalid FT0AC times
     }
-    if (ft0firstOrbit > ft0.getInteractionRecord().orbit) {
+    if (ft0firstOrbit > ft0.mIntRecord.orbit) {
       continue; // skip FT0 objects from previous orbits
     }
     if (abs(ft0.getCollisionTime(0)) > 1000) {
       continue; // skip bad FT0 time (not from collisions)
     }
 
-    double ft0time = ((ft0.getInteractionRecord().orbit - ft0firstOrbit) * o2::constants::lhc::LHCMaxBunches + ft0.getInteractionRecord().bc) * o2::tof::Geo::BC_TIME_INPS + ft0.getCollisionTime(0);
+    double ft0time = ((ft0.mIntRecord.orbit - ft0firstOrbit) * o2::constants::lhc::LHCMaxBunches + ft0.mIntRecord.bc) * o2::tof::Geo::BC_TIME_INPS + ft0.getCollisionTime(0);
     double timemax = ft0time + 100E3;
     double timemin = ft0time - 30E3;
 
@@ -679,11 +679,11 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
       mHistDeltaEvTimeTOFVsFT0C->Fill(times[0] - times[3]);
 
       // if same BC
-      if (nBC % o2::constants::lhc::LHCMaxBunches == obj.getInteractionRecord().bc) {
+      if (nBC % o2::constants::lhc::LHCMaxBunches == obj.mIntRecord.bc) {
         // no need for condition on orbit we select FT0 candidates within 8 BCs
-        FT0evTimes[0] = obj.getInteractionRecord().bc2ns() * 1E3 + times[1];
-        FT0evTimes[1] = obj.getInteractionRecord().bc2ns() * 1E3 + times[2];
-        FT0evTimes[2] = obj.getInteractionRecord().bc2ns() * 1E3 + times[3];
+        FT0evTimes[0] = obj.mIntRecord.bc2ns() * 1E3 + times[1];
+        FT0evTimes[1] = obj.mIntRecord.bc2ns() * 1E3 + times[2];
+        FT0evTimes[2] = obj.mIntRecord.bc2ns() * 1E3 + times[3];
         mHistEvTimeTOFVsFT0ACSameBC->Fill(times[0], times[1]);
         mHistEvTimeTOFVsFT0ASameBC->Fill(times[0], times[2]);
         mHistEvTimeTOFVsFT0CSameBC->Fill(times[0], times[3]);
@@ -692,7 +692,7 @@ void TaskFT0TOF::processEvent(const std::vector<MyTrack>& tracks, const std::vec
         mHistDeltaEvTimeTOFVsFT0CSameBC->Fill(times[0] - times[3]);
       }
 
-      mHistDeltaBCTOFFT0->Fill(nBC % o2::constants::lhc::LHCMaxBunches - obj.getInteractionRecord().bc);
+      mHistDeltaBCTOFFT0->Fill(nBC % o2::constants::lhc::LHCMaxBunches - obj.mIntRecord.bc);
     }
   }
 
