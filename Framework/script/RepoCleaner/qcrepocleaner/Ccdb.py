@@ -42,9 +42,9 @@ class ObjectVersion:
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
             run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
-            return f"Version of object {self.path} valid from {self.validFromAsDt}, run {run_number} (uuid {self.uuid})"
+            return f"Version of object {self.path} created at {self.createdAtDt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.validFromAsDt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number} (uuid {self.uuid})"
         else:
-            return f"Version of object {self.path} valid from {self.validFromAsDt} (uuid {self.uuid}, " \
+            return f"Version of object {self.path} created at {self.createdAtDt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.validFromAsDt.strftime('%Y-%m-%d %H:%M:%S')} (uuid {self.uuid}, " \
                    f"ts {self.validFrom})"
 
 

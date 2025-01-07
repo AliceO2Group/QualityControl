@@ -178,7 +178,7 @@ def downloadConfigFromConsul(consul_url: str, consul_port: str, file_name: str):
     :return: the path to the config file
     """
 
-    logging.debug("Get it from consul")
+    logging.debug(f"Download config file from consul : {consul_url} {consul_port} {file_name}")
     consul_server = consul.Consul(host=consul_url, port=consul_port)
     file_path = 'o2/components/qc/ANY/any/' + file_name
     index, data = consul_server.kv.get(key=file_path)
@@ -393,7 +393,7 @@ def run(args, ccdb_url, rules):
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     message = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
     storeCrucialLog(message + f" - End of the cleaner (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
-    if not args.dry_run:
+    if not args.dry_run and not args.ignore_last_execution:
         storeSavedTimestamp()
 
 # ****************
