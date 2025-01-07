@@ -32,7 +32,7 @@ class ObjectVersion:
         self.valid_from = valid_from
         # precomputed Datetime ("Dt") of the timestamp `validFrom`
         self.valid_from_as_dt = datetime.datetime.fromtimestamp(int(valid_from) / 1000)  # /1000 because we get ms
-        self.validTo = valid_to
+        self.valid_to = valid_to
         self.metadata = metadata
         self.created_at = created_at
         # precomputed Datetime ("Dt") of the timestamp `createdAt`
@@ -44,7 +44,7 @@ class ObjectVersion:
             return f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number} (uuid {self.uuid})"
         else:
             return f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')} (uuid {self.uuid}, " \
-                   f"ts {self.validFrom})"
+                   f"ts {self.valid_from})"
 
 
 class Ccdb:
@@ -189,7 +189,7 @@ class Ccdb:
         :param metadata: Add or modify metadata
         """
         full_path = self.url + '/' + version.path + '/' + str(valid_from) + '/' + str(valid_to) + '/' + str(version.uuid) + '?'
-        logger.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
+        logger.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.valid_to} to {valid_to}")
         if metadata is not None:
             logger.debug(f"{metadata}")
             for key in metadata:
@@ -229,7 +229,7 @@ class Ccdb:
         :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
         :return A list of ObjectVersion.
         """
-        full_path= self.url + "/" + version.path + "/" + str(version.valid_from) + "/" + str(version.validTo) + "/"
+        full_path= self.url + "/" + version.path + "/" + str(version.valid_from) + "/" + str(version.valid_to) + "/"
         if version.metadata is not None:
             for key in version.metadata:
                 full_path += key + "=" + version.metadata[key] + "/"
