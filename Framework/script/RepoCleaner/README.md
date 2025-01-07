@@ -53,7 +53,7 @@ source env/bin/activate
 python -m unittest tests.test_Ccdb.TestCcdb.test_getObjectsList
 
 # Run all tests:
-python3 -m unittest discover`
+python3 -m unittest discover
 ```
 
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
