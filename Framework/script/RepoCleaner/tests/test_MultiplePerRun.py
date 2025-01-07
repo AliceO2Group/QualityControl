@@ -2,7 +2,7 @@ import logging
 import time
 import unittest
 
-import test_utils
+from tests import test_utils
 from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.rules import multiple_per_run
 

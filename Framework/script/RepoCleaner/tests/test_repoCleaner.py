@@ -7,7 +7,7 @@ from importlib.util import spec_from_loader
 
 import yaml
 
-from test_utils import CCDB_TEST_URL
+from tests.test_utils import CCDB_TEST_URL
 
 
 def import_path(path):  # needed because o2-qc-repo-cleaner has no suffix
