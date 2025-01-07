@@ -25,8 +25,10 @@ def process(ccdb: Ccdb, object_path: str, delay: int,  from_timestamp: int, to_t
     '''
     
     logger.debug(f"Plugin 'skip' processing {object_path}")
-        
-    return {"deleted" : 0, "preserved": 0}
+
+    versions = ccdb.getVersionsList(object_path)
+
+    return {"deleted": 0, "preserved": len(versions), "updated": 0}
 
     
 def main():
