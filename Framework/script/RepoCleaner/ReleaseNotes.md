@@ -3,6 +3,11 @@
 New
 - 
 
+1.10
+- Revive and clean up repocleaner tests
+- Add option to ignore the last execution of the repocleaner
+- repocleaner: none_kept: use creation time
+
 1.9
 - [QC-1229] - Repocleaner policy for the moving windows
 
