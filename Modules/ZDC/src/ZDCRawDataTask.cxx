@@ -715,7 +715,8 @@ int ZDCRawDataTask::process(const o2::zdc::EventChData& ch)
   // Begin Stefan addiiton
   if (fBCalignment && (f.bc > (FirstEventBC -7)) && (f.bc < (FirstEventBC +6))) {
         if (f.Hit) {
-          fBCalignment->Fill(fMatrixAlign[f.board][f.ch].bin -1, f.bc);
+          fBCalignment->Fill(fMatrixAlign[f.board][f.ch].bin , f.bc);
+          //fBCalignment->Fill(fMatrixAlign[f.board][f.ch].bin -1, f.bc);
         }
     }
   // End Stefan addition
@@ -1225,7 +1226,7 @@ bool ZDCRawDataTask::addNewHisto(std::string type, std::string name, std::string
     if ((type == "SUMMARYBASELINE") || (type == "SUMMARYRATE") || (type == "SUMMARY_ALIGN") || (type == "SUMMARY_ALIGN_SHIFT") || (type == "SUMMARY_ERROR") || (type == "BC_ALIGN_PLOT")) {
       // Begin Stefan addition
       if (type == "BC_ALIGN_PLOT"){
-        fBCalignment = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, FirstEventBC -7 - 0.5 , FirstEventBC + 6 - 0.5 );
+        fBCalignment = new TH2D(hname, htit, fNumBinX, fMinBinX, fMaxBinX, fNumBinY, FirstEventBC - 6 - 0.5 , FirstEventBC + 6 - 0.5 );
         fBCalignment->GetXaxis()->LabelsOption("v");
         fBCalignment->SetStats(0);
         fBCalignment->GetYaxis()->SetTitle("Bunch Crossing [#]");
