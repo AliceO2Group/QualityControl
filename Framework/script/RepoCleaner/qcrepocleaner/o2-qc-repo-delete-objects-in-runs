@@ -49,11 +49,7 @@ def run(args):
         run_number = row["runNumber"]
         logging.info(f"Run : {run_number}")
 
-<<<<<<< Updated upstream
-        versions = ccdb.getVersionsList(args.path + "/.*", "", "", run_number)
-=======
-        versions = ccdb.get_versions_list(args.path + "/.*", "", "", run_number, metadata=args.metadata)
->>>>>>> Stashed changes
+        versions = ccdb.getVersionsList(args.path + "/.*", "", "", run_number, metadata=args.metadata)
         logging.info("Here are the objects that are going to be deleted: ")
         for v in versions:
             logging.info(v)
