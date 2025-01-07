@@ -28,6 +28,8 @@ def parseArgs():
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
+    parser.add_argument('--metadata', dest='metadata', action='store', default="",
+                        help='Delete only versions matching these metadata. Format: "[/key=value]*"')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -47,7 +49,7 @@ def run(args):
         run_number = row["runNumber"]
         logging.info(f"Run : {run_number}")
 
-        versions = ccdb.getVersionsList(args.path + "/.*", "", "", run_number)
+        versions = ccdb.getVersionsList(args.path + "/.*", "", "", run_number, metadata=args.metadata)
         logging.info("Here are the objects that are going to be deleted: ")
         for v in versions:
             logging.info(v)
