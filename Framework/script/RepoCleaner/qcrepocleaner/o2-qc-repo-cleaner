@@ -393,7 +393,7 @@ def run(args, ccdb_url, rules):
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     message = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
     storeCrucialLog(message + f" - End of the cleaner (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
-    if not args.dry_run:
+    if not args.dry_run and not args.ignore_last_execution:
         storeSavedTimestamp()
 
 # ****************
