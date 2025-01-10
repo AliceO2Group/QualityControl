@@ -49,6 +49,7 @@
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/WorkflowType.h"
 #include "QualityControl/HashDataDescription.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <string>
 #include <TFile.h>
@@ -122,6 +123,7 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
   mTask->setGlobalTrackingDataRequest(mTaskConfig.globalTrackingDataRequest);
+  mTask->setDatabase(mTaskConfig.database);
 
   // load config params
   if (!ConfigParamGlo::keyValues.empty()) {
