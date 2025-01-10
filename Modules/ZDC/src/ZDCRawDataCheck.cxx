@@ -161,6 +161,38 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
             flag_ch_empty = 1;
           }
         }
+        // Begin Stefan Addition
+        if (mo->getName() == "hBCAlignPlot"){
+          float noise_level_low = 0.15;
+          float noise_level_high = 20;
+          bool ratio_array[12];
+          bool comparator_array[12] = {false,false,false,false,false,false,true,false,true,false,true,false};
+          float ratio = 0.0;
+          auto* h = dynamic_cast<TH2*>(mo->getObject());
+          if (h == nullptr) {
+            ILOG(Error, Support) << "could not cast herrorSummary to TH2*" << ENDM;
+            return Quality::Null;
+          }
+          if ((int)h->GetNbinsX() != (int)mVectHistoCheck.at(ih).paramch.size()) {
+            return Quality::Null;
+          }
+          for (int x = 0; x < h->GetNbinsX(); x++) {
+            for (int y = 0; y < h->GetNbinsY(); y++) {
+              ratio = (h->GetBinContent(x + 1, y + 1))/(h->GetBinContent(x + 1, 7));
+              if ((ratio > noise_level_low) && (ratio < noise_level_high)){
+                ratio_array[y] = true;
+              }
+              else {
+                ratio_array[y] = false;
+              }
+            }
+            if (!std::equal(std::begin(ratio_array), std::end(ratio_array), std::begin(comparator_array))) {
+              mVectHistoCheck.at(ih).numE += 1;
+              mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
+            }
+          }
+        }
+        // End Stefan Addition
         // check result check
         if (mVectHistoCheck.at(ih).numW == 0 && mVectHistoCheck.at(ih).numE == 0) {
           result = Quality::Good;
@@ -198,6 +230,44 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
         return;
       }
+      //Begin Stefan addition
+        if (mo->getName() == "hBCAlignPlot"){
+          float noise_level_low = 0.15;
+          float noise_level_high = 20;
+          //bool ratio_array[12];
+          //bool comparator_array[12] = {false,false,false,false,false,false,true,false,true,false,true,false};
+          float ratio = 0.0;
+          for (int x = 0; x < h->GetNbinsX(); x++) {
+            for (int y = 0; y < h->GetNbinsY(); y++) {
+              ratio = (h->GetBinContent(x + 1, y + 1))/(h->GetBinContent(x + 1, 7));
+              float xpos = h->GetXaxis()->GetBinCenter(x+1);
+              float ypos = h->GetYaxis()->GetBinCenter(y+1);
+              //std::string strValue = std::to_string(ratio);
+              std::string strValue = std::format("{:.2f}", ratio);
+              TLatex* msg = new TLatex(xpos-0.35, ypos-0.15, strValue.c_str());
+              msg->SetTextSize(9);
+              if((ratio > noise_level_low) && (ratio < noise_level_high)){
+                msg->SetTextColor(kGreen);
+                //ratio_array[y] = true;
+              }
+              else {
+                msg->SetTextColor(kRed);
+                //ratio_array[y] = false;
+              }
+              h->GetListOfFunctions()->Add(msg);
+
+              //std::string strValue_ratio_array = ratio_array[y] ? "true" : "false";
+              //std::string strValue_comparator_array = comparator_array[y] ? "true" : "false";
+              //TLatex* msg2 = new TLatex(xpos-0.35, ypos-0.05, strValue_ratio_array.c_str());
+              //msg2->SetTextSize(7);
+              //h->GetListOfFunctions()->Add(msg2);
+              //TLatex* msg3 = new TLatex(xpos-0.35, ypos+0.05, strValue_comparator_array.c_str());
+              //msg3->SetTextSize(7);
+              //h->GetListOfFunctions()->Add(msg3);
+            }
+          }
+        }
+      //End Stefan addition
       if (mVectHistoCheck.at(ih).quality == 1) {
         std::string errorSt = getCurrentDataTime() + " Ok";
         TLatex* msg = new TLatex(mVectHistoCheck.at(ih).posMsgX, mVectHistoCheck.at(ih).posMsgY, errorSt.c_str());
@@ -267,6 +337,9 @@ void ZDCRawDataCheck::init(const Activity& activity)
   setChCheck("hpedSummary", "TH1F", "PED", "PED_POS_MSG_X", "PED_POS_MSG_Y", activity);
   setChCheck("hAlignPlotShift", "TH2F", "ALIGN", "ALIGN_POS_MSG_X", "ALIGN_POS_MSG_Y", activity);
   setChCheck("herrorSummary", "TH2F", "ERROR", "ERROR_POS_MSG_X", "ERROR_POS_MSG_Y", activity);
+  //Begin Stefan Addition
+  setChCheck("hBCAlignPlot", "TH2F", "ALIGN", "ALIGN_POS_MSG_X", "ALIGN_POS_MSG_Y", activity);
+  //End Stefan Addition
   // dumpStruct();
 }
 
