@@ -163,10 +163,7 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
         // Begin Stefan Addition
         if (mo->getName() == "hBCAlignPlot"){
-          float noise_level_low = 0.15;
-          float noise_level_high = 20;
           bool ratio_array[12];
-          bool comparator_array[12] = {false,false,false,false,false,false,true,false,true,false,true,false};
           float ratio = 0.0;
           auto* h = dynamic_cast<TH2*>(mo->getObject());
           if (h == nullptr) {
@@ -178,15 +175,15 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           }
           for (int x = 0; x < h->GetNbinsX(); x++) {
             for (int y = 0; y < h->GetNbinsY(); y++) {
-              ratio = (h->GetBinContent(x + 1, y + 1))/(h->GetBinContent(x + 1, 7));
-              if ((ratio > noise_level_low) && (ratio < noise_level_high)){
+              ratio = (h->GetBinContent(x + 1, y + 1))/(h->GetBinContent(x + 1, REFERENCE_BIN));
+              if ((ratio > NOISE_LEVEL_LOW) && (ratio < NOISE_LEVEL_HIGH)){
                 ratio_array[y] = true;
               }
               else {
                 ratio_array[y] = false;
               }
             }
-            if (!std::equal(std::begin(ratio_array), std::end(ratio_array), std::begin(comparator_array))) {
+            if (!std::equal(std::begin(ratio_array), std::end(ratio_array), std::begin(COMPARATOR_ARRAY))) {
               mVectHistoCheck.at(ih).numE += 1;
               mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
             }
@@ -232,21 +229,21 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       }
       //Begin Stefan addition
         if (mo->getName() == "hBCAlignPlot"){
-          float noise_level_low = 0.15;
-          float noise_level_high = 20;
+          //float NOISE_LEVEL_LOW = 0.15;
+          //float NOISE_LEVEL_HIGH = 20;
           //bool ratio_array[12];
           //bool comparator_array[12] = {false,false,false,false,false,false,true,false,true,false,true,false};
           float ratio = 0.0;
           for (int x = 0; x < h->GetNbinsX(); x++) {
             for (int y = 0; y < h->GetNbinsY(); y++) {
-              ratio = (h->GetBinContent(x + 1, y + 1))/(h->GetBinContent(x + 1, 7));
+              ratio = (h->GetBinContent(x + 1, y + 1))/(h->GetBinContent(x + 1, REFERENCE_BIN));
               float xpos = h->GetXaxis()->GetBinCenter(x+1);
               float ypos = h->GetYaxis()->GetBinCenter(y+1);
               //std::string strValue = std::to_string(ratio);
               std::string strValue = std::format("{:.2f}", ratio);
               TLatex* msg = new TLatex(xpos-0.35, ypos-0.15, strValue.c_str());
               msg->SetTextSize(9);
-              if((ratio > noise_level_low) && (ratio < noise_level_high)){
+              if((ratio > NOISE_LEVEL_LOW) && (ratio < NOISE_LEVEL_HIGH)){
                 msg->SetTextColor(kGreen);
                 //ratio_array[y] = true;
               }
@@ -339,6 +336,44 @@ void ZDCRawDataCheck::init(const Activity& activity)
   setChCheck("herrorSummary", "TH2F", "ERROR", "ERROR_POS_MSG_X", "ERROR_POS_MSG_Y", activity);
   //Begin Stefan Addition
   setChCheck("hBCAlignPlot", "TH2F", "ALIGN", "ALIGN_POS_MSG_X", "ALIGN_POS_MSG_Y", activity);
+  std::vector<std::string> tokenString;
+  if (auto param = mCustomParameters.find("REFERENCE_BIN"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - REFERENCE_BIN: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    REFERENCE_BIN = atoi(param->second.c_str());
+  } else {
+    REFERENCE_BIN = 7;
+  }
+  if (auto param = mCustomParameters.find("NOISE_LEVEL_LOW"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - NOISE_LEVEL_LOW: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    NOISE_LEVEL_LOW = atof(param->second.c_str());
+  } else {
+    NOISE_LEVEL_LOW = 0.0;
+  }
+  if (auto param = mCustomParameters.find("NOISE_LEVEL_HIGH"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - NOISE_LEVEL_HIGH: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    NOISE_LEVEL_HIGH = atof(param->second.c_str());
+  } else {
+    NOISE_LEVEL_HIGH = 2.0;
+  }
+  if (auto param = mCustomParameters.find("COMPARATOR_ARRAY"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - COMPARATOR_ARRAY: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    for (int i = 0; i < 12; i++){
+      if (atoi(tokenString.at(i).c_str()) == 1){
+        COMPARATOR_ARRAY[i] = true;
+      }
+      else {
+        COMPARATOR_ARRAY[i] = false;
+      }
+    }
+  } else {
+      for (int i = 0; i < 12; i++){
+        COMPARATOR_ARRAY[i] = false;
+    }
+  }
   //End Stefan Addition
   // dumpStruct();
 }
