@@ -29,15 +29,9 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-EfficiencyTrendsPlotter::EfficiencyTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots)
+EfficiencyTrendsPlotter::EfficiencyTrendsPlotter(std::string path, bool fullPlots)
 {
   mElecMapReductor = std::make_unique<TH2ElecMapReductor>();
-
-  std::unique_ptr<TH2ElecMapReductor> reductorRef;
-  if (hRef) {
-    reductorRef = std::make_unique<TH2ElecMapReductor>();
-    reductorRef->update(hRef);
-  }
 
   //--------------------------------------------------
   // Efficiency trends
@@ -49,16 +43,10 @@ EfficiencyTrendsPlotter::EfficiencyTrendsPlotter(std::string path, TH2F* hRef, b
       continue;
     }
 
-    std::optional<float> refB, refNB;
-    if (reductorRef) {
-      refB = reductorRef->getDeValue(deID, 0);
-      refNB = reductorRef->getDeValue(deID, 1);
-    }
-
     mTrendsEfficiency[deID] = std::make_unique<TrendMultiGraph>(fmt::format("{}{}/Efficiency_DE{}", path, getHistoPath(de), de),
                                                                 fmt::format("DE{} Efficiency", de), "efficiency");
-    mTrendsEfficiency[deID]->addGraph("B", "bending    ", refB);
-    mTrendsEfficiency[deID]->addGraph("NB", "non-bending", refNB);
+    mTrendsEfficiency[deID]->addGraph("B", "bending    ");
+    mTrendsEfficiency[deID]->addGraph("NB", "non-bending");
     mTrendsEfficiency[deID]->addLegends();
     // mTrendsEfficiency[deID]->setRange(0, 1.2);
 

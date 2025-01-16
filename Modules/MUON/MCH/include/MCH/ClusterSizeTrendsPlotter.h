@@ -36,7 +36,7 @@ namespace muonchambers
 class ClusterSizeTrendsPlotter : public HistPlotter
 {
  public:
-  ClusterSizeTrendsPlotter(std::string path, TH2F* hRef, bool fullPlots = false);
+  ClusterSizeTrendsPlotter(std::string path, bool fullPlots = false);
 
   void update(long time, TH2F* hEfficiency);
 

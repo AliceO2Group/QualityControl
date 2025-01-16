@@ -36,7 +36,7 @@ namespace muonchambers
 class ClusterChargePlotter : public HistPlotter
 {
  public:
-  ClusterChargePlotter(std::string path, TH2F* hRef, bool fullPlots = false);
+  ClusterChargePlotter(std::string path, bool fullPlots = false);
 
   void update(TH2F* hCharge);
 
@@ -62,9 +62,6 @@ class ClusterChargePlotter : public HistPlotter
   std::unique_ptr<ClusterChargeReductor> mChargeReductor;
 
   std::unique_ptr<TH1F> mHistogramChargePerDE;
-  std::unique_ptr<TH1F> mHistogramChargePerDERef;
-  std::unique_ptr<TH1F> mHistogramChargeRefRatio;
-  std::unique_ptr<TCanvas> mCanvasChargePerDE;
   std::array<std::unique_ptr<TH1F>, getNumDE()> mHistogramCharge;
 };
 

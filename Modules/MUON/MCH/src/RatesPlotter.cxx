@@ -31,7 +31,7 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-RatesPlotter::RatesPlotter(std::string path, TH2F* hRef, float rateMin, float rateMax, bool perStationPlots, bool fullPlots)
+RatesPlotter::RatesPlotter(std::string path, float rateMin, float rateMax, bool perStationPlots, bool fullPlots)
 {
   // mappers used for filling the histograms in detector coordinates
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
@@ -39,46 +39,6 @@ RatesPlotter::RatesPlotter(std::string path, TH2F* hRef, float rateMin, float ra
 
   // reductor for the rates plot in electronics coordinates
   mElecMapReductor = std::make_unique<TH2ElecMapReductor>(rateMin, rateMax);
-
-  //----------------------------------
-  // Reference mean rates histogram
-  //----------------------------------
-
-  if (hRef) {
-    TH2ElecMapReductor elecMapReductorRef(rateMin, rateMax);
-    elecMapReductorRef.update(hRef);
-
-    mHistogramMeanRatePerDERef =
-      std::make_unique<TH1F>(TString::Format("%sMeanRateRef", path.c_str()), "Mean Rate vs DE, reference",
-                             getNumDE(), 0, getNumDE());
-    mHistogramMeanRatePerDERef->SetLineColor(kRed);
-    mHistogramMeanRatePerDERef->SetLineStyle(kDashed);
-    mHistogramMeanRatePerDERef->SetLineWidth(2);
-
-    for (size_t de = 0; de < mHistogramMeanRatePerDERef->GetXaxis()->GetNbins(); de++) {
-      mHistogramMeanRatePerDERef->SetBinContent(de + 1, elecMapReductorRef.getDeValue(de));
-      mHistogramMeanRatePerDERef->SetBinError(de + 1, 0);
-    }
-
-    mHistogramGoodChannelsFractionPerDERef =
-      std::make_unique<TH1F>(TString::Format("%sGoodChannelsFractionRef", path.c_str()), "Good channels fraction, reference",
-                             getNumDE(), 0, getNumDE());
-    mHistogramGoodChannelsFractionPerDERef->SetLineColor(kRed);
-    mHistogramGoodChannelsFractionPerDERef->SetLineStyle(kDashed);
-    mHistogramGoodChannelsFractionPerDERef->SetLineWidth(2);
-
-    for (size_t de = 0; de < mHistogramMeanRatePerDERef->GetXaxis()->GetNbins(); de++) {
-      float nPads = elecMapReductorRef.getNumPads(de);
-      float nPadsBad = elecMapReductorRef.getNumPadsBad(de) + elecMapReductorRef.getNumPadsNoStat(de);
-      float nPadsGood = nPads - nPadsBad;
-      if (nPads > 0) {
-        mHistogramGoodChannelsFractionPerDERef->SetBinContent(de + 1, nPadsGood / nPads);
-      } else {
-        mHistogramGoodChannelsFractionPerDERef->SetBinContent(de + 1, 0);
-      }
-      mHistogramGoodChannelsFractionPerDERef->SetBinError(de + 1, 0);
-    }
-  }
 
   //----------------------------------
   // Rate distribution histograms
@@ -103,31 +63,17 @@ RatesPlotter::RatesPlotter(std::string path, TH2F* hRef, float rateMin, float ra
   // Mean rates histograms
   //----------------------------------
 
-  mHistogramMeanRatePerDE = std::make_unique<TH1F>(TString::Format("%sMeanRateHist", path.c_str()), "Mean Rate",
+  mHistogramMeanRatePerDE = std::make_unique<TH1F>(TString::Format("%sMeanRate", path.c_str()), "Mean Rate",
                                                    getNumDE(), 0, getNumDE());
-
-  mHistogramMeanRateRefRatio = std::make_unique<TH1F>(TString::Format("%sMeanRateRefRatio", path.c_str()), "Mean Rate - ratio wrt reference",
-                                                      getNumDE(), 0, getNumDE());
-  addHisto(mHistogramMeanRateRefRatio.get(), false, "histo", "histo");
-
-  mCanvasMeanRatePerDE = std::make_unique<TCanvas>(TString::Format("%sMeanRate", path.c_str()), "Mean Rate vs DE", 800, 600);
-  mCanvasMeanRatePerDE->SetLogy(kTRUE);
-  addCanvas(mCanvasMeanRatePerDE.get(), mHistogramMeanRatePerDE.get(), false, "histo", "histo");
+  addHisto(mHistogramMeanRatePerDE.get(), false, "histo", "logy");
 
   //----------------------------------
   // "Good" channels fraction histograms
   //----------------------------------
 
-  mHistogramGoodChannelsFractionPerDE = std::make_unique<TH1F>(TString::Format("%sGoodChannelsFractionHist", path.c_str()),
+  mHistogramGoodChannelsFractionPerDE = std::make_unique<TH1F>(TString::Format("%sGoodChannelsFraction", path.c_str()),
                                                                "Good channels fraction", getNumDE(), 0, getNumDE());
-
-  mHistogramGoodChannelsFractionRefRatio = std::make_unique<TH1F>(TString::Format("%sGoodChannelsFractionRefRatio", path.c_str()), "Good channels fraction - ratio wrt reference",
-                                                                  getNumDE(), 0, getNumDE());
-  addHisto(mHistogramGoodChannelsFractionRefRatio.get(), false, "histo", "histo");
-
-  mCanvasGoodChannelsFractionPerDE = std::make_unique<TCanvas>(TString::Format("%sGoodChannelsFraction", path.c_str()), "Mean Rate", 800, 600);
-  mCanvasGoodChannelsFractionPerDE->SetLogy(kFALSE);
-  addCanvas(mCanvasGoodChannelsFractionPerDE.get(), mHistogramGoodChannelsFractionPerDE.get(), false, "histo", "histo");
+  addHisto(mHistogramGoodChannelsFractionPerDE.get(), false, "histo", "");
 
   //--------------------------------------------------
   // Rates histograms in global detector coordinates
@@ -173,27 +119,6 @@ void RatesPlotter::fillAverageHistos(TH2F* hRates)
     mHistogramMeanRatePerDE->SetBinError(de + 1, 0.1);
   }
 
-  mCanvasMeanRatePerDE->Clear();
-  mCanvasMeanRatePerDE->cd();
-  mHistogramMeanRatePerDE->Draw();
-
-  if (mHistogramMeanRatePerDERef) {
-    mHistogramMeanRatePerDERef->Draw("histsame");
-
-    mHistogramMeanRateRefRatio->Reset();
-    mHistogramMeanRateRefRatio->Add(mHistogramMeanRatePerDE.get());
-    mHistogramMeanRateRefRatio->Divide(mHistogramMeanRatePerDERef.get());
-
-    // special handling of bins with zero rate in reference
-    int nbinsx = mHistogramMeanRatePerDERef->GetXaxis()->GetNbins();
-    for (int b = 1; b <= nbinsx; b++) {
-      if (mHistogramMeanRatePerDERef->GetBinContent(b) == 0) {
-        mHistogramMeanRateRefRatio->SetBinContent(b, 1);
-        mHistogramMeanRateRefRatio->SetBinError(b, 0);
-      }
-    }
-  }
-
   for (size_t de = 0; de < mHistogramGoodChannelsFractionPerDE->GetXaxis()->GetNbins(); de++) {
     float nPads = mElecMapReductor->getNumPads(de);
     float nPadsBad = mElecMapReductor->getNumPadsBad(de) + mElecMapReductor->getNumPadsNoStat(de);
@@ -204,27 +129,6 @@ void RatesPlotter::fillAverageHistos(TH2F* hRates)
     } else {
       mHistogramGoodChannelsFractionPerDE->SetBinContent(de + 1, 0);
       mHistogramGoodChannelsFractionPerDE->SetBinError(de + 1, 1);
-    }
-  }
-
-  mCanvasGoodChannelsFractionPerDE->Clear();
-  mCanvasGoodChannelsFractionPerDE->cd();
-  mHistogramGoodChannelsFractionPerDE->Draw();
-
-  if (mHistogramGoodChannelsFractionPerDERef) {
-    mHistogramGoodChannelsFractionPerDERef->Draw("histsame");
-
-    mHistogramGoodChannelsFractionRefRatio->Reset();
-    mHistogramGoodChannelsFractionRefRatio->Add(mHistogramGoodChannelsFractionPerDE.get());
-    mHistogramGoodChannelsFractionRefRatio->Divide(mHistogramGoodChannelsFractionPerDERef.get());
-
-    // special handling of bins with zero rate in reference
-    int nbinsx = mHistogramGoodChannelsFractionPerDERef->GetXaxis()->GetNbins();
-    for (int b = 1; b <= nbinsx; b++) {
-      if (mHistogramGoodChannelsFractionPerDERef->GetBinContent(b) == 0) {
-        mHistogramGoodChannelsFractionRefRatio->SetBinContent(b, 1);
-        mHistogramGoodChannelsFractionRefRatio->SetBinError(b, 0);
-      }
     }
   }
 }

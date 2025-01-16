@@ -71,7 +71,6 @@ class DigitsPostProcessing : public PostProcessingInterface
 
   // CCDB object accessors
   std::map<std::string, CcdbObjectHelper> mCcdbObjects;
-  std::map<std::string, CcdbObjectHelper> mCcdbObjectsRef;
 
   // Hit rate histograms ===============================================
 

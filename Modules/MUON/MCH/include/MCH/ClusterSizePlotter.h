@@ -37,7 +37,7 @@ namespace muonchambers
 class ClusterSizePlotter : public HistPlotter
 {
  public:
-  ClusterSizePlotter(std::string path, TH2F* hRef, bool fullPlots = false);
+  ClusterSizePlotter(std::string path, bool fullPlots = false);
 
   void update(TH2F* hCharge);
 
@@ -52,9 +52,6 @@ class ClusterSizePlotter : public HistPlotter
   std::unique_ptr<ClusterSizeReductor> mClusterSizeReductor;
 
   std::array<std::unique_ptr<TH1F>, 3> mHistogramClusterSizePerDE;
-  std::array<std::unique_ptr<TH1F>, 3> mHistogramClusterSizePerDERef;
-  std::array<std::unique_ptr<TH1F>, 3> mHistogramClusterSizePerDERefRatio;
-  std::array<std::unique_ptr<TCanvas>, 3> mCanvasClusterSizePerDE;
   std::array<std::unique_ptr<TH1F>, getNumDE() * 3> mHistogramClusterSize;
   std::array<std::unique_ptr<TLegend>, getNumDE()> mLegendClusterSize;
   std::array<std::unique_ptr<TCanvas>, getNumDE()> mCanvasClusterSize;
