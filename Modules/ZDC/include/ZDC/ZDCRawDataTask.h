@@ -141,6 +141,7 @@ class ZDCRawDataTask final : public TaskInterface
   std::string fNameChannel[o2::zdc::NModules][o2::zdc::NChPerModule];
   std::vector<infoHisto1D> fMatrixHistoBaseline[o2::zdc::NModules][o2::zdc::NChPerModule];
   std::vector<infoHisto1D> fMatrixHistoCounts[o2::zdc::NModules][o2::zdc::NChPerModule];
+  std::vector<infoHisto1D> fMatrixHistoCounts_a[o2::zdc::NModules][o2::zdc::NChPerModule];
   std::vector<infoHisto2D> fMatrixHistoSignal[o2::zdc::NModules][o2::zdc::NChPerModule];
   std::vector<infoHisto2D> fMatrixHistoBunch[o2::zdc::NModules][o2::zdc::NChPerModule];
 

@@ -357,7 +357,7 @@ void ZDCRecDataPostProcessing::updateSummaryPeak1pHistos(Trigger t, repository::
     } else {
       maxBin1p = 250;
     }
-    h->GetXaxis()->SetRangeUser(2, 250);
+    h->GetXaxis()->SetRangeUser(minBin1p, maxBin1p);
     mSummaryPeak1pHisto->SetBinContent(bin, h->GetBinCenter(h->GetMaximumBin()));
   }
 }
