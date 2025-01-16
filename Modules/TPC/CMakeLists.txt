@@ -39,7 +39,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/VDriftCalibReductor.cxx
                              src/SeparationPowerReductor.cxx
                              src/TimeGainCalibReductor.cxx
-                             src/DCSPTempReductor.cxx)
+                             src/DCSPTempReductor.cxx
+                             src/AtmosPressureReductor.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -99,6 +100,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/SeparationPowerReductor.h
                             include/TPC/TimeGainCalibReductor.h
                             include/TPC/DCSPTempReductor.h
+                            include/TPC/AtmosPressureReductor.h
                     LINKDEF include/TPC/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/TPC
@@ -183,4 +185,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTrending_separationpower.json
               run/tpcQCTimeGainCalibTrending.json
               run/tpcDCSPTempTrending.json
+              run/tpcQCAtmosPressureTrending.json
         DESTINATION etc)
