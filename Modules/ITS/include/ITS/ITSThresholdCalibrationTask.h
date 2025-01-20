@@ -108,7 +108,7 @@ class ITSThresholdCalibrationTask : public TaskInterface
   Int_t nChips[3] = { 9, 112, 196 };
   Int_t nStaves[3] = { 48, 54, 90 };
   Int_t nXmax[3] = { 130, 100, 450 };
-  Int_t nZmax[3] = { 130, 110, 300 };
+  Int_t nZmax[3] = { 130, 110, 150 };
   Int_t nZmin[3] = { 20, 20, 30 };
 
   TString sXtitles[3] = { "DAC", "DAC", "e" };
