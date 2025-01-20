@@ -145,7 +145,7 @@ void ITSFeeTask::createFeePlots()
   mDecodingCheck = new TH2I("DecodingCheck", "Error in parsing data", NFees, 0, NFees, 5, 0, 5); // 0: DataFormat not recognized, 1: DDW index != 0, 2: DDW wrong identifier, 3: IHW wrong identifier, 4: CDW wrong version -- adapt y range!
   getObjectsManager()->startPublishing(mDecodingCheck);
 
-  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
+  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e5);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 
   mRDHSummary = new TH2I("RDHSummary", "Detector field in first and last page", NFees, 0, NFees, mRDHDetField.size(), 0, mRDHDetField.size());
