@@ -145,7 +145,7 @@ void ITSFeeTask::createFeePlots()
   mDecodingCheck = new TH2I("DecodingCheck", "Error in parsing data", NFees, 0, NFees, 5, 0, 5); // 0: DataFormat not recognized, 1: DDW index != 0, 2: DDW wrong identifier, 3: IHW wrong identifier, 4: CDW wrong version -- adapt y range!
   getObjectsManager()->startPublishing(mDecodingCheck);
 
-  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
+  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e5);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 
   mRDHSummary = new TH2I("RDHSummary", "Detector field in first and last page", NFees, 0, NFees, mRDHDetField.size(), 0, mRDHDetField.size());
@@ -548,6 +548,12 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     // Operations at last page of each orbit:
     //  - decoding Diagnostic Word DDW0 and fill lane status plots and vectors
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
+
+      for (int i = 0; i < NFees; i++) {
+        mPayloadSize->Fill(i, (float)payloadTot[i]);
+        payloadTot[i] = 0;
+      }
+
       const GBTDiagnosticWord* ddw;
       try {
         ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
@@ -665,14 +671,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mLaneStatusOverview[1]->SetBinError(istave + 1 + StaveBoundary[ilayer], 1e-15);
     }
   }
-
-  for (int i = 0; i < NFees; i++) {
-    if (nStops[i]) {
-      float payloadAvg = (float)payloadTot[i] / nStops[i];
-      mPayloadSize->Fill(i, payloadAvg);
-    }
-  }
-
   mTimeFrameId++;
   mTFInfo->Fill(mTimeFrameId % 10000);
   end = std::chrono::high_resolution_clock::now();
