@@ -93,9 +93,9 @@ class ITSClusterTask : public TaskInterface
   std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryOB[NLayer];
 
   // Layer summary
-  TH1D* hClusterSizeLayerSummary[NLayer] = { nullptr };
-  TH1D* hClusterTopologyLayerSummary[NLayer] = { nullptr };
-  TH1D* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
+  TH1L* hClusterSizeLayerSummary[NLayer] = { nullptr };
+  TH1L* hClusterTopologyLayerSummary[NLayer] = { nullptr };
+  TH1L* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
 
   // Anomalies plots
   TH2D* hLongClustersPerChip[3] = { nullptr };
