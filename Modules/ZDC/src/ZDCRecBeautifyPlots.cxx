@@ -64,7 +64,7 @@ void ZDCRecBeautifyPlots::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     }
     auto* lineH = new TLine(0.5, 0, -0.5, 0);
     auto* lineV = new TLine(0, 0.5, 0, -0.5);
-    auto* marker = new TMarker(h->GetMean(1),h->GetMean(2),20);
+    auto* marker = new TMarker(h->GetMean(1), h->GetMean(2), 20);
     lineH->SetLineColor(kBlack);
     lineV->SetLineColor(kBlack);
     lineH->SetLineWidth(2);

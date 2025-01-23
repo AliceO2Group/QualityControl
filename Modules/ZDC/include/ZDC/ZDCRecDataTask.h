@@ -105,9 +105,9 @@ class ZDCRecDataTask final : public TaskInterface
   bool IsEventCentral();
   void SetConfigCentralEvent(float tdcLimit, int centraleventconfigvalue);
   void settdcLimit(float tdcv) { ftdcLimit = tdcv; };
-  void setcentraleventconfigvalue(int centrentcfg) {fcentraleventconfigvalue = centrentcfg; };
+  void setcentraleventconfigvalue(int centrentcfg) { fcentraleventconfigvalue = centrentcfg; };
   float gettdcLimit() { return ftdcLimit; };
-  int getcentraleventconfigvalue() {return fcentraleventconfigvalue; };
+  int getcentraleventconfigvalue() { return fcentraleventconfigvalue; };
   // End Stefan addition
 
  private:
