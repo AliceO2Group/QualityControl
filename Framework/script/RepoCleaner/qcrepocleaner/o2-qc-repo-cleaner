@@ -103,6 +103,8 @@ def parseArgs():
                           'only-path points to an object rather than a folder or if subdirectories must be ignored.')
     parser.add_argument('--ignore-last-execution', dest='ignore_last_execution', action='store_true', default=False,
                         help='Do not check when was the last execution, run from timestamp 0.')
+    parser.add_argument('--print-versions-details', dest='print_versions_details', action='store_true', default=False,
+                        help='Print extra details about the versions if enabled..')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -373,7 +375,7 @@ def process_object(object_path, rules, ccdb, args):
 def run(args, ccdb_url, rules):
 
     # Get list of objects from CCDB
-    ccdb = Ccdb(ccdb_url)
+    ccdb = Ccdb(ccdb_url, args.print_versions_details)
     ccdb.logger = logging.getLogger
     ccdb.set_adjustable_eov = args.set_adjustableEOV
     logging.info(f"ccdb.set_adjustable_eov: {ccdb.set_adjustable_eov}")

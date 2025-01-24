@@ -30,6 +30,8 @@ def parseArgs():
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
     parser.add_argument('--metadata', dest='metadata', action='store', default="",
                         help='Delete only versions matching these metadata. Format: "[/key=value]*"')
+    parser.add_argument('--print-versions-details', dest='print_versions_details', action='store_true', default=False,
+                        help='Print extra details about the versions if enabled..')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -37,7 +39,7 @@ def parseArgs():
 
 
 def run(args):
-    ccdb = Ccdb(args.url)
+    ccdb = Ccdb(args.url, args.print_versions_details)
 
     total_deleted = 0
     total_planned = 0

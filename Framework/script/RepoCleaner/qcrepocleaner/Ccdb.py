@@ -13,11 +13,13 @@ logger = logging  # default logger
 
 class ObjectVersion:
     '''
-    A version of an object in the CCDB. 
-    
-    In the CCDB an object can have many versions with different validity intervals. 
-    This class represents a single version. 
+    A version of an object in the CCDB.
+
+    In the CCDB an object can have many versions with different validity intervals.
+    This class represents a single version.
     '''
+
+    print_details = False
 
     def __init__(self, path: str, validFrom, validTo, createdAt, uuid=None, metadata=None):
         '''
@@ -27,6 +29,8 @@ class ObjectVersion:
         :param validFrom: validity range smaller limit (in ms)
         :param validTo: validity range bigger limit (in ms)
         :param createdAt: creation timestamp of the object
+        :param uuid: unique id of the object
+        :param metadata: metadata of the object
         '''
         self.path = path
         self.uuid = uuid
@@ -42,10 +46,14 @@ class ObjectVersion:
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
             run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
-            return f"Version of object {self.path} created at {self.createdAtDt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.validFromAsDt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number} (uuid {self.uuid})"
         else:
-            return f"Version of object {self.path} created at {self.createdAtDt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.validFromAsDt.strftime('%Y-%m-%d %H:%M:%S')} (uuid {self.uuid}, " \
-                   f"ts {self.validFrom})"
+            run_number = "None"
+
+        representation = f"Version of object {self.path} created at {self.createdAtDt.strftime('%Y-%m-%d %H:%M:%S')}, valid from" \
+               f"{self.validFromAsDt.strftime('%Y-%m-%d %H:%M:%S')}, uuid {self.uuid}, run {run_number}"
+        if ObjectVersion.print_details:
+            representation += f", metadata: {self.metadata}"
+        return representation
 
 
 class Ccdb:
@@ -58,9 +66,10 @@ class Ccdb:
     counter_preserved: int = 0
     set_adjustable_eov: bool = False  # if True, set the metadata adjustableEOV before change validity
 
-    def __init__(self, url):
+    def __init__(self, url, print_details=False):
         logger.info(f"Instantiate CCDB at {url}")
         self.url = url
+        ObjectVersion.print_details = print_details
 
     def getObjectsList(self, added_since: int = 0, path: str = "", no_wildcard: bool = False) -> List[str]:
         '''
@@ -150,7 +159,7 @@ class Ccdb:
     @dryable.Dryable()
     def deleteVersion(self, version: ObjectVersion):
         '''
-        Delete the specified version of an object. 
+        Delete the specified version of an object.
         :param version: The version of the object to delete, as an instance of ObjectVersion.
         '''
         url_delete = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
@@ -203,7 +212,7 @@ class Ccdb:
             r = requests.put(full_path, headers=headers)
             r.raise_for_status()
             self.counter_validity_updated += 1
-        except requests.exceptions.RequestException as e:  
+        except requests.exceptions.RequestException as e:
             logging.error(f"Exception in updateValidity: {traceback.format_exc()}")
 
     @dryable.Dryable()
