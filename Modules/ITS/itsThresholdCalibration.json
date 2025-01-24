@@ -37,7 +37,7 @@
         },
         "location" : "remote",
         "taskParameters" : {
-	   "CalibrationType": "pixel_dead"
+	   "CalibrationType": "THR"
 	}
       }
     }
