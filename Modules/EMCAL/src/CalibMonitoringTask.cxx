@@ -268,7 +268,7 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
   reset();
   for (const auto& obj : mCalibObjects) {
     if (obj == "BadChannelMap") {
-      mBadChannelMap = mCalibDB->readBadChannelMap(o2::ccdb::getCurrentTimestamp(), metadata);
+      mBadChannelMap = mCalibDB->readBadChannelMap(t.timestamp, metadata);
       if (!mBadChannelMap) {
         ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
         continue;
@@ -310,7 +310,7 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
     }
 
     if (obj == "TimeCalibParams") {
-      mTimeCalib = mCalibDB->readTimeCalibParam(o2::ccdb::getCurrentTimestamp(), metadata);
+      mTimeCalib = mCalibDB->readTimeCalibParam(t.timestamp, metadata);
       if (!mTimeCalib) {
         ILOG(Info, Support) << " No Time Calib object " << ENDM;
         continue;
@@ -324,7 +324,7 @@ void CalibMonitoringTask::update(Trigger t, framework::ServiceRegistryRef)
       }
     }
     if (obj == "FeeDCS") {
-      mFeeDCS = mCalibDB->readFeeDCSData(o2::ccdb::getCurrentTimestamp(), metadata);
+      mFeeDCS = mCalibDB->readFeeDCSData(t.timestamp, metadata);
       if (!mFeeDCS) {
         ILOG(Info, Support) << " No FEE DCS object " << ENDM;
         continue;
