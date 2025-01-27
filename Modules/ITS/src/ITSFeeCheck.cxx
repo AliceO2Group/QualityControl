@@ -381,7 +381,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
             tInfoLayers[ilayer]->SetNDC();
             hp->GetListOfFunctions()->Add(tInfoLayers[ilayer]->Clone());
           } // end check result over layer
-        } // end of loop over layers
+        }// end of loop over layers
       }
       tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
       tInfo->SetTextColor(textColor);
