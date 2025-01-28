@@ -541,7 +541,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 #ifdef WITH_OPENMP
   omp_set_num_threads(mNThreads);
-#pragma omp parallel for schedule(dynamic) reduction(+ : totalhit)
+#pragma omp parallel for schedule(dynamic) reduction(+ \
+		                                     : totalhit)
 #endif
   // fill Monitor Objects use openMP multiple threads, and calculate the occupancy
   for (int i = 0; i < (int)activeStaves.size(); i++) {
