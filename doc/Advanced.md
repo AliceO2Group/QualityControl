@@ -751,13 +751,37 @@ The recommended way (excluding postprocessing) to access these conditions is to 
 ```
 The timestamp of the CCDB object will be aligned with the data timestamp.
 
+If a task needs both sampled input and a CCDB object, it is advised to use two data sources as such:
+```json
+  "tasks": {
+    "MyTask": {
+    ...
+      "dataSources": [{
+        "type": "dataSamplingPolicy",
+        "name": "mftclusters"
+      }, {
+        "type": "direct",
+        "query": "cldict:MFT/CLUSDICT/0?lifetime=condition&ccdb-path=MFT/Calib/ClusterDictionary"
+      }],
+    }
+  },
+```
+
+The requested CCDB object can be accessed like any other DPL input in `monitorData`:
+```
+void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
+...
+    auto mDictPtr = ctx.inputs().get<o2::itsmft::TopologyDictionary*>("cldict");
+```
+
 Geometry and General Run Parameters (GRP) can be also accessed with the [GRP Geom Helper](#access-grp-objects-with-grp-geom-helper).
 
-If your task accesses CCDB objects using `TaskInterface::retrieveCondition`, please migrate to using one of the methods mentioned above.
+If your task accesses CCDB objects using `UserCodeInterface::retrieveConditionAny`, please migrate to using one of the methods mentioned above.
 
 ### Accessing from a Postprocessing task
 
-PostProcessingTasks do not take DPL inputs, so in this case `TaskInterface::retrieveCondition` should be used.
+PostProcessingTasks do not take DPL inputs, so in this case `ConditionAccess::retrieveConditionAny` should be used (it's inherited by `PostProcessingInterface` and any children).
 
 ## Access GRP objects with GRP Geom Helper
 
