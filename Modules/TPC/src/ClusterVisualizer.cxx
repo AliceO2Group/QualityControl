@@ -18,6 +18,7 @@
 #include "TPCBase/Painter.h"
 #include "TPCBase/CDBInterface.h"
 #include "TPCQC/Helpers.h"
+#include "TPCBase/CalDet.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -120,14 +121,16 @@ void ClusterVisualizer::configure(const boost::property_tree::ptree& config)
       "Q_Tot",
       "Sigma_Pad",
       "Sigma_Time",
-      "Time_Bin"
+      "Time_Bin",
+      "Occupancy"
     };
   } else if (type == "raw") {
     mIsClusters = false;
     mObservables = {
       "N_RawDigits",
       "Q_Max",
-      "Time_Bin"
+      "Time_Bin",
+      "Occupancy"
     };
   } else {
     ILOG(Error, Support) << "No valid data type given. 'dataType' has to be either 'clusters' or 'raw'." << ENDM;
@@ -153,11 +156,24 @@ void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistryRef)
                   mStoreMaps.size() > 1 ? mStoreMaps.at(calDetIter) : mStoreMaps.at(0));
     calDetIter++;
   }
+  if (mIsClusters) {
+    mCalDetCanvasVec.emplace_back(std::vector<std::unique_ptr<TCanvas>>());
+    addAndPublish(getObjectsManager(),
+                  mCalDetCanvasVec.back(),
+                  { "c_radial_profile_Occupancy" },
+                  mStoreMaps.size() > 1 ? mStoreMaps.at(calDetIter) : mStoreMaps.at(0));
+  }
 }
 
 void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
+
+  for (auto& vec : mCalDetCanvasVec) {
+    for (auto& canvas : vec) {
+      canvas.get()->Clear();
+    }
+  }
 
   auto calDetIter = 0;
 
@@ -167,38 +183,30 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
 
   auto& clusters = clusterData->getClusters();
 
-  auto& calDet = clusters.getNClusters();
-  auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
 
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
 
-  calDet = clusters.getQMax();
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
+
+  ////////////-------------------------check lambda expression---
+  auto fillCanvases = [&calDetIter, this](const auto& calDet) {
+  auto vecPtr = toVector(mCalDetCanvasVec.at(calDetIter++));
+  const auto& ranges = mRanges[calDet.getName()];
+  o2::tpc::painter::makeSummaryCanvases(calDet, int(ranges.at(0)), ranges.at(1), ranges.at(2), false, &vecPtr);
+};
+
+  fillCanvases(clusters.getNClusters());
+  fillCanvases(clusters.getQMax());
 
   if (mIsClusters) {
-    calDet = clusters.getQTot();
-    vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-    calDetIter++;
-
-    calDet = clusters.getSigmaPad();
-    vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-    calDetIter++;
-
-    calDet = clusters.getSigmaTime();
-    vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-    o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-    calDetIter++;
+    fillCanvases(clusters.getQTot());
+    fillCanvases(clusters.getSigmaPad());
+    fillCanvases(clusters.getSigmaTime());
   }
 
-  calDet = clusters.getTimeBin();
-  vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
-  calDetIter++;
+  fillCanvases(clusters.getTimeBin());
+  fillCanvases(clusters.getOccupancy());
+
+
+  makeRadialProfile(clusters.getOccupancy(), mCalDetCanvasVec.at(calDetIter++).at(0).get());
 }
 
 void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistryRef)
@@ -211,6 +219,70 @@ void ClusterVisualizer::finalize(Trigger t, framework::ServiceRegistryRef)
 
   if (mCalDetCanvasVec.size() > 0) {
     mCalDetCanvasVec.clear();
+  }
+}
+
+template <class T> void ClusterVisualizer::makeRadialProfile(const o2::tpc::CalDet<T>& calDet, TCanvas* canv)
+{
+  const std::string_view calName = calDet.getName();
+  const auto& ranges = mRanges[calName.data()];
+
+  const int nbinsY = int(ranges.at(0));
+  const float yMin = ranges.at(1);
+  const float yMax = ranges.at(2);
+  const auto radialBinning = o2::tpc::painter::getRowBinningCM();
+
+  auto hAside2D = new TH2D(fmt::format("h_{}_radialProfile_Aside", calName).data(), fmt::format("{}: Radial profile (A-Side)", calName).data(), radialBinning.size() - 1, radialBinning.data(), nbinsY, yMin, yMax);
+  hAside2D->GetXaxis()->SetTitle("x (cm)");
+  hAside2D->GetYaxis()->SetTitle(fmt::format("{}", calName).data());
+  hAside2D->SetTitleOffset(1.05, "XY");
+  hAside2D->SetTitleSize(0.05, "XY");
+  hAside2D->SetStats(0);
+
+  auto hCside2D = new TH2D(fmt::format("h_{}_radialProfile_Cside", calName).data(), fmt::format("{}: Radial profile (C-Side)", calName).data(), radialBinning.size() - 1, radialBinning.data(), nbinsY, yMin, yMax);
+  hCside2D->GetXaxis()->SetTitle("x (cm)");
+  hCside2D->GetYaxis()->SetTitle(fmt::format("{}", calName).data());
+  hCside2D->SetTitleOffset(1.05, "XY");
+  hCside2D->SetTitleSize(0.05, "XY");
+  hCside2D->SetStats(0);
+
+  fillRadialHisto(*hAside2D, calDet, o2::tpc::Side::A);
+  fillRadialHisto(*hCside2D, calDet, o2::tpc::Side::C);
+
+  canv->Divide(1, 2);
+  canv->cd(1);
+  hAside2D->Draw("colz");
+  hAside2D->SetStats(0);
+  hAside2D->ProfileX("profile_ASide", 1, -1, "d,same");
+
+  canv->cd(2);
+  hCside2D->Draw("colz");
+  hCside2D->ProfileX("profile_CSide", 1, -1, "d,same");
+  hAside2D->SetStats(0);
+
+  hAside2D->SetBit(TObject::kCanDelete);
+  hCside2D->SetBit(TObject::kCanDelete);
+}
+
+template <class T>
+void ClusterVisualizer::fillRadialHisto(TH2D& h2D, const o2::tpc::CalDet<T>& calDet, const o2::tpc::Side side)
+{
+  const o2::tpc::Mapper& mapper = o2::tpc::Mapper::instance();
+
+  for (o2::tpc::ROC roc; !roc.looped(); ++roc) {
+    if (roc.side() != side) {
+      continue;
+    }
+    const int nrows = mapper.getNumberOfRowsROC(roc);
+    for (int irow = 0; irow < nrows; ++irow) {
+      const int npads = mapper.getNumberOfPadsInRowROC(roc, irow);
+      const int globalRow = irow + (roc >= o2::tpc::Mapper::getNumberOfIROCs()) * o2::tpc::Mapper::getNumberOfRowsInIROC();
+      for (int ipad = 0; ipad < npads; ++ipad) {
+        const auto val = calDet.getValue(roc, irow, ipad);
+        const o2::tpc::LocalPosition2D pos = mapper.getPadCentre(o2::tpc::PadPos(globalRow, ipad));
+        h2D.Fill(pos.X(), val);
+      }
+    }
   }
 }
 
