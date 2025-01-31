@@ -22,6 +22,7 @@
 // O2 includes
 #include "Framework/ProcessingContext.h"
 #include "DataFormatsTPC/TrackTPC.h"
+#include "DataFormatsCalibration/MeanVertexObject.h"
 #include "TPCQC/Helpers.h"
 #include <Framework/InputRecord.h>
 
@@ -45,6 +46,8 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
   const bool runAsyncAndTurnOffSomeHistos = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "turnOffHistosForAsync");
   const float cutMaxAbsDCAr = o2::quality_control_modules::common::getFromConfig<float>(mCustomParameters, "cutMaxAbsDCAr", 0.1);
   const bool useCutMaxAbsDCArOnHistos = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "useCutMaxAbsDCArOnHistos");
+
+  usePVfromCCDB = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "usePVfromCCDB");
 
   // set track cuts defaults are (AbsEta = 1.0, nCluster = 60, MindEdxTot  = 20)
   mQCTracks.setTrackCuts(cutAbsEta, cutMinNCluster, cutMindEdxTot, cutPtForDCAr, samplingFractionDCAr, runAsyncAndTurnOffSomeHistos, cutMaxAbsDCAr, useCutMaxAbsDCArOnHistos);
@@ -70,6 +73,16 @@ void Tracks::startOfCycle()
 
 void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // set the coordinates of the PV (extracted from CCDB)
+  if (usePVfromCCDB) {
+    auto coordinatesOfPV = ctx.inputs().get<o2::dataformats::MeanVertexObject*>("meanvertex");
+    if (!coordinatesOfPV) {
+      LOGP(error, "Failed to retrieve MeanVertexObject, using default (0,0,0) instead!");
+    } else {
+      mQCTracks.setPVposition(coordinatesOfPV->getPos());
+    }
+  }
+
   using TrackType = std::vector<o2::tpc::TrackTPC>;
   auto tracks = ctx.inputs().get<TrackType>("inputTracks");
 

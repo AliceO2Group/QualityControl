@@ -50,6 +50,7 @@ class Tracks final : public TaskInterface
 
  private:
   o2::tpc::qc::Tracks mQCTracks{}; ///< TPC QC class from o2
+  bool usePVfromCCDB = false;
 };
 
 } // namespace o2::quality_control_modules::tpc
