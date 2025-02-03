@@ -167,7 +167,7 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       // Fill occupancy and time-E histos
       float posX, posZ;
       clu.getLocalPosition(posX, posZ);
-      char relid[3];
+      int8_t relid[3];
       mGeom->relPosToRelId(mod, posX, posZ, relid);
 
       if (e > mOccCut) {
