@@ -1,0 +1,55 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "NONE",
+        "provenance": "qc_async"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "infologger": {
+        "filterDiscardDebug": "false",
+        "filterDiscardLevel": "12"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "tasks": {},
+    "checks": {},
+    "lateTasks": {
+      "QcTaskLate": {                     "": "this is a way to configure an asynchronous late task",
+        "active": "true",
+        "className": "o2::quality_control::core::GeneralPurposeLateTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "policy": "OnAll",                "": "just like Checks and Aggregators, late tasks support update policies",
+        "dataSources": [{                 "" : "provides the late task with an MO",
+          "type": "repository",
+          "detectorName": "TST",
+          "taskName": "QcTask",
+          "MOs": ["example", "example2"], "": "framework should attempt to retrieve the two objects corresponding to the same validity",
+          "restrict": {
+            "number": "",                 "": "takes any run number",
+            "periodName": "LHC23k",       "": "objects should belong to period LHC23k",
+            "passName": "derived",        "": "objects should belongs to the same pass name as the globally defined one in this file"
+          }
+        }],
+        "TODO": "how to describe expected plots? i guess this should be task-specific"
+      }
+    }
+  },
+  "dataSamplingPolicies": []
+}
