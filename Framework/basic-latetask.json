@@ -1,0 +1,96 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "NONE"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "infologger": {
+        "filterDiscardDebug": "false",
+        "filterDiscardLevel": "12"
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurations": [
+          {"cycleDurationSeconds": 10, "validitySeconds": 35},
+          {"cycleDurationSeconds": 12, "validitySeconds": 1}
+        ],
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst-raw"
+        }
+      }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }]
+      }
+    },
+    "lateTasks": {
+      "QcTaskLate": {
+        "active": "true",
+        "className": "o2::quality_control::core::GeneralPurposeLateTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "policy": "OnAll",                "": "just like Checks and Aggregators, late tasks support update policies",
+        "dataSources": [{                 "" : "provides the late task with an MO",
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }, {
+          "type": "TaskReduced",          "": "provides the late task with a bunch of statistics derived from declared object(s)",
+          "name": "QcTask",
+          "MOs": ["example"],
+          "reducerName": "o2::quality_control_modules::common::TH1Reducer",
+          "moduleName": "QcCommon"
+        }],
+        "TODO": "how to describe expected plots? i guess this should be task-specific"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tst-raw",
+      "active": "true",
+      "machines": [],
+      "query": "data:TST/RAWDATA/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ]
+    }
+  ]
+}
