@@ -9,8 +9,9 @@
                 "name": "not_applicable"
             },
             "Activity": {
-                "number": "42",
-                "type": "NONE"
+		        "number": "42",        
+		        "type": "PHYSICS",     
+        		"beamType" : "PbPb",     "": "Beam type: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON` "
             },
             "monitoring": {
                 "url": "infologger:///debug?qc"
@@ -66,6 +67,27 @@
                   "plotWithTextMessage": "",
                   "textMessage": "" 
                 },
+		"extendedCheckParameters": {
+          	"default": {
+            		"default": {
+              			"expectedROFperOrbit": "18"
+            		}
+          	},
+          	"PHYSICS": {
+            		"default": {
+              			"expectedROFperOrbit": "18"
+            		},
+            		"PROTON-PROTON": {
+              			"expectedROFperOrbit": "18"
+            		},
+            		"Pb-Pb": {
+              			"expectedROFperOrbit": "6"
+            		}
+          	},
+          		"COSMICS": {
+            			"expectedROFperOrbit": "18"
+          		}
+        	},
                 "dataSource": [
                     {
                         "type": "Task",
