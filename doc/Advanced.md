@@ -1577,6 +1577,38 @@ should not be present in real configuration files.
 }
 ```
 
+#### Common configuration in production
+
+In production at P2 and in staging, some common items are defined globally in the file `QC/general-config-params`: 
+   - QCDB
+   - monitoring
+   - consul
+   - conditionDB
+   - bookkeeping
+   - 
+It is mandatory to use them by including the file: 
+```
+"config": {
+            {% include "QC/general-config-params" %}
+      },
+```
+
+Other configuration items can still be added in your files as such (note the comma after the inclusion) : 
+```
+      "config": {
+            {% include "QC/general-config-params" %},
+            "infologger": {
+                "filterDiscardDebug": "false",
+                "filterDiscardLevel": "22"
+            },
+            "postprocessing": {
+                "matchAnyRunNumber": "true"
+            }
+      },
+```
+
+Please, do not use `Activity` in production !
+
 ### QC Tasks configuration
 
 Below the full QC Task configuration structure is described. Note that more than one task might be declared inside in
