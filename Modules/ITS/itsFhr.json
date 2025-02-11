@@ -37,7 +37,7 @@
                 "taskParameters": {
                     "Layer": "4",
 		    "HitNumberCut": "0", 
-                    "decoderThreads": "8",
+                    "decoderThreads": "1",
                     "HitNumberCutForNoisyPixel": "0",
                     "OccupancyNumberCutForNoisyPixel": "0.000001",
           	    "MaxGeneralAxisRange": "-2",

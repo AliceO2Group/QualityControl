@@ -109,14 +109,14 @@ class ITSFhrTask final : public TaskInterface
   int mDoHitmapFilter = 1;    // do filtering of noise pixel vector
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave = nullptr /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
   int** mHitnumberLane = nullptr /* = new int*[NStaves[lay]]*/; // IB : hitnumber[stave][chip]; OB : hitnumber[stave][lane]
-  double** mOccupancyLane /* = new double*[NStaves[lay]]*/; // IB : occupancy[stave][chip]; OB : occupancy[stave][Lane]
+  double** mOccupancyLane /* = new double*[NStaves[lay]]*/;     // IB : occupancy[stave][chip]; OB : occupancy[stave][Lane]
   int*** mErrorCount = nullptr /* = new int**[NStaves[lay]]*/;  // IB : errorcount[stave][FEE][errorid]
   double** mChipPhi = nullptr /* = new double*[NStaves[lay]]*/; // IB/OB : mChipPhi[Stave][chip]
   double** mChipZ = nullptr /* = new double*[NStaves[lay]]*/;   // IB/OB : mChipZ[Stave][chip]
 
   int** mChipStat = nullptr /* = new double*[NStaves[lay]]*/; // IB/OB : mChipStat[Stave][chip]
   int mNoisyPixelNumber[7][48] = { { 0 } };
-
+  unsigned long nHitsTotal = 0;
   int mMaxGeneralAxisRange = -3;  // the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
   int mMinGeneralAxisRange = -12; //
   int mMaxGeneralNoisyAxisRange = 4000;

@@ -500,6 +500,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (auto& digit : digVec[istave][0]) {
         int chip = digit.getChipIndex() % 9;
         mHitPixelID_InStave[istave][0][chip][1000 * digit.getColumn() + digit.getRow()]++;
+        nHitsTotal++;
         if (mTFCount <= mCutTFForSparse) {
           Double_t pixelPos[2] = { 1. * (digit.getColumn() + (1024 * chip)), 1. * digit.getRow() };
           mStaveHitmap[istave]->Fill(pixelPos);
@@ -510,6 +511,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (auto& digit : digVec[istave][ihic]) {
           int chip = ((digit.getChipIndex() - ChipBoundary[mLayer]) % (14 * nHicPerStave[mLayer])) % 14;
           mHitPixelID_InStave[istave][ihic][chip][1000 * digit.getColumn() + digit.getRow()]++;
+          nHitsTotal++;
           int ilink = ihic / (nHicPerStave[mLayer] / 2);
           if (mTFCount <= mCutTFForSparse) {
             if (chip < 7) {
@@ -536,6 +538,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   int totalhit = 0;
+
 #ifdef WITH_OPENMP
   omp_set_num_threads(mNThreads);
 #pragma omp parallel for schedule(dynamic) reduction(+ \
@@ -566,10 +569,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
           if (mDoHitmapFilter == 1) {
             for (auto iter = mHitPixelID_InStave[istave][0][ichip].begin(); iter != mHitPixelID_InStave[istave][0][ichip].end();) {
-              if ((double)iter->second / GBTLinkInfo->statistics.nTriggers < mPhysicalOccupancyIB) { // 40 hits/cm^2 * 5 pixels/hits * 4.5 cm^2 / 1024 / 512 = 1.7e-3/pixel/event for physics
+              if ((double)iter->second / 10 < (double)nHitsTotal / ((ChipBoundary[mLayer + 1] - ChipBoundary[mLayer]) * 1024 * 512)) { // noisy if more than 3x of averaged per chip
                 mHitPixelID_InStave[istave][0][ichip].erase(iter++);
-              } else
+              } else {
                 ++iter;
+              }
             }
           }
 
@@ -607,10 +611,12 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
               if (mDoHitmapFilter == 1) {
                 for (auto iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].end();) {
-                  if ((double)iter->second / GBTLinkInfo->statistics.nTriggers < mPhysicalOccupancyOB) { // 1 hits/cm^2 * 5 pixels/hits * 4.5 cm^2 / 1024 / 512 = 4.3e-5/pixel/event`
+                  if ((double)iter->second / 100 < (double)nHitsTotal / ((ChipBoundary[mLayer + 1] - ChipBoundary[mLayer]) * 1024 * 512)) { // noisy if more than 3x of averaged per chip
                     mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].erase(iter++);
-                  } else
+
+                  } else {
                     ++iter;
+                  }
                 }
               }
               for (auto iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[mLayer] / NSubStave[mLayer]))][ichip].end(); iter++) {
