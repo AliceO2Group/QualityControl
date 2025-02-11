@@ -597,6 +597,8 @@ Propagation can be enabled by adding the following key-value pair to Check/Aggre
 ```
 Using it for Aggregators is discouraged, as the information on which exact Check failed is lost or at least obfuscated.
 
+Also, make sure that the configuration file includes the Bookkeeping URL.
+
 Check results are converted into Flags, which are documented in [O2/DataFormats/QualityControl](https://github.com/AliceO2Group/AliceO2/tree/dev/DataFormats/QualityControl).
 Information about the object validity is preserved, which allows for time-based flagging of good/bad data.
 
