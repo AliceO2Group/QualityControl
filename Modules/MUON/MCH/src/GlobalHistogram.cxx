@@ -669,9 +669,6 @@ void GlobalHistogram::getDeCenterST12(int de, float& xB0, float& yB0, float& xNB
   }
 
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
-  if ((&segment) == nullptr) {
-    return;
-  }
   const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
   o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
@@ -742,9 +739,6 @@ void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0
   }
 
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
-  if ((&segment) == nullptr) {
-    return;
-  }
   const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
   o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
@@ -851,9 +845,6 @@ void GlobalHistogram::getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0
   }
 
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
-  if ((&segment) == nullptr) {
-    return;
-  }
   const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
   o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
   std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();

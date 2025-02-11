@@ -1,47 +1,45 @@
 import datetime
 import logging
-import sys
 import traceback
+from json import JSONDecodeError
 from typing import List, Dict
 
 import dryable
 import requests
 
-
 logger = logging  # default logger
 
 
 class ObjectVersion:
-    '''
+    """
     A version of an object in the CCDB.
 
     In the CCDB an object can have many versions with different validity intervals.
     This class represents a single version.
-    '''
-
+    """
     print_details = False
 
-    def __init__(self, path: str, validFrom, validTo, createdAt, uuid=None, metadata=None):
-        '''
+    def __init__(self, path: str, valid_from, valid_to, created_at, uuid=None, metadata=None):
+        """
         Construct an ObjectVersion.
         :param path: path to the object
         :param uuid: unique id of the object
-        :param validFrom: validity range smaller limit (in ms)
-        :param validTo: validity range bigger limit (in ms)
-        :param createdAt: creation timestamp of the object
-        :param uuid: unique id of the object
+        :param valid_from: validity range smaller limit (in ms)
+        :param valid_to: validity range bigger limit (in ms)
+        :param created_at: creation timestamp of the object
         :param metadata: metadata of the object
-        '''
+        """
+        
         self.path = path
         self.uuid = uuid
-        self.validFrom = validFrom
+        self.valid_from = valid_from
         # precomputed Datetime ("Dt") of the timestamp `validFrom`
-        self.validFromAsDt = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
-        self.validTo = validTo
+        self.valid_from_as_dt = datetime.datetime.fromtimestamp(int(valid_from) / 1000)  # /1000 because we get ms
+        self.valid_to = valid_to
         self.metadata = metadata
-        self.createdAt = createdAt
+        self.created_at = created_at
         # precomputed Datetime ("Dt") of the timestamp `createdAt`
-        self.createdAtDt = datetime.datetime.fromtimestamp(int(createdAt) / 1000)  # /1000 because we get ms
+        self.created_at_as_dt = datetime.datetime.fromtimestamp(int(created_at) / 1000)  # /1000 because we get ms
 
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
@@ -49,17 +47,16 @@ class ObjectVersion:
         else:
             run_number = "None"
 
-        representation = f"Version of object {self.path} created at {self.createdAtDt.strftime('%Y-%m-%d %H:%M:%S')}, valid from" \
-               f"{self.validFromAsDt.strftime('%Y-%m-%d %H:%M:%S')}, uuid {self.uuid}, run {run_number}"
+        rperesentation = f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number}, (uuid {self.uuid})"
         if ObjectVersion.print_details:
             representation += f", metadata: {self.metadata}"
         return representation
 
 
 class Ccdb:
-    '''
+    """
     Class to interact with the CCDB.
-    '''
+    """
     
     counter_deleted: int = 0
     counter_validity_updated: int = 0
@@ -71,8 +68,8 @@ class Ccdb:
         self.url = url
         ObjectVersion.print_details = print_details
 
-    def getObjectsList(self, added_since: int = 0, path: str = "", no_wildcard: bool = False) -> List[str]:
-        '''
+    def get_objects_list(self, added_since: int = 0, path: str = "", no_wildcard: bool = False) -> List[str]:
+        """
         Get the full list of objects in the CCDB that have been created since added_since.
 
         :param no_wildcard: if true, the path for which we get the list is not modified to add `/.*`.
@@ -80,7 +77,7 @@ class Ccdb:
         :param path: the path
         :param added_since: if specified, only return objects added since this timestamp in epoch milliseconds.
         :return A list of strings, each containing a path to an object in the CCDB.
-        '''
+        """
         url_for_all_obj = self.url + '/latest/' + path
         url_for_all_obj += '/' if path else ''
         url_for_all_obj += '' if no_wildcard else '.*'
@@ -90,7 +87,7 @@ class Ccdb:
         r.raise_for_status()
         try:
             json = r.json()
-        except json.decoder.JSONDecodeError as err:
+        except JSONDecodeError as err:
             logger.error(f"JSON decode error: {err}")
             raise
         paths = []
@@ -99,12 +96,12 @@ class Ccdb:
 
         return paths
 
-    def getFullObjectsDetails(self, path: str = "") -> List[Dict]:
-        '''
+    def get_full_objects_details(self, path: str = "") -> List[Dict]:
+        """
         Return the full json of all the objects found in the path.
         :param path:
         :return:
-        '''
+        """
         url_for_all_obj = self.url + '/latest/' + path + '.*'
         logger.debug(f"Ccdb::getFullObjectsDetails -> {url_for_all_obj}")
         headers = {'Accept': 'application/json'}
@@ -112,12 +109,12 @@ class Ccdb:
         r.raise_for_status()
         try:
             json = r.json()
-        except json.decoder.JSONDecodeError as err:
+        except JSONDecodeError as err:
             logger.error(f"JSON decode error: {err}")
             raise
         return json['objects']
 
-    def getVersionsList(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1, metadata: str = "") \
+    def get_versions_list(self, object_path: str, from_ts: str = "", to_ts: str = "", run: int = -1, metadata: str = "") \
             -> List[ObjectVersion]:
         """
         Get the list of all versions for a given object sorted by CreatedAt.
@@ -150,56 +147,56 @@ class Ccdb:
         versions = []
         for object_path in json_result['objects']:
             version = ObjectVersion(path=object_path['path'], uuid=object_path['id'],
-                                    validFrom=object_path['validFrom'], validTo=object_path['validUntil'],
-                                    metadata=object_path, createdAt=object_path['Created'])
+                                    valid_from=object_path['validFrom'], valid_to=object_path['validUntil'],
+                                    metadata=object_path, created_at=object_path['Created'])
             versions.insert(0, version)
-        versions.sort(key=lambda v: v.createdAt, reverse=False)
+        versions.sort(key=lambda v: v.created_at, reverse=False)
         return versions
 
     @dryable.Dryable()
-    def deleteVersion(self, version: ObjectVersion):
-        '''
+    def delete_version(self, version: ObjectVersion):
+        """
         Delete the specified version of an object.
         :param version: The version of the object to delete, as an instance of ObjectVersion.
-        '''
-        url_delete = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
+        """
+        url_delete = self.url + '/' + version.path + '/' + str(version.valid_from) + '/' + version.uuid
         logger.debug(f"Delete version at url {url_delete}")
         headers = {'Connection': 'close'}
         try:
             r = requests.delete(url_delete, headers=headers)
             r.raise_for_status()
             self.counter_deleted += 1
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in deleteVersion: {traceback.format_exc()}")
 
     @dryable.Dryable()
-    def moveVersion(self, version: ObjectVersion, to_path: str):
-        '''
+    def move_version(self, version: ObjectVersion, to_path: str):
+        """
         Move the version to a different path.
         :param version: The version of the object to move, as an instance of ObjectVersion.
         :param to_path: The destination path
-        '''
-        url_move = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
+        """
+        url_move = self.url + '/' + version.path + '/' + str(version.valid_from) + '/' + version.uuid
         logger.debug(f"Move version at url {url_move} to {to_path}")
         headers = {'Connection': 'close', 'Destination': to_path}
         try:
             r = requests.request("MOVE", url_move, headers=headers)
             r.raise_for_status()
             self.counter_deleted += 1
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in moveVersion: {traceback.format_exc()}")
 
     @dryable.Dryable()
-    def updateValidity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
-        '''
+    def update_validity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
+        """
         Update the validity range of the specified version of an object.
         :param version: The ObjectVersion to update.
         :param valid_from: The new "from" validity.
         :param valid_to: The new "to" validity.
         :param metadata: Add or modify metadata
-        '''
+        """
         full_path = self.url + '/' + version.path + '/' + str(valid_from) + '/' + str(valid_to) + '/' + str(version.uuid) + '?'
-        logger.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
+        logger.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.valid_to} to {valid_to}")
         if metadata is not None:
             logger.debug(f"{metadata}")
             for key in metadata:
@@ -212,13 +209,13 @@ class Ccdb:
             r = requests.put(full_path, headers=headers)
             r.raise_for_status()
             self.counter_validity_updated += 1
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in updateValidity: {traceback.format_exc()}")
 
     @dryable.Dryable()
-    def updateMetadata(self, version: ObjectVersion, metadata):
+    def update_metadata(self, version: ObjectVersion, metadata):
         logger.debug(f"update metadata : {metadata}")
-        full_path = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + str(version.uuid) + '?'
+        full_path = self.url + '/' + version.path + '/' + str(version.valid_from) + '/' + str(version.uuid) + '?'
         if metadata is not None:
             for key in metadata:
                 full_path += key + "=" + metadata[key] + "&"
@@ -229,17 +226,17 @@ class Ccdb:
             headers = {'Connection': 'close'}
             r = requests.put(full_path, headers=headers)
             r.raise_for_status()
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logging.error(f"Exception in updateMetadata: {traceback.format_exc()}")
 
     @dryable.Dryable()
-    def putVersion(self, version: ObjectVersion, data):
-        '''
+    def put_version(self, version: ObjectVersion, data):
+        """
         :param version: An ObjectVersion that describes the data to be uploaded.
         :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
         :return A list of ObjectVersion.
-        '''
-        full_path=self.url + "/" + version.path + "/" + str(version.validFrom) + "/" + str(version.validTo) + "/"
+        """
+        full_path= self.url + "/" + version.path + "/" + str(version.valid_from) + "/" + str(version.valid_to) + "/"
         if version.metadata is not None:
             for key in version.metadata:
                 full_path += key + "=" + version.metadata[key] + "/"
@@ -251,17 +248,3 @@ class Ccdb:
         else:
             logger.error(f"Could not post a new version of {version.path}: {r.text}")
 
-def main():
-    logger.basicConfig(level=logger.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    logger.getLogger().setLevel(int(10))
-
-    ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-
-    data = {'somekey': 'somevalue'}
-    metadata = {'RunNumber': '213564', 'test': 'on'}
-    version_info = ObjectVersion(path="qc/TST/MO/repo/test", validFrom=1605091858183, validTo=1920451858183, metadata=metadata)
-    ccdb.putVersion(version_info, data)
-
-
-if __name__ == "__main__":  # to be able to run the test code above when not imported.
-    main()

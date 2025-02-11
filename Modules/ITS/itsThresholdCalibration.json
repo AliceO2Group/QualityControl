@@ -36,7 +36,9 @@
           "query" : "tunestring:ITS/TSTR;runtype:ITS/RUNT;fittype:ITS/FITT;scantype:ITS/SCANT;chipdonestring:ITS/QCSTR;confdbv:ITS/CONFDBV;PixTypString:ITS/PIXTYP"
         },
         "location" : "remote",
-        "taskParameters" : {}
+        "taskParameters" : {
+	   "CalibrationType": "THR"
+	}
       }
     }
 
