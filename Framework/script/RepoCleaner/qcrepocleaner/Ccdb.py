@@ -17,6 +17,7 @@ class ObjectVersion:
     In the CCDB an object can have many versions with different validity intervals.
     This class represents a single version.
     """
+    print_details = False
 
     def __init__(self, path: str, valid_from, valid_to, created_at, uuid=None, metadata=None):
         """
@@ -26,7 +27,9 @@ class ObjectVersion:
         :param valid_from: validity range smaller limit (in ms)
         :param valid_to: validity range bigger limit (in ms)
         :param created_at: creation timestamp of the object
+        :param metadata: metadata of the object
         """
+        
         self.path = path
         self.uuid = uuid
         self.valid_from = valid_from
@@ -41,10 +44,13 @@ class ObjectVersion:
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
             run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
-            return f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number} (uuid {self.uuid})"
         else:
-            return f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')} (uuid {self.uuid}, " \
-                   f"ts {self.valid_from})"
+            run_number = "None"
+
+        rperesentation = f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number}, (uuid {self.uuid})"
+        if ObjectVersion.print_details:
+            representation += f", metadata: {self.metadata}"
+        return representation
 
 
 class Ccdb:
@@ -57,9 +63,10 @@ class Ccdb:
     counter_preserved: int = 0
     set_adjustable_eov: bool = False  # if True, set the metadata adjustableEOV before change validity
 
-    def __init__(self, url):
+    def __init__(self, url, print_details=False):
         logger.info(f"Instantiate CCDB at {url}")
         self.url = url
+        ObjectVersion.print_details = print_details
 
     def get_objects_list(self, added_since: int = 0, path: str = "", no_wildcard: bool = False) -> List[str]:
         """
