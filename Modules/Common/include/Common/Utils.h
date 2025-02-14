@@ -17,9 +17,8 @@
 #define QC_MODULE_COMMON_UTILS_H
 
 #include <string>
-#include <unordered_map>
 
-#include <Framework/Logger.h>
+#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CustomParameters.h"
 
 namespace o2::quality_control_modules::common
@@ -34,24 +33,36 @@ template <typename T>
 T stringToType(const std::string& param)
 {
   T retVal{};
-  if constexpr (std::is_same<int, T>::value) {
+  if constexpr (std::is_same_v<int, T>) {
     retVal = std::stoi(param);
-  } else if constexpr (std::is_same<std::string, T>::value) {
+  } else if constexpr (std::is_same_v<T, long>) {
+    retVal = std::stol(param);
+  } else if constexpr (std::is_same_v<T, long long>) {
+    retVal = std::stoll(param);
+  } else if constexpr (std::is_same_v<T, unsigned int>) {
+    retVal = static_cast<unsigned int>(std::stoul(param));
+  } else if constexpr (std::is_same_v<T, unsigned long>) {
+    retVal = std::stoul(param);
+  } else if constexpr (std::is_same_v<T, unsigned long long>) {
+    retVal = std::stoull(param);
+  } else if constexpr (std::is_same_v<std::string, T>) {
     retVal = param;
-  } else if constexpr (std::is_same<float, T>::value) {
+  } else if constexpr (std::is_same_v<float, T>) {
     retVal = std::stof(param);
-  } else if constexpr (std::is_same<double, T>::value) {
+  } else if constexpr (std::is_same_v<double, T>) {
     retVal = std::stod(param);
-  } else if constexpr (std::is_same<bool, T>::value) {
+  } else if constexpr (std::is_same_v<T, long double>) {
+    retVal = std::stold(param);
+  } else if constexpr (std::is_same_v<bool, T>) {
     if ((param == "true") || (param == "True") || (param == "TRUE") || (param == "1")) {
       retVal = true;
     } else if ((param == "false") || (param == "False") || (param == "FALSE") || (param == "0")) {
       retVal = false;
     } else {
-      LOG(error) << "Cannot parse boolean.";
+      ILOG(Fatal) << "Cannot decode boolean value from param '" << param << "'" << ENDM;
     }
   } else {
-    LOG(error) << "Template type not supported";
+    static_assert(false, "Unsupported type!");
   }
   return retVal;
 }
@@ -67,10 +78,11 @@ T getFromConfig(const quality_control::core::CustomParameters& params, const std
 {
   const auto itParam = params.find(name.data());
   if (itParam == params.end()) {
-    LOGP(warning, "Missing parameter. Please add '{}': '<value>' to the 'taskParameters'. Using default value {}.", name.data(), retVal);
+    ILOG(Info, Trace) << "Default parameter - " << name << ": " << retVal << ENDM;
   } else {
     const auto& param = itParam->second;
-    return internal::stringToType<T>(param);
+    retVal = internal::stringToType<T>(param);
+    ILOG(Info, Trace) << "Custom parameter - " << name << ": " << retVal << ENDM;
   }
   return retVal;
 }
@@ -89,7 +101,7 @@ T getFromExtendedConfig(const quality_control::core::Activity& activity, const q
   if (auto param = params.atOptional(name, activity)) {
     parameter = param.value();
   } else {
-    if constexpr (std::is_same<std::string, T>::value) {
+    if constexpr (std::is_same_v<std::string, T>) {
       parameter = params.atOrDefaultValue(name, retVal);
     } else {
       parameter = params.atOrDefaultValue(name, std::to_string(retVal));
