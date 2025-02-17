@@ -9,35 +9,31 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
 /// \file   ITSTPCmatchingCheck.cxx
 /// \author felix.schlepper@cern.ch
-///
 
 #include "GLO/ITSTPCmatchingCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
 
-#include <Rtypes.h>
-#include <TH1.h>
-#include <TPaveText.h>
-#include <TMath.h>
-#include <TArrow.h>
-#include <TText.h>
-#include <TBox.h>
-#include <TLine.h>
-#include <TLegend.h>
-#include <TFile.h>
-#include <TPolyMarker.h>
+#include "Rtypes.h"
+#include "TH1.h"
+#include "TPaveText.h"
+#include "TMath.h"
+#include "TArrow.h"
+#include "TText.h"
+#include "TBox.h"
+#include "TLine.h"
+#include "TLegend.h"
+#include "TFile.h"
+#include "TPolyMarker.h"
 
-#include <DataFormatsQualityControl/FlagType.h>
-#include <DataFormatsQualityControl/FlagTypeFactory.h>
-
-#include <utility>
-#include <type_traits>
 #include "fmt/format.h"
+#include <utility>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -84,13 +80,17 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           result.updateMetadata("checkPtQuality", "bad");
 
           std::string cBins{ "Bad matching efficiency in: " };
-          for (const auto& [binLow, binUp] : ranges) {
-            float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          if (mLimitRange >= 0 && ranges.size() > mLimitRange) {
+            result.updateMetadata("checkPtBins", "too many bad bins");
+          } else {
+            for (const auto& [binLow, binUp] : ranges) {
+              float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
+              cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+            }
+            cBins.pop_back(); // remove last `,`
+            cBins += " (GeV/c)";
+            result.updateMetadata("checkPtBins", cBins);
           }
-          cBins.pop_back(); // remove last `,`
-          cBins += " (GeV/c)";
-          result.updateMetadata("checkPtBins", cBins);
         }
       }
     }
@@ -122,14 +122,18 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           result.addFlag(FlagTypeFactory::BadTracking(), "Check TPC sectors or ITS staves QC!");
           result.updateMetadata("checkPhiQuality", "bad");
 
-          std::string cBins{ "Bad matching efficiency in: " };
-          for (const auto& [binLow, binUp] : ranges) {
-            float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          if (mLimitRange >= 0 && ranges.size() > mLimitRange) {
+            result.updateMetadata("checkPhiBins", "too many bad bins");
+          } else {
+            std::string cBins{ "Bad matching efficiency in: " };
+            for (const auto& [binLow, binUp] : ranges) {
+              float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
+              cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+            }
+            cBins.pop_back(); // remove last `,`
+            cBins += " (rad)";
+            result.updateMetadata("checkPhiBins", cBins);
           }
-          cBins.pop_back(); // remove last `,`
-          cBins += " (rad)";
-          result.updateMetadata("checkPhiBins", cBins);
         }
       }
     }
@@ -161,13 +165,17 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
         if (etaQual == Quality::Bad) {
           result.updateMetadata("checkEtaQuality", "bad");
 
-          std::string cBins{ "Bad matching efficiency in: " };
-          for (const auto& [binLow, binUp] : ranges) {
-            float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          if (mLimitRange >= 0 && ranges.size() > mLimitRange) {
+            result.updateMetadata("checkEtaBins", "too many bad bins");
+          } else {
+            std::string cBins{ "Bad matching efficiency in: " };
+            for (const auto& [binLow, binUp] : ranges) {
+              float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
+              cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+            }
+            cBins.pop_back(); // remove last `,`
+            result.updateMetadata("checkEtaBins", cBins);
           }
-          cBins.pop_back(); // remove last `,`
-          result.updateMetadata("checkEtaBins", cBins);
         }
       }
     }
@@ -505,13 +513,16 @@ void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
     mMinEta = common::getFromExtendedConfig(activity, mCustomParameters, "minEta", -0.8f);
     mMaxEta = common::getFromExtendedConfig(activity, mCustomParameters, "maxEta", 0.8f);
   }
+
+  mLimitRange = common::getFromExtendedConfig(activity, mCustomParameters, "limitRanges", 5);
 }
 
-std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums)
+std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums) const noexcept
 {
   std::vector<std::pair<int, int>> ranges;
-  if (nums.empty())
+  if (nums.empty()) {
     return ranges;
+  }
 
   int start = nums[0];
   int end = start;
@@ -520,11 +531,11 @@ std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vect
     if (nums[i] == end + 1) {
       end = nums[i];
     } else {
-      ranges.push_back(std::make_pair(start, end));
+      ranges.emplace_back(start, end);
       start = end = nums[i];
     }
   }
-  ranges.push_back(std::make_pair(start, end)); // Add the last range
+  ranges.emplace_back(start, end); // Add the last range
   return ranges;
 }
 

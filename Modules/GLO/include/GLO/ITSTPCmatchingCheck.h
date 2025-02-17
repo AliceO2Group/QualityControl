@@ -9,10 +9,9 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
 /// \file   ITSTPCmatchingCheck.h
+/// \brief  Check for ITS-TPC sync. matching efficiency
 /// \author felix.schlepper@cern.ch
-///
 
 #ifndef QC_MODULE_GLO_GLOITSTPCMATCHINGCHECK_H
 #define QC_MODULE_GLO_GLOITSTPCMATCHINGCHECK_H
@@ -21,22 +20,22 @@
 #include "QualityControl/Quality.h"
 
 #include <vector>
-#include <tuple>
 
 namespace o2::quality_control_modules::glo
 {
 
 /// \brief  Check for ITS-TPC sync. matching efficiency
 /// \author felix.schlepper@cern.ch
-class ITSTPCmatchingCheck : public o2::quality_control::checker::CheckInterface
+class ITSTPCmatchingCheck final : public o2::quality_control::checker::CheckInterface
 {
  public:
-  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  void startOfActivity(const Activity& activity) override;
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) final;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) final;
+  void startOfActivity(const Activity& activity) final;
 
  private:
-  std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums);
+  std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums) const noexcept;
+
   std::shared_ptr<Activity> mActivity;
 
   // Pt
@@ -54,6 +53,9 @@ class ITSTPCmatchingCheck : public o2::quality_control::checker::CheckInterface
   float mThresholdEta{ 0.4 };
   float mMinEta{ -0.8 };
   float mMaxEta{ 0.8 };
+
+  // Other
+  int mLimitRange{ -1 };
 
   ClassDefOverride(ITSTPCmatchingCheck, 1);
 };
