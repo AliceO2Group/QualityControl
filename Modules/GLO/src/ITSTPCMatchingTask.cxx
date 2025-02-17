@@ -32,12 +32,11 @@ namespace o2::quality_control_modules::glo
 
 void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Debug, Devel) << "initialize ITSTPCMatchingTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Devel) << "initialize ITSTPCMatchingTask" << ENDM;
 
   // MC
   mMatchITSTPCQC.setUseMC(getFromConfig(mCustomParameters, "isMC", false));
   mMatchITSTPCQC.setUseTrkPID(getFromConfig(mCustomParameters, "useTrkPID", false));
-
   // ITS track
   mMatchITSTPCQC.setMinPtITSCut(getFromConfig(mCustomParameters, "minPtITSCut", 0.1f));
   mMatchITSTPCQC.setEtaITSCut(getFromConfig(mCustomParameters, "minEtaITSCut", 1.4f));
@@ -54,6 +53,8 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMatchITSTPCQC.setPtCut(getFromConfig(mCustomParameters, "minPtCut", 0.1f));
   mMatchITSTPCQC.setMaxPtCut(getFromConfig(mCustomParameters, "maxPtCut", 20.f));
   mMatchITSTPCQC.setEtaCut(getFromConfig(mCustomParameters, "etaCut", 1.4f));
+  // Sync
+  mIsSync = common::getFromConfig(mCustomParameters, "isSync", false);
   // K0s
   mMatchITSTPCQC.setDoK0QC(getFromConfig(mCustomParameters, "doK0QC", true));
   mMatchITSTPCQC.setMaxK0Eta(getFromConfig(mCustomParameters, "maxK0Eta", 0.8f));
@@ -92,7 +93,7 @@ void ITSTPCMatchingTask::endOfCycle()
   mMatchITSTPCQC.finalize();
 
   // Sync Mode
-  if (common::getFromConfig(mCustomParameters, "isSync", false)) {
+  if (mIsSync) {
     auto makeRatio = [](TEfficiency* eff) {
       std::string name = eff->GetName();
       name += "_Hist";

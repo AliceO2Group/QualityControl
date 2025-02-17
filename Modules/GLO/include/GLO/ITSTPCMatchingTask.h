@@ -50,6 +50,7 @@ class ITSTPCMatchingTask final : public TaskInterface
  private:
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
+  bool mIsSync{ false };
   std::unique_ptr<common::TH1FRatio> mEffPt;
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
