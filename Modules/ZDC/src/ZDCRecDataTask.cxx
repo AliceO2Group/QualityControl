@@ -1,4 +1,4 @@
-﻿// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -564,7 +564,7 @@ void ZDCRecDataTask::initHisto()
   }
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC_cut_ZEM", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
-
+  
   // Begin Stefan addition
   // Here we set the parameters for the configuration of the logic which selects the central events
   if (auto param = mCustomParameters.find("CENTRAL_EVENT_CONFIG"); param != mCustomParameters.end()) {

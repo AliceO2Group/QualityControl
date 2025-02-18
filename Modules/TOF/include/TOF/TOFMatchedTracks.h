@@ -125,6 +125,10 @@ class TOFMatchedTracks final : public TaskInterface
   TH2F* mDTimeTrk[18] = {};
   TH2F* mDTimeTrkTPC[18] = {};
   TH2F* mDTimeTrkTRD[18] = {};
+  TH1F* mDeltaTwMC;
+  TH2F* mExpTimesPiMC[matchType::SIZE] = {};
+  TH2F* mExpTimesKaMC[matchType::SIZE] = {};
+  TH2F* mExpTimesPrMC[matchType::SIZE] = {};
 
   TEfficiency* mEffPt[matchType::SIZE] = {};
   TEfficiency* mEffEta[matchType::SIZE] = {};

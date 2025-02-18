@@ -10,7 +10,8 @@
       },
       "Activity": {
         "number": "42",
-        "type": "NONE"
+        "type": "PHYSICS",
+        "beamType" : "PbPb",     "": "Beam type: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON` "
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -67,6 +68,57 @@
           "plotWithTextMessage": "",
           "textMessage": "" 
 
+        },
+	"extendedCheckParameters": {
+                "default": {
+                        "default": {
+                                          "maxcluoccL0": "5",
+          				  "maxcluoccL1": "3",
+          				  "maxcluoccL2": "3",
+          				  "maxcluoccL3": "0.3",
+          				  "maxcluoccL4": "0.3",
+          				  "maxcluoccL5": "0.2",
+          				  "maxcluoccL6": "0.2"
+                        }
+                },
+                "PHYSICS": {
+                        "default": {
+					  "maxcluoccL0": "5",
+                                          "maxcluoccL1": "3",
+                                          "maxcluoccL2": "3",
+                                          "maxcluoccL3": "0.3",
+                                          "maxcluoccL4": "0.3",
+                                          "maxcluoccL5": "0.2",
+                                          "maxcluoccL6": "0.2"
+                        },
+                        "PROTON-PROTON": {
+				          "maxcluoccL0": "5",
+                                          "maxcluoccL1": "3",
+                                          "maxcluoccL2": "3",
+                                          "maxcluoccL3": "0.3",
+                                          "maxcluoccL4": "0.3",
+                                          "maxcluoccL5": "0.2",
+                                          "maxcluoccL6": "0.2"
+                        },
+                        "Pb-Pb": {
+				          "maxcluoccL0": "65",
+                                          "maxcluoccL1": "35",
+                                          "maxcluoccL2": "25",
+                                          "maxcluoccL3": "1",
+                                          "maxcluoccL4": "1",
+                                          "maxcluoccL5": "1",
+                                          "maxcluoccL6": "1"
+                        }
+                },
+                "COSMICS": {
+			                  "maxcluoccL0": "5",
+                                          "maxcluoccL1": "3",
+                                          "maxcluoccL2": "3",
+                                          "maxcluoccL3": "0.3",
+                                          "maxcluoccL4": "0.3",
+                                          "maxcluoccL5": "0.2",
+                                          "maxcluoccL6": "0.2"
+                        }
         },
         "dataSource": [
           {

@@ -73,15 +73,12 @@ class PreclustersPostProcessing : public PostProcessingInterface
   static std::string clusterChargeSourceName() { return "clcharge"; }
   static std::string clusterSizeSourceName() { return "clsize"; }
 
-  // PreclustersConfig mConfig;
-  int64_t mRefTimeStamp{ 0 };
   bool mFullHistos{ false };
 
   PostProcessingConfigMCH mConfig;
 
   // CCDB object accessors
   std::map<std::string, CcdbObjectHelper> mCcdbObjects;
-  std::map<std::string, CcdbObjectHelper> mCcdbObjectsRef;
 
   // Hit rate histograms ===============================================
 

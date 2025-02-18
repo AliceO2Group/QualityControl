@@ -28,6 +28,16 @@ class TH2D;
 
 using namespace o2::quality_control::core;
 
+enum {
+  VCASN,
+  ITHR,
+  THR,
+  TOT,
+  pixel_noise,
+  pixel_dead,
+  pixel_ineff
+};
+
 namespace o2::quality_control_modules::its
 {
 
@@ -105,10 +115,11 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TString sScanTypes[3] = { "VCASN", "ITHR", "THR" };
   TString sCalibrationType[3] = { "Noisy", "Dead", "Ineff" };
   TString sBarrelType[3] = { "IB", "ML", "OL" };
+  int CalibType = 0; // THR
   Int_t nChips[3] = { 9, 112, 196 };
   Int_t nStaves[3] = { 48, 54, 90 };
   Int_t nXmax[3] = { 130, 100, 450 };
-  Int_t nZmax[3] = { 130, 110, 300 };
+  Int_t nZmax[3] = { 130, 110, 150 };
   Int_t nZmin[3] = { 20, 20, 30 };
 
   TString sXtitles[3] = { "DAC", "DAC", "e" };

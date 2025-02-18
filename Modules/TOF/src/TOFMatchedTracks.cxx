@@ -45,6 +45,10 @@ namespace o2::quality_control_modules::tof
 
 TOFMatchedTracks::~TOFMatchedTracks()
 {
+  if (mUseMC) {
+    delete mDeltaTwMC;
+  }
+
   for (int i = 0; i < matchType::SIZE; ++i) {
     delete mMatchedTracksPt[i];
     delete mMatchedTracksEta[i];
@@ -52,6 +56,9 @@ TOFMatchedTracks::~TOFMatchedTracks()
     if (mUseMC) {
       delete mFakeMatchedTracksPt[i];
       delete mFakeMatchedTracksEta[i];
+      delete mExpTimesPiMC[i];
+      delete mExpTimesKaMC[i];
+      delete mExpTimesPrMC[i];
     }
     delete mInTracksPt[i];
     delete mInTracksEta[i];
@@ -142,6 +149,11 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   std::array<std::string, 3> title{ "TPC", "ITSTPC-ITSTPCTRD", "TPCTRD" };
+
+  if (mUseMC) {
+    mDeltaTwMC = new TH1F("mDeltaTwMC", "all types;t_{TOF} - t^{0}_{MC} - t_{geant} (ps)", 100, -500, 500);
+  }
+
   for (int i = 0; i < matchType::SIZE; ++i) {
     mInTracksPt[i] = new TH1F(Form("mInTracksPt_%s", title[i].c_str()), Form("mInTracksPt (matchType: %s); #it{p}_{T}; counts", title[i].c_str()), 100, 0.f, 20.f);
     mInTracksEta[i] = new TH1F(Form("mInTracksEta_%s", title[i].c_str()), Form("mInTracksEta (matchType: %s); #eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
@@ -154,6 +166,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
       mFakeMatchedTracksEta[i] = new TH1F(Form("mFakeMatchedTracksEta_%s", title[i].c_str()), Form("mFakeMatchedTracksEta (matchType: %s); #eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
       mFakeFractionTracksPt[i] = new TEfficiency(Form("mFakeFractionPt_%s", title[i].c_str()), Form("Fraction of fake matches vs Pt (matchType: %s); #it{p}_{T}; Eff", title[i].c_str()), 100, 0.f, 20.f);
       mFakeFractionTracksEta[i] = new TEfficiency(Form("mFakeFractionEta_%s", title[i].c_str()), Form("Fraction of fake matches vs Eta (matchType: %s); #eta; Eff", title[i].c_str()), 100, -1.0f, 1.0f);
+      mExpTimesPiMC[i] = new TH2F(Form("mExpTimesPiMC_%s", title[i].c_str()), ";p_{T} (GeV/c);t_{geant} - t_{exp}^{#pi} (ps)", 10, 0, 2, 100, -1000, 1000);
+      mExpTimesKaMC[i] = new TH2F(Form("mExpTimesKaMC_%s", title[i].c_str()), ";p_{T} (GeV/c);t_{geant} - t_{exp}^{K} (ps)", 10, 0, 2, 100, -1000, 1000);
+      mExpTimesPrMC[i] = new TH2F(Form("mExpTimesPrMC_%s", title[i].c_str()), ";p_{T} (GeV/c);t_{geant} - t_{exp}^{p} (ps)", 10, 0, 2, 100, -1000, 1000);
     }
     mEffPt[i] = new TEfficiency(Form("mEffPt_%s", title[i].c_str()), Form("Efficiency vs Pt (matchType: %s); #it{p}_{T}; Eff", title[i].c_str()), 100, 0.f, 20.f);
     mEffEta[i] = new TEfficiency(Form("mEffEta_%s", title[i].c_str()), Form("Efficiency vs Eta (matchType: %s); #eta; Eff", title[i].c_str()), 100, -1.f, 1.f);
@@ -181,6 +196,10 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
+  if (mUseMC) {
+    getObjectsManager()->startPublishing(mDeltaTwMC);
+  }
+
   if (mSrc[GID::Source::TPCTOF] == 1) {
     getObjectsManager()->startPublishing(mInTracksPt[matchType::TPC]);
     getObjectsManager()->startPublishing(mInTracksEta[matchType::TPC]);
@@ -193,6 +212,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mFakeMatchedTracksEta[matchType::TPC]);
       getObjectsManager()->startPublishing(mFakeFractionTracksPt[matchType::TPC]);
       getObjectsManager()->startPublishing(mFakeFractionTracksEta[matchType::TPC]);
+      getObjectsManager()->startPublishing(mExpTimesPiMC[matchType::TPC]);
+      getObjectsManager()->startPublishing(mExpTimesKaMC[matchType::TPC]);
+      getObjectsManager()->startPublishing(mExpTimesPrMC[matchType::TPC]);
     }
     getObjectsManager()->startPublishing(mEffPt[matchType::TPC]);
     getObjectsManager()->startPublishing(mEffEta[matchType::TPC]);
@@ -219,6 +241,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mFakeMatchedTracksEta[matchType::TPCTRD]);
       getObjectsManager()->startPublishing(mFakeFractionTracksPt[matchType::TPCTRD]);
       getObjectsManager()->startPublishing(mFakeFractionTracksEta[matchType::TPCTRD]);
+      getObjectsManager()->startPublishing(mExpTimesPiMC[matchType::TPCTRD]);
+      getObjectsManager()->startPublishing(mExpTimesKaMC[matchType::TPCTRD]);
+      getObjectsManager()->startPublishing(mExpTimesPrMC[matchType::TPCTRD]);
     }
     getObjectsManager()->startPublishing(mEffPt[matchType::TPCTRD]);
     getObjectsManager()->startPublishing(mEffEta[matchType::TPCTRD]);
@@ -245,6 +270,9 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mFakeMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]);
       getObjectsManager()->startPublishing(mFakeFractionTracksPt[matchType::ITSTPC_ITSTPCTRD]);
       getObjectsManager()->startPublishing(mFakeFractionTracksEta[matchType::ITSTPC_ITSTPCTRD]);
+      getObjectsManager()->startPublishing(mExpTimesPiMC[matchType::ITSTPC_ITSTPCTRD]);
+      getObjectsManager()->startPublishing(mExpTimesKaMC[matchType::ITSTPC_ITSTPCTRD]);
+      getObjectsManager()->startPublishing(mExpTimesPrMC[matchType::ITSTPC_ITSTPCTRD]);
     }
     getObjectsManager()->startPublishing(mEffPt[matchType::ITSTPC_ITSTPCTRD]);
     getObjectsManager()->startPublishing(mEffEta[matchType::ITSTPC_ITSTPCTRD]);
@@ -356,6 +384,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         if (lbl.isFake()) {
           mFakeMatchedTracksPt[matchType::TPC]->Fill(trk.getPt());
           mFakeMatchedTracksEta[matchType::TPC]->Fill(trk.getEta());
+        } else {
+          mDeltaTwMC->Fill(matchTOF.getSignal() - matchTOF.getT0true() - matchTOF.getTgeant() * 1E3);
+          mExpTimesPiMC[matchType::TPC]->Fill(trk.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(2));
+          mExpTimesKaMC[matchType::TPC]->Fill(trk.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(3));
+          mExpTimesPrMC[matchType::TPC]->Fill(trk.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(4));
         }
       }
     }
@@ -418,6 +451,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         if (lbl.isFake()) {
           mFakeMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt());
           mFakeMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta());
+        } else {
+          mDeltaTwMC->Fill(matchTOF.getSignal() - matchTOF.getT0true() - matchTOF.getTgeant() * 1E3);
+          mExpTimesPiMC[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(2));
+          mExpTimesKaMC[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(3));
+          mExpTimesPrMC[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(4));
         }
       }
     }
@@ -458,6 +496,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         if (lbl.isFake()) {
           mFakeMatchedTracksPt[matchType::TPCTRD]->Fill(trk.getPt());
           mFakeMatchedTracksEta[matchType::TPCTRD]->Fill(trk.getEta());
+        } else {
+          mDeltaTwMC->Fill(matchTOF.getSignal() - matchTOF.getT0true() - matchTOF.getTgeant() * 1E3);
+          mExpTimesPiMC[matchType::TPCTRD]->Fill(trk.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(2));
+          mExpTimesKaMC[matchType::TPCTRD]->Fill(trk.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(3));
+          mExpTimesPrMC[matchType::TPCTRD]->Fill(trk.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(4));
         }
       }
     }
@@ -522,6 +565,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         if (lbl.isFake()) {
           mFakeMatchedTracksPt[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt());
           mFakeMatchedTracksEta[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getEta());
+        } else {
+          mDeltaTwMC->Fill(matchTOF.getSignal() - matchTOF.getT0true() - matchTOF.getTgeant() * 1E3);
+          mExpTimesPiMC[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(2));
+          mExpTimesKaMC[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(3));
+          mExpTimesPrMC[matchType::ITSTPC_ITSTPCTRD]->Fill(trkTPC.getPt(), matchTOF.getTgeant() * 1E3 - matchTOF.getLTIntegralOut().getTOF(4));
         }
       }
     }
@@ -839,6 +887,10 @@ void TOFMatchedTracks::reset()
 {
   // clean all the monitor objects here
 
+  if (mUseMC) {
+    mDeltaTwMC->Reset();
+  }
+
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   for (int i = 0; i < matchType::SIZE; ++i) {
     mMatchedTracksPt[i]->Reset();
@@ -847,6 +899,9 @@ void TOFMatchedTracks::reset()
     if (mUseMC) {
       mFakeMatchedTracksPt[i]->Reset();
       mFakeMatchedTracksEta[i]->Reset();
+      mExpTimesPiMC[i]->Reset();
+      mExpTimesKaMC[i]->Reset();
+      mExpTimesPrMC[i]->Reset();
     }
     mInTracksPt[i]->Reset();
     mInTracksEta[i]->Reset();

@@ -252,6 +252,8 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     }
 
     if (((string)mo->getName()).find("TrailerCount") != std::string::npos) {
+
+      auto activity = mo->getActivity();
       auto* h = dynamic_cast<TH2I*>(mo->getObject());
       if (h == nullptr) {
         ILOG(Error, Support) << "could not cast TrailerCount to TH2I*" << ENDM;
@@ -259,7 +261,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       }
       result.set(Quality::Good);
       result.addMetadata("CheckROFRate", "good");
-      expectedROFperOrbit = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "expectedROFperOrbit", expectedROFperOrbit);
+      expectedROFperOrbit = stoi(mCustomParameters.at("expectedROFperOrbit", activity));
       if (h->Integral(1, 432, 1, h->GetYaxis()->FindBin(expectedROFperOrbit) - 1) > 0 || h->Integral(1, 432, h->GetYaxis()->FindBin(expectedROFperOrbit) + 1, h->GetYaxis()->GetLast()) > 0) {
         result.set(Quality::Bad);
         result.updateMetadata("expectedROFperOrbit", "bad");

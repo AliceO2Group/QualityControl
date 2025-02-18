@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-import logging
 import argparse
+import logging
+
 import dryable
+
 from qcrepocleaner.Ccdb import Ccdb
 from qcrepocleaner.binUtils import prepare_main_logger
 
@@ -44,9 +46,9 @@ def run(args):
             logging.debug(f"line : '{stripped_line}'")
 
             # we have to make sure we take all objects in the subfolders --> we add `/.*` at the end
-            versions = ccdb.getVersionsList(stripped_line + "/.*", "", "")
+            versions = ccdb.get_versions_list(stripped_line + "/.*", "", "")
             # we also want to have all the versions at the root
-            versions += ccdb.getVersionsList(stripped_line, "", "")
+            versions += ccdb.get_versions_list(stripped_line, "", "")
 
             logging.info("Here are the objects that are going to be deleted: ")
             for v in versions:
@@ -67,14 +69,14 @@ def run(args):
                 if args.one_by_one:
                     answer = input("  Continue? y/n\n  ")
                     if answer.lower() in ["y", "yes"]:
-                        ccdb.deleteVersion(v)
+                        ccdb.delete_version(v)
                         nb_deleted += 1
                     elif answer.lower() in ["n", "no"]:
                         logging.info("   skipping")
                     else:
                         logging.error("   wrong input, skipping")
                 else:
-                    ccdb.deleteVersion(v)
+                    ccdb.delete_version(v)
                     nb_deleted += 1
 
             logging.info(f"Deleted items: {nb_deleted}")

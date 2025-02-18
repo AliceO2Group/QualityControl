@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-import logging
 import argparse
-import dryable
-import time
-from qcrepocleaner.Ccdb import Ccdb, ObjectVersion
-from qcrepocleaner.binUtils import prepare_main_logger
 import csv
+import logging
+
+import dryable
+
+from qcrepocleaner.Ccdb import Ccdb
+from qcrepocleaner.binUtils import prepare_main_logger
 
 
 def parseArgs():
@@ -28,6 +29,10 @@ def parseArgs():
     parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be deleted')
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
+    parser.add_argument('--metadata', dest='metadata', action='store', default="",
+                        help='Delete only versions matching these metadata. Format: "[/key=value]*"')
+    parser.add_argument('--print-versions-details', dest='print_versions_details', action='store_true', default=False,
+                        help='Print extra details about the versions if enabled..')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -35,7 +40,7 @@ def parseArgs():
 
 
 def run(args):
-    ccdb = Ccdb(args.url)
+    ccdb = Ccdb(args.url, args.print_versions_details)
 
     total_deleted = 0
     total_planned = 0
@@ -47,7 +52,7 @@ def run(args):
         run_number = row["runNumber"]
         logging.info(f"Run : {run_number}")
 
-        versions = ccdb.getVersionsList(args.path + "/.*", "", "", run_number)
+        versions = ccdb.get_versions_list(args.path + "/.*", "", "", run_number, metadata=args.metadata)
         logging.info("Here are the objects that are going to be deleted: ")
         for v in versions:
             logging.info(v)
@@ -68,14 +73,14 @@ def run(args):
             if args.one_by_one:
                 answer = input("  Continue? y/n\n  ")
                 if answer.lower() in ["y", "yes"]:
-                    ccdb.deleteVersion(v)
+                    ccdb.delete_version(v)
                     nb_deleted += 1
                 elif answer.lower() in ["n", "no"]:
                     logging.info("   skipping")
                 else:
                     logging.error("   wrong input, skipping")
             else:
-                ccdb.deleteVersion(v)
+                ccdb.delete_version(v)
                 nb_deleted += 1
 
         logging.info(f"Deleted items: {nb_deleted}")
@@ -104,7 +109,7 @@ def main():
     #     from_ts = current_timestamp - 60 * 1000
     #     to_ts = current_timestamp
     #     version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
-    #     ccdb.putVersion(version=version_info, data=data)
+    #     ccdb.put_version(version=version_info, data=data)
 
     # Parse arguments
     args = parseArgs()
