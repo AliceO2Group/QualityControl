@@ -10,11 +10,12 @@
         "maxObjectSize": "20000000"
       },
       "Activity": {
-        "number": "48",
-        "type": "2"
+        "number": "",
+        "type": "",
+        "beamType": "PbPb"
       },
       "monitoring": {
-        "url": "infologger:///debug?qc"
+        "url": "no-op://"
       },
       "consul": {
         "url": ""
@@ -25,6 +26,10 @@
       "infologger": {
         "filterDiscardDebug": "false",
         "filterDiscardLevel": "0"
+      },
+      "postprocessing": {
+        "periodSeconds": 0.01,
+        "matchAnyRunNumber": "true"
       }
     },
     "tasks": {
@@ -33,35 +38,31 @@
         "className": "o2::quality_control_modules::glo::ITSTPCMatchingTask",
         "moduleName": "QcGLO",
         "detectorName": "GLO",
-        "cycleDurationSeconds": "60",
+        "cycleDurationSeconds": "1",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query_comment": "checking every matched track",
-          "query": "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackITS:ITS/TRACKS/0;trackITSROF:ITS/ITSTrackROF/0;trackITSClIdx:ITS/TRACKCLSID/0;alpparITS:ITS/ALPIDEPARAM/0?lifetime=condition&ccdb-path=ITS/Config/AlpideParam"
+          "query": "tofcluster:TOF/CLUSTERS/0;matchITSTPCTRDTOF:TOF/MTC_ITSTPCTRD/0;matchTPCTRDTOF/TOF/MTC_TPCTRD/0;matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trigTPCTRD:TRD/TRGREC_TPC/0;trackTPCTRD:TRD/MATCH_TPC/0;trigITSTPCTRD:TRD/TRGREC_ITSTPC/0;trackITSTPCTRD:TRD/MATCH_ITSTPC/0;p2decay3body:GLO/PVTX_3BODYREFS/0;decay3body:GLO/DECAYS3BODY/0;decay3bodyIdx:GLO/DECAYS3BODY_IDX/0;p2cascs:GLO/PVTX_CASCREFS/0;cascs:GLO/CASCS/0;cascsIdx:GLO/CASCS_IDX/0;p2v0s:GLO/PVTX_V0REFS/0;v0s:GLO/V0S/0;v0sIdx:GLO/V0S_IDX/0;pvtx_tref:GLO/PVTX_TRMTCREFS/0;pvtx_trmtc:GLO/PVTX_TRMTC/0;pvtx:GLO/PVTX/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackITS:ITS/TRACKS/0;trackITSROF:ITS/ITSTrackROF/0;trackITSClIdx:ITS/TRACKCLSID/0;alpparITS:ITS/ALPIDEPARAM/0?lifetime=condition&ccdb-path=ITS/Config/AlpideParam;SVParam:GLO/SVPARAM/0?lifetime=condition&ccdb-path=GLO/Config/SVertexerParam;clusTPC:TPC/CLUSTERNATIVE;clusTPCshmap:TPC/CLSHAREDMAP/0;trigTPC:TPC/TRIGGERWORDS/0;clusTPCoccmap:TPC/TPCOCCUPANCYMAP/0"
         },
         "taskParameters": {
           "GID": "ITS-TPC,ITS",
           "verbose": "false",
-          "minPtCut": "0.1f",
-          "etaCut": "1.4f",
+          "doK0QC": "true",
           "isSync": "true",
-          "minNTPCClustersCut": "60",
-          "minDCACut": "100.f",
-          "minDCACutY": "10.f"
+          "trackSourcesK0": "ITS,TPC,ITS-TPC,ITS-TPC-TOF,TPC-TOF,TPC-TRD,ITS-TPC-TRD,TPC-TRD-TOF,ITS-TPC-TOF,ITS-TPC-TRD-TOF"
         },
         "grpGeomRequest": {
           "geomRequest": "None",
-          "askGRPECS": "false",
-          "askGRPLHCIF": "false",
+          "askGRPECS": "true",
+          "askGRPLHCIF": "true",
           "askGRPMagField": "true",
           "askMatLUT": "false",
           "askTime": "false",
           "askOnceAllButField": "true",
           "needPropagatorD": "false"
         },
-        "saveObjectsToFile": "ITSTPCmatched.root",
-        "": "For debugging, path to the file where to save. If empty or missing it won't save."
+        "saveObjectsToFile": "ITSTPCmatched.root"
       }
     },
     "checks": {
@@ -78,7 +79,9 @@
             "MOs": [
               "mFractionITSTPCmatch_ITS_Hist",
               "mFractionITSTPCmatchPhi_ITS_Hist",
-              "mFractionITSTPCmatchEta_ITS_Hist"
+              "mFractionITSTPCmatchEta_ITS_Hist",
+              "mK0MassVsPtVsOcc_Cycle_py",
+              "mK0MassVsPtVsOcc_Integral_py"
             ]
           }
         ],
@@ -86,11 +89,9 @@
           "default": {
             "default": {
               "showPt": "true",
-              "thresholdPt": "0.5",
+              "showEta": "true",
               "showPhi": "true",
-              "thresholdPhi": "0.3",
-              "showEta": "1",
-              "thresholdEta": "0.4"
+              "showK0s": "true"
             }
           }
         }
