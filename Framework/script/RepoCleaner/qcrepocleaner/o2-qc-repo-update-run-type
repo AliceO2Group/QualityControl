@@ -26,6 +26,9 @@ def parse_args():
     parser.add_argument('--runs-csv-file', dest='runs_file', action='store', help='A csv file with a header and the '
                                                                                   'columns `runNumber` and `runType`',
                         required=True)
+    parser.add_argument('--fallback-runtype', dest='fallback_runtype', action='store', help=' default to this run type '
+                           'if a run is not found in the csv file. If this argument is not specified, the unknown runs are simply skipped.',
+                           default=None)
     parser.add_argument('--print-list', action='store_true', help='Only print the list of objects that would be updated')
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should be really careful with that.')
     parser.add_argument('--path-no-subdir', action='store_true', default=False, help='Set to true if the '
@@ -80,11 +83,18 @@ def run(args):
             logging.debug(f"{version} misses metadata RunNumber")
             continue
         run_number = version.metadata["RunNumber"]
+
         if version.metadata["RunNumber"] not in mapping_run_types:
             logging.debug(f"{version} : No mapping for run {version.metadata['RunNumber']}")
-            continue
+            if not args.fallback_runtype:
+                logging.debug(f"    fSkipping version as there is fallback_runtype is not set. ")
+                continue
+            else:
+                logging.debug(f"    fUsing fallback_runtype instead ({args.fallback_runtype})")
+                run_type = args.fallback_runtype
+        else:
+            run_type = mapping_run_types[run_number]
 
-        run_type = mapping_run_types[run_number]
         old_run_type = version.metadata['RunType'] if 'RunType' in version.metadata else "null"
         if old_run_type != run_type:
             logging.info(f"Ready to update {version} : \"{old_run_type}\" -> \"{run_type}\"")
