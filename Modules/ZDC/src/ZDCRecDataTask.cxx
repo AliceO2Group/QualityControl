@@ -1,4 +1,4 @@
-﻿// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
+// Copyright 2019-2022 CERN and copyright holders of ALICE O2.
 // See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
 // All rights not expressly granted are reserved.
 //
@@ -197,6 +197,15 @@ void ZDCRecDataTask::setBinHisto2D(int numBinX, double minBinX, double maxBinX, 
   setMinBinY(minBinY);
   setMaxBinY(maxBinY);
 }
+
+// Begin Stefan addition
+// CENTRAL_EVENT_CONFIG -> tdcLimit [ns] ; centraleventconfig [discrete value]
+void ZDCRecDataTask::SetConfigCentralEvent(float tdcLimit, int centraleventconfig)
+{
+  settdcLimit(tdcLimit);
+  setcentraleventconfigvalue(centraleventconfig);
+}
+// End Stefan addition
 
 void ZDCRecDataTask::dumpHistoStructure()
 {
@@ -464,6 +473,7 @@ void ZDCRecDataTask::initHisto()
     setBinHisto2D(100, -10.5, 10.5, 100, -10.5, 10.5);
   }
   addNewHisto("TDC-DIFF", "h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V", "TDC Time (ns) TDC ZNC + ZNA vs ZNC - ZNA", "TDCV", "ZNC-ZNA", "TDCV", "ZNC+ZNA", 0);
+  addNewHisto("TDC-DIFF", "h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V_cut", "TDC Time (ns) TDC ZNC + ZNA vs ZNC - ZNA with cut on ZEMs", "TDCV", "ZNC-ZNA", "TDCV", "ZNC+ZNA", 0);
 
   if (auto param = mCustomParameters.find("TDCAvsTDCT"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - TDCAvsTDCT: " << param->second << ENDM;
@@ -554,6 +564,17 @@ void ZDCRecDataTask::initHisto()
   }
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC_cut_ZEM", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
+
+  // Begin Stefan addition
+  // Here we set the parameters for the configuration of the logic which selects the central events
+  if (auto param = mCustomParameters.find("CENTRAL_EVENT_CONFIG"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - CENTRAL_EVENT_CONFIG: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    SetConfigCentralEvent(atof(tokenString.at(0).c_str()), atoi(tokenString.at(1).c_str()));
+  } else {
+    SetConfigCentralEvent(0.0, 0);
+  }
+  // End Stefan addition
 }
 
 bool ZDCRecDataTask::add1DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, int bin)
@@ -600,6 +621,12 @@ bool ZDCRecDataTask::add2DHisto(std::string typeH, std::string name, std::string
   h2d.ch1 = ch1;
   h2d.typech2 = typeCh2;
   h2d.ch2 = ch2;
+  // Begin Stefan addition
+  if (typeH == "CENTR_ZNA") {
+    // h2d.histo->GetXaxis()->SetTitle("test2");
+    // h2d.histo->GetYaxis()->SetTitle("test2");
+  }
+  // End Stefan Addition
   int ih = (int)mHisto2D.size();
   mHisto2D.push_back(h2d);
   h2d.typeh.clear();
@@ -800,10 +827,20 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
         int znac_id = getIdTDCch("TDCV", "ZNAC");
         auto nhit_zncc = mEv.NtdcV(zncc_id);
         auto nhit_znac = mEv.NtdcV(znac_id);
-        if ((mEv.NtdcA(zncc_id) == nhit_zncc && nhit_zncc > 0) && (mEv.NtdcA(znac_id) == nhit_znac && nhit_znac > 0)) {
-          auto sum = mEv.tdcV(zncc_id, 0) + mEv.tdcV(znac_id, 0);
-          auto diff = mEv.tdcV(zncc_id, 0) - mEv.tdcV(znac_id, 0);
-          mHisto2D.at(i).histo->Fill(diff, sum);
+        if (mHisto2D.at(i).histo->GetName() == TString::Format("h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V")) {
+          if ((mEv.NtdcA(zncc_id) == nhit_zncc && nhit_zncc > 0) && (mEv.NtdcA(znac_id) == nhit_znac && nhit_znac > 0)) {
+            auto sum = mEv.tdcV(zncc_id, 0) + mEv.tdcV(znac_id, 0);
+            auto diff = mEv.tdcV(zncc_id, 0) - mEv.tdcV(znac_id, 0);
+            mHisto2D.at(i).histo->Fill(diff, sum);
+          }
+        }
+        if (mHisto2D.at(i).histo->GetName() == TString::Format("h_TDC_ZNC_DIFF_ZNA_ZNC_SUM_ZNA_V_cut")) {
+          // if (( (float)o2::zdc::TDCZEM2 > -2.5 && (float)o2::zdc::TDCZEM2 < 2.5 ) && ( (float)o2::zdc::TDCZEM1 > -2.5 && (float)o2::zdc::TDCZEM1 < 2.5 ) ){
+          if ((mEv.NtdcA(zncc_id) == nhit_zncc && nhit_zncc > 0) && (mEv.NtdcA(znac_id) == nhit_znac && nhit_znac > 0) && ((float)mEv.tdcV(5, 0) > -12.5 && (float)mEv.tdcV(5, 0) < 12.5) && ((float)mEv.tdcV(4, 0) > -12.5 && (float)mEv.tdcV(4, 0) < 12.5)) {
+            auto sum = mEv.tdcV(zncc_id, 0) + mEv.tdcV(znac_id, 0);
+            auto diff = mEv.tdcV(zncc_id, 0) - mEv.tdcV(znac_id, 0);
+            mHisto2D.at(i).histo->Fill(diff, sum);
+          }
         }
       }
       if (mHisto2D.at(i).typeh == "TDC_T_A" && mHisto2D.at(i).typech1 == "TDCV" && mHisto2D.at(i).typech2 == "TDCA") {
@@ -838,8 +875,7 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           mEv.centroidZNA(x, y);
           mHisto2D.at(i).histo->Fill(x, y);
         } else {
-          // if (( (float)o2::zdc::TDCZEM2 > -2.5 && (float)o2::zdc::TDCZEM2 < 2.5 ) && ( (float)o2::zdc::TDCZEM1 > -2.5 && (float)o2::zdc::TDCZEM1 < 2.5 ) ){
-          if (((float)mEv.tdcV(5, 0) > -2.5 && (float)mEv.tdcV(5, 0) < 2.5) && ((float)mEv.tdcV(4, 0) > -2.5 && (float)mEv.tdcV(4, 0) < 2.5)) {
+          if (IsEventCentral()) { // STEFAN
             mEv.centroidZNA(x, y);
             mHisto2D.at(i).histo->Fill(x, y);
           }
@@ -850,7 +886,7 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           mEv.centroidZNC(x, y);
           mHisto2D.at(i).histo->Fill(x, y);
         } else {
-          if (((float)mEv.tdcV(5, 0) > -2.5 && (float)mEv.tdcV(5, 0) < 2.5) && ((float)mEv.tdcV(4, 0) > -2.5 && (float)mEv.tdcV(4, 0) < 2.5)) {
+          if (IsEventCentral()) { // STEFAN
             mEv.centroidZNC(x, y);
             mHisto2D.at(i).histo->Fill(x, y);
           }
@@ -860,6 +896,22 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
   }
   return 0;
 }
+
+// Begin Stefan addition
+bool ZDCRecDataTask::IsEventCentral()
+{
+  if (fcentraleventconfigvalue == 1) {
+    // Both ZEMs between a configurable value
+    if (((float)mEv.tdcV(5, 0) > -ftdcLimit && (float)mEv.tdcV(5, 0) < ftdcLimit) && ((float)mEv.tdcV(4, 0) > -ftdcLimit && (float)mEv.tdcV(4, 0) < ftdcLimit)) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+// End Stefan addition
 
 float ZDCRecDataTask::getADCRecValue(std::string typech, std::string ch)
 {

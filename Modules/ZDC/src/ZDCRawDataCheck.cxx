@@ -56,12 +56,27 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     (void)moName;
     // For -> Histo to check
     for (int ih = 0; ih < (int)mVectHistoCheck.size(); ih++) {
-      mVectHistoCheck.at(ih).numE = 0;
-      mVectHistoCheck.at(ih).numW = 0;
-      mVectHistoCheck.at(ih).stringW = "";
-      mVectHistoCheck.at(ih).stringE = "";
       if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
+        // std::ofstream debugFile;
+        // debugFile.open("debug.txt", std::ios::app);
+        // if (debugFile.good()) {
+        //   debugFile << mo->getName() << " ";
+        //   debugFile << mVectHistoCheck.at(ih).nameHisto;
+        //   debugFile << " = ";
+        //   if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
+        //     debugFile << " equal ";
+        //   }
+        //   else {
+        //     debugFile << " no equal ";
+        //   }
+        //   debugFile << "= \n";
+        //   debugFile.close();
+        // }
         if ((mo->getName() == "hpedSummary")) {
+          mVectHistoCheck.at(ih).numE = 0;
+          mVectHistoCheck.at(ih).numW = 0;
+          mVectHistoCheck.at(ih).stringW = "";
+          mVectHistoCheck.at(ih).stringE = "";
           auto* h = dynamic_cast<TH1*>(mo->getObject());
           if (h == nullptr) {
             ILOG(Error, Support) << "could not cast hpedSummary to TH1*" << ENDM;
@@ -87,6 +102,10 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
 
         if ((mo->getName() == "hAlignPlot") || (mo->getName() == "hAlignPlotShift")) {
+          mVectHistoCheck.at(ih).numE = 0;
+          mVectHistoCheck.at(ih).numW = 0;
+          mVectHistoCheck.at(ih).stringW = "";
+          mVectHistoCheck.at(ih).stringE = "";
           int flag_ch_empty = 1;
           int flag_all_ch_empty = 1;
           auto* h = dynamic_cast<TH2*>(mo->getObject());
@@ -128,6 +147,10 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         }
 
         if (mo->getName() == "herrorSummary") {
+          mVectHistoCheck.at(ih).numE = 0;
+          mVectHistoCheck.at(ih).numW = 0;
+          mVectHistoCheck.at(ih).stringW = "";
+          mVectHistoCheck.at(ih).stringE = "";
           int flag_ch_empty = 1;
           auto* h = dynamic_cast<TH2*>(mo->getObject());
           if (h == nullptr) {
@@ -161,6 +184,45 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
             flag_ch_empty = 1;
           }
         }
+        if (mo->getName() == "hBCAlignPlot") {
+          mVectHistoCheck.at(ih).numE = 0;
+          mVectHistoCheck.at(ih).numW = 0;
+          mVectHistoCheck.at(ih).stringW = "";
+          mVectHistoCheck.at(ih).stringE = "";
+          bool ratio_array[12];
+          float ratio = 0.0;
+          auto* h = dynamic_cast<TH2*>(mo->getObject());
+          if (h == nullptr) {
+            ILOG(Error, Support) << "could not cast herrorSummary to TH2*" << ENDM;
+            return Quality::Null;
+          }
+          if ((int)h->GetNbinsX() != (int)mVectHistoCheck.at(ih).paramch.size()) {
+            return Quality::Null;
+          }
+          for (int x = 0; x < h->GetNbinsX(); x++) {
+            for (int y = 0; y < h->GetNbinsY(); y++) {
+              ratio = (h->GetBinContent(x + 1, y + 1)) / (h->GetBinContent(x + 1, REFERENCE_BIN));
+              if ((ratio > NOISE_LEVEL_LOW) && (ratio < NOISE_LEVEL_HIGH)) {
+                ratio_array[y] = true;
+              } else {
+                ratio_array[y] = false;
+              }
+            }
+            if (!std::equal(std::begin(ratio_array), std::end(ratio_array), std::begin(COMPARATOR_ARRAY))) {
+              mVectHistoCheck.at(ih).numE += 1;
+              mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
+              // std::ofstream debugFile;
+              // debugFile.open("debug.txt", std::ios::app);
+              // if (debugFile.good()) {
+              //   debugFile << mVectHistoCheck.at(ih).numE << " ";
+              //   debugFile << mVectHistoCheck.at(ih).stringE << " ";
+              //   //debugFile << mVectHistoCheck.at(ih).paramch.at(x).ch << " ";
+              //   debugFile << "= \n";
+              //   debugFile.close();
+              // }
+            }
+          }
+        }
         // check result check
         if (mVectHistoCheck.at(ih).numW == 0 && mVectHistoCheck.at(ih).numE == 0) {
           result = Quality::Good;
@@ -175,12 +237,13 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         if (mVectHistoCheck.at(ih).numE > 0) {
           result = Quality::Bad;
           result.addFlag(FlagTypeFactory::Unknown(),
-                         "It is bad because  " + std::to_string(mVectHistoCheck.at(ih).numW) + " channels:" + mVectHistoCheck.at(ih).stringE + "have a value in the bad range");
+                         "It is bad because  " + std::to_string(mVectHistoCheck.at(ih).numE) + " channels:" + mVectHistoCheck.at(ih).stringE + "have a value in the bad range");
           mVectHistoCheck.at(ih).quality = 3;
         }
       }
     }
   }
+  // dumpStruct();
   return result;
 }
 
@@ -198,6 +261,25 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         ILOG(Error, Support) << "could not cast '" << mo->getName() << "' to TH1*" << ENDM;
         return;
       }
+      if (mo->getName() == "hBCAlignPlot") {
+        float ratio = 0.0;
+        for (int x = 0; x < h->GetNbinsX(); x++) {
+          for (int y = 0; y < h->GetNbinsY(); y++) {
+            ratio = (h->GetBinContent(x + 1, y + 1)) / (h->GetBinContent(x + 1, REFERENCE_BIN));
+            float xpos = h->GetXaxis()->GetBinCenter(x + 1);
+            float ypos = h->GetYaxis()->GetBinCenter(y + 1);
+            std::string strValue = std::format("{:.2f}", ratio);
+            TLatex* msgr = new TLatex(xpos - 0.35, ypos - 0.15, strValue.c_str());
+            msgr->SetTextSize(9);
+            if ((ratio > NOISE_LEVEL_LOW) && (ratio < NOISE_LEVEL_HIGH)) {
+              msgr->SetTextColor(kGreen);
+            } else {
+              msgr->SetTextColor(kRed);
+            }
+            h->GetListOfFunctions()->Add(msgr);
+          }
+        }
+      }
       if (mVectHistoCheck.at(ih).quality == 1) {
         std::string errorSt = getCurrentDataTime() + " Ok";
         TLatex* msg = new TLatex(mVectHistoCheck.at(ih).posMsgX, mVectHistoCheck.at(ih).posMsgY, errorSt.c_str());
@@ -209,7 +291,16 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         h->SetFillColor(kGreen);
         msg->Draw();
       } else if (mVectHistoCheck.at(ih).quality == 3) {
-        std::string errorSt = getCurrentDataTime() + " Errors --> Call the expert." + mVectHistoCheck.at(ih).stringE;
+        // std::ofstream debugFile;
+        // debugFile.open("debug.txt", std::ios::app);
+        // if (debugFile.good()) {
+        //   debugFile << mVectHistoCheck.at(ih).numE << " ";
+        //   debugFile << mVectHistoCheck.at(ih).stringE << " ";
+        //   //debugFile << mVectHistoCheck.at(ih).paramch.at(x).ch << " ";
+        //   debugFile << "= \n";
+        //   debugFile.close();
+        // }
+        std::string errorSt = getCurrentDataTime() + " Errors --> Call the expert. " + mVectHistoCheck.at(ih).stringE;
         TLatex* msg = new TLatex(mVectHistoCheck.at(ih).posMsgX, mVectHistoCheck.at(ih).posMsgY, errorSt.c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -267,6 +358,45 @@ void ZDCRawDataCheck::init(const Activity& activity)
   setChCheck("hpedSummary", "TH1F", "PED", "PED_POS_MSG_X", "PED_POS_MSG_Y", activity);
   setChCheck("hAlignPlotShift", "TH2F", "ALIGN", "ALIGN_POS_MSG_X", "ALIGN_POS_MSG_Y", activity);
   setChCheck("herrorSummary", "TH2F", "ERROR", "ERROR_POS_MSG_X", "ERROR_POS_MSG_Y", activity);
+  setChCheck("hBCAlignPlot", "TH2F", "PED", "PED_POS_MSG_X", "PED_POS_MSG_Y", activity);
+
+  std::vector<std::string> tokenString;
+  if (auto param = mCustomParameters.find("REFERENCE_BIN"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - REFERENCE_BIN: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    REFERENCE_BIN = atoi(param->second.c_str());
+  } else {
+    REFERENCE_BIN = 7;
+  }
+  if (auto param = mCustomParameters.find("NOISE_LEVEL_LOW"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - NOISE_LEVEL_LOW: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    NOISE_LEVEL_LOW = atof(param->second.c_str());
+  } else {
+    NOISE_LEVEL_LOW = 0.0;
+  }
+  if (auto param = mCustomParameters.find("NOISE_LEVEL_HIGH"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - NOISE_LEVEL_HIGH: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    NOISE_LEVEL_HIGH = atof(param->second.c_str());
+  } else {
+    NOISE_LEVEL_HIGH = 2.0;
+  }
+  if (auto param = mCustomParameters.find("COMPARATOR_ARRAY"); param != mCustomParameters.end()) {
+    ILOG(Debug, Devel) << "Custom parameter - COMPARATOR_ARRAY: " << param->second << ENDM;
+    tokenString = tokenLine(param->second, ";");
+    for (int i = 0; i < 12; i++) {
+      if (atoi(tokenString.at(i).c_str()) == 1) {
+        COMPARATOR_ARRAY[i] = true;
+      } else {
+        COMPARATOR_ARRAY[i] = false;
+      }
+    }
+  } else {
+    for (int i = 0; i < 12; i++) {
+      COMPARATOR_ARRAY[i] = false;
+    }
+  }
   // dumpStruct();
 }
 
