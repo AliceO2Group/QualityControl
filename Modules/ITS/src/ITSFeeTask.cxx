@@ -549,9 +549,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     //  - decoding Diagnostic Word DDW0 and fill lane status plots and vectors
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
 
-      for (int i = 0; i < NFees; i++) {
-        mPayloadSize->Fill(i, (float)payloadTot[i]);
-        payloadTot[i] = 0;
+      if (precisePayload){
+  	mPayloadSize->Fill(ifee, payloadTot[ifee]);	      
+        payloadTot[ifee] = 0;
       }
 
       const GBTDiagnosticWord* ddw;
@@ -671,6 +671,17 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mLaneStatusOverview[1]->SetBinError(istave + 1 + StaveBoundary[ilayer], 1e-15);
     }
   }
+  
+  if (! precisePayload){
+  for (int i = 0; i < NFees; i++) {
+    if (nStops[i]) {
+      float payloadAvg = (float)payloadTot[i] / nStops[i];
+      mPayloadSize->Fill(i, payloadAvg);
+    }
+  }
+  }
+
+
   mTimeFrameId++;
   mTFInfo->Fill(mTimeFrameId % 10000);
   end = std::chrono::high_resolution_clock::now();
@@ -691,6 +702,7 @@ void ITSFeeTask::getParameters()
   mEnableIHWReading = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "EnableIHWReading", mEnableIHWReading);
   mDecodeCDW = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "DecodeCDW", mDecodeCDW);
   nResetCycle = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nResetCycle", nResetCycle);
+  precisePayload =  o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "precisePayload", precisePayload);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
