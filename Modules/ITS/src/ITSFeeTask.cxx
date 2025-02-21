@@ -82,9 +82,9 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ITSFeeTask::createFeePlots()
 {
 
-  mEmptyPayload = new TH1I("EmptyPayload", "Numer of orbits with empty payload",  NFees, 0, NFees);
-  getObjectsManager()->startPublishing(mEmptyPayload); 
-	
+  mEmptyPayload = new TH1I("EmptyPayload", "Numer of orbits with empty payload", NFees, 0, NFees);
+  getObjectsManager()->startPublishing(mEmptyPayload);
+
   mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mTriggerType.size(), 0.5, mTriggerType.size() + 0.5);
   getObjectsManager()->startPublishing(mTrigger); // mTrigger
 
@@ -550,16 +550,16 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     // Operations at last page of each orbit:
-    
-    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && !it.size()){
-      mEmptyPayload->Fill(ifee)
+
+    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && !it.size()) {
+      mEmptyPayload->Fill(ifee);
     }
 
     //  - decoding Diagnostic Word DDW0 and fill lane status plots and vectors
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
 
-    	//  - read triggers in RDH and fill histogram
-    	//  - fill histogram with packet_done TDTs counted so far and reset counter
+      //  - read triggers in RDH and fill histogram
+      //  - fill histogram with packet_done TDTs counted so far and reset counter
       // fill trailer count histo and reset counters
       if (doLookForTDT) {
 
@@ -578,10 +578,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
           mTriggerVsFeeId_reset->Fill(ifee, i + 1);
         }
       }
-    
-	    
-      if (precisePayload){
-  	mPayloadSize->Fill(ifee, payloadTot[ifee]);	      
+
+      if (precisePayload) {
+        mPayloadSize->Fill(ifee, payloadTot[ifee]);
         payloadTot[ifee] = 0;
       }
 
@@ -635,7 +634,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-}
+  }
 
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
   int counterSummary[4][3] = { { 0 } };
@@ -679,16 +678,15 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       mLaneStatusOverview[1]->SetBinError(istave + 1 + StaveBoundary[ilayer], 1e-15);
     }
   }
-  
-  if (! precisePayload){
-  for (int i = 0; i < NFees; i++) {
-    if (nStops[i]) {
-      float payloadAvg = (float)payloadTot[i] / nStops[i];
-      mPayloadSize->Fill(i, payloadAvg);
+
+  if (!precisePayload) {
+    for (int i = 0; i < NFees; i++) {
+      if (nStops[i]) {
+        float payloadAvg = (float)payloadTot[i] / nStops[i];
+        mPayloadSize->Fill(i, payloadAvg);
+      }
     }
   }
-  }
-
 
   mTimeFrameId++;
   mTFInfo->Fill(mTimeFrameId % 10000);
@@ -710,7 +708,7 @@ void ITSFeeTask::getParameters()
   mEnableIHWReading = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "EnableIHWReading", mEnableIHWReading);
   mDecodeCDW = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "DecodeCDW", mDecodeCDW);
   nResetCycle = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nResetCycle", nResetCycle);
-  precisePayload =  o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "precisePayload", precisePayload);
+  precisePayload = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "precisePayload", precisePayload);
 }
 
 void ITSFeeTask::getStavePoint(int layer, int stave, double* px, double* py)
