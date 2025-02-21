@@ -81,6 +81,10 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSFeeTask::createFeePlots()
 {
+
+  mEmptyPayload = new TH1I("EmptyPayload", "Numer of orbits with empty payload",  NFees, 0, NFees);
+  getObjectsManager()->startPublishing(mEmptyPayload); 
+	
   mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mTriggerType.size(), 0.5, mTriggerType.size() + 0.5);
   getObjectsManager()->startPublishing(mTrigger); // mTrigger
 
@@ -546,9 +550,36 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     // Operations at last page of each orbit:
+    
+    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && !it.size()){
+      mEmptyPayload->Fill(ifee)
+    }
+
     //  - decoding Diagnostic Word DDW0 and fill lane status plots and vectors
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
 
+    	//  - read triggers in RDH and fill histogram
+    	//  - fill histogram with packet_done TDTs counted so far and reset counter
+      // fill trailer count histo and reset counters
+      if (doLookForTDT) {
+
+        if (!RampOngoing && !clockEvt) {
+          mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
+          mTrailerCount_reset->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
+        }
+        TDTcounter[ifee] = 0;
+      }
+
+      nStops[ifee]++;
+      for (int i = 0; i < mTriggerType.size(); i++) {
+        if (((o2::raw::RDHUtils::getTriggerType(rdh)) >> mTriggerType.at(i).first & 1) == 1) {
+          mTrigger->Fill(i + 1);
+          mTriggerVsFeeId->Fill(ifee, i + 1);
+          mTriggerVsFeeId_reset->Fill(ifee, i + 1);
+        }
+      }
+    
+	    
       if (precisePayload){
   	mPayloadSize->Fill(ifee, payloadTot[ifee]);	      
         payloadTot[ifee] = 0;
@@ -604,30 +635,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-
-    // Operations at last page of each orbit:
-    //  - read triggers in RDH and fill histogram
-    //  - fill histogram with packet_done TDTs counted so far and reset counter
-    if ((int)(o2::raw::RDHUtils::getStop(rdh))) {
-      // fill trailer count histo and reset counters
-      if (doLookForTDT) {
-
-        if (!RampOngoing && !clockEvt) {
-          mTrailerCount->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
-          mTrailerCount_reset->Fill(ifee, TDTcounter[ifee] < 21 ? TDTcounter[ifee] : -1);
-        }
-        TDTcounter[ifee] = 0;
-      }
-      nStops[ifee]++;
-      for (int i = 0; i < mTriggerType.size(); i++) {
-        if (((o2::raw::RDHUtils::getTriggerType(rdh)) >> mTriggerType.at(i).first & 1) == 1) {
-          mTrigger->Fill(i + 1);
-          mTriggerVsFeeId->Fill(ifee, i + 1);
-          mTriggerVsFeeId_reset->Fill(ifee, i + 1);
-        }
-      }
-    }
-  }
+}
 
   // Filling histograms: loop over mStatusFlagNumber[ilayer][istave][ilane][iflag]
   int counterSummary[4][3] = { { 0 } };
