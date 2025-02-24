@@ -218,7 +218,6 @@ class ITSFeeTask final : public TaskInterface
   TH1I* mProcessingTime;
   TH1D* mProcessingTime2;
   TH2F* mPayloadSize; // average payload size vs linkID
-  TH1I* mEmptyPayload;
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet
 };
 

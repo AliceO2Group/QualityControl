@@ -82,9 +82,6 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ITSFeeTask::createFeePlots()
 {
 
-  mEmptyPayload = new TH1I("EmptyPayload", "Numer of orbits with empty payload", NFees, 0, NFees);
-  getObjectsManager()->startPublishing(mEmptyPayload);
-
   mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mTriggerType.size(), 0.5, mTriggerType.size() + 0.5);
   getObjectsManager()->startPublishing(mTrigger); // mTrigger
 
@@ -146,7 +143,7 @@ void ITSFeeTask::createFeePlots()
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
   getObjectsManager()->startPublishing(mFlag1Check);                              // mFlag1Check
 
-  mDecodingCheck = new TH2I("DecodingCheck", "Error in parsing data", NFees, 0, NFees, 5, 0, 5); // 0: DataFormat not recognized, 1: DDW index != 0, 2: DDW wrong identifier, 3: IHW wrong identifier, 4: CDW wrong version -- adapt y range!
+  mDecodingCheck = new TH2I("DecodingCheck", "Error in parsing data", NFees, 0, NFees, 6, 0, 6); // 0: DataFormat not recognized, 1: DDW index != 0, 2: DDW wrong identifier, 3: IHW wrong identifier, 4: CDW wrong version, 5: Empty Payload -- adapt y range!
   getObjectsManager()->startPublishing(mDecodingCheck);
 
   mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e5);
@@ -517,7 +514,10 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     } // if doLookForTDT || mDecodeCDW
 
-    //
+    // Check on empty payload
+    if (!it.size()) {
+      mDecodingCheck->Fill(ifee, 5);
+    }
 
     // Operations at the first page of each orbit
     //  - decoding ITS header work and fill histogram with number of active lanes
@@ -550,10 +550,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     // Operations at last page of each orbit:
-
-    if ((int)(o2::raw::RDHUtils::getStop(rdh)) && !it.size()) {
-      mEmptyPayload->Fill(ifee);
-    }
 
     //  - decoding Diagnostic Word DDW0 and fill lane status plots and vectors
     if ((int)(o2::raw::RDHUtils::getStop(rdh)) && it.size()) {
