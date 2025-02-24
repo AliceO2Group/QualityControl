@@ -184,6 +184,7 @@ class ITSFeeTask final : public TaskInterface
   int mNPayloadSizeBins = 4096;
   bool mResetLaneStatus = false;
   bool mResetPayload = false;
+  bool precisePayload = false;
   int mPayloadParseEvery_n_HBF_per_TF = 32; // -1 to disable, 1 to process all the HBFs
   int mPayloadParseEvery_n_TF = 1;          // Use >= 1 values
   bool mEnableIHWReading = 0;
