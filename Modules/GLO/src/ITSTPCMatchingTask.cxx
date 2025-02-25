@@ -58,12 +58,14 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   // MTC ratios
   mDoMTCRatios = common::getFromConfig(mCustomParameters, "doMTCRatios", false);
   // K0s
-  mMatchITSTPCQC.setDoK0QC(getFromConfig(mCustomParameters, "doK0QC", true));
-  mMatchITSTPCQC.setMaxK0Eta(getFromConfig(mCustomParameters, "maxK0Eta", 0.8f));
-  mMatchITSTPCQC.setRefitK0(getFromConfig(mCustomParameters, "refitK0", true));
-  mMatchITSTPCQC.setCutK0Mass(getFromConfig(mCustomParameters, "cutK0Mass", 0.05f));
-  if (auto param = mCustomParameters.find("trackSourcesK0"); param != mCustomParameters.end()) {
-    mMatchITSTPCQC.setTrkSources(o2::dataformats::GlobalTrackID::getSourcesMask(param->second));
+  mMatchITSTPCQC.setDoK0QC((mDoK0s = getFromConfig(mCustomParameters, "doK0QC", false)));
+  if (mIsSync && mDoK0s) {
+    mMatchITSTPCQC.setMaxK0Eta(getFromConfig(mCustomParameters, "maxK0Eta", 0.8f));
+    mMatchITSTPCQC.setRefitK0(getFromConfig(mCustomParameters, "refitK0", true));
+    mMatchITSTPCQC.setCutK0Mass(getFromConfig(mCustomParameters, "cutK0Mass", 0.05f));
+    if (auto param = mCustomParameters.find("trackSourcesK0"); param != mCustomParameters.end()) {
+      mMatchITSTPCQC.setTrkSources(o2::dataformats::GlobalTrackID::getSourcesMask(param->second));
+    }
   }
 
   mMatchITSTPCQC.initDataRequest();
@@ -75,6 +77,7 @@ void ITSTPCMatchingTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mMatchITSTPCQC.reset();
+  mIsPbPb = activity.mBeamType == "Pb-Pb";
 }
 
 void ITSTPCMatchingTask::startOfCycle()
@@ -134,6 +137,32 @@ void ITSTPCMatchingTask::endOfCycle()
       // Phi
       makeRatio(mEffPhi, mMatchITSTPCQC.getFractionITSTPCmatchPhi(gloqc::MatchITSTPCQC::ITS));
       getObjectsManager()->startPublishing(mEffPhi.get(), PublicationPolicy::Once);
+    }
+
+    if (mDoK0s) {
+      const auto* k0s = (mIsPbPb) ? mMatchITSTPCQC.getHistoK0MassVsPtVsOccPbPb() : mMatchITSTPCQC.getHistoK0MassVsPtVsOccpp();
+      if (!k0s) {
+        ILOG(Fatal) << "Could not retrieve k0s histogram for beam type: " << mIsPbPb << ENDM;
+      }
+
+      mK0sCycle.reset();
+      mK0sCycle.reset(dynamic_cast<TH3F*>(k0s->Clone("mK0sMassVsPtVsOcc_Cycle")));
+      if (!mK0sCycle) {
+        ILOG(Fatal) << "Could not retrieve k0s histogram for current cycle" << ENDM;
+      }
+      if (!mK0sIntegral) {
+        mK0sIntegral.reset(dynamic_cast<TH3F*>(k0s->Clone("mK0sMassVsPtVsOcc_Integral")));
+        if (!mK0sIntegral) {
+          ILOG(Fatal) << "Could not retrieve k0s histogram integral" << ENDM;
+        }
+      }
+      mK0sCycle->Reset();
+      mK0sCycle->Add(k0s, mK0sIntegral.get(), 1., -1.);
+      mK0sIntegral->Reset();
+      mK0sIntegral->Add(k0s);
+
+      getObjectsManager()->startPublishing(mK0sCycle.get(), PublicationPolicy::Once);
+      getObjectsManager()->startPublishing(mK0sIntegral.get(), PublicationPolicy::Once);
     }
   }
 }

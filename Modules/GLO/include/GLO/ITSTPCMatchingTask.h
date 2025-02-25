@@ -21,7 +21,11 @@
 #include "GLOQC/MatchITSTPCQC.h"
 #include "Common/TH1Ratio.h"
 
+#include <CommonConstants/PhysicsConstants.h>
+
 #include <memory>
+
+#include "TH3F.h"
 
 using namespace o2::quality_control::core;
 
@@ -51,10 +55,17 @@ class ITSTPCMatchingTask final : public TaskInterface
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
   bool mIsSync{ false };
+  bool mIsPbPb{ false };
+
   bool mDoMTCRatios{ false };
   std::unique_ptr<common::TH1FRatio> mEffPt;
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
+
+  bool mDoK0s{ false };
+  static constexpr auto mMassK0s{ o2::constants::physics::MassK0Short };
+  std::unique_ptr<TH3F> mK0sCycle;
+  std::unique_ptr<TH3F> mK0sIntegral;
 };
 
 } // namespace o2::quality_control_modules::glo
