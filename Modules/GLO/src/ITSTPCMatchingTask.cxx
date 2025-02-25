@@ -223,9 +223,7 @@ bool ITSTPCMatchingTask::fitK0sMass(TH1* h)
   mSignalAndBackground->SetParameter(2, mBackground->GetParameter(2));                  // p2
   mSignalAndBackground->SetParameter(3, h->GetMaximum() - mBackground->Eval(mMassK0s)); // A (best guess)
   mSignalAndBackground->SetParameter(4, mMassK0s);                                      // mean
-  mSignalAndBackground->SetParLimits(4, 0.45, 0.55);                                    // limit
-  mSignalAndBackground->SetParameter(5, 1e-6);                                          // sigma
-  mSignalAndBackground->SetParLimits(5, 0.0, 0.2);                                      // limit
+  mSignalAndBackground->SetParameter(5, 0.005);                                         // sigma
   h->Fit(mSignalAndBackground.get(), "RMQ");
   return true;
 }
