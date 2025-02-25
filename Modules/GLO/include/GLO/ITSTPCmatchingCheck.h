@@ -34,18 +34,18 @@ class ITSTPCmatchingCheck final : public o2::quality_control::checker::CheckInte
   void startOfActivity(const Activity& activity) final;
 
  private:
-  std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums) const noexcept;
+  static std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums) noexcept;
 
   std::shared_ptr<Activity> mActivity;
 
   // Pt
-  bool mShowPt{ true };
+  bool mShowPt{ false };
   float mMinPt{ 1. };
   float mMaxPt{ 1.999 };
   float mThresholdPt{ 0.5 };
 
   // Phi
-  bool mShowPhi{ true };
+  bool mShowPhi{ false };
   float mThresholdPhi{ 0.3 };
 
   // Eta

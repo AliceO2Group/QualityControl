@@ -26,10 +26,8 @@
 #include "TMath.h"
 #include "TArrow.h"
 #include "TText.h"
-#include "TBox.h"
 #include "TLine.h"
 #include "TLegend.h"
-#include "TFile.h"
 #include "TPolyMarker.h"
 
 #include "fmt/format.h"
@@ -48,10 +46,10 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
   Quality phiQual = Quality::Good;
   Quality etaQual = Quality::Good;
 
-  for (auto& [moName, mo] : *moMap) {
-    (void)moName;
+  for (auto& [_, mo] : *moMap) {
+    const std::string moName = mo->GetName();
 
-    if (mShowPt && mo->getName() == "mFractionITSTPCmatch_ITS_Hist") {
+    if (mShowPt && moName == "mFractionITSTPCmatch_ITS_Hist") {
       auto* eff = dynamic_cast<TH1*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatch_ITS check!" << ENDM;
@@ -93,9 +91,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           }
         }
       }
-    }
-
-    if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS_Hist") {
+    } else if (mShowPhi && moName == "mFractionITSTPCmatchPhi_ITS_Hist") {
       auto* eff = dynamic_cast<TH1*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatchPhi_ITS check!" << ENDM;
@@ -136,9 +132,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           }
         }
       }
-    }
-
-    if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS_Hist") {
+    } else if (mShowEta && moName == "mFractionITSTPCmatchEta_ITS_Hist") {
       auto* eff = dynamic_cast<TH1*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatchEta_ITS check!" << ENDM;
@@ -203,7 +197,9 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     return;
   }
 
-  if (mShowPt && mo->getName() == "mFractionITSTPCmatch_ITS_Hist") {
+  const auto name = mo->getName();
+
+  if (mShowPt && name == "mFractionITSTPCmatch_ITS_Hist") {
     auto* eff = dynamic_cast<TH1*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatch_ITS_Hist beautify!" << ENDM;
@@ -258,11 +254,11 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     auto* good = new TPolyMarker();
     good->SetMarkerColor(kGreen);
     good->SetMarkerStyle(25);
-    good->SetMarkerSize(2);
+    good->SetMarkerSize(1);
     auto* bad = new TPolyMarker();
     bad->SetMarkerColor(kRed);
     bad->SetMarkerStyle(25);
-    bad->SetMarkerSize(2);
+    bad->SetMarkerSize(1);
     auto binLow = eff->FindFixBin(mMinPt), binUp = eff->FindFixBin(mMaxPt);
     for (int iBin = binLow; iBin <= binUp; ++iBin) {
       auto x = eff->GetBinCenter(iBin);
@@ -304,9 +300,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-  }
-
-  if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS_Hist") {
+  } else if (mShowPhi && name == "mFractionITSTPCmatchPhi_ITS_Hist") {
     auto* eff = dynamic_cast<TH1*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatchPhi_ITS_Hist beautify!" << ENDM;
@@ -387,9 +381,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-  }
-
-  if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS_Hist") {
+  } else if (mShowEta && name == "mFractionITSTPCmatchEta_ITS_Hist") {
     auto* eff = dynamic_cast<TH1*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatchEta_ITS_Hist beautify!" << ENDM;
@@ -495,20 +487,17 @@ void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
 {
   mActivity = make_shared<Activity>(activity);
 
-  mShowPt = common::getFromExtendedConfig(activity, mCustomParameters, "showPt", true);
-  if (mShowPt) {
+  if ((mShowPt = common::getFromExtendedConfig(activity, mCustomParameters, "showPt", false))) {
     mThresholdPt = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdPt", 0.5f);
     mMinPt = common::getFromExtendedConfig(activity, mCustomParameters, "minPt", 1.0f);
     mMaxPt = common::getFromExtendedConfig(activity, mCustomParameters, "maxPt", 1.999f);
   }
 
-  mShowPhi = common::getFromExtendedConfig(activity, mCustomParameters, "showPhi", true);
-  if (mShowPt) {
+  if ((mShowPhi = common::getFromExtendedConfig(activity, mCustomParameters, "showPhi", false))) {
     mThresholdPhi = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdPhi", 0.3f);
   }
 
-  mShowEta = common::getFromExtendedConfig(activity, mCustomParameters, "showEta", false);
-  if (mShowEta) {
+  if ((mShowEta = common::getFromExtendedConfig(activity, mCustomParameters, "showEta", false))) {
     mThresholdEta = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdEta", 0.4f);
     mMinEta = common::getFromExtendedConfig(activity, mCustomParameters, "minEta", -0.8f);
     mMaxEta = common::getFromExtendedConfig(activity, mCustomParameters, "maxEta", 0.8f);
@@ -517,7 +506,7 @@ void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
   mLimitRange = common::getFromExtendedConfig(activity, mCustomParameters, "limitRanges", 5);
 }
 
-std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums) const noexcept
+std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums) noexcept
 {
   std::vector<std::pair<int, int>> ranges;
   if (nums.empty()) {
