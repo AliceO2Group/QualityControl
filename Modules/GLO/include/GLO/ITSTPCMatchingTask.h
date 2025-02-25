@@ -66,10 +66,15 @@ class ITSTPCMatchingTask final : public TaskInterface
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
 
+  bool mDoPtTrending{ false };
+  float mTrendingBinPt{ 1.0 };
+  std::unique_ptr<TGraph> mTrendingPt;
+
   bool mDoK0s{ false };
   static constexpr auto mMassK0s{ o2::constants::physics::MassK0Short };
   std::unique_ptr<TH3F> mK0sCycle;
   std::unique_ptr<TH3F> mK0sIntegral;
+  bool mDoK0sMassTrending{ false };
   std::unique_ptr<TGraphErrors> mK0sMassTrend;
   bool fitK0sMass(TH1* h);
   double mBackgroundRangeLeft{ 0.45 };

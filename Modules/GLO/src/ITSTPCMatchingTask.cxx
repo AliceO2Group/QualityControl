@@ -60,6 +60,20 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   mIsSync = common::getFromConfig(mCustomParameters, "isSync", false);
   // MTC ratios
   mDoMTCRatios = common::getFromConfig(mCustomParameters, "doMTCRatios", false);
+  mDoPtTrending = common::getFromConfig(mCustomParameters, "doTrendingPt", false);
+  mTrendingBinPt = common::getFromConfig(mCustomParameters, "trendingBinPt", 1.0f);
+  if (mDoPtTrending && !mDoMTCRatios) {
+    ILOG(Fatal) << "Cannot do pt trending while ratios are disabled!" << ENDM;
+  } else if (mDoPtTrending) {
+    mTrendingPt.reset(new TGraph);
+    mTrendingPt->SetNameTitle("mPtTrending", Form("ITS-TPC matching efficiency trending at %.1f GeV/c;Cycle;Efficiency", mTrendingBinPt));
+    mTrendingPt->GetHistogram()->SetMinimum(0.0);
+    mTrendingPt->GetHistogram()->SetMaximum(1.05);
+    mTrendingPt->SetMarkerSize(2);
+    mTrendingPt->SetMarkerStyle(20);
+    mTrendingPt->SetMarkerColor(kGreen);
+    getObjectsManager()->startPublishing(mTrendingPt.get(), PublicationPolicy::ThroughStop);
+  }
   // K0s
   mMatchITSTPCQC.setDoK0QC((mDoK0s = getFromConfig(mCustomParameters, "doK0QC", false)));
   if (mIsSync && mDoK0s) {
@@ -76,9 +90,17 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     mBackgroundRangeRight = common::getFromConfig(mCustomParameters, "k0sBackgroundRangeRight", 0.54);
     mBackground.reset(new TF1("gloFitK0sMassBackground", mFitBackground, mBackgroundRangeLeft, mBackgroundRangeRight, mFitBackground.mNPar));
     mSignalAndBackground.reset(new TF1("gloFitK0sMassSignal", "[0] + [1] * x + [2] * x * x + gaus(3)", mBackgroundRangeLeft, mBackgroundRangeRight));
-    mK0sMassTrend.reset(new TGraphErrors);
-    mK0sMassTrend->SetNameTitle("mK0MassTrend", "K0s Mass + Sigma;Cycle;K0s mass (GeV/c^{2})");
-    getObjectsManager()->startPublishing(mK0sMassTrend.get(), PublicationPolicy::ThroughStop);
+
+    if ((mDoK0sMassTrending = common::getFromConfig(mCustomParameters, "doTrendingK0s", false))) {
+      mK0sMassTrend.reset(new TGraphErrors);
+      mK0sMassTrend->SetNameTitle("mK0MassTrend", "K0s Mass + Sigma;Cycle;K0s mass (GeV/c^{2})");
+      mK0sMassTrend->SetMarkerSize(2);
+      mK0sMassTrend->SetMarkerStyle(20);
+      mK0sMassTrend->SetMarkerColor(kGreen);
+      mK0sMassTrend->GetHistogram()->SetMinimum(mBackgroundRangeLeft);
+      mK0sMassTrend->GetHistogram()->SetMaximum(mBackgroundRangeRight);
+      getObjectsManager()->startPublishing(mK0sMassTrend.get(), PublicationPolicy::ThroughStop);
+    }
   }
 
   mMatchITSTPCQC.initDataRequest();
@@ -143,6 +165,9 @@ void ITSTPCMatchingTask::endOfCycle()
       makeRatio(mEffPt, mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS));
       getObjectsManager()->startPublishing(mEffPt.get(), PublicationPolicy::Once);
       getObjectsManager()->setDefaultDrawOptions(mEffPt->GetName(), "logx");
+      if (mDoPtTrending) {
+        mTrendingPt->AddPoint(mNCycle, mEffPt->GetBinContent(mEffPt->FindBin(mTrendingBinPt)));
+      }
 
       // Eta
       makeRatio(mEffEta, mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS));
@@ -180,7 +205,7 @@ void ITSTPCMatchingTask::endOfCycle()
 
       TH1D* h{ nullptr };
       getObjectsManager()->startPublishing((h = mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass")), PublicationPolicy::Once);
-      if (fitK0sMass(h)) {
+      if (fitK0sMass(h) && mDoK0sMassTrending) {
         mK0sMassTrend->AddPoint(mNCycle, mSignalAndBackground->GetParameter(4));
         mK0sMassTrend->SetPointError(mK0sMassTrend->GetN() - 1, 0., mSignalAndBackground->GetParameter(5));
       }
