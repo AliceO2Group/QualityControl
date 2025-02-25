@@ -16,6 +16,9 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TH1D.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "GLO/ITSTPCMatchingTask.h"
@@ -66,6 +69,16 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     if (auto param = mCustomParameters.find("trackSourcesK0"); param != mCustomParameters.end()) {
       mMatchITSTPCQC.setTrkSources(o2::dataformats::GlobalTrackID::getSourcesMask(param->second));
     }
+
+    mFitBackground.mRejLeft = common::getFromConfig(mCustomParameters, "k0sBackgroundRejLeft", 0.48);
+    mFitBackground.mRejRight = common::getFromConfig(mCustomParameters, "k0sBackgroundRejRight", 0.51);
+    mBackgroundRangeLeft = common::getFromConfig(mCustomParameters, "k0sBackgroundRangeLeft", 0.45);
+    mBackgroundRangeRight = common::getFromConfig(mCustomParameters, "k0sBackgroundRangeRight", 0.54);
+    mBackground.reset(new TF1("gloFitK0sMassBackground", mFitBackground, mBackgroundRangeLeft, mBackgroundRangeRight, mFitBackground.mNPar));
+    mSignalAndBackground.reset(new TF1("gloFitK0sMassSignal", "[0] + [1] * x + [2] * x * x + gaus(3)", mBackgroundRangeLeft, mBackgroundRangeRight));
+    mK0sMassTrend.reset(new TGraphErrors);
+    mK0sMassTrend->SetNameTitle("mK0MassTrend", "K0s Mass + Sigma;Cycle;K0s mass (GeV/c^{2})");
+    getObjectsManager()->startPublishing(mK0sMassTrend.get(), PublicationPolicy::ThroughStop);
   }
 
   mMatchITSTPCQC.initDataRequest();
@@ -78,6 +91,7 @@ void ITSTPCMatchingTask::startOfActivity(const Activity& activity)
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mMatchITSTPCQC.reset();
   mIsPbPb = activity.mBeamType == "Pb-Pb";
+  mNCycle = 0;
 }
 
 void ITSTPCMatchingTask::startOfCycle()
@@ -163,8 +177,18 @@ void ITSTPCMatchingTask::endOfCycle()
 
       getObjectsManager()->startPublishing(mK0sCycle.get(), PublicationPolicy::Once);
       getObjectsManager()->startPublishing(mK0sIntegral.get(), PublicationPolicy::Once);
+
+      TH1D* h{ nullptr };
+      getObjectsManager()->startPublishing((h = mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass")), PublicationPolicy::Once);
+      if (fitK0sMass(h)) {
+        mK0sMassTrend->AddPoint(mNCycle, mSignalAndBackground->GetParameter(4));
+        mK0sMassTrend->SetPointError(mK0sMassTrend->GetN() - 1, 0., mSignalAndBackground->GetParameter(5));
+      }
+      getObjectsManager()->startPublishing((h = mK0sIntegral->ProjectionY("mK0sMassVsPtVsOcc_Integral_pmass")), PublicationPolicy::Once);
+      fitK0sMass(h);
     }
   }
+  ++mNCycle;
 }
 
 void ITSTPCMatchingTask::endOfActivity(const Activity& /*activity*/)
@@ -181,6 +205,29 @@ void ITSTPCMatchingTask::reset()
   mEffPt.reset();
   mEffPhi.reset();
   mEffEta.reset();
+}
+
+bool ITSTPCMatchingTask::fitK0sMass(TH1* h)
+{
+  if (h->GetEntries() == 0) {
+    ILOG(Warning, Devel) << "Cannot fit empty histogram: " << h->GetName() << ENDM;
+    return false;
+  }
+  TFitResultPtr res = h->Fit(mBackground.get(), "SRNQ");
+  if (res->Status() > 1) {
+    ILOG(Warning, Devel) << "Failed k0s background fit for histogram: " << h->GetName() << ENDM;
+    return false;
+  }
+  mSignalAndBackground->SetParameter(0, mBackground->GetParameter(0));                  // p0
+  mSignalAndBackground->SetParameter(1, mBackground->GetParameter(1));                  // p1
+  mSignalAndBackground->SetParameter(2, mBackground->GetParameter(2));                  // p2
+  mSignalAndBackground->SetParameter(3, h->GetMaximum() - mBackground->Eval(mMassK0s)); // A (best guess)
+  mSignalAndBackground->SetParameter(4, mMassK0s);                                      // mean
+  mSignalAndBackground->SetParLimits(4, 0.45, 0.55);                                    // limit
+  mSignalAndBackground->SetParameter(5, 1e-6);                                          // sigma
+  mSignalAndBackground->SetParLimits(5, 0.0, 0.2);                                      // limit
+  h->Fit(mSignalAndBackground.get(), "RMQ");
+  return true;
 }
 
 } // namespace o2::quality_control_modules::glo
