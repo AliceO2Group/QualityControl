@@ -48,6 +48,7 @@
         "taskParameters": {
           "GID": "ITS-TPC,ITS",
           "verbose": "false",
+          "doMTCratios": "true",
           "doK0QC": "true",
           "isSync": "true",
           "trackSourcesK0": "ITS,TPC,ITS-TPC,ITS-TPC-TOF,TPC-TOF,TPC-TRD,ITS-TPC-TRD,TPC-TRD-TOF,ITS-TPC-TOF,ITS-TPC-TRD-TOF"

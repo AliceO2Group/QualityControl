@@ -55,6 +55,8 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMatchITSTPCQC.setEtaCut(getFromConfig(mCustomParameters, "etaCut", 1.4f));
   // Sync
   mIsSync = common::getFromConfig(mCustomParameters, "isSync", false);
+  // MTC ratios
+  mDoMTCRatios = common::getFromConfig(mCustomParameters, "doMTCRatios", false);
   // K0s
   mMatchITSTPCQC.setDoK0QC(getFromConfig(mCustomParameters, "doK0QC", true));
   mMatchITSTPCQC.setMaxK0Eta(getFromConfig(mCustomParameters, "maxK0Eta", 0.8f));
@@ -94,40 +96,45 @@ void ITSTPCMatchingTask::endOfCycle()
 
   // Sync Mode
   if (mIsSync) {
-    auto makeRatio = [](TEfficiency* eff) {
-      std::string name = eff->GetName();
-      name += "_Hist";
-      auto ratio = std::make_unique<common::TH1FRatio>(name.c_str(), eff->GetTitle(),
-                                                       eff->GetPassedHistogram()->GetXaxis()->GetNbins(),
-                                                       eff->GetPassedHistogram()->GetXaxis()->GetXmin(),
-                                                       eff->GetPassedHistogram()->GetXaxis()->GetXmax());
-      ratio->SetBit(TH1::EStatusBits::kNoStats);
-      if (!ratio->getNum()->Add(eff->GetPassedHistogram())) {
-        ILOG(Error) << "Add operation for numerator histogram of " << name << " failed; efficiency will be skewed" << ENDM;
-      }
-      if (!ratio->getDen()->Add(eff->GetTotalHistogram())) {
-        ILOG(Error) << "Add operation for denominator histogram of " << name << " failed; efficiency will be skewed" << ENDM;
-      }
-      ratio->GetXaxis()->SetTitle(eff->GetPassedHistogram()->GetXaxis()->GetTitle());
-      ratio->GetYaxis()->SetTitle(eff->GetPassedHistogram()->GetYaxis()->GetTitle());
-      ratio->Sumw2();
-      ratio->setHasBinominalErrors();
-      ratio->update();
-      return ratio;
-    };
+    if (mDoMTCRatios) {
+      auto makeRatio = [](std::unique_ptr<common::TH1FRatio>& ratio, TEfficiency* eff) {
+        if (ratio) {
+          ratio->Reset();
+        } else {
+          std::string name = eff->GetName();
+          name += "_Hist";
+          ratio = std::make_unique<common::TH1FRatio>(name.c_str(), eff->GetTitle(),
+                                                      eff->GetPassedHistogram()->GetXaxis()->GetNbins(),
+                                                      eff->GetPassedHistogram()->GetXaxis()->GetXmin(),
+                                                      eff->GetPassedHistogram()->GetXaxis()->GetXmax());
+        }
+        ratio->SetBit(TH1::EStatusBits::kNoStats);
+        if (!ratio->getNum()->Add(eff->GetPassedHistogram())) {
+          ILOG(Error) << "Add operation for numerator histogram of " << ratio->GetName() << " failed; efficiency will be skewed" << ENDM;
+        }
+        if (!ratio->getDen()->Add(eff->GetTotalHistogram())) {
+          ILOG(Error) << "Add operation for denominator histogram of " << ratio->GetName() << " failed; efficiency will be skewed" << ENDM;
+        }
+        ratio->GetXaxis()->SetTitle(eff->GetPassedHistogram()->GetXaxis()->GetTitle());
+        ratio->GetYaxis()->SetTitle(eff->GetPassedHistogram()->GetYaxis()->GetTitle());
+        ratio->Sumw2();
+        ratio->setHasBinominalErrors();
+        ratio->update();
+      };
 
-    // Pt
-    mEffPt = makeRatio(mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS));
-    getObjectsManager()->startPublishing(mEffPt.get(), PublicationPolicy::Once);
-    getObjectsManager()->setDefaultDrawOptions(mEffPt->GetName(), "logx");
+      // Pt
+      makeRatio(mEffPt, mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS));
+      getObjectsManager()->startPublishing(mEffPt.get(), PublicationPolicy::Once);
+      getObjectsManager()->setDefaultDrawOptions(mEffPt->GetName(), "logx");
 
-    // Eta
-    mEffEta = makeRatio(mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS));
-    getObjectsManager()->startPublishing(mEffEta.get(), PublicationPolicy::Once);
+      // Eta
+      makeRatio(mEffEta, mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS));
+      getObjectsManager()->startPublishing(mEffEta.get(), PublicationPolicy::Once);
 
-    // Phi
-    mEffPhi = makeRatio(mMatchITSTPCQC.getFractionITSTPCmatchPhi(gloqc::MatchITSTPCQC::ITS));
-    getObjectsManager()->startPublishing(mEffPhi.get(), PublicationPolicy::Once);
+      // Phi
+      makeRatio(mEffPhi, mMatchITSTPCQC.getFractionITSTPCmatchPhi(gloqc::MatchITSTPCQC::ITS));
+      getObjectsManager()->startPublishing(mEffPhi.get(), PublicationPolicy::Once);
+    }
   }
 }
 
