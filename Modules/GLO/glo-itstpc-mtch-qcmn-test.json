@@ -81,8 +81,8 @@
               "mFractionITSTPCmatch_ITS_Hist",
               "mFractionITSTPCmatchPhi_ITS_Hist",
               "mFractionITSTPCmatchEta_ITS_Hist",
-              "mK0MassVsPtVsOcc_Cycle_py",
-              "mK0MassVsPtVsOcc_Integral_py"
+              "mK0sMassVsPtVsOcc_Cycle_pmass",
+              "mK0sMassVsPtVsOcc_Integral_pmass"
             ]
           }
         ],

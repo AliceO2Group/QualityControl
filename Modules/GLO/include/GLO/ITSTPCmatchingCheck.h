@@ -19,6 +19,8 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
 
+#include <CommonConstants/PhysicsConstants.h>
+
 #include <vector>
 
 namespace o2::quality_control_modules::glo
@@ -54,10 +56,17 @@ class ITSTPCmatchingCheck final : public o2::quality_control::checker::CheckInte
   float mMinEta{ -0.8 };
   float mMaxEta{ 0.8 };
 
+  // K0s
+  bool mShowK0s{ false };
+  float mAccRelError{ 0.02 };
+  float mAccUncertainty{ 2 };
+  static constexpr auto mMassK0s{ o2::constants::physics::MassK0Short };
+
   // Other
   int mLimitRange{ -1 };
+  bool mIsPbPb{ false };
 
-  ClassDefOverride(ITSTPCmatchingCheck, 1);
+  ClassDefOverride(ITSTPCmatchingCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::glo
