@@ -37,9 +37,9 @@
 #include <chrono>
 #include <sstream>
 #include <filesystem>
-#include <unordered_set>
 // boost
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/json_parser/error.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
 #include <utility>
@@ -568,7 +568,11 @@ boost::property_tree::ptree CcdbDatabase::getListingAsPtree(const std::string& p
   std::stringstream listingAsStringStream{ getListingAsString(pathWithMetadata.str(), "application/json", latestOnly) };
 
   boost::property_tree::ptree listingAsTree;
-  boost::property_tree::read_json(listingAsStringStream, listingAsTree);
+  try {
+    boost::property_tree::read_json(listingAsStringStream, listingAsTree);
+  } catch (const boost::property_tree::json_parser::json_parser_error&) {
+    ILOG(Error, Support) << "Failed to parse json in CcdbDatabase::getListingAsPtree from data: " << listingAsStringStream.str() << ENDM;
+  }
 
   return listingAsTree;
 }
@@ -616,7 +620,12 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   boost::property_tree::ptree pt;
   stringstream ss;
   ss << listing;
-  boost::property_tree::read_json(ss, pt);
+
+  try {
+    boost::property_tree::read_json(ss, pt);
+  } catch (const boost::property_tree::json_parser::json_parser_error&) {
+    ILOG(Error, Support) << "Failed to parse json in CcdbDatabase::getTimestampsForObject from data: " << ss.str() << ENDM;
+  }
 
   BOOST_FOREACH (boost::property_tree::ptree::value_type& v, pt.get_child("objects")) {
     assert(v.first.empty()); // array elements have no names
