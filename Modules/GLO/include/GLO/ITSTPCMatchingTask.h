@@ -21,7 +21,13 @@
 #include "GLOQC/MatchITSTPCQC.h"
 #include "Common/TH1Ratio.h"
 
+#include <CommonConstants/PhysicsConstants.h>
+
 #include <memory>
+
+#include "TH3F.h"
+#include "TF1.h"
+#include "TGraphErrors.h"
 
 using namespace o2::quality_control::core;
 
@@ -50,9 +56,44 @@ class ITSTPCMatchingTask final : public TaskInterface
  private:
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
+  unsigned int mNCycle{ 0 };
+
+  bool mIsSync{ false };
+  bool mIsPbPb{ false };
+
+  bool mDoMTCRatios{ false };
   std::unique_ptr<common::TH1FRatio> mEffPt;
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
+
+  bool mDoPtTrending{ false };
+  float mTrendingBinPt{ 1.0 };
+  std::unique_ptr<TGraph> mTrendingPt;
+
+  bool mDoK0s{ false };
+  static constexpr auto mMassK0s{ o2::constants::physics::MassK0Short };
+  std::unique_ptr<TH3F> mK0sCycle;
+  std::unique_ptr<TH3F> mK0sIntegral;
+  bool mDoK0sMassTrending{ false };
+  std::unique_ptr<TGraphErrors> mK0sMassTrend;
+  bool fitK0sMass(TH1* h);
+  double mBackgroundRangeLeft{ 0.45 };
+  double mBackgroundRangeRight{ 0.54 };
+  struct FitBackground {
+    static constexpr int mNPar{ 3 };
+    double mRejLeft{ 0.48 };
+    double mRejRight{ 0.51 };
+    double operator()(double* x, double* p) const
+    {
+      if (x[0] > mRejLeft && x[0] < mRejRight) {
+        TF1::RejectPoint();
+        return 0;
+      }
+      return p[0] + (p[1] * x[0]) + (p[2] * x[0] * x[0]);
+    }
+  } mFitBackground;
+  std::unique_ptr<TF1> mBackground;
+  std::unique_ptr<TF1> mSignalAndBackground;
 };
 
 } // namespace o2::quality_control_modules::glo
