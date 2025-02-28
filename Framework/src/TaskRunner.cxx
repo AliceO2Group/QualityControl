@@ -92,8 +92,8 @@ void TaskRunner::init(InitContext& iCtx)
   // registering state machine callbacks
   try {
     iCtx.services().get<CallbackService>().set<CallbackService::Id::Start>([this, services = iCtx.services()]() mutable { start(services); });
+    iCtx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this, services = iCtx.services()]() { stop(services); });
     iCtx.services().get<CallbackService>().set<CallbackService::Id::Reset>([this]() { reset(); });
-    iCtx.services().get<CallbackService>().set<CallbackService::Id::Stop>([this]() { stop(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
     ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
@@ -320,9 +320,10 @@ void TaskRunner::start(ServiceRegistryRef services)
   }
 }
 
-void TaskRunner::stop()
+void TaskRunner::stop(ServiceRegistryRef services)
 {
   try {
+    mActivity = o2::quality_control::core::computeActivity(services, mActivity);
     if (mCycleOn) {
       mTask->endOfCycle();
       mCycleNumber++;
@@ -414,7 +415,7 @@ void TaskRunner::endOfActivity()
 
   auto now = getCurrentTimestamp();
   mTimekeeper->updateByCurrentTimestamp(now);
-  mTimekeeper->setEndOfActivity(0, mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mActivity.mId)); // TODO: get end of run from ECS/BK if possible
+  mTimekeeper->setEndOfActivity(mActivity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mActivity.mId));
 
   mTask->endOfActivity(mObjectsManager->getActivity());
   mObjectsManager->removeAllFromServiceDiscovery();
