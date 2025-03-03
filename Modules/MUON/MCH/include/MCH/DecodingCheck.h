@@ -55,6 +55,8 @@ class DecodingCheck : public o2::quality_control::checker::CheckInterface
   std::array<std::optional<double>, 5> mMinGoodErrorFracPerStation;
   double mMinGoodSyncFrac{ 0.9 };
   std::array<std::optional<double>, 5> mMinGoodSyncFracPerStation;
+  double mMinHeartBeatRate{ 0 };
+  double mMaxHeartBeatRate{ 2 };
 
   QualityChecker mQualityChecker;
 

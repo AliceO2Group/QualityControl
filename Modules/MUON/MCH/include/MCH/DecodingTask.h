@@ -30,6 +30,8 @@
 
 using namespace o2::quality_control_modules::common;
 
+class TH1I;
+
 namespace o2::quality_control_modules::muonchambers
 {
 
@@ -96,7 +98,7 @@ class DecodingTask /*final*/ : public TaskInterface
   std::array<HBCount, o2::mch::NumberOfDualSampas> mHBcount;
 
   /// \brief number of processed time-frames
-  std::unique_ptr<TH1F> mHistogramTimeFramesCount;
+  std::unique_ptr<TH1I> mHistogramTimeFramesCount;
 
   /// \brief decoding error plots
   std::unique_ptr<TH2FRatio> mHistogramErrorsFEC; ///< error codes per FEC
