@@ -14,6 +14,7 @@
 /// \author  Piotr Konopka
 ///
 
+#include "QualityControl/CustomParameters.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/ReductorTObject.h"
 #include "QualityControl/ReductorConditionAny.h"
@@ -23,6 +24,7 @@
 #include "QualityControl/ConditionAccess.h"
 #include <TH1I.h>
 #include <TTree.h>
+#include <boost/test/tools/old/interface.hpp>
 
 #define BOOST_TEST_MODULE Reductor test
 #define BOOST_TEST_MAIN
@@ -172,4 +174,30 @@ BOOST_AUTO_TEST_CASE(test_ReductorAnyInterface)
   Double_t* integrals = tree->GetVal(0);
 
   BOOST_CHECK_EQUAL(integrals[0], secret.Length());
+}
+
+BOOST_AUTO_TEST_CASE(test_ReductorConfigurable)
+{
+  class ReductorTest : public Reductor
+  {
+   public:
+    std::string value{};
+
+    virtual void* getBranchAddress()
+    {
+      return nullptr;
+    }
+    virtual const char* getBranchLeafList()
+    {
+      value = mCustomParameters.at("key");
+      return value.c_str();
+    }
+  };
+
+  ReductorTest reductor;
+  CustomParameters params;
+  params.set("key", "value");
+  Reductor& r = reductor;
+  r.setCustomConfig(params);
+  BOOST_REQUIRE_EQUAL(r.getBranchLeafList(), "value");
 }

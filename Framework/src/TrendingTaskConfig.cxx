@@ -58,6 +58,15 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
                       plotConfig.get<int>("colorPalette", 0),
                       graphs });
   }
+
+  const auto extractReductorParams = [](const boost::property_tree::ptree& dataSourceConfig) -> core::CustomParameters {
+    core::CustomParameters result;
+    if (const auto reductorParams = dataSourceConfig.get_child_optional("reductorParameters"); reductorParams.has_value()) {
+      result.populateCustomParameters(reductorParams.value());
+    }
+    return result;
+  };
+
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + id + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
@@ -65,6 +74,7 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
                                 dataSourceConfig.second.get<std::string>("path"),
                                 sourceName.second.data(),
                                 dataSourceConfig.second.get<std::string>("reductorName"),
+                                extractReductorParams(dataSourceConfig.second),
                                 dataSourceConfig.second.get<std::string>("moduleName") });
       }
     } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
@@ -73,6 +83,7 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
                               dataSourceConfig.second.get<std::string>("path"),
                               dataSourceConfig.second.get<std::string>("name"),
                               dataSourceConfig.second.get<std::string>("reductorName"),
+                              extractReductorParams(dataSourceConfig.second),
                               dataSourceConfig.second.get<std::string>("moduleName") });
     } else {
       throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + id + ".dataSources'");

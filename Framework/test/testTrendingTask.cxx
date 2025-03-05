@@ -14,6 +14,7 @@
 /// \author  Piotr Konopka
 ///
 
+#include "Framework/include/QualityControl/Reductor.h"
 #include "QualityControl/TrendingTask.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/MonitorObject.h"
@@ -50,6 +51,25 @@ struct CleanupAtDestruction {
  private:
   std::function<void()> mCallback = nullptr;
 };
+
+// https://stackoverflow.com/questions/424104/can-i-access-private-members-from-outside-the-class-without-using-friends
+template <typename Accessor, typename Accessor::type Member>
+struct DeclareGlobalGet {
+  friend typename Accessor::type get(Accessor) { return Member; }
+};
+
+struct TrendingTaskReductorAccessor {
+  using type = std::unordered_map<std::string, std::unique_ptr<Reductor>> TrendingTask::*;
+  friend type get(TrendingTaskReductorAccessor);
+};
+
+struct ReductorConfigAccessor {
+  using type = CustomParameters Reductor::*;
+  friend type get(ReductorConfigAccessor);
+};
+
+template struct DeclareGlobalGet<TrendingTaskReductorAccessor, &TrendingTask::mReductors>;
+template struct DeclareGlobalGet<ReductorConfigAccessor, &Reductor::mCustomParameters>;
 
 TEST_CASE("test_trending_task")
 {
@@ -88,6 +108,13 @@ TEST_CASE("test_trending_task")
           taskName + R"json(",
             "name": "testHistoTrending",
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "key":"value"
+                }
+              }
+            },
             "moduleName": "QcCommon"
           },
           {
@@ -145,6 +172,20 @@ TEST_CASE("test_trending_task")
     task.setID(trendingTaskID);
     task.setObjectsManager(objectManager);
     REQUIRE_NOTHROW(task.configure(config));
+
+    {
+      auto& reductors = task.*get(TrendingTaskReductorAccessor());
+      size_t foundCount{};
+      for (const auto& reductor : reductors) {
+        auto& config = (*reductor.second.get()).*get(ReductorConfigAccessor());
+        if (auto found = config.find("key"); found != config.end()) {
+          if (found->second == "value") {
+            foundCount++;
+          }
+        }
+      }
+      REQUIRE(foundCount == 1);
+    }
 
     // test initialize()
     REQUIRE_NOTHROW(task.initialize({ TriggerType::UserOrControl, true, { 0, "NONE", "", "", "qc" }, 1 }, services));

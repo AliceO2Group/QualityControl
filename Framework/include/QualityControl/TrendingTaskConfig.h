@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <string>
+#include "CustomParameters.h"
 #include "QualityControl/PostProcessingConfig.h"
 
 namespace o2::quality_control::postprocessing
@@ -56,6 +57,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string path;
     std::string name;
     std::string reductorName;
+    core::CustomParameters reductorParameters;
     std::string moduleName;
   };
 
