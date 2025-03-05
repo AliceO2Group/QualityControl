@@ -20,18 +20,18 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
 
-#include "Rtypes.h"
-#include "TH1.h"
-#include "TF1.h"
-#include "TPaveText.h"
-#include "TMath.h"
-#include "TArrow.h"
-#include "TText.h"
-#include "TLine.h"
-#include "TLegend.h"
-#include "TPolyMarker.h"
+#include <Rtypes.h>
+#include <TH1.h>
+#include <TF1.h>
+#include <TPaveText.h>
+#include <TMath.h>
+#include <TArrow.h>
+#include <TText.h>
+#include <TLine.h>
+#include <TLegend.h>
+#include <TPolyMarker.h>
 
-#include "fmt/format.h"
+#include <format>
 #include <utility>
 
 using namespace std;
@@ -84,7 +84,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           } else {
             for (const auto& [binLow, binUp] : ranges) {
               float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-              cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+              cBins += std::format("{:.1f}-{:.1f},", low, up);
             }
             cBins.pop_back(); // remove last `,`
             cBins += " (GeV/c)";
@@ -125,7 +125,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
             std::string cBins{ "Bad matching efficiency in: " };
             for (const auto& [binLow, binUp] : ranges) {
               float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-              cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+              cBins += std::format("{:.1f}-{:.1f},", low, up);
             }
             cBins.pop_back(); // remove last `,`
             cBins += " (rad)";
@@ -166,7 +166,7 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
             std::string cBins{ "Bad matching efficiency in: " };
             for (const auto& [binLow, binUp] : ranges) {
               float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-              cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+              cBins += std::format("{:.1f}-{:.1f},", low, up);
             }
             cBins.pop_back(); // remove last `,`
             result.updateMetadata("checkEtaBins", cBins);

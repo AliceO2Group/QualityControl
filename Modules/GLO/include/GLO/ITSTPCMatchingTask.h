@@ -25,9 +25,9 @@
 
 #include <memory>
 
-#include "TH3F.h"
-#include "TF1.h"
-#include "TGraphErrors.h"
+#include <TH3F.h>
+#include <TF1.h>
+#include <TGraphErrors.h>
 
 using namespace o2::quality_control::core;
 
