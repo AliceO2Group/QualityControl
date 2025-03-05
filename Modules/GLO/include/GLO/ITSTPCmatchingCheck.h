@@ -19,7 +19,7 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
 
-#include <CommonConstants/PhysicsConstants.h>
+#include "GLO/Helpers.h"
 
 #include <vector>
 
@@ -60,7 +60,7 @@ class ITSTPCmatchingCheck final : public o2::quality_control::checker::CheckInte
   bool mShowK0s{ false };
   float mAccRelError{ 0.02 };
   float mAccUncertainty{ 2 };
-  static constexpr auto mMassK0s{ o2::constants::physics::MassK0Short };
+  helpers::K0sFitter mK0sFitter;
 
   // Other
   int mLimitRange{ -1 };

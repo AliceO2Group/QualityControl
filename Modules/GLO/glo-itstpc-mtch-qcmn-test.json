@@ -49,9 +49,7 @@
           "GID": "ITS-TPC,ITS",
           "verbose": "false",
           "doMTCRatios": "true",
-          "doTrendingPt": "true",
           "doK0QC": "true",
-          "doTrendingK0s": "true",
           "isSync": "true",
           "trackSourcesK0": "ITS,TPC,ITS-TPC,ITS-TPC-TOF,TPC-TOF,TPC-TRD,ITS-TPC-TRD,TPC-TRD-TOF,ITS-TPC-TOF,ITS-TPC-TRD-TOF"
         },
@@ -98,6 +96,51 @@
             }
           }
         }
+      }
+    },
+    "postprocessing": {
+      "K0sMassTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/gloFitK0sMassSignal"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "gloFitK0sMassSignal"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::K0sFitReductor",
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_k0s_mass_trending",
+            "title": "Fitted K0s mass",
+            "varexp": "gloFitK0sMassSignal.mean:time",
+            "option": "*L",
+            "graphAxisLabel": "K0s mass (GeV/c^{2}):time"
+          },
+          {
+            "name": "glo_k0s_sigma_trending",
+            "title": "Fitted K0s sigma",
+            "varexp": "gloFitK0sMassSignal.sigma:time",
+            "option": "*L",
+            "graphAxisLabel": "#sigma_{K0s mass (GeV/c^{2})}:time"
+          }
+        ]
       }
     }
   }

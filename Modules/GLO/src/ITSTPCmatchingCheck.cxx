@@ -490,19 +490,18 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     auto isCycle = name.find("Cycle") != std::string::npos;
     auto msg = new TPaveText(0.6, 0.6, 0.88, 0.88, "NDC;NB");
     h->SetTitle(Form("K0s invariant mass (integrated over #it{p}_{T} and occupancy, %s);K0s mass (GeV/c^{2});entries", (isCycle) ? "current cycle" : "integrated"));
-    const auto fSignal = (TF1*)h->GetListOfFunctions()->FindObject("gloFitK0sMassSignal");
-    if (!fSignal) {
-      msg->AddText("Fit: Not Performed");
+    if (!mK0sFitter.fit(h, true)) {
+      msg->AddText("Fit: Failed");
       msg->SetFillColor(kRed);
       msg->SetTextColor(kWhite);
     } else {
-      auto unc = std::abs(mMassK0s - fSignal->GetParameter(4)) / fSignal->GetParameter(5);
-      auto rerr = std::abs(mMassK0s - fSignal->GetParameter(4)) / mMassK0s;
+      auto unc = mK0sFitter.getUncertainty();
+      auto rerr = mK0sFitter.getRelativeError();
       auto max = h->GetMaximum(), min = h->GetMinimum(), textp{ (max - min) * 0.1 };
-      auto l = new TLine(mMassK0s, 0, mMassK0s, max);
+      auto l = new TLine(mK0sFitter.mMassK0s, 0, mK0sFitter.mMassK0s, max);
       l->SetLineStyle(kDotted);
       h->GetListOfFunctions()->Add(l);
-      auto t = new TText(mMassK0s - 0.025, textp, "PDG K0s");
+      auto t = new TText(mK0sFitter.mMassK0s - 0.025, textp, "PDG K0s");
       h->GetListOfFunctions()->Add(t);
       if (unc > mAccUncertainty || rerr > mAccRelError) {
         msg->AddText("Fit: BAD");
@@ -513,7 +512,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
         msg->SetTextColor(kWhite);
       } else {
         msg->AddText("Fit: GOOD");
-        msg->AddText(Form("Mass %.1f #pm %.1f (MeV)", fSignal->GetParameter(4) * 1e3, fSignal->GetParameter(5) * 1e3));
+        msg->AddText(Form("Mass %.1f #pm %.1f (MeV)", mK0sFitter.getMass() * 1e3, mK0sFitter.getSigma() * 1e3));
         msg->AddText(Form("Consistent %.2f", unc));
         msg->AddText(Form("RError %.2f%%", rerr * 1e2));
         msg->SetFillColor(kGreen);
@@ -546,6 +545,7 @@ void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
   if ((mShowK0s = common::getFromExtendedConfig(activity, mCustomParameters, "showK0s", false))) {
     mAccRelError = common::getFromExtendedConfig(activity, mCustomParameters, "acceptableK0sRError", 0.2f);
     mAccUncertainty = common::getFromExtendedConfig(activity, mCustomParameters, "acceptableK0sUncertainty", 2.f);
+    mK0sFitter.init(mCustomParameters, activity);
   }
 
   mLimitRange = common::getFromExtendedConfig(activity, mCustomParameters, "limitRanges", 5);
