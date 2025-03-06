@@ -27,6 +27,8 @@
 #include "MCHBase/DecoderError.h"
 #include "MCHBase/HeartBeatPacket.h"
 
+#include <TH1I.h>
+
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::mch;
@@ -57,7 +59,7 @@ void DecodingTask::createErrorHistos()
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Number of decoding errors, grouped by chamber ID and normalized to the number of processed TF
-  mHistogramErrorsFEC = std::make_unique<TH2FRatio>("DecodingErrors_Elec", "Error Code vs. FEC ID", nElecXbins, 0, nElecXbins, getErrorCodesSize(), 0, getErrorCodesSize());
+  mHistogramErrorsFEC = std::make_unique<TH2FRatio>("DecodingErrors_Elec", "Error Code vs. FEC ID", nElecXbins, 0, nElecXbins, getErrorCodesSize(), 0, getErrorCodesSize(), true);
   {
     TAxis* ax = mHistogramErrorsFEC->GetYaxis();
     for (int i = 0; i < getErrorCodesSize(); i++) {
@@ -75,16 +77,16 @@ void DecodingTask::createHeartBeatHistos()
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Heart-beat packets time distribution and synchronization errors
-  mHistogramHBTimeFEC = std::make_unique<TH2FRatio>("HBTime_Elec", "HB time vs. FEC ID", nElecXbins, 0, nElecXbins, 40, mHBExpectedBc - 20, mHBExpectedBc + 20);
+  mHistogramHBTimeFEC = std::make_unique<TH2FRatio>("HBTime_Elec", "HB time vs. FEC ID", nElecXbins, 0, nElecXbins, 40, mHBExpectedBc - 20, mHBExpectedBc + 20, true);
   mHistogramHBTimeFEC->Sumw2(kFALSE);
   publishObject(mHistogramHBTimeFEC.get(), "colz", "logz", false, false);
 
   uint64_t max = ((static_cast<uint64_t>(0x100000) / 100) + 1) * 100;
-  mHistogramHBCoarseTimeFEC = std::make_unique<TH2FRatio>("HBCoarseTime_Elec", "HB time vs. FEC ID (coarse)", nElecXbins, 0, nElecXbins, 100, 0, max);
+  mHistogramHBCoarseTimeFEC = std::make_unique<TH2FRatio>("HBCoarseTime_Elec", "HB time vs. FEC ID (coarse)", nElecXbins, 0, nElecXbins, 100, 0, max, true);
   mHistogramHBCoarseTimeFEC->Sumw2(kFALSE);
   publishObject(mHistogramHBCoarseTimeFEC.get(), "colz", "", false, false);
 
-  mSyncStatusFEC = std::make_unique<TH2FRatio>("SyncStatus_Elec", "Heart-beat status vs. FEC ID", nElecXbins, 0, nElecXbins, 3, 0, 3);
+  mSyncStatusFEC = std::make_unique<TH2FRatio>("SyncStatus_Elec", "Heart-beat status vs. FEC ID", nElecXbins, 0, nElecXbins, 3, 0, 3, true);
   mSyncStatusFEC->Sumw2(kFALSE);
   mSyncStatusFEC->GetYaxis()->SetBinLabel(1, "OK");
   mSyncStatusFEC->GetYaxis()->SetBinLabel(2, "Out-of-sync");
@@ -103,7 +105,7 @@ void DecodingTask::initialize(o2::framework::InitContext& /*ic*/)
 
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
 
-  mHistogramTimeFramesCount = std::make_unique<TH1F>("TimeFramesCount", "Number of Time Frames", 1, 0, 1);
+  mHistogramTimeFramesCount = std::make_unique<TH1I>("TimeFramesCount", "Number of Time Frames", 1, 0, 1);
   publishObject(mHistogramTimeFramesCount.get(), "hist", "", true, false);
 
   createErrorHistos();
@@ -329,7 +331,6 @@ void DecodingTask::updateSyncErrors()
 
 void DecodingTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  static int nTF = 1;
   for (auto&& input : ctx.inputs()) {
     if (input.spec->binding == "readout") {
       decodeReadout(input);
@@ -345,24 +346,7 @@ void DecodingTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  // Count the number of processed TF and set the denominators of the error histograms accordingly
-  nTF += 1;
-
   mHistogramTimeFramesCount->Fill(0.5);
-
-  auto updateTFcount = [](TH2FRatio* hr, int nTF) {
-    auto hTF = hr->getDen();
-    for (int ybin = 1; ybin <= hTF->GetYaxis()->GetNbins(); ybin++) {
-      for (int xbin = 1; xbin <= hTF->GetXaxis()->GetNbins(); xbin++) {
-        hTF->SetBinContent(xbin, ybin, nTF);
-      }
-    }
-  };
-
-  updateTFcount(mHistogramErrorsFEC.get(), nTF);
-  updateTFcount(mHistogramHBTimeFEC.get(), nTF);
-  updateTFcount(mHistogramHBCoarseTimeFEC.get(), nTF);
-  updateTFcount(mSyncStatusFEC.get(), nTF);
 }
 
 //_____________________________________________________________________________
@@ -370,6 +354,12 @@ void DecodingTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DecodingTask::endOfCycle()
 {
   ILOG(Debug, Devel) << "endOfCycle" << ENDM;
+
+  int nTF = static_cast<int>(mHistogramTimeFramesCount->GetBinContent(1));
+  mHistogramErrorsFEC->getDen()->SetBinContent(1, 1, nTF);
+  mHistogramHBTimeFEC->getDen()->SetBinContent(1, 1, nTF);
+  mHistogramHBCoarseTimeFEC->getDen()->SetBinContent(1, 1, nTF);
+  mSyncStatusFEC->getDen()->SetBinContent(1, 1, nTF);
 
   mHistogramErrorsFEC->update();
   mHistogramHBCoarseTimeFEC->update();

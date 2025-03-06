@@ -47,9 +47,11 @@ void DecodingCheck::startOfActivity(const Activity& activity)
 
   mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
   mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
-
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;
+
+  mMinHeartBeatRate = getConfigurationParameter<double>(mCustomParameters, "MinHeartBeatRate", mMinHeartBeatRate, activity);
+  mMaxHeartBeatRate = getConfigurationParameter<double>(mCustomParameters, "MaxHeartBeatRate", mMaxHeartBeatRate, activity);
 }
 
 Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -263,6 +265,16 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
       h->SetBinContent(deId + 1, ybin, 1);
     }
+  }
+
+  // Normalize the heartBeat rate plots
+  if (mo->getName().find("HBRate_ST") != std::string::npos) {
+    TH2F* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (!h) {
+      return;
+    }
+    h->SetMinimum(mMinHeartBeatRate);
+    h->SetMaximum(mMaxHeartBeatRate);
   }
 }
 
