@@ -48,7 +48,8 @@ void TrendingTask::configure(const boost::property_tree::ptree& config)
   // configuration
   mConfig = TrendingTaskConfig(getID(), config);
   for (const auto& source : mConfig.dataSources) {
-    mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
+    auto&& [emplaced, _] = mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
+    emplaced->second->setCustomConfig(source.reductorParameters);
   }
 }
 

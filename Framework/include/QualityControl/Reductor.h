@@ -16,12 +16,17 @@
 #ifndef QUALITYCONTROL_REDUCTOR_H
 #define QUALITYCONTROL_REDUCTOR_H
 
+#include "CustomParameters.h"
+
 namespace o2::quality_control::postprocessing
 {
 
 /// \brief An interface for storing columnar data into a TTree
 class Reductor
 {
+ protected:
+  core::CustomParameters mCustomParameters;
+
  public:
   /// \brief Constructor
   Reductor() = default;
@@ -34,8 +39,10 @@ class Reductor
   /// \brief Branch leaf list getter
   /// \return A C string with a description of a branch format, formatted accordingly to the TTree interface
   virtual const char* getBranchLeafList() = 0;
+  /// \brief setter for mCustomParameters
+  void setCustomConfig(const core::CustomParameters& parameters) { mCustomParameters = parameters; };
 };
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_REDUCTOR_H
+#endif // QUALITYCONTROL_REDUCTOR_H
