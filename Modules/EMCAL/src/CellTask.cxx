@@ -38,6 +38,7 @@
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 #include <CommonConstants/Triggers.h>
+#include "EMCAL/DrawGridlines.h"
 #include <set>
 
 namespace o2::quality_control_modules::emcal
@@ -1051,6 +1052,10 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
   } catch (o2::emcal::InvalidCellIDException& e) {
     ILOG(Info, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   }
+
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
+
 }
 
 void CellTask::CellHistograms::countEvent()
