@@ -101,6 +101,14 @@ class ZDCRecDataTask final : public TaskInterface
   int process(const gsl::span<const o2::zdc::BCRecData>& RecBC, const gsl::span<const o2::zdc::ZDCEnergy>& Energy, const gsl::span<const o2::zdc::ZDCTDCData>& TDCData, const gsl::span<const uint16_t>& Info);
   bool FillTDCValueHisto();
   std::vector<std::string> tokenLine(std::string Line, std::string Delimiter);
+  // Begin Stefan addition
+  bool IsEventCentral();
+  void SetConfigCentralEvent(float tdcLimit, int centraleventconfigvalue);
+  void settdcLimit(float tdcv) { ftdcLimit = tdcv; };
+  void setcentraleventconfigvalue(int centrentcfg) { fcentraleventconfigvalue = centrentcfg; };
+  float gettdcLimit() { return ftdcLimit; };
+  int getcentraleventconfigvalue() { return fcentraleventconfigvalue; };
+  // End Stefan addition
 
  private:
   std::vector<std::string> mVecCh;
@@ -127,6 +135,10 @@ class ZDCRecDataTask final : public TaskInterface
   int fNumBinY = 0;
   double fMinBinY = 0;
   double fMaxBinY = 0;
+  // Begin Stefan addition
+  float ftdcLimit = 0;
+  int fcentraleventconfigvalue = 0;
+  // End Stefan addition
   // TH1F* mHistogram = nullptr;
 };
 
