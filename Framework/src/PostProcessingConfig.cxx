@@ -41,7 +41,7 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
 {
   // if available, use the source repo as defined in the postprocessing task, otherwise the general QCDB
   auto sourceRepo = config.get_child_optional("qc.postprocessing." + id + ".sourceRepo");
-  auto databasePath = sourceRepo? "qc.postprocessing." + id + ".sourceRepo" : "qc.config.database";
+  auto databasePath = sourceRepo ? "qc.postprocessing." + id + ".sourceRepo" : "qc.config.database";
   qcdbUrl = config.get<std::string>(databasePath + ".implementation") == "CCDB" ? config.get<std::string>(databasePath + ".host") : "";
 
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
