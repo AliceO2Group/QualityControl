@@ -1055,7 +1055,6 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
 
   o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
   o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
-
 }
 
 void CellTask::CellHistograms::countEvent()
