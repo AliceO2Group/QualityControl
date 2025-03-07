@@ -49,6 +49,7 @@
           "GID": "ITS-TPC,ITS",
           "verbose": "false",
           "doMTCRatios": "true",
+          "doMTCTrending": "true",
           "doK0QC": "true",
           "isSync": "true",
           "trackSourcesK0": "ITS,TPC,ITS-TPC,ITS-TPC-TOF,TPC-TOF,TPC-TRD,ITS-TPC-TRD,TPC-TRD-TOF,ITS-TPC-TOF,ITS-TPC-TRD-TOF"
@@ -131,6 +132,7 @@
             "title": "Fitted K0s mass",
             "varexp": "gloFitK0sMassSignal.mean:time",
             "option": "*L",
+            "graphYRange": "0.45:0.55",
             "graphAxisLabel": "K0s mass (GeV/c^{2}):time"
           },
           {
@@ -138,7 +140,45 @@
             "title": "Fitted K0s sigma",
             "varexp": "gloFitK0sMassSignal.sigma:time",
             "option": "*L",
+            "graphYRange": "0:0.01",
             "graphAxisLabel": "#sigma_{K0s mass (GeV/c^{2})}:time"
+          }
+        ]
+      },
+      "MTCTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/gloMTCTrendingObject"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "gloMTCTrendingObject"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::MTCReductor",
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_mtc_pt_trending",
+            "title": "MTC #it{p}_{T} trending",
+            "varexp": "gloMTCTrendingObject.pt:time",
+            "option": "*L",
+            "graphYRange": "0:1.02",
+            "graphAxisLabel": "MTC:time"
           }
         ]
       }

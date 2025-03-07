@@ -20,13 +20,25 @@ namespace o2::quality_control_modules::glo
 class K0sFitReductor final : public quality_control::postprocessing::ReductorTObject
 {
   void* getBranchAddress() final { return &mStats; };
-  const char* getBranchLeafList() final { return "mean/D:sigma"; };
-  void update(TObject* obj) override;
+  const char* getBranchLeafList() final { return "mean/F:sigma/F"; };
+  void update(TObject* obj) final;
 
  private:
   struct {
-    Double_t mean;
-    Double_t stddev;
+    Float_t mean;
+    Float_t sigma;
+  } mStats;
+};
+
+class MTCReductor final : public quality_control::postprocessing::ReductorTObject
+{
+  void* getBranchAddress() final { return &mStats; };
+  const char* getBranchLeafList() final { return "pt/F"; };
+  void update(TObject* obj) final;
+
+ private:
+  struct {
+    Float_t pt;
   } mStats;
 };
 

@@ -25,7 +25,17 @@ void K0sFitReductor::update(TObject* obj)
   }
 
   mStats.mean = f->GetParameter(helpers::K0sFitter::Parameters::Mass);
-  mStats.stddev = f->GetParameter(helpers::K0sFitter::Parameters::Sigma);
+  mStats.sigma = f->GetParameter(helpers::K0sFitter::Parameters::Sigma);
+}
+
+void MTCReductor::update(TObject* obj)
+{
+  auto f = dynamic_cast<TF1*>(obj);
+  if (!f) {
+    return;
+  }
+
+  mStats.pt = f->GetParameter(0);
 }
 
 } // namespace o2::quality_control_modules::glo
