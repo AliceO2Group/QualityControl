@@ -6,7 +6,7 @@ target_sources(
   O2QcGLO
   PRIVATE src/ITSTPCMatchingTask.cxx
           src/ITSTPCmatchingCheck.cxx
-          src/K0sFitReductor.cxx
+          src/Reductors.cxx
           src/MeanVertexValidator.cxx
           src/MeanVertexPostProcessing.cxx
           src/MeanVertexCheck.cxx
@@ -59,7 +59,7 @@ add_root_dictionary(
           include/GLO/CTFSizeTask.h
           include/GLO/ITSTPCMatchingTask.h
           include/GLO/ITSTPCmatchingCheck.h
-          include/GLO/K0sFitReductor.h
+          include/GLO/Reductors.h
   LINKDEF include/GLO/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/GLO DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")

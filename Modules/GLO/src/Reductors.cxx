@@ -9,7 +9,7 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#include "GLO/K0sFitReductor.h"
+#include "GLO/Reductors.h"
 #include "GLO/Helpers.h"
 
 #include <TF1.h>
