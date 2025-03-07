@@ -20,8 +20,14 @@
 #include "QualityControl/TaskInterface.h"
 #include "GLOQC/MatchITSTPCQC.h"
 #include "Common/TH1Ratio.h"
+#include "GLO/Helpers.h"
+#include "GLO/Reductors.h"
+
+#include <CommonConstants/PhysicsConstants.h>
 
 #include <memory>
+
+#include <TH3F.h>
 
 using namespace o2::quality_control::core;
 
@@ -33,12 +39,6 @@ namespace o2::quality_control_modules::glo
 class ITSTPCMatchingTask final : public TaskInterface
 {
  public:
-  /// \brief Constructor
-  ITSTPCMatchingTask() = default;
-  /// Destructor
-  ~ITSTPCMatchingTask() override = default;
-
-  // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(const Activity& activity) override;
   void startOfCycle() override;
@@ -50,9 +50,22 @@ class ITSTPCMatchingTask final : public TaskInterface
  private:
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
+  bool mIsSync{ false };
+  bool mIsPbPb{ false };
+
+  bool mDoMTCRatios{ false };
   std::unique_ptr<common::TH1FRatio> mEffPt;
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
+  bool mDoMTCTrending{ false };
+  float mMTCTrendingPt{ 1.5 };
+  std::unique_ptr<TF1> mMTCTrendingObject;
+
+  bool mDoK0s{ false };
+  bool mPublishK0s3D{ false };
+  std::unique_ptr<TH3F> mK0sCycle;
+  std::unique_ptr<TH3F> mK0sIntegral;
+  helpers::K0sFitter mK0sFitter;
 };
 
 } // namespace o2::quality_control_modules::glo
