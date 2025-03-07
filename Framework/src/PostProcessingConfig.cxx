@@ -16,6 +16,8 @@
 
 #include "QualityControl/PostProcessingConfig.h"
 
+#include "QualityControl/runnerUtils.h"
+
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::postprocessing
@@ -27,7 +29,6 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
     moduleName(config.get<std::string>("qc.postprocessing." + id + ".moduleName")),
     className(config.get<std::string>("qc.postprocessing." + id + ".className")),
     detectorName(config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC")),
-    qcdbUrl(config.get<std::string>("qc.config.database.implementation") == "CCDB" ? config.get<std::string>("qc.config.database.host") : ""),
     ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", "")),
     consulUrl(config.get<std::string>("qc.config.consul.url", "")),
     activity(config.get<int>("qc.config.Activity.number", 0),
@@ -40,6 +41,11 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
     matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false)),
     critical(true)
 {
+  // if available, use the source repo as defined in the postprocessing task, otherwise the general QCDB
+  auto sourceRepo = config.get_child_optional("qc.postprocessing." + id + ".sourceRepo");
+  auto databasePath = sourceRepo? "qc.postprocessing." + id + ".sourceRepo" : "qc.config.database";
+  qcdbUrl = config.get<std::string>(databasePath + ".implementation") == "CCDB" ? config.get<std::string>(databasePath + ".host") : "";
+
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }
