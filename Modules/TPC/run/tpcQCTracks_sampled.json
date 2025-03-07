@@ -9,7 +9,7 @@
         "name": "not_applicable"
       },
       "Activity": {
-        "number": "592390"
+        "number": "560401"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -29,14 +29,20 @@
         "detectorName": "TPC",
         "cycleDurationSeconds": "10",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tpc-tracks"
-        },
+        "dataSources": [
+          { "type": "dataSamplingPolicy", "name": "tpc-tracks" },
+          {
+            "type": "direct",
+            "query": "meanvertex:GLO/MEANVERTEX/0?lifetime=condition&ccdb-path=GLO/Calib/MeanVertex"
+          }
+        ],
         "taskParameters": {
-          "cutAbsEta": "1.",  "cutMinNCluster": "60", "cutMindEdxTot": "20."
+          "cutAbsEta": "1.",
+          "cutMinNCluster": "60",
+          "cutMindEdxTot": "20.",
+          "usePVfromCCDB": "true"
         },
-	"grpGeomRequest" : {
+        "grpGeomRequest": {
           "geomRequest": "None",
           "askGRPECS": "false",
           "askGRPLHCIF": "false",
@@ -44,7 +50,7 @@
           "askMatLUT": "true",
           "askTime": "false",
           "askOnceAllButField": "true",
-          "needPropagatorD":  "false"
+          "needPropagatorD": "false"
         },
         "location": "remote"
       }
@@ -56,11 +62,13 @@
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
         "detectorName": "TPC",
-        "dataSource": [{
-          "type": "Task",
-          "name": "Tracks",
-          "MOs": ["example"]
-        }]
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "Tracks",
+            "MOs": ["example"]
+          }
+        ]
       }
     }
   },
