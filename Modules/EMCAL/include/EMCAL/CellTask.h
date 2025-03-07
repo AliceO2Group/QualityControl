@@ -24,6 +24,7 @@
 #include "CommonDataFormat/RangeReference.h"
 #include "Headers/DataHeader.h"
 #include "DataFormatsEMCAL/TriggerRecord.h"
+#include "QualityControl/PostProcessingInterface.h"
 
 class TH1;
 class TH2;
