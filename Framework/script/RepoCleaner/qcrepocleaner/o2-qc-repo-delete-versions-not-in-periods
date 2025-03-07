@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+from collections import defaultdict
+import logging
+import argparse
+
+from qcrepocleaner import binUtils
+from qcrepocleaner.Ccdb import Ccdb
+import dryable
+
+def parse_args():
+    """Parse the arguments passed to the script."""
+    logging.info("Parsing arguments")
+    parser = argparse.ArgumentParser(description='Remove all the versions in the given path that don\'t match the given list of periodNames ')
+    parser.add_argument('--url', dest='url', action='store', help='URL of the CCDB, with http[s]://', required=True)
+    parser.add_argument('--log-level', dest='log_level', action='store', default="20",
+                        help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Dry run, no actual deletion nor modification to the CCDB.')
+    parser.add_argument('--path', dest='path', action='store', default="",
+                        help='The path to work with (without initial slash and without .* at the end, e.g. qc/TST/MO/Bob).', required=True)
+    parser.add_argument('--one-by-one', action='store_true', help='Ask confirmation for each deletion')
+    parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
+    parser.add_argument('--periods-list', dest='periods_list', action='store', default="",
+                        help='The list of periods that will be spared, comma separated, no space.', required=True)
+
+    args = parser.parse_args()
+    dryable.set(args.dry_run)
+    logging.info(args)
+    return args
+
+
+def run(args):
+    ccdb = Ccdb(args.url)
+    ccdb.logger = logging.getLogger
+    global_deleted = 0
+    global_skipped = 0
+    global_spared = 0
+    global_spared_dict = defaultdict(int)
+    periods_list = args.periods_list.split(',')
+
+    # retrieve all the objects
+    path = args.path + ".*"
+    objects = ccdb.getFullObjectsDetails(path=path)
+    logging.debug(f"objects: {objects}")
+
+    for o in objects:
+        deleted = 0
+        skipped = 0
+        spared = 0
+        spared_dict = defaultdict(int)
+        logging.info(f"object: {o}")
+        # Retrieve the list of versions for this object
+        versions = ccdb.getVersionsList(o['path'])
+        logging.info(f"   Number of versions: {len(versions)} - {periods_list}")
+        for v in versions:
+            if "PeriodName" not in v.metadata:
+                ccdb.deleteVersion(v)
+                deleted += 1
+            # logging.debug(f"{v} -> {v.metadata['PeriodName']}")
+            elif v.metadata["PeriodName"] not in periods_list:
+                # logging.info(f"Ready to delete {v}")
+                if args.one_by_one:
+                    answer = input("  Continue? y/n\n  ")
+                    if answer.lower() in ["y", "yes"]:
+                        ccdb.deleteVersion(v)
+                        deleted += 1
+                    elif answer.lower() in ["n", "no"]:
+                        logging.info("   skipping")
+                        skipped += 1
+                    else:
+                        logging.error("   wrong input, skipping")
+                        skipped += 1
+                else:
+                    ccdb.deleteVersion(v)
+                    deleted += 1
+            else:
+                logging.debug(f"Not deleting {v} as it is in the periods list")
+                spared += 1
+                spared_dict[v.metadata["PeriodName"]] += 1
+
+        logging.info(f"Number of deleted: {deleted}")
+        logging.info(f"Number of spared: {spared}")
+        logging.info(f"Number of skipped: {skipped}")
+        logging.info(f"Spared : {spared_dict}")
+        global_deleted += deleted
+        global_skipped += skipped
+        global_spared += spared
+        global_spared_dict = defaultdict(int, {key: spared_dict.get(key, 0) + global_spared_dict.get(key, 0) for key in
+                                                       set(spared_dict) | set(global_spared_dict)})
+
+    logging.info(f"Global results : ")
+    logging.info(f"   Number of deleted: {global_deleted}")
+    logging.info(f"   Number of spared: {global_spared}")
+    logging.info(f"   Number of skipped: {global_skipped}")
+    logging.info(f"   Spared : {global_spared_dict}")
+
+    # ****************
+    # We start here !
+    # ****************
+
+def main():
+    binUtils.prepare_main_logger()
+
+    # Parse arguments
+    args = parse_args()
+    logging.getLogger().setLevel(int(args.log_level))
+
+    run(args)
+
+if __name__ == "__main__":
+    main()
