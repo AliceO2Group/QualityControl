@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include <TH2F.h>
 #include <TH3F.h>
 
 using namespace o2::quality_control::core;
@@ -63,6 +64,10 @@ class ITSTPCMatchingTask final : public TaskInterface
   std::unique_ptr<TH3F> mK0sCycle;
   std::unique_ptr<TH3F> mK0sIntegral;
   helpers::K0sFitter mK0sFitter;
+
+  bool mDoPVITS{ false };
+  std::unique_ptr<TH2F> mPVITSCycle;
+  std::unique_ptr<TH2F> mPVITSIntegral;
 };
 
 } // namespace o2::quality_control_modules::glo

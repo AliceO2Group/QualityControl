@@ -15,6 +15,7 @@
 ///
 
 #include <TH1D.h>
+#include <TProfile.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "GLO/ITSTPCMatchingTask.h"
@@ -38,7 +39,6 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMatchITSTPCQC.setUseTrkPID(getFromConfig(mCustomParameters, "useTrkPID", false));
   // ITS track
   mMatchITSTPCQC.setMinPtITSCut(getFromConfig(mCustomParameters, "minPtITSCut", 0.1f));
-  mMatchITSTPCQC.setEtaITSCut(getFromConfig(mCustomParameters, "minEtaITSCut", 1.4f));
   mMatchITSTPCQC.setEtaITSCut(getFromConfig(mCustomParameters, "etaITSCut", 1.4f));
   mMatchITSTPCQC.setMinNClustersITS(getFromConfig(mCustomParameters, "minNITSClustersCut", 0));
   mMatchITSTPCQC.setMaxChi2PerClusterITS(getFromConfig(mCustomParameters, "maxChi2PerClusterITS", 1e10f));
@@ -69,6 +69,8 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     mPublishK0s3D = getFromConfig(mCustomParameters, "publishK0s3D", false);
     mK0sFitter.init(mCustomParameters);
   }
+  // PV
+  mDoPVITS = common::getFromConfig(mCustomParameters, "doPVITSQC", false);
 
   mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
@@ -175,6 +177,34 @@ void ITSTPCMatchingTask::endOfCycle()
       }
 
       getObjectsManager()->startPublishing((h = mK0sIntegral->ProjectionY("mK0sMassVsPtVsOcc_Integral_pmass")), PublicationPolicy::Once);
+    }
+
+    if (mDoPVITS) {
+      const auto* h = mMatchITSTPCQC.getHistoPVNContVsITSTracks();
+      if (!h) {
+        ILOG(Fatal) << "Could not retrieve pv ITS histogram!" << ENDM;
+      }
+
+      mPVITSCycle.reset();
+      mPVITSCycle.reset(dynamic_cast<TH2F*>(h->Clone("mPVNContVsITSTracks_Cycle")));
+      if (!mPVITSCycle) {
+        ILOG(Fatal) << "Could not retrieve pv ITS histogram for current cycle!" << ENDM;
+      }
+      if (!mPVITSIntegral) {
+        mPVITSIntegral.reset(dynamic_cast<TH2F*>(h->Clone("mPVNContVsITSTracks_Integral")));
+        if (!mPVITSIntegral) {
+          ILOG(Fatal) << "Could not retrieve pv ITS histogram for integral!" << ENDM;
+        }
+      }
+      mPVITSCycle->Reset();
+      mPVITSCycle->Add(h, mPVITSCycle.get(), 1., -1.);
+      mPVITSIntegral->Reset();
+      mPVITSIntegral->Add(h);
+
+      getObjectsManager()->startPublishing(mPVITSCycle.get(), PublicationPolicy::Once);
+      getObjectsManager()->startPublishing(mPVITSIntegral.get(), PublicationPolicy::Once);
+      getObjectsManager()->startPublishing(mPVITSCycle->ProfileX(), PublicationPolicy::Once);
+      getObjectsManager()->startPublishing(mPVITSIntegral->ProfileX(), PublicationPolicy::Once);
     }
   }
 }
