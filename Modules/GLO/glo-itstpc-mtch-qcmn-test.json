@@ -49,7 +49,6 @@
           "GID": "ITS-TPC,ITS",
           "verbose": "false",
           "doMTCRatios": "true",
-          "doMTCTrending": "true",
           "doK0QC": "true",
           "isSync": "true",
           "trackSourcesK0": "ITS,TPC,ITS-TPC,ITS-TPC-TOF,TPC-TOF,TPC-TRD,ITS-TPC-TRD,TPC-TRD-TOF,ITS-TPC-TOF,ITS-TPC-TRD-TOF"
@@ -155,7 +154,7 @@
           "once"
         ],
         "updateTrigger": [
-          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/gloMTCTrendingObject"
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/mFractionITSTPCmatch_ITS_Hist"
         ],
         "stopTrigger": [
           "usercontrol"
@@ -165,7 +164,7 @@
             "type": "repository",
             "path": "GLO/MO/ITSTPCMatchingTask",
             "names": [
-              "gloMTCTrendingObject"
+              "mFractionITSTPCmatch_ITS_Hist"
             ],
             "reductorName": "o2::quality_control_modules::glo::MTCReductor",
             "moduleName": "QcGLO"
@@ -174,8 +173,8 @@
         "plots": [
           {
             "name": "glo_mtc_pt_trending",
-            "title": "MTC #it{p}_{T} trending",
-            "varexp": "gloMTCTrendingObject.pt:time",
+            "title": "MTC at #it{p}_{T}=1.5 trending",
+            "varexp": "mFractionITSTPCmatch_ITS_Hist.pt:time",
             "option": "*L",
             "graphYRange": "0:1.02",
             "graphAxisLabel": "MTC:time"

@@ -57,9 +57,6 @@ class ITSTPCMatchingTask final : public TaskInterface
   std::unique_ptr<common::TH1FRatio> mEffPt;
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
-  bool mDoMTCTrending{ false };
-  float mMTCTrendingPt{ 1.5 };
-  std::unique_ptr<TF1> mMTCTrendingObject;
 
   bool mDoK0s{ false };
   bool mPublishK0s3D{ false };

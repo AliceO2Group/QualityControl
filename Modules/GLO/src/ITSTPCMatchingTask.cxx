@@ -55,12 +55,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
   // Sync
   mIsSync = common::getFromConfig(mCustomParameters, "isSync", false);
   // MTC ratios
-  if ((mDoMTCRatios = common::getFromConfig(mCustomParameters, "doMTCRatios", false))) {
-    if ((mDoMTCTrending = getFromConfig(mCustomParameters, "doMTCTrending", false))) {
-      mMTCTrendingPt = getFromConfig(mCustomParameters, "trendingPt", 1.5f);
-      mMTCTrendingObject.reset(new TF1("gloMTCTrendingObject", "pol0"));
-    }
-  }
+  mDoMTCRatios = common::getFromConfig(mCustomParameters, "doMTCRatios", false);
   // K0s
   mMatchITSTPCQC.setDoK0QC((mDoK0s = getFromConfig(mCustomParameters, "doK0QC", false)));
   if (mIsSync && mDoK0s) {
@@ -136,10 +131,6 @@ void ITSTPCMatchingTask::endOfCycle()
       makeRatio(mEffPt, mMatchITSTPCQC.getFractionITSTPCmatch(gloqc::MatchITSTPCQC::ITS));
       getObjectsManager()->startPublishing(mEffPt.get(), PublicationPolicy::Once);
       getObjectsManager()->setDefaultDrawOptions(mEffPt->GetName(), "logx");
-      if (mDoMTCTrending) {
-        mMTCTrendingObject->SetParameter(0, mEffPt->GetBinContent(mEffPt->FindBin(mMTCTrendingPt)));
-        getObjectsManager()->startPublishing<true>(mMTCTrendingObject.get(), PublicationPolicy::Once);
-      }
 
       // Eta
       makeRatio(mEffEta, mMatchITSTPCQC.getFractionITSTPCmatchEta(gloqc::MatchITSTPCQC::ITS));
