@@ -15,4 +15,6 @@
 #pragma link C++ class o2::quality_control_modules::glo::ITSTPCmatchingCheck + ;
 #pragma link C++ class o2::quality_control_modules::glo::K0sFitReductor + ;
 #pragma link C++ class o2::quality_control_modules::glo::MTCReductor + ;
+#pragma link C++ class o2::quality_control_modules::glo::PVITSReductor + ;
+
 #endif

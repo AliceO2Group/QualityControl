@@ -23,8 +23,6 @@
 
 #include <TF1.h>
 #include <TH1.h>
-#include <TFitResult.h>
-#include <TFitResultPtr.h>
 
 namespace o2::quality_control_modules::glo::helpers
 {
@@ -90,8 +88,8 @@ struct K0sFitter {
       ILOG(Warning, Devel) << "Cannot fit empty histogram: " << h->GetName() << ENDM;
       return false;
     }
-    TFitResultPtr res = h->Fit(mBackground.get(), "SRNQ");
-    if (res->Status() > 1) {
+    Int_t res = h->Fit(mBackground.get(), "RNQ");
+    if (res) {
       ILOG(Warning, Devel) << "Failed k0s background fit for histogram: " << h->GetName() << ENDM;
       return false;
     }

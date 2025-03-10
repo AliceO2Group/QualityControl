@@ -14,6 +14,8 @@
 
 #include "QualityControl/ReductorTObject.h"
 
+#include <TF1.h>
+
 namespace o2::quality_control_modules::glo
 {
 
@@ -25,8 +27,8 @@ class K0sFitReductor final : public quality_control::postprocessing::ReductorTOb
 
  private:
   struct {
-    Float_t mean;
-    Float_t sigma;
+    Float_t mean{ 0. };
+    Float_t sigma{ 0. };
   } mStats;
 };
 
@@ -38,8 +40,23 @@ class MTCReductor final : public quality_control::postprocessing::ReductorTObjec
 
  private:
   struct {
-    Float_t pt;
+    Float_t pt{ 0. };
   } mStats;
+};
+
+class PVITSReductor final : public quality_control::postprocessing::ReductorTObject
+{
+  void* getBranchAddress() final { return &mStats; };
+  const char* getBranchLeafList() final;
+  void update(TObject* obj) final;
+
+ private:
+  struct {
+    Float_t pol0{ 0. };
+    Float_t pol1{ 0. };
+  } mStats;
+
+  Double_t mR0{ 0 }, mR1{ 0 };
 };
 
 } // namespace o2::quality_control_modules::glo

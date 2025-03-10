@@ -181,6 +181,57 @@
             "graphAxisLabel": "MTC:time"
           }
         ]
+      },
+      "PVITSTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/mPVNContVsITSTracks_Cycle_pfx"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "mPVNContVsITSTracks_Cycle_pfx"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::PVITSReductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "r0": "1000",
+                  "r1": "7000"
+                }
+              }
+            },
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_pvits_pol0_trending",
+            "title": "PV-ITS Fit pol0 trending",
+            "varexp": "mPVNContVsITSTracks_Cycle_pfx.pol0:time",
+            "option": "*L",
+            "graphAxisLabel": "pol0:time"
+          },
+          {
+            "name": "glo_pvits_pol1_trending",
+            "title": "PV-ITS Fit pol1 trending",
+            "varexp": "mPVNContVsITSTracks_Cycle_pfx.pol1:time",
+            "option": "*L",
+            "graphAxisLabel": "pol1:time"
+          }
+        ]
       }
     }
   }
