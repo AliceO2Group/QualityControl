@@ -314,7 +314,7 @@ psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (sel
 
 ### Update the certificate of the QCDB
 
-1. go to ca.cern.ch -> New Grid Host Certificate. Subject: alio2-cr1-hv-qcdb-gpn.cern.ch (alternative: alio2-cr1-hv-qcdb.cern.ch)
+1. go to [ca.cern.ch](ca.cern.ch) -> New Grid Host Certificate. Subject: alio2-cr1-hv-qcdb-gpn.cern.ch (alternative: alio2-cr1-hv-qcdb.cern.ch)
 2. download
 3. scp the p12 file to qcdb
 4. `openssl pkcs12 -in /tmp/new-certif.p12 -out hostcert.pem -clcerts -nokeys`
@@ -322,7 +322,7 @@ psql -h localhost ccdb ccdb_user -c "delete from ccdb_paths where pathid in (sel
 6. `cd /var/lib/pgsql/.globus `
 7. backup the old files
 8. copy hostcert and hostkey
-9 chmod 600 them
+9 chmod 600 them, make sure they are owned by `postgres:postgres`
 10. Make sure that `.globus` and the two files are owned by the user `postgres`
  
 ### Enable the access log of the QCDB
