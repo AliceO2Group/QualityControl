@@ -51,8 +51,8 @@ void Aggregator::init()
       root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
     mAggregatorInterface->setName(mAggregatorConfig.name);
     mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
-    mAggregatorInterface->setCcdbUrl(mAggregatorConfig.conditionUrl);
-    mAggregatorInterface->setDatabase(mAggregatorConfig.database);
+    mAggregatorInterface->setCcdbUrl(mAggregatorConfig.ccdbUrl);
+    mAggregatorInterface->setDatabase(mAggregatorConfig.repository);
     mAggregatorInterface->configure();
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();

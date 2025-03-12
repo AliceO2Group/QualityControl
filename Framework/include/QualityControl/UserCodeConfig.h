@@ -30,8 +30,8 @@ struct UserCodeConfig {
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
   std::string consulUrl;
   CustomParameters customParameters;
-  std::string conditionUrl{};
-  std::unordered_map<std::string, std::string> database;
+  std::string ccdbUrl;
+  std::unordered_map<std::string, std::string> repository; // we need the full config of the database to build the database in the subclasses
 };
 
 } // namespace o2::quality_control::core

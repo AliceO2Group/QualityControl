@@ -29,7 +29,7 @@ PostProcessingInterface* PostProcessingFactory::create(const PostProcessingConfi
 {
   auto* result = root_class_factory::create<PostProcessingInterface>(config.moduleName, config.className);
   result->setCustomParameters(config.customParameters);
-  result->setDatabase(config.database);
+  result->setDatabase(config.repository);
   return result;
 }
 

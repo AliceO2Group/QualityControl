@@ -38,17 +38,16 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   className = config.get<std::string>("qc.postprocessing." + id + ".className");
   detectorName = config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC");
   consulUrl = config.get<std::string>("qc.config.consul.url", "");
-  conditionUrl = config.get<std::string>("qc.config.conditionDB.url", "");
-  std::unordered_map<std::string, std::string> dbConfig{
-      { "implementation", config.get<std::string>("qc.config.database.implementation") },
-      { "host", config.get<std::string>("qc.config.database.host") }
-  };
-  database = dbConfig;
-
   // if available, use the source repo as defined in the postprocessing task, otherwise the general QCDB
   auto sourceRepo = config.get_child_optional("qc.postprocessing." + id + ".sourceRepo");
   auto databasePath = sourceRepo ? "qc.postprocessing." + id + ".sourceRepo" : "qc.config.database";
-  qcdbUrl = config.get<std::string>(databasePath + ".implementation") == "CCDB" ? config.get<std::string>(databasePath + ".host") : "";
+  auto qcdbUrl = config.get<std::string>(databasePath + ".implementation") == "CCDB" ? config.get<std::string>(databasePath + ".host") : "";
+  // build the config of the qcdb
+  std::unordered_map<std::string, std::string> dbConfig{
+      { "implementation", config.get<std::string>("qc.config.database.implementation") },
+      { "host", qcdbUrl }
+  };
+  repository = dbConfig;
 
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());

@@ -123,7 +123,7 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
   mTask->setGlobalTrackingDataRequest(mTaskConfig.globalTrackingDataRequest);
-  mTask->setDatabase(mTaskConfig.database);
+  mTask->setDatabase(mTaskConfig.repository);
 
   // load config params
   if (!ConfigParamGlo::keyValues.empty()) {
