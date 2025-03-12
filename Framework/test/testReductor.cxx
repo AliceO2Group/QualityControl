@@ -24,7 +24,6 @@
 #include "QualityControl/ConditionAccess.h"
 #include <TH1I.h>
 #include <TTree.h>
-#include <boost/test/tools/old/interface.hpp>
 
 #define BOOST_TEST_MODULE Reductor test
 #define BOOST_TEST_MAIN
