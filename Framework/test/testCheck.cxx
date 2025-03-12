@@ -150,7 +150,7 @@ TEST_CASE("test_check_activity")
                 "",
                 {},
                 "",
-                {},
+      {{ "implementation", "CCDB" },{ "host", "" }},
                 "test",
                 UpdatePolicyType::OnAny,
                 {},
