@@ -44,8 +44,8 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   auto qcdbUrl = config.get<std::string>(databasePath + ".implementation") == "CCDB" ? config.get<std::string>(databasePath + ".host") : "";
   // build the config of the qcdb
   std::unordered_map<std::string, std::string> dbConfig{
-      { "implementation", config.get<std::string>("qc.config.database.implementation") },
-      { "host", qcdbUrl }
+    { "implementation", config.get<std::string>("qc.config.database.implementation") },
+    { "host", qcdbUrl }
   };
   repository = dbConfig;
 
