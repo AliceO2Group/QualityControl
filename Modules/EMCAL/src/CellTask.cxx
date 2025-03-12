@@ -1052,7 +1052,6 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
   } catch (o2::emcal::InvalidCellIDException& e) {
     ILOG(Info, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   }
-
 }
 
 void CellTask::CellHistograms::countEvent()
