@@ -1053,8 +1053,6 @@ void CellTask::CellHistograms::fillHistograms(const o2::emcal::Cell& cell, bool 
     ILOG(Info, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   }
 
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
 }
 
 void CellTask::CellHistograms::countEvent()
@@ -1094,6 +1092,8 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   publishOptional(mCellAmplitudeCalib_EMCAL);
   publishOptional(mCellAmplitudeCalib_DCAL);
   publishOptional(mCellOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
   publishOptional(mCellOccupancyThr);
   publishOptional(mCellOccupancyThrBelow);
   publishOptional(mCellOccupancyGood);
