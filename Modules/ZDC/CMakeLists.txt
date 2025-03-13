@@ -2,7 +2,7 @@
 
 add_library(O2QcZDC)
 
-target_sources(O2QcZDC PRIVATE src/ZDCRecDataCheck.cxx  src/ZDCRecDataTask.cxx  src/ZDCRecDataPostProcessing.cxx src/PostProcessingConfigZDC.cxx  src/ZDCRawDataCheck.cxx  src/ZDCRawDataTask.cxx )
+target_sources(O2QcZDC PRIVATE src/ZDCRecBeautifyPlots.cxx  src/ZDCRecDataCheck.cxx  src/ZDCRecDataTask.cxx  src/ZDCRecDataPostProcessing.cxx src/PostProcessingConfigZDC.cxx  src/ZDCRawDataCheck.cxx  src/ZDCRawDataTask.cxx )
 
 target_include_directories(
   O2QcZDC
@@ -19,6 +19,7 @@ install(TARGETS O2QcZDC
 
 add_root_dictionary(O2QcZDC
                     HEADERS
+  include/ZDC/ZDCRecBeautifyPlots.h
   include/ZDC/ZDCRecDataCheck.h
   include/ZDC/ZDCRecDataTask.h
   include/ZDC/ZDCRecDataPostProcessing.h

@@ -156,6 +156,9 @@ class ZDCRawDataTask final : public TaskInterface
   TH2* fSummaryAlignShift;
   TH2* fSummaryError;
   TH1* fOverBc;
+  // Begin Stefan addition
+  TH2* fBCalignment;
+  // End Stefan addition
 
   std::vector<std::string> fNameHisto;
   std::map<std::string, int> fMapBinNameIdSummaryHisto;
@@ -173,6 +176,9 @@ class ZDCRawDataTask final : public TaskInterface
   int fAlignCycle = 1; // param
   int fErrorCycle = 1; // param
   int fAlignNumEntries = 2000;
+  // Begin Stefan addition
+  int FirstEventBC = 0;
+  // End Stefan addition
 
   sAlignment fMatrixAlign[o2::zdc::NModules][o2::zdc::NChPerModule];
 };
