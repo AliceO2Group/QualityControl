@@ -32,11 +32,13 @@ void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
   configure();
 }
 
-const std::string& UserCodeInterface::getName() const {
+const std::string& UserCodeInterface::getName() const
+{
   return mName;
 }
 
-void UserCodeInterface::setName(const std::string& name) {
+void UserCodeInterface::setName(const std::string& name)
+{
   mName = name;
 }
 
@@ -45,7 +47,7 @@ void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
   // TODO bail if we are in async
 
   auto deploymentMode = framework::DefaultsHelpers::deploymentMode();
-  if(deploymentMode == framework::DeploymentMode::Grid) {
+  if (deploymentMode == framework::DeploymentMode::Grid) {
     ILOG(Info, Ops) << "Async mode detected, CTP scalers cannot be enabled." << ENDM;
     return;
   }
@@ -58,7 +60,7 @@ void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
   mCtpFetcher->setupRun(runNumber, &ccdbManager, /*1726300234140*/ getCurrentTimestamp(), false);
 
   mScalersLastUpdate = std::chrono::steady_clock::time_point::min();
-  if(updateScalers(runNumber)) { // initial value
+  if (updateScalers(runNumber)) { // initial value
     ILOG(Debug, Devel) << "Enabled CTP scalers" << ENDM;
   } else {
     ILOG(Debug, Devel) << "CTP scalers not enabled, failure to get them." << ENDM;
@@ -113,12 +115,12 @@ double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumb
     ILOG(Error, Ops) << "CTP scalers not enabled, impossible to get the value." << ENDM;
     return 0;
   }
-  if(!updateScalers(runNumber)) { // from QCDB
+  if (!updateScalers(runNumber)) { // from QCDB
     ILOG(Debug, Devel) << "Could not update the scalers, returning 0" << ENDM;
     return 0;
   }
   auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
-  auto result = mCtpFetcher->fetchNoPuCorr(&ccdbManager, getCurrentTimestamp()*1000, runNumber, sourceName);
+  auto result = mCtpFetcher->fetchNoPuCorr(&ccdbManager, getCurrentTimestamp() * 1000, runNumber, sourceName);
   ILOG(Debug, Devel) << "Returning scaler value : " << result << ENDM;
   return result;
 }
