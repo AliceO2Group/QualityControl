@@ -144,11 +144,14 @@ TEST_CASE("test_check_postprocessing")
 
 TEST_CASE("test_check_activity")
 {
-  Check check({ "test",
-                "QcSkeleton",
+  Check check({ "QcSkeleton",
                 "o2::quality_control_modules::skeleton::SkeletonCheck",
                 "TST",
+                "",
                 {},
+                "",
+                { { "implementation", "CCDB" }, { "host", "" } },
+                "test",
                 UpdatePolicyType::OnAny,
                 {},
                 true });

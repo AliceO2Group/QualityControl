@@ -10,26 +10,30 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TaskFactory.cxx
+/// \file   UserCodeConfig.h
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/TaskFactory.h"
+#ifndef QUALITYCONTROL_USERCODECONFIG_H
+#define QUALITYCONTROL_USERCODECONFIG_H
 
-#include "QualityControl/RootClassFactory.h"
+#include "QualityControl/CustomParameters.h"
+#include "QualityControl/stringUtils.h"
 
 namespace o2::quality_control::core
 {
 
-TaskInterface* TaskFactory::create(const TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
-{
-  auto* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
-  result->setName(taskConfig.taskName);
-  result->setObjectsManager(objectsManager);
-  result->setCustomParameters(taskConfig.customParameters);
-  result->setCcdbUrl(taskConfig.ccdbUrl);
-
-  return result;
-}
+/// \brief  Container for the configuration of a Task
+struct UserCodeConfig {
+  std::string moduleName;
+  std::string className;
+  std::string detectorName = "MISC"; // intended to be the 3 letters code;
+  std::string consulUrl;
+  CustomParameters customParameters;
+  std::string ccdbUrl;
+  std::unordered_map<std::string, std::string> repository; // we need the full config of the database to build the database in the subclasses
+};
 
 } // namespace o2::quality_control::core
+
+#endif // QUALITYCONTROL_USERCODECONFIG_H

@@ -104,15 +104,15 @@ TriggerFcn triggerFactory(const std::string& trigger, const PostProcessingConfig
     return triggers::EndOfFill(activity);
   } else if (triggerLowerCase.find("newobject") != std::string::npos) {
     const auto [db, objectPath] = parseDbTriggers(trigger, "newobject");
-    const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
+    const std::string& dbUrl = db == "qcdb" ? config.repository.at("host") : config.ccdbUrl;
     return triggers::NewObject(dbUrl, db, objectPath, activity, trigger);
   } else if (triggerLowerCase.find("foreachobject") != std::string::npos) {
     const auto [db, objectPath] = parseDbTriggers(trigger, "foreachobject");
-    const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
+    const std::string& dbUrl = db == "qcdb" ? config.repository.at("host") : config.ccdbUrl;
     return triggers::ForEachObject(dbUrl, db, objectPath, activity, trigger);
   } else if (triggerLowerCase.find("foreachlatest") != std::string::npos) {
     const auto [db, objectPath] = parseDbTriggers(trigger, "foreachlatest");
-    const std::string& dbUrl = db == "qcdb" ? config.qcdbUrl : config.ccdbUrl;
+    const std::string& dbUrl = db == "qcdb" ? config.repository.at("host") : config.ccdbUrl;
     return triggers::ForEachLatest(dbUrl, db, objectPath, activity, trigger);
   } else if (auto seconds = string2Seconds(triggerLowerCase); seconds.has_value()) {
     if (seconds.value() < 0) {

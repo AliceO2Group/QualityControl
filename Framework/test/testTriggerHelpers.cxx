@@ -63,7 +63,7 @@ TEST_CASE("test_factory")
 
   // generating new object trigger
   PostProcessingConfig configWithDBs;
-  configWithDBs.qcdbUrl = CCDB_ENDPOINT;
+  configWithDBs.repository["host"] = CCDB_ENDPOINT;
   configWithDBs.ccdbUrl = CCDB_ENDPOINT;
   CHECK_NOTHROW(trigger_helpers::triggerFactory("newobject:qcdb:qc/asdf/vcxz", configWithDBs));
   CHECK_NOTHROW(trigger_helpers::triggerFactory("newobject:ccdb:qc/asdf/vcxz", configWithDBs));
