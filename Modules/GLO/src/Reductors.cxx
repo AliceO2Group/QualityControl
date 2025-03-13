@@ -34,6 +34,13 @@ void K0sFitReductor::update(TObject* obj)
   mStats.sigma = f->GetParameter(helpers::K0sFitter::Parameters::Sigma);
 }
 
+const char* MTCReductor::getBranchLeafList()
+{
+  mPt = common::internal::stringToType<Float_t>(mCustomParameters.atOrDefaultValue("pt", "0"));
+
+  return "mtc/F";
+};
+
 void MTCReductor::update(TObject* obj)
 {
   auto h = dynamic_cast<TH1*>(obj);
@@ -41,13 +48,13 @@ void MTCReductor::update(TObject* obj)
     return;
   }
 
-  mStats.pt = (float)h->GetBinContent(h->FindBin(1.5));
+  mStats.mtc = (float)h->GetBinContent(h->FindBin(mPt));
 }
 
 const char* PVITSReductor::getBranchLeafList()
 {
-  mR0 = common::internal::stringToType<Double_t>(mCustomParameters.atOrDefaultValue("r0", "0"));
-  mR1 = common::internal::stringToType<Double_t>(mCustomParameters.atOrDefaultValue("r1", "0"));
+  mR0 = common::internal::stringToType<Float_t>(mCustomParameters.atOrDefaultValue("r0", "0"));
+  mR1 = common::internal::stringToType<Float_t>(mCustomParameters.atOrDefaultValue("r1", "0"));
 
   return "pol0/F:pol1/F";
 };
@@ -60,7 +67,6 @@ void PVITSReductor::update(TObject* obj)
   }
 
   auto res = p->Fit("pol1", "QSNC", "", mR0, mR1);
-  printf("Fitting from %f to %f -> %d\n", mR0, mR1, (int)res);
   if ((Int_t)res != 0) {
     return;
   }

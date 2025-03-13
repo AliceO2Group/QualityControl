@@ -145,7 +145,7 @@
           }
         ]
       },
-      "MTCTrend": {
+      "MTCTrend1": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QcGLO",
@@ -168,14 +168,65 @@
               "mFractionITSTPCmatch_ITS_Hist"
             ],
             "reductorName": "o2::quality_control_modules::glo::MTCReductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "pt": "1.5"
+                }
+              }
+            },
             "moduleName": "QcGLO"
           }
         ],
         "plots": [
           {
-            "name": "glo_mtc_pt_trending",
+            "name": "glo_mtc_pt15_trending",
             "title": "MTC at #it{p}_{T}=1.5 trending",
-            "varexp": "mFractionITSTPCmatch_ITS_Hist.pt:time",
+            "varexp": "mFractionITSTPCmatch_ITS_Hist.mtc:time",
+            "option": "*L",
+            "graphYRange": "0:1.02",
+            "graphAxisLabel": "MTC:time"
+          }
+        ]
+      },
+      "MTCTrend2": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/mFractionITSTPCmatch_ITS_Hist"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "mFractionITSTPCmatch_ITS_Hist"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::MTCReductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "pt": "0.5"
+                }
+              }
+            },
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_mtc_pt05_trending",
+            "title": "MTC at #it{p}_{T}=0.5 trending",
+            "varexp": "mFractionITSTPCmatch_ITS_Hist.mtc:time",
             "option": "*L",
             "graphYRange": "0:1.02",
             "graphAxisLabel": "MTC:time"

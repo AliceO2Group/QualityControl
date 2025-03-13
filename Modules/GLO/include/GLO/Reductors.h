@@ -35,13 +35,15 @@ class K0sFitReductor final : public quality_control::postprocessing::ReductorTOb
 class MTCReductor final : public quality_control::postprocessing::ReductorTObject
 {
   void* getBranchAddress() final { return &mStats; };
-  const char* getBranchLeafList() final { return "pt/F"; };
+  const char* getBranchLeafList() final;
   void update(TObject* obj) final;
 
  private:
   struct {
-    Float_t pt{ 0. };
+    Float_t mtc{ 0. };
   } mStats;
+
+  Float_t mPt{ 0 };
 };
 
 class PVITSReductor final : public quality_control::postprocessing::ReductorTObject
@@ -56,7 +58,7 @@ class PVITSReductor final : public quality_control::postprocessing::ReductorTObj
     Float_t pol1{ 0. };
   } mStats;
 
-  Double_t mR0{ 0 }, mR1{ 0 };
+  Float_t mR0{ 0 }, mR1{ 0 };
 };
 
 } // namespace o2::quality_control_modules::glo
