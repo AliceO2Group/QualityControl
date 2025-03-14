@@ -24,7 +24,7 @@ using namespace std;
 
 namespace o2::quality_control::core
 {
-void CtpScalers::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
+void CtpScalers::enableCtpScalers(size_t runNumber)
 {
   // bail if we are in async
   auto deploymentMode = framework::DefaultsHelpers::deploymentMode();
@@ -99,8 +99,7 @@ double CtpScalers::getScalersValue(std::string sourceName, size_t runNumber)
     ILOG(Debug, Devel) << "Could not update the scalers, returning 0" << ENDM;
     return 0;
   }
-  auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
-  auto result = mCtpFetcher->fetchNoPuCorr(&ccdbManager, getCurrentTimestamp() * 1000, runNumber, sourceName);
+  auto result = mCtpFetcher->fetchNoPuCorr(&o2::ccdb::BasicCCDBManager::instance(), getCurrentTimestamp() * 1000, runNumber, sourceName);
   ILOG(Debug, Devel) << "Returning scaler value : " << result << ENDM;
   return result;
 }

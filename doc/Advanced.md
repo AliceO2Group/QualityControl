@@ -1679,6 +1679,12 @@ the "tasks" path.
           "canProcessClusters" : "TPC",        "": "clusters that the QC task can process",
           "requestClusters" : "TPC",           "": "clusters that the QC task should process",
           "mc" : "false",                      "": "mc boolean flag for the data request"
+        },
+        "ctpscalers": {
+          "sourceRepo": {
+            "implementation": "CCDB",
+            "host": "ali-qcdb-gpn.cern.ch:8083"
+          }
         }
       }
     }
@@ -2003,18 +2009,30 @@ In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding t
 User code can access CTP scalers in the following way : 
 ```
 // in start of activity
-  enableCtpScalers(activity.mId, "alice-ccdb.cern.ch"); // TODO get it from the config
+  enableCtpScalers(activity.mId); 
 
 // in your e.g. check(...)
   auto t0vtx = getScalersValue("T0VTX", mActivity->mId);
   ILOG(Info, Devel) << "\"T0VTX\" : " << t0vtx << ENDM;
 ```
 
+By default the Scalers are pulled from the QCDB. However, for the purpose of testing, one can also set a different
+repo for it : 
+```
+      "ctpscalers": {
+        "sourceRepo": {
+          "implementation": "CCDB",
+          "host": "ali-qcdb-gpn.cern.ch:8083"
+        }
+      }
+```
+This way, the data can be pulled from production but the storage is still in the test database. 
+
 ### Limitations
 
 It does not work in async.
 
-### Implementation
+### Implementation details
 
 `CTP proxy` publishes the scalers every 5 minutes into the QCDB at [`qc/CTP/Scalers`](http://ali-qcdb-gpn.cern.ch:8083/browse/qc/CTP/Scalers?report=true). They are cleaned up after 3 days. 
 Thus we query from the QCDB yet we also need access to CCDB to setup the `CTPRateFetcher`. 

@@ -35,7 +35,7 @@ class CtpScalers
   virtual ~CtpScalers() = default;
 
   /// \brief Call it to enable the retrieval of CTP scalers and use `getScalers` later
-  void enableCtpScalers(size_t runNumber, std::string ccdbUrl);
+  void enableCtpScalers(size_t runNumber);
   /// \brief Get the scalers's value for the given source
   double getScalersValue(std::string sourceName, size_t runNumber);
 

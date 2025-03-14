@@ -21,7 +21,6 @@
 // ROOT
 #include <TH1.h>
 
-#include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
@@ -127,7 +126,7 @@ void SkeletonCheck::startOfActivity(const Activity& activity)
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
   mActivity = make_shared<Activity>(activity);
-  enableCtpScalers(activity.mId, "alice-ccdb.cern.ch"); // TODO get it from the config
+  enableCtpScalers(activity.mId);
 }
 
 void SkeletonCheck::endOfActivity(const Activity& activity)

@@ -56,9 +56,9 @@ void UserCodeInterface::setName(const std::string& name)
   mName = name;
 }
 
-void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
+void UserCodeInterface::enableCtpScalers(size_t runNumber)
 {
-  mCtpScalers.enableCtpScalers(runNumber, ccdbUrl);
+  mCtpScalers.enableCtpScalers(runNumber);
 }
 
 double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumber)
