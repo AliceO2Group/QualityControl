@@ -27,7 +27,6 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Activity.h"
-#include <DataFormatsQualityControl/QualityControlFlagCollection.h>
 
 namespace o2::quality_control::repository
 {
@@ -128,11 +127,6 @@ class DatabaseInterface
   virtual void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo) = 0;
 
   /**
-   * Stores the serialized QualityControlFlagCollection in the database.
-   * @param qcfc The QualityControlFlagCollection to serialize and store. It should contain correct time validity inside the object.
-   */
-  virtual void storeQCFC(std::shared_ptr<const o2::quality_control::QualityControlFlagCollection> qcfc) = 0;
-  /**
    * \brief Look up a monitor object and return it.
    * Look up a monitor object and return it if found or nullptr if not.
    * @param objectPath Path to the object without the provenance prefix
@@ -151,13 +145,7 @@ class DatabaseInterface
    * @deprecated
    */
   virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current, const core::Activity& activity = {}) = 0;
-  /**
-   * \brief Look up a QualityControlFlagCollection object and return it.
-   * Look up a QualityControlFlagCollection and return it if found or nullptr if not.
-   */
-  virtual std::shared_ptr<o2::quality_control::QualityControlFlagCollection> retrieveQCFC(const std::string& name, const std::string& detector, int runNumber = 0,
-                                                                                          const std::string& passName = "", const std::string& periodName = "",
-                                                                                          const std::string& provenance = "", long timestamp = Timestamp::Current) = 0;
+
   /**
    * \brief Look up an object and return it.
    * Look up an object and return it if found or nullptr if not. It is a raw pointer because we might need it to build a MO.

@@ -15,18 +15,6 @@
 namespace o2::quality_control::core
 {
 
-std::string RepoPathUtils::getQcfcPath(const std::string& detectorCode,
-                                       const std::string& qcfcName,
-                                       const std::string& provenance)
-{
-  return provenance + "/" + detectorCode + "/QCFC/" + qcfcName;
-}
-
-std::string RepoPathUtils::getQcfcPath(const QualityControlFlagCollection* qcfc)
-{
-  return getQcfcPath(qcfc->getDetector(), qcfc->getName(), qcfc->getProvenance());
-}
-
 bool RepoPathUtils::isProvenanceAllowed(const std::string& provenance)
 {
   return provenance == "qc" || provenance == "qc_async" || provenance == "qc_mc";

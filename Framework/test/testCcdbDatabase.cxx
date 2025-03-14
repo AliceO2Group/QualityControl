@@ -417,30 +417,5 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_latest)
   BOOST_CHECK_EQUAL(h1Back->GetEntries(), 20000);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_qcfc)
-{
-  test_fixture f;
-  const std::string pid = std::to_string(getpid());
-  const std::string qcfcName = "Test_pid" + pid; // TODO we can use a 'Test' directory once https://github.com/AliceO2Group/AliceO2/pull/8195 is merged
-
-  std::shared_ptr<QualityControlFlagCollection> qcfc1{ new QualityControlFlagCollection{ qcfcName, "TST", { 45, 500000 }, 42, "LHC42x", "spass", "qc" } };
-  qcfc1->insert({ 50, 77, FlagTypeFactory::Invalid(), "a comment", "a source" });
-  qcfc1->insert({ 51, 77, FlagTypeFactory::Invalid() });
-  qcfc1->insert({ 1234, 3434, FlagTypeFactory::BadPID() });
-  qcfc1->insert({ 50, 77, FlagTypeFactory::BadPID() });
-  qcfc1->insert({ 43434, 63421, FlagTypeFactory::Good() });
-
-  f.backend->storeQCFC(qcfc1);
-
-  auto qcfc2 = f.backend->retrieveQCFC(qcfc1->getName(), qcfc1->getDetector(), qcfc1->getRunNumber(),
-                                       qcfc1->getPassName(), qcfc1->getPeriodName(), qcfc1->getProvenance(), 400000);
-  BOOST_REQUIRE(qcfc2 != nullptr);
-
-  BOOST_REQUIRE_EQUAL(qcfc1->size(), qcfc2->size());
-  for (auto it1 = qcfc1->begin(), it2 = qcfc2->begin(); it1 != qcfc1->end() && it2 != qcfc2->end(); ++it1, ++it2) {
-    BOOST_CHECK_EQUAL(*it1, *it2);
-  }
-}
-
 } // namespace
 } // namespace o2::quality_control::core
