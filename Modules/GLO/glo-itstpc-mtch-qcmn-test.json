@@ -10,21 +10,20 @@
         "maxObjectSize": "20000000"
       },
       "Activity": {
-        "number": "48",
-        "type": "2"
+        "number": "",
+        "type": "",
+        "beamType": "PbPb"
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
       },
-      "consul": {
-        "url": ""
-      },
-      "conditionDB": {
-        "url": "alice-ccdb.cern.ch"
-      },
       "infologger": {
         "filterDiscardDebug": "false",
         "filterDiscardLevel": "0"
+      },
+      "postprocessing": {
+        "periodSeconds": 0.01,
+        "matchAnyRunNumber": "true"
       }
     },
     "tasks": {
@@ -33,35 +32,33 @@
         "className": "o2::quality_control_modules::glo::ITSTPCMatchingTask",
         "moduleName": "QcGLO",
         "detectorName": "GLO",
-        "cycleDurationSeconds": "60",
+        "cycleDurationSeconds": "1",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
           "query_comment": "checking every matched track",
-          "query": "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackITS:ITS/TRACKS/0;trackITSROF:ITS/ITSTrackROF/0;trackITSClIdx:ITS/TRACKCLSID/0;alpparITS:ITS/ALPIDEPARAM/0?lifetime=condition&ccdb-path=ITS/Config/AlpideParam"
+          "query": "tofcluster:TOF/CLUSTERS/0;matchITSTPCTRDTOF:TOF/MTC_ITSTPCTRD/0;matchTPCTRDTOF/TOF/MTC_TPCTRD/0;matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trigTPCTRD:TRD/TRGREC_TPC/0;trackTPCTRD:TRD/MATCH_TPC/0;trigITSTPCTRD:TRD/TRGREC_ITSTPC/0;trackITSTPCTRD:TRD/MATCH_ITSTPC/0;p2decay3body:GLO/PVTX_3BODYREFS/0;decay3body:GLO/DECAYS3BODY/0;decay3bodyIdx:GLO/DECAYS3BODY_IDX/0;p2cascs:GLO/PVTX_CASCREFS/0;cascs:GLO/CASCS/0;cascsIdx:GLO/CASCS_IDX/0;p2v0s:GLO/PVTX_V0REFS/0;v0s:GLO/V0S/0;v0sIdx:GLO/V0S_IDX/0;pvtx_tref:GLO/PVTX_TRMTCREFS/0;pvtx_trmtc:GLO/PVTX_TRMTC/0;pvtx:GLO/PVTX/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackITS:ITS/TRACKS/0;trackITSROF:ITS/ITSTrackROF/0;trackITSClIdx:ITS/TRACKCLSID/0;alpparITS:ITS/ALPIDEPARAM/0?lifetime=condition&ccdb-path=ITS/Config/AlpideParam;SVParam:GLO/SVPARAM/0?lifetime=condition&ccdb-path=GLO/Config/SVertexerParam;clusTPC:TPC/CLUSTERNATIVE;clusTPCshmap:TPC/CLSHAREDMAP/0;trigTPC:TPC/TRIGGERWORDS/0;clusTPCoccmap:TPC/TPCOCCUPANCYMAP/0"
         },
         "taskParameters": {
           "GID": "ITS-TPC,ITS",
           "verbose": "false",
-          "minPtCut": "0.1f",
-          "etaCut": "1.4f",
+          "doMTCRatios": "true",
+          "doK0QC": "true",
+          "doPVITSQC": "true",
           "isSync": "true",
-          "minNTPCClustersCut": "60",
-          "minDCACut": "100.f",
-          "minDCACutY": "10.f"
+          "trackSourcesK0": "ITS,TPC,ITS-TPC,ITS-TPC-TOF,TPC-TOF,TPC-TRD,ITS-TPC-TRD,TPC-TRD-TOF,ITS-TPC-TOF,ITS-TPC-TRD-TOF"
         },
         "grpGeomRequest": {
           "geomRequest": "None",
-          "askGRPECS": "false",
-          "askGRPLHCIF": "false",
+          "askGRPECS": "true",
+          "askGRPLHCIF": "true",
           "askGRPMagField": "true",
           "askMatLUT": "false",
           "askTime": "false",
           "askOnceAllButField": "true",
           "needPropagatorD": "false"
         },
-        "saveObjectsToFile": "ITSTPCmatched.root",
-        "": "For debugging, path to the file where to save. If empty or missing it won't save."
+        "saveObjectsToFile": "ITSTPCmatched.root"
       }
     },
     "checks": {
@@ -78,7 +75,13 @@
             "MOs": [
               "mFractionITSTPCmatch_ITS_Hist",
               "mFractionITSTPCmatchPhi_ITS_Hist",
-              "mFractionITSTPCmatchEta_ITS_Hist"
+              "mFractionITSTPCmatchEta_ITS_Hist",
+              "mK0sMassVsPtVsOcc_Integral_pmass",
+              "mK0sMassVsPtVsOcc_Cycle_pmass",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_lowOcc",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_lowPt",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_highOcc",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_highPt"
             ]
           }
         ],
@@ -86,14 +89,234 @@
           "default": {
             "default": {
               "showPt": "true",
-              "thresholdPt": "0.5",
+              "showEta": "true",
               "showPhi": "true",
-              "thresholdPhi": "0.3",
-              "showEta": "1",
-              "thresholdEta": "0.4"
+              "showK0s": "true"
             }
           }
         }
+      }
+    },
+    "postprocessing": {
+      "K0sMassTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/gloFitK0sMassSignal"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "gloFitK0sMassSignal"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::K0sFitReductor",
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_k0s_mass_trending",
+            "title": "Fitted K0s mass",
+            "varexp": "gloFitK0sMassSignal.mean:time",
+            "option": "*L",
+            "graphYRange": "0.45:0.55",
+            "graphAxisLabel": "K0s mass (GeV/c^{2}):time"
+          },
+          {
+            "name": "glo_k0s_sigma_trending",
+            "title": "Fitted K0s sigma",
+            "varexp": "gloFitK0sMassSignal.sigma:time",
+            "option": "*L",
+            "graphYRange": "0:0.01",
+            "graphAxisLabel": "#sigma_{K0s mass (GeV/c^{2})}:time"
+          }
+        ]
+      },
+      "K0sYieldTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/gloFitK0sMassSignal"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "gloFitK0sMassSignal"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::K0sFitReductor",
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_k0s_yield_trending",
+            "title": "Fitted K0s yield",
+            "varexp": "gloFitK0sMassSignal.yield:time",
+            "option": "*L",
+            "graphAxisLabel": "K0s Yield:time"
+          }
+        ]
+      },
+      "MTCTrend1": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/mFractionITSTPCmatch_ITS_Hist"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "mFractionITSTPCmatch_ITS_Hist"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::MTCReductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "pt": "1.5"
+                }
+              }
+            },
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_mtc_pt15_trending",
+            "title": "MTC at #it{p}_{T}=1.5 trending",
+            "varexp": "mFractionITSTPCmatch_ITS_Hist.mtc:time",
+            "option": "*L",
+            "graphYRange": "0:1.02",
+            "graphAxisLabel": "MTC:time"
+          }
+        ]
+      },
+      "MTCTrend2": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/mFractionITSTPCmatch_ITS_Hist"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "mFractionITSTPCmatch_ITS_Hist"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::MTCReductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "pt": "0.5"
+                }
+              }
+            },
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_mtc_pt05_trending",
+            "title": "MTC at #it{p}_{T}=0.5 trending",
+            "varexp": "mFractionITSTPCmatch_ITS_Hist.mtc:time",
+            "option": "*L",
+            "graphYRange": "0:1.02",
+            "graphAxisLabel": "MTC:time"
+          }
+        ]
+      },
+      "PVITSTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/mPVNContVsITSTracks_Cycle_pfx"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "mPVNContVsITSTracks_Cycle_pfx"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::PVITSReductor",
+            "reductorParameters": {
+              "default": {
+                "default": {
+                  "r0": "1000",
+                  "r1": "7000"
+                }
+              }
+            },
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_pvits_pol0_trending",
+            "title": "PV-ITS Fit pol0 trending",
+            "varexp": "mPVNContVsITSTracks_Cycle_pfx.pol0:time",
+            "option": "*L",
+            "graphAxisLabel": "pol0:time"
+          },
+          {
+            "name": "glo_pvits_pol1_trending",
+            "title": "PV-ITS Fit pol1 trending",
+            "varexp": "mPVNContVsITSTracks_Cycle_pfx.pol1:time",
+            "option": "*L",
+            "graphAxisLabel": "pol1:time"
+          }
+        ]
       }
     }
   }
