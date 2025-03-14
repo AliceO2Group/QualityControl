@@ -18,15 +18,16 @@
 #define QUALITYCONTROL_USERCODEINTERFACE_H
 
 #include <string>
-#include <map>
 #include <Rtypes.h>
 
 #include "QualityControl/ConditionAccess.h"
 #include "QualityControl/CustomParameters.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/CtpScalers.h"
 
 namespace o2::quality_control::core
 {
+class UserCodeConfig;
 
 /// \brief  Common interface for Check and Task Interfaces.
 ///
@@ -39,8 +40,6 @@ class UserCodeInterface : public ConditionAccess
   /// Destructor
   virtual ~UserCodeInterface() = default;
 
-  void setCustomParameters(const CustomParameters& parameters);
-
   /// \brief Configure the object.
   ///
   /// Users can use this method to configure their object.
@@ -49,14 +48,22 @@ class UserCodeInterface : public ConditionAccess
 
   const std::string& getName() const;
   void setName(const std::string& name);
-  void setDatabase(std::unordered_map<std::string, std::string> dbConfig);
+  void setConfig(const UserCodeConfig& config);
 
  protected:
+  /// \brief Call it to enable the retrieval of CTP scalers and use `getScalers` later
+  void enableCtpScalers(size_t runNumber);
+  /// \brief Get the scalers's value for the given source
+  double getScalersValue(std::string sourceName, size_t runNumber);
+
+  void setDatabase(std::unordered_map<std::string, std::string> dbConfig);
+
   CustomParameters mCustomParameters;
   std::string mName;
-  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
+  std::shared_ptr<repository::DatabaseInterface> mDatabase; //! the repository used by the Framework
+  CtpScalers mCtpScalers;
 
-  ClassDef(UserCodeInterface, 4)
+  ClassDef(UserCodeInterface, 5)
 };
 
 } // namespace o2::quality_control::core

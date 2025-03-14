@@ -26,8 +26,7 @@ TaskInterface* TaskFactory::create(const TaskRunnerConfig& taskConfig, std::shar
   auto* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
   result->setName(taskConfig.taskName);
   result->setObjectsManager(objectsManager);
-  result->setCustomParameters(taskConfig.customParameters);
-  result->setCcdbUrl(taskConfig.ccdbUrl);
+  result->setConfig(taskConfig);
 
   return result;
 }

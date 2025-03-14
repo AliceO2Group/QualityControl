@@ -15,9 +15,10 @@
 ///
 
 #include "QualityControl/UserCodeInterface.h"
-#include <thread>
+#include <DataFormatsCTP/CTPRateFetcher.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseFactory.h"
+#include "QualityControl/UserCodeConfig.h"
 
 using namespace o2::ccdb;
 using namespace std;
@@ -25,9 +26,23 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
+void UserCodeInterface::setConfig(const UserCodeConfig& config)
 {
-  mCustomParameters = parameters;
+  setDatabase(config.repository);
+  setCcdbUrl(config.ccdbUrl);
+
+  // if a specific repository is provided as source for the scalers we use it otherwise we use the normal database
+  std::shared_ptr<repository::DatabaseInterface> ctpSourceRepo;
+  if (auto ctpScalersSourceRepo = config.ctpScalersSourceRepo;
+      ctpScalersSourceRepo.size() > 0 && ctpScalersSourceRepo.contains("implementation") && config.ctpScalersSourceRepo.contains("host")) {
+    ctpSourceRepo = repository::DatabaseFactory::create(ctpScalersSourceRepo.at("implementation"));
+    ctpSourceRepo->connect(ctpScalersSourceRepo);
+  } else {
+    ctpSourceRepo = mDatabase;
+  }
+  mCtpScalers.setScalersRepo(ctpSourceRepo);
+
+  mCustomParameters = config.customParameters;
   configure();
 }
 
@@ -39,6 +54,16 @@ const std::string& UserCodeInterface::getName() const
 void UserCodeInterface::setName(const std::string& name)
 {
   mName = name;
+}
+
+void UserCodeInterface::enableCtpScalers(size_t runNumber)
+{
+  mCtpScalers.enableCtpScalers(runNumber);
+}
+
+double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumber)
+{
+  return mCtpScalers.getScalersValue(sourceName, runNumber);
 }
 
 void UserCodeInterface::setDatabase(std::unordered_map<std::string, std::string> dbConfig)

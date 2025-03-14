@@ -90,6 +90,7 @@ add_library(O2QualityControl
   src/TaskRunner.cxx
   src/TaskRunnerFactory.cxx
   src/TaskInterface.cxx
+  src/CtpScalers.cxx
   src/UserCodeInterface.cxx
   src/RepositoryBenchmark.cxx
   src/RepoPathUtils.cxx
@@ -169,6 +170,7 @@ target_link_libraries(O2QualityControl
                              O2::DataFormatsQualityControl
                              O2::DetectorsBase
                              O2::GlobalTracking
+                             O2::DataFormatsCTP
                              O2QualityControlKafkaProtos
                              ${RDKAFKA_LIB}
                       PRIVATE Boost::system
@@ -180,6 +182,7 @@ add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
   include/QualityControl/TaskInterface.h
+  include/QualityControl/CtpScalers.h
   include/QualityControl/UserCodeInterface.h
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h

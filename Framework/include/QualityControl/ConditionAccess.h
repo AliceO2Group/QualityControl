@@ -30,6 +30,7 @@ class ConditionAccess
   void setCcdbUrl(const std::string& url)
   {
     o2::ccdb::BasicCCDBManager::instance().setURL(url);
+    o2::ccdb::BasicCCDBManager::instance().setFatalWhenNull(false);
   }
 
   /**
@@ -43,7 +44,6 @@ template <typename T>
 T* ConditionAccess::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata, long timestamp)
 {
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setFatalWhenNull(false);
   mgr.setTimestamp(timestamp);
   return mgr.getSpecific<T>(path, mgr.getTimestamp(), metadata);
 }

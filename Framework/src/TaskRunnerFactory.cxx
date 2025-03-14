@@ -175,6 +175,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.customParameters,
     globalConfig.conditionDBUrl,
     globalConfig.database,
+    globalConfig.ctpScalersSourceRepo,
     deviceName,
     taskSpec.taskName,
     multipleCycleDurations,

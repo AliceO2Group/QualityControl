@@ -1679,6 +1679,12 @@ the "tasks" path.
           "canProcessClusters" : "TPC",        "": "clusters that the QC task can process",
           "requestClusters" : "TPC",           "": "clusters that the QC task should process",
           "mc" : "false",                      "": "mc boolean flag for the data request"
+        },
+        "ctpscalers": {
+          "sourceRepo": {
+            "implementation": "CCDB",
+            "host": "ali-qcdb-gpn.cern.ch:8083"
+          }
         }
       }
     }
@@ -1996,8 +2002,60 @@ The values are relative to the canvas size, so in the example above the label wi
 
 In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
 
+## CTP Scalers
 
+### Usage 
 
+User code can access CTP scalers in the following way : 
+```
+// in start of activity
+  enableCtpScalers(activity.mId); 
+
+// in your e.g. check(...)
+  auto t0vtx = getScalersValue("T0VTX", mActivity->mId);
+  ILOG(Info, Devel) << "\"T0VTX\" : " << t0vtx << ENDM;
+```
+
+By default the Scalers are pulled from the QCDB. However, for the purpose of testing, one can also set a different
+repo for it : 
+```
+      "ctpscalers": {
+        "sourceRepo": {
+          "implementation": "CCDB",
+          "host": "ali-qcdb-gpn.cern.ch:8083"
+        }
+      }
+```
+This way, the data can be pulled from production but the storage is still in the test database. 
+
+### Limitations
+
+It does not work in async.
+
+### Implementation details
+
+`CTP proxy` publishes the scalers every 5 minutes into the QCDB at [`qc/CTP/Scalers`](http://ali-qcdb-gpn.cern.ch:8083/browse/qc/CTP/Scalers?report=true). They are cleaned up after 3 days. 
+Thus we query from the QCDB yet we also need access to CCDB to setup the `CTPRateFetcher`. 
+
+When enabling the scalers we instantiate `CTPRateFetcher` and call `setupRun()` __using the current timestamp__. 
+When asking for the scalers, they are retrieved from the QCDB or a cached version is used (cache of 5 minutes). 
+
+### Development and test
+
+* Get a certificate : https://alice-doc.github.io/alice-analysis-tutorial/start/cert.html#test-your-certificate
+* Build JAlien-ROOT : `aliBuild build JAliEn-ROOT [--defaults o2-dataflow]`
+* Build AliEn-Runtime : `aliBuild build xjalienfs [--defaults o2-dataflow]`
+* Use a combined environment : `alienv enter QualityControl/latest JAliEn-ROOT/latest xjalienfs/latest`
+
+Then change the run number in the config file (`basic.json` to match a recent run otherwise it won't work as the CTP scalers are deleted after 3 days).
+
+```
+alien-token-init
+
+```
+
+How do we do if there are no current runs ? we end up with some data in CCDB but the scalers in QCDB are missing. 
+Could we specify a file instead ? 
 
 ---
 

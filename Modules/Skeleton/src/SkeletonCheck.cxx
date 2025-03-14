@@ -21,7 +21,6 @@
 // ROOT
 #include <TH1.h>
 
-#include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 using namespace std;
@@ -48,6 +47,9 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   ILOG(Debug, Devel) << "Run " << mActivity->mId << ", type: " << mActivity->mType << ", beam: " << mActivity->mBeamType << ENDM;
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
+
+  auto t0vtx = getScalersValue("T0VTX", mActivity->mId);
+  ILOG(Info, Devel) << "\"T0VTX\" : " << t0vtx << ENDM;
 
   // This is an example of accessing the histogram 'example' created by SkeletonTask
   for (auto& [moName, mo] : *moMap) {
@@ -124,6 +126,7 @@ void SkeletonCheck::startOfActivity(const Activity& activity)
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
   mActivity = make_shared<Activity>(activity);
+  enableCtpScalers(activity.mId);
 }
 
 void SkeletonCheck::endOfActivity(const Activity& activity)

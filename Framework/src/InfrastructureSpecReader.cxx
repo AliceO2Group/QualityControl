@@ -81,7 +81,9 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
   };
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.periodSeconds", spec.postprocessingPeriod);
   spec.bookkeepingUrl = commonTree.get<std::string>("bookkeeping.url", spec.bookkeepingUrl);
-
+  for (const auto& [key, value] : commonTree.get_child("ctpscalers.sourceRepo")) {
+    spec.ctpScalersSourceRepo.emplace(key, value.get_value<std::string>());
+  }
   return spec;
 }
 

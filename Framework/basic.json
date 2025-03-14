@@ -10,7 +10,7 @@
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {
-        "number": "42",
+        "number": "561253",
         "type": "NONE",
         "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",             "": "Pass type - e.g. spass, cpass1",
@@ -23,17 +23,23 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "alice-ccdb.cern.ch"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
-        "filterDiscardLevel": "12",       "": "Message at this level or above are discarded (default: 21 - Trace)",
+        "filterDiscardLevel": "21",       "": "Message at this level or above are discarded (default: 21 - Trace)",
         "filterDiscardFile": "/tmp/_ID_.txt", "": ["If set, the messages discarded because of filterDiscardLevel",
           "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
           "messages won't go there."]
       },
       "bookkeeping": {
         "url": ""
+      },
+      "ctpscalers": {
+        "sourceRepo": {
+          "implementation": "CCDB",
+          "host": "ali-qcdb-gpn.cern.ch:8083"
+        }
       }
     },
     "tasks": {
