@@ -223,6 +223,7 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
     aggregatorSpec.customParameters,
     commonSpec.conditionDBUrl,
     commonSpec.database,
+    commonSpec.ctpScalersSourceRepo,
     aggregatorSpec.aggregatorName,
     updatePolicy,
     std::move(objectNames),

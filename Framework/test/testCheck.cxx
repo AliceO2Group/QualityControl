@@ -151,6 +151,7 @@ TEST_CASE("test_check_activity")
                 {},
                 "alice-ccdb.cern.ch",
                 { { "implementation", "CCDB" }, { "host", "ccdb-test.cern.ch:8080" } },
+                { { "implementation", "CCDB" }, { "host", "ccdb-test.cern.ch:8080" } },
                 "test",
                 UpdatePolicyType::OnAny,
                 {},

@@ -55,7 +55,7 @@ bool CtpScalers::updateScalers(size_t runNumber)
   }
   ILOG(Debug, Devel) << "Updating scalers." << ENDM;
 
-  if (!mDatabase) {
+  if (!mScalersRepo) {
     ILOG(Error, Devel) << "Database not set ! Cannot update scalers." << ENDM;
     mScalersEnabled = false;
     return false;
@@ -73,8 +73,8 @@ bool CtpScalers::updateScalers(size_t runNumber)
   std::map<std::string, std::string> meta;
   meta["runNumber"] = std::to_string(runNumber);
   std::map<std::string, std::string> headers;
-  auto validity = mDatabase->getLatestObjectValidity("qc/CTP/Scalers", meta);
-  void* rawResult = mDatabase->retrieveAny(typeid(o2::ctp::CTPRunScalers), "qc/CTP/Scalers", meta, validity.getMax() - 1, &headers);
+  auto validity = mScalersRepo->getLatestObjectValidity("qc/CTP/Scalers", meta);
+  void* rawResult = mScalersRepo->retrieveAny(typeid(o2::ctp::CTPRunScalers), "qc/CTP/Scalers", meta, validity.getMax() - 1, &headers);
   if (!rawResult) {
     ILOG(Error, Devel) << "Could not retrieve the CTP Scalers" << ENDM;
     return false;

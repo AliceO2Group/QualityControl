@@ -174,6 +174,7 @@ TEST_CASE("test_task_factory")
     {},
     "alice-ccdb.cern.ch",
     { { "implementation", "CCDB" }, { "host", "ccdb-test.cern.ch:8080" } },
+    { { "implementation", "CCDB" }, { "host", "ccdb-test.cern.ch:8080" } },
     "SkeletonTaskRunner",
     "skeletonTask",
     { { 10, 1 } },

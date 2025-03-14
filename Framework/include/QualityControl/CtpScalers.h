@@ -39,9 +39,9 @@ class CtpScalers
   /// \brief Get the scalers's value for the given source
   double getScalersValue(std::string sourceName, size_t runNumber);
 
-  void setDatabase(std::shared_ptr<repository::DatabaseInterface> database)
+  void setScalersRepo(std::shared_ptr<repository::DatabaseInterface> database)
   {
-    mDatabase = database;
+    mScalersRepo = database;
   }
 
  private:
@@ -52,9 +52,8 @@ class CtpScalers
   std::shared_ptr<o2::ctp::CTPRateFetcher> mCtpFetcher;
   std::chrono::steady_clock::time_point mScalersLastUpdate;
   bool mScalersEnabled = false;
-  std::shared_ptr<repository::DatabaseInterface> mDatabase; //! the repository used by the Framework
+  std::shared_ptr<repository::DatabaseInterface> mScalersRepo; //! where to get the scalers from
 
- private:
   ClassDef(CtpScalers, 1)
 };
 

@@ -23,7 +23,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "alice-ccdb.cern.ch"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
@@ -34,6 +34,12 @@
       },
       "bookkeeping": {
         "url": ""
+      },
+      "ctpscalers": {
+        "sourceRepo": {
+          "implementation": "CCDB",
+          "host": "ali-qcdb-gpn.cern.ch:8083"
+        }
       }
     },
     "tasks": {

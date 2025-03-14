@@ -257,6 +257,7 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     checkSpec.customParameters,
     commonSpec.conditionDBUrl,
     commonSpec.database,
+    commonSpec.ctpScalersSourceRepo,
     checkSpec.checkName,
     updatePolicy,
     std::move(objectNames),

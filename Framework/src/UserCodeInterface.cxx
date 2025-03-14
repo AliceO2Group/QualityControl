@@ -26,10 +26,21 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-void UserCodeInterface::setConfig(UserCodeConfig config)
+void UserCodeInterface::setConfig(const UserCodeConfig& config)
 {
   setDatabase(config.repository);
   setCcdbUrl(config.ccdbUrl);
+
+  // if a specific repository is provided as source for the scalers we use it otherwise we use the normal database
+  std::shared_ptr<repository::DatabaseInterface> ctpSourceRepo;
+  if (auto ctpScalersSourceRepo = config.ctpScalersSourceRepo;
+      ctpScalersSourceRepo.size() > 0 && ctpScalersSourceRepo.contains("implementation") && config.ctpScalersSourceRepo.contains("host")) {
+    ctpSourceRepo = repository::DatabaseFactory::create(ctpScalersSourceRepo.at("implementation"));
+    ctpSourceRepo->connect(ctpScalersSourceRepo);
+  } else {
+    ctpSourceRepo = mDatabase;
+  }
+  mCtpScalers.setScalersRepo(ctpSourceRepo);
 
   mCustomParameters = config.customParameters;
   configure();
@@ -65,8 +76,6 @@ void UserCodeInterface::setDatabase(std::unordered_map<std::string, std::string>
   mDatabase = repository::DatabaseFactory::create(dbConfig.at("implementation"));
   mDatabase->connect(dbConfig);
   ILOG(Debug, Devel) << "Database that is going to be used > Implementation : " << dbConfig.at("implementation") << " / Host : " << dbConfig.at("host") << ENDM;
-
-  mCtpScalers.setDatabase(mDatabase);
 }
 
 } // namespace o2::quality_control::core

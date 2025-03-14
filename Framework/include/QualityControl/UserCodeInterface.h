@@ -48,7 +48,7 @@ class UserCodeInterface : public ConditionAccess
 
   const std::string& getName() const;
   void setName(const std::string& name);
-  void setConfig(UserCodeConfig config);
+  void setConfig(const UserCodeConfig& config);
 
  protected:
   /// \brief Call it to enable the retrieval of CTP scalers and use `getScalers` later

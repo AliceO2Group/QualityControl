@@ -44,6 +44,7 @@ struct CommonSpec {
   LogDiscardParameters infologgerDiscardParameters;
   double postprocessingPeriod = 30.0;
   std::string bookkeepingUrl;
+  std::unordered_map<std::string, std::string> ctpScalersSourceRepo;
 };
 
 } // namespace o2::quality_control::core

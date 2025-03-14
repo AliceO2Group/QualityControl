@@ -18,7 +18,6 @@
 #define QUALITYCONTROL_USERCODECONFIG_H
 
 #include "QualityControl/CustomParameters.h"
-#include "QualityControl/stringUtils.h"
 
 namespace o2::quality_control::core
 {
@@ -32,6 +31,7 @@ struct UserCodeConfig {
   CustomParameters customParameters;
   std::string ccdbUrl;
   std::unordered_map<std::string, std::string> repository; // we need the full config of the database to build the database in the subclasses
+  std::unordered_map<std::string, std::string> ctpScalersSourceRepo;
 };
 
 } // namespace o2::quality_control::core
