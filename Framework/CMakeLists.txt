@@ -90,6 +90,7 @@ add_library(O2QualityControl
   src/TaskRunner.cxx
   src/TaskRunnerFactory.cxx
   src/TaskInterface.cxx
+  src/CtpScalers.cxx
   src/UserCodeInterface.cxx
   src/RepositoryBenchmark.cxx
   src/RepoPathUtils.cxx
@@ -181,6 +182,7 @@ add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
   include/QualityControl/TaskInterface.h
+  include/QualityControl/CtpScalers.h
   include/QualityControl/UserCodeInterface.h
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h

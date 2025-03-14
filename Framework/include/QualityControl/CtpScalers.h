@@ -10,60 +10,52 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   UserCodeInterface.h
+/// \file   CtpScalers.h
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_USERCODEINTERFACE_H
-#define QUALITYCONTROL_USERCODEINTERFACE_H
+#ifndef QUALITYCONTROL_CTPSCALERS_H
+#define QUALITYCONTROL_CTPSCALERS_H
 
-#include <string>
 #include <Rtypes.h>
-
-#include "QualityControl/ConditionAccess.h"
-#include "QualityControl/CustomParameters.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/CcdbDatabase.h"
-#include "QualityControl/CtpScalers.h"
+
+namespace o2::ctp
+{
+class CTPRateFetcher;
+}
 
 namespace o2::quality_control::core
 {
 
-/// \brief  Common interface for Check and Task Interfaces.
-///
-/// \author Barthelemy von Haller
-class UserCodeInterface : public ConditionAccess
+class CtpScalers
 {
  public:
-  /// Default constructor
-  UserCodeInterface() = default;
-  /// Destructor
-  virtual ~UserCodeInterface() = default;
+  CtpScalers() = default;
+  virtual ~CtpScalers() = default;
 
-  void setCustomParameters(const CustomParameters& parameters);
-
-  /// \brief Configure the object.
-  ///
-  /// Users can use this method to configure their object.
-  /// It is called each time mCustomParameters is updated, including the first time it is read.
-  virtual void configure() = 0;
-
-  const std::string& getName() const;
-  void setName(const std::string& name);
-  void setDatabase(std::unordered_map<std::string, std::string> dbConfig);
-
- protected:
   /// \brief Call it to enable the retrieval of CTP scalers and use `getScalers` later
   void enableCtpScalers(size_t runNumber, std::string ccdbUrl);
   /// \brief Get the scalers's value for the given source
   double getScalersValue(std::string sourceName, size_t runNumber);
 
-  CustomParameters mCustomParameters;
-  std::string mName;
-  std::shared_ptr<repository::DatabaseInterface> mDatabase; //! the repository used by the Framework
-  CtpScalers mCtpScalers;
+  void setDatabase(std::shared_ptr<repository::DatabaseInterface> database)
+  {
+    mDatabase = database;
+  }
 
-  ClassDef(UserCodeInterface, 5)
+ private:
+  /// \brief Retrieve fresh scalers from the QCDB (with cache)
+  /// \return true if success, false if failure
+  bool updateScalers(size_t runNumber);
+
+  std::shared_ptr<o2::ctp::CTPRateFetcher> mCtpFetcher;
+  std::chrono::steady_clock::time_point mScalersLastUpdate;
+  bool mScalersEnabled = false;
+  std::shared_ptr<repository::DatabaseInterface> mDatabase; //! the repository used by the Framework
+
+ private:
+  ClassDef(CtpScalers, 1)
 };
 
 } // namespace o2::quality_control::core

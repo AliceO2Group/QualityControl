@@ -18,7 +18,6 @@
 #define QC_REPOSITORY_DATABASEINTERFACE_H
 
 #include <string>
-#include <memory>
 #include <vector>
 #include <unordered_map>
 
