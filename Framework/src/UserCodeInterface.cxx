@@ -16,7 +16,6 @@
 
 #include "QualityControl/UserCodeInterface.h"
 #include <DataFormatsCTP/CTPRateFetcher.h>
-#include <thread>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseFactory.h"
 
@@ -44,8 +43,7 @@ void UserCodeInterface::setName(const std::string& name)
 
 void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
 {
-  // TODO bail if we are in async
-
+  // bail if we are in async
   auto deploymentMode = framework::DefaultsHelpers::deploymentMode();
   if (deploymentMode == framework::DeploymentMode::Grid) {
     ILOG(Info, Ops) << "Async mode detected, CTP scalers cannot be enabled." << ENDM;

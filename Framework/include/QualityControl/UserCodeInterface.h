@@ -57,8 +57,6 @@ class UserCodeInterface : public ConditionAccess
   void setDatabase(std::unordered_map<std::string, std::string> dbConfig);
 
  private:
-  /// \brief Just the callback for the thread for the scalers retrieval.
-  void regularCallback(int intervalMinutes);
   /// \brief Retrieve fresh scalers from the QCDB (with cache)
   /// \return true if success, false if failure
   bool updateScalers(size_t runNumber);

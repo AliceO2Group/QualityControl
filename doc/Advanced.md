@@ -1998,13 +1998,46 @@ In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding t
 
 ## CTP Scalers
 
-Get a certificate for development : https://alice-doc.github.io/alice-analysis-tutorial/start/cert.html#test-your-certificate
+### Usage 
 
-Build JAlien-ROOT
+User code can access CTP scalers in the following way : 
+```
+// in start of activity
+  enableCtpScalers(activity.mId, "alice-ccdb.cern.ch"); // TODO get it from the config
 
-alienv enter QualityControl/latest JAliEn-ROOT/latest
+// in your e.g. check(...)
+  auto t0vtx = getScalersValue("T0VTX", mActivity->mId);
+  ILOG(Info, Devel) << "\"T0VTX\" : " << t0vtx << ENDM;
+```
 
+### Limitations
 
+It does not work in async.
+
+### Implementation
+
+`CTP proxy` publishes the scalers every 5 minutes into the QCDB at [`qc/CTP/Scalers`](http://ali-qcdb-gpn.cern.ch:8083/browse/qc/CTP/Scalers?report=true). They are cleaned up after 3 days. 
+Thus we query from the QCDB yet we also need access to CCDB to setup the `CTPRateFetcher`. 
+
+When enabling the scalers we instantiate `CTPRateFetcher` and call `setupRun()` __using the current timestamp__. 
+When asking for the scalers, they are retrieved from the QCDB or a cached version is used (cache of 5 minutes). 
+
+### Development and test
+
+* Get a certificate : https://alice-doc.github.io/alice-analysis-tutorial/start/cert.html#test-your-certificate
+* Build JAlien-ROOT : `aliBuild build JAliEn-ROOT [--defaults o2-dataflow]`
+* Build AliEn-Runtime : `aliBuild build xjalienfs [--defaults o2-dataflow]`
+* Use a combined environment : `alienv enter QualityControl/latest JAliEn-ROOT/latest xjalienfs/latest`
+
+Then change the run number in the config file (`basic.json` to match a recent run otherwise it won't work as the CTP scalers are deleted after 3 days).
+
+```
+alien-token-init
+
+```
+
+How do we do if there are no current runs ? we end up with some data in CCDB but the scalers in QCDB are missing. 
+Could we specify a file instead ? 
 
 ---
 
