@@ -48,7 +48,7 @@ void UserCodeInterface::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
 
 double UserCodeInterface::getScalersValue(std::string sourceName, size_t runNumber)
 {
-  return mCtpScalers.getScalersValue( sourceName,  runNumber);
+  return mCtpScalers.getScalersValue(sourceName, runNumber);
 }
 
 void UserCodeInterface::setDatabase(std::unordered_map<std::string, std::string> dbConfig)
