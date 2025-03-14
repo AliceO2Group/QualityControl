@@ -92,12 +92,10 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   customParameters["test"] = "asdf";
   UserCodeConfig config;
   config.customParameters = customParameters;
-  config.repository = {{"host", "ccdb-test.cern.ch:8080"}, {"implementation", "CCDB"}};
+  config.repository = { { "host", "ccdb-test.cern.ch:8080" }, { "implementation", "CCDB" } };
   testInterface.setConfig(config);
   BOOST_CHECK_EQUAL(testInterface.configured, true);
   BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");
-
-
 }
 } /* namespace test */
 } /* namespace o2::quality_control */

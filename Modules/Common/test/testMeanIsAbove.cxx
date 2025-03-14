@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(test_checks)
   customParameters["meanThreshold"] = "1.0";
   UserCodeConfig config;
   config.customParameters = customParameters;
-  config.repository = {{"host", "ccdb-test.cern.ch:8080"}, {"implementation", "CCDB"}};
+  config.repository = { { "host", "ccdb-test.cern.ch:8080" }, { "implementation", "CCDB" } };
   check.setConfig(config);
   Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);

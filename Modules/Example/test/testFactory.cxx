@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   config.moduleName = "QcCommon";
   config.className = "o2::quality_control_modules::example::ExampleTask";
   config.detectorName = "DAQ";
-  config.repository = {{"host", "ccdb-test.cern.ch:8080"}, {"implementation", "CCDB"}};
+  config.repository = { { "host", "ccdb-test.cern.ch:8080" }, { "implementation", "CCDB" } };
   auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl, 0, true);
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local  paths for the test
