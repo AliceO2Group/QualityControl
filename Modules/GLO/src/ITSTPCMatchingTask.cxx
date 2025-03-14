@@ -143,42 +143,6 @@ void ITSTPCMatchingTask::endOfCycle()
       getObjectsManager()->startPublishing(mEffPhi.get(), PublicationPolicy::Once);
     }
 
-    if (mDoK0s) {
-      const auto* k0s = (mIsPbPb) ? mMatchITSTPCQC.getHistoK0MassVsPtVsOccPbPb() : mMatchITSTPCQC.getHistoK0MassVsPtVsOccpp();
-      if (!k0s) {
-        ILOG(Fatal) << "Could not retrieve k0s histogram for beam type: " << mIsPbPb << ENDM;
-      }
-
-      mK0sCycle.reset();
-      mK0sCycle.reset(dynamic_cast<TH3F*>(k0s->Clone("mK0sMassVsPtVsOcc_Cycle")));
-      if (!mK0sCycle) {
-        ILOG(Fatal) << "Could not retrieve k0s histogram for current cycle" << ENDM;
-      }
-      if (!mK0sIntegral) {
-        mK0sIntegral.reset(dynamic_cast<TH3F*>(k0s->Clone("mK0sMassVsPtVsOcc_Integral")));
-        if (!mK0sIntegral) {
-          ILOG(Fatal) << "Could not retrieve k0s histogram integral" << ENDM;
-        }
-      }
-      mK0sCycle->Reset();
-      mK0sCycle->Add(k0s, mK0sIntegral.get(), 1., -1.);
-      mK0sIntegral->Reset();
-      mK0sIntegral->Add(k0s);
-
-      if (mPublishK0s3D) {
-        getObjectsManager()->startPublishing(mK0sCycle.get(), PublicationPolicy::Once);
-        getObjectsManager()->startPublishing(mK0sIntegral.get(), PublicationPolicy::Once);
-      }
-
-      TH1D* h{ nullptr };
-      getObjectsManager()->startPublishing((h = mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass")), PublicationPolicy::Once);
-      if (mK0sFitter.fit(h)) {
-        getObjectsManager()->startPublishing<true>(mK0sFitter.mSignalAndBackground.get(), PublicationPolicy::Once);
-      }
-
-      getObjectsManager()->startPublishing((h = mK0sIntegral->ProjectionY("mK0sMassVsPtVsOcc_Integral_pmass")), PublicationPolicy::Once);
-    }
-
     if (mDoPVITS) {
       const auto* h = mMatchITSTPCQC.getHistoPVNContVsITSTracks();
       if (!h) {
@@ -196,15 +160,58 @@ void ITSTPCMatchingTask::endOfCycle()
           ILOG(Fatal) << "Could not retrieve pv ITS histogram for integral!" << ENDM;
         }
       }
-      mPVITSCycle->Reset();
-      mPVITSCycle->Add(h, mPVITSCycle.get(), 1., -1.);
-      mPVITSIntegral->Reset();
-      mPVITSIntegral->Add(h);
+      if (mPVITSCycle->GetEntries() != h->GetEntries()) {
+        mPVITSCycle->Reset();
+        mPVITSCycle->Add(h, mPVITSCycle.get(), 1., -1.);
+        mPVITSIntegral->Reset();
+        mPVITSIntegral->Add(h);
 
-      getObjectsManager()->startPublishing(mPVITSCycle.get(), PublicationPolicy::Once);
-      getObjectsManager()->startPublishing(mPVITSIntegral.get(), PublicationPolicy::Once);
-      getObjectsManager()->startPublishing(mPVITSCycle->ProfileX(), PublicationPolicy::Once);
-      getObjectsManager()->startPublishing(mPVITSIntegral->ProfileX(), PublicationPolicy::Once);
+        getObjectsManager()->startPublishing(mPVITSCycle.get(), PublicationPolicy::Once);
+        getObjectsManager()->startPublishing(mPVITSIntegral.get(), PublicationPolicy::Once);
+        getObjectsManager()->startPublishing(mPVITSCycle->ProfileX(), PublicationPolicy::Once);
+        getObjectsManager()->startPublishing(mPVITSIntegral->ProfileX(), PublicationPolicy::Once);
+      }
+    }
+
+    if (mDoK0s) {
+      const auto* k0s = (mIsPbPb) ? mMatchITSTPCQC.getHistoK0MassVsPtVsOccPbPb() : mMatchITSTPCQC.getHistoK0MassVsPtVsOccpp();
+      if (!k0s) {
+        ILOG(Fatal) << "Could not retrieve k0s histogram for beam type: " << mIsPbPb << ENDM;
+      }
+
+      mK0sCycle.reset();
+      mK0sCycle.reset(dynamic_cast<TH3F*>(k0s->Clone("mK0sMassVsPtVsOcc_Cycle")));
+      if (!mK0sCycle) {
+        ILOG(Fatal) << "Could not retrieve k0s histogram for current cycle" << ENDM;
+      }
+      if (!mK0sIntegral) {
+        mK0sIntegral.reset(dynamic_cast<TH3F*>(k0s->Clone("mK0sMassVsPtVsOcc_Integral")));
+        if (!mK0sIntegral) {
+          ILOG(Fatal) << "Could not retrieve k0s histogram integral" << ENDM;
+        }
+      }
+      if (k0s->GetEntries() != mK0sIntegral->GetEntries()) {
+        mK0sCycle->Reset();
+        mK0sCycle->Add(k0s, mK0sIntegral.get(), 1., -1.);
+        mK0sIntegral->Reset();
+        mK0sIntegral->Add(k0s);
+
+        if (mPublishK0s3D) {
+          getObjectsManager()->startPublishing(mK0sCycle.get(), PublicationPolicy::Once);
+          getObjectsManager()->startPublishing(mK0sIntegral.get(), PublicationPolicy::Once);
+        }
+
+        TH1D* h{ nullptr };
+        getObjectsManager()->startPublishing((h = mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass")), PublicationPolicy::Once);
+        if (mK0sFitter.fit(h)) {
+          if (mDoPVITS && mPVITSCycle->GetEntries() != 0) {
+            mK0sFitter.mSignalAndBackground->SetParameter(helpers::K0sFitter::Parameters::Pol0, mPVITSCycle->GetEntries());
+          }
+          getObjectsManager()->startPublishing<true>(mK0sFitter.mSignalAndBackground.get(), PublicationPolicy::Once);
+        }
+
+        getObjectsManager()->startPublishing((h = mK0sIntegral->ProjectionY("mK0sMassVsPtVsOcc_Integral_pmass")), PublicationPolicy::Once);
+      }
     }
   }
 }

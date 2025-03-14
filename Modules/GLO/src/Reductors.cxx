@@ -30,8 +30,13 @@ void K0sFitReductor::update(TObject* obj)
     return;
   }
 
-  mStats.mean = f->GetParameter(helpers::K0sFitter::Parameters::Mass);
-  mStats.sigma = f->GetParameter(helpers::K0sFitter::Parameters::Sigma);
+  mStats.mean = (Float_t)f->GetParameter(helpers::K0sFitter::Parameters::Mass);
+  mStats.sigma = (Float_t)f->GetParameter(helpers::K0sFitter::Parameters::Sigma);
+  if (auto ncol = (Float_t)f->GetParameter(helpers::K0sFitter::Parameters::Pol0); ncol > 0.) {
+    mStats.yield = (Float_t)f->GetParameter(helpers::K0sFitter::Parameters::Amplitude) * mStats.sigma / ncol;
+  } else {
+    mStats.yield = -1;
+  }
 }
 
 const char* MTCReductor::getBranchLeafList()

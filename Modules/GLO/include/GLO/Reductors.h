@@ -22,13 +22,14 @@ namespace o2::quality_control_modules::glo
 class K0sFitReductor final : public quality_control::postprocessing::ReductorTObject
 {
   void* getBranchAddress() final { return &mStats; };
-  const char* getBranchLeafList() final { return "mean/F:sigma/F"; };
+  const char* getBranchLeafList() final { return "yield/F:mean/F:sigma/F"; };
   void update(TObject* obj) final;
 
  private:
   struct {
-    Float_t mean{ 0. };
-    Float_t sigma{ 0. };
+    Float_t yield{ -1. };
+    Float_t mean{ -1. };
+    Float_t sigma{ -1. };
   } mStats;
 };
 
@@ -40,10 +41,10 @@ class MTCReductor final : public quality_control::postprocessing::ReductorTObjec
 
  private:
   struct {
-    Float_t mtc{ 0. };
+    Float_t mtc{ -1. };
   } mStats;
 
-  Float_t mPt{ 0 };
+  Float_t mPt{ -1. };
 };
 
 class PVITSReductor final : public quality_control::postprocessing::ReductorTObject

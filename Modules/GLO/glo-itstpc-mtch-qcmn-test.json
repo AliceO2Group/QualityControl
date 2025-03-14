@@ -15,13 +15,7 @@
         "beamType": "PbPb"
       },
       "monitoring": {
-        "url": "no-op://"
-      },
-      "consul": {
-        "url": ""
-      },
-      "conditionDB": {
-        "url": "alice-ccdb.cern.ch"
+        "url": "infologger:///debug?qc"
       },
       "infologger": {
         "filterDiscardDebug": "false",
@@ -142,6 +136,42 @@
             "option": "*L",
             "graphYRange": "0:0.01",
             "graphAxisLabel": "#sigma_{K0s mass (GeV/c^{2})}:time"
+          }
+        ]
+      },
+      "K0sYieldTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QcGLO",
+        "detectorName": "GLO",
+        "resumeTrend": "false",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:GLO/MO/ITSTPCMatchingTask/gloFitK0sMassSignal"
+        ],
+        "stopTrigger": [
+          "usercontrol"
+        ],
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "GLO/MO/ITSTPCMatchingTask",
+            "names": [
+              "gloFitK0sMassSignal"
+            ],
+            "reductorName": "o2::quality_control_modules::glo::K0sFitReductor",
+            "moduleName": "QcGLO"
+          }
+        ],
+        "plots": [
+          {
+            "name": "glo_k0s_yield_trending",
+            "title": "Fitted K0s yield",
+            "varexp": "gloFitK0sMassSignal.yield:time",
+            "option": "*L",
+            "graphAxisLabel": "K0s Yield:time"
           }
         ]
       },
