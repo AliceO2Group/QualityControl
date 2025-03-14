@@ -26,6 +26,7 @@
 #include <CommonConstants/PhysicsConstants.h>
 
 #include <memory>
+#include <limits>
 
 #include <TH2F.h>
 #include <TH3F.h>
@@ -49,6 +50,9 @@ class ITSTPCMatchingTask final : public TaskInterface
   void reset() override;
 
  private:
+  template <typename T>
+  static constexpr T OptValue = std::numeric_limits<T>::max();
+
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
   bool mIsSync{ false };
@@ -61,6 +65,8 @@ class ITSTPCMatchingTask final : public TaskInterface
 
   bool mDoK0s{ false };
   bool mPublishK0s3D{ false };
+  float mSplitTPCOccupancy{ OptValue<float> };
+  float mSplitPt{ OptValue<float> };
   std::unique_ptr<TH3F> mK0sCycle;
   std::unique_ptr<TH3F> mK0sIntegral;
   helpers::K0sFitter mK0sFitter;

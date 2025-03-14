@@ -67,6 +67,8 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     mPublishK0s3D = getFromConfig(mCustomParameters, "publishK0s3D", false);
+    mSplitTPCOccupancy = getFromConfig(mCustomParameters, "splitK0sMassOccupancy", mSplitTPCOccupancy);
+    mSplitPt = getFromConfig(mCustomParameters, "splitK0sMassPt", mSplitPt);
     mK0sFitter.init(mCustomParameters);
   }
   // PV
@@ -203,6 +205,19 @@ void ITSTPCMatchingTask::endOfCycle()
 
         TH1D* h{ nullptr };
         getObjectsManager()->startPublishing((h = mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass")), PublicationPolicy::Once);
+
+        if (mSplitTPCOccupancy != OptValue<float>) {
+          auto splitOccBin = mK0sCycle->GetZaxis()->FindBin(mSplitTPCOccupancy);
+          getObjectsManager()->startPublishing(mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass_lowOcc", 0, -1, 0, splitOccBin - 1), PublicationPolicy::Once);
+          getObjectsManager()->startPublishing(mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass_highOcc", 0, -1, splitOccBin), PublicationPolicy::Once);
+        }
+
+        if (mSplitPt != OptValue<float>) {
+          auto splitPtBin = mK0sCycle->GetXaxis()->FindBin(mSplitPt);
+          getObjectsManager()->startPublishing(mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass_lowPt", 0, splitPtBin - 1), PublicationPolicy::Once);
+          getObjectsManager()->startPublishing(mK0sCycle->ProjectionY("mK0sMassVsPtVsOcc_Cycle_pmass_highPt", splitPtBin), PublicationPolicy::Once);
+        }
+
         if (mK0sFitter.fit(h)) {
           if (mDoPVITS && mPVITSCycle->GetEntries() != 0) {
             mK0sFitter.mSignalAndBackground->SetParameter(helpers::K0sFitter::Parameters::Pol0, mPVITSCycle->GetEntries());

@@ -481,15 +481,25 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-  } else if (mShowK0s && (name == "mK0sMassVsPtVsOcc_Cycle_pmass" || name == "mK0sMassVsPtVsOcc_Integral_pmass")) {
+  } else if (mShowK0s && (name.starts_with("mK0sMassVsPtVsOcc_Cycle_pmass") || name.starts_with("mK0sMassVsPtVsOcc_Integral_pmass"))) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (!h) {
       ILOG(Error) << "Failed cast for " << name << " beautify!" << ENDM;
       return;
     }
     auto isCycle = name.find("Cycle") != std::string::npos;
+    auto isHigh = name.find("high") != std::string::npos;
+    auto isLow = name.find("low") != std::string::npos;
+    auto isOcc = name.ends_with("Occ");
+    auto isPt = name.ends_with("Pt");
     auto msg = new TPaveText(0.6, 0.6, 0.88, 0.88, "NDC;NB");
-    h->SetTitle(Form("K0s invariant mass (integrated over #it{p}_{T} and occupancy, %s);K0s mass (GeV/c^{2});entries", (isCycle) ? "current cycle" : "integrated"));
+    if (!isLow && !isHigh) {
+      h->SetTitle(Form("K0s invariant mass (integrated over #it{p}_{T} and occupancy, %s);K0s mass (GeV/c^{2});entries", (isCycle) ? "last cycle" : "integrated"));
+    } else {
+      h->SetTitle(Form("K0s invariant mass (integrated over%s#it{p}_{T} and%soccupancy, last cycle);K0s mass (GeV/c^{2});entries",
+                       (isPt) ? ((isLow) ? " low " : " high ") : " ",
+                       (isOcc) ? ((isLow) ? " low " : " high ") : " "));
+    }
     if (!mK0sFitter.fit(h, true)) {
       msg->AddText("Fit: Failed");
       msg->SetFillColor(kRed);

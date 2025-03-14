@@ -31,6 +31,8 @@ Documents the available task in the module and their parameters.
  - `cutK0Mass=0.05f` cut around K0s peak
  - `trackSourcesK0` SVertexer input sources
  - `publishK0s3D=false` publish 3D cycle,integral histograms
+ - `splitK0sMassOccupancy=float` splitting point in TPC occupancy to define low and high region by default off
+ - `splitK0sMassPt=float` splitting point in pt to define low and high region by default off
  + K0Fitter options
 #### ITS-PV
  - `doPVITSQC=false` produce ITS vs PV plots

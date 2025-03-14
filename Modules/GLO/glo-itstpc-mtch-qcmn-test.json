@@ -76,8 +76,12 @@
               "mFractionITSTPCmatch_ITS_Hist",
               "mFractionITSTPCmatchPhi_ITS_Hist",
               "mFractionITSTPCmatchEta_ITS_Hist",
+              "mK0sMassVsPtVsOcc_Integral_pmass",
               "mK0sMassVsPtVsOcc_Cycle_pmass",
-              "mK0sMassVsPtVsOcc_Integral_pmass"
+              "mK0sMassVsPtVsOcc_Cycle_pmass_lowOcc",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_lowPt",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_highOcc",
+              "mK0sMassVsPtVsOcc_Cycle_pmass_highPt"
             ]
           }
         ],
