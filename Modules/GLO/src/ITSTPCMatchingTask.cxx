@@ -146,7 +146,7 @@ void ITSTPCMatchingTask::endOfCycle()
     }
 
     if (mDoPVITS) {
-      const auto* h = mMatchITSTPCQC.getHistoPVNContVsITSTracks();
+      const auto* h = (mIsPbPb) ? mMatchITSTPCQC.getHistoPVNContVsITSTracksPbPb() : mMatchITSTPCQC.getHistoPVNContVsITSTracks();
       if (!h) {
         ILOG(Fatal) << "Could not retrieve pv ITS histogram!" << ENDM;
       }
