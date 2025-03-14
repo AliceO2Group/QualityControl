@@ -71,9 +71,7 @@ void Check::init()
   try {
     mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
     mCheckInterface->setName(mCheckConfig.name);
-    mCheckInterface->setDatabase(mCheckConfig.repository);
-    mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
-    mCheckInterface->setCcdbUrl(mCheckConfig.ccdbUrl);
+    mCheckInterface->setConfig(mCheckConfig);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows: "

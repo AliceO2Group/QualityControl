@@ -74,7 +74,6 @@ using namespace AliceO2::Common;
 TaskRunner::TaskRunner(const TaskRunnerConfig& config)
   : mTaskConfig(config)
 {
-  o2::ccdb::BasicCCDBManager::instance().setFatalWhenNull(false);
 }
 
 TaskRunner::~TaskRunner()
@@ -123,7 +122,6 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(TaskFactory::create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
   mTask->setGlobalTrackingDataRequest(mTaskConfig.globalTrackingDataRequest);
-  mTask->setDatabase(mTaskConfig.repository);
 
   // load config params
   if (!ConfigParamGlo::keyValues.empty()) {

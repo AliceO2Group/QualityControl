@@ -28,8 +28,7 @@ namespace o2::quality_control::postprocessing
 PostProcessingInterface* PostProcessingFactory::create(const PostProcessingConfig& config)
 {
   auto* result = root_class_factory::create<PostProcessingInterface>(config.moduleName, config.className);
-  result->setCustomParameters(config.customParameters);
-  result->setDatabase(config.repository);
+  result->setConfig(config);
   return result;
 }
 

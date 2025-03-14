@@ -18,6 +18,7 @@
 #include <DataFormatsCTP/CTPRateFetcher.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseFactory.h"
+#include "QualityControl/UserCodeConfig.h"
 
 using namespace o2::ccdb;
 using namespace std;
@@ -25,9 +26,12 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-void UserCodeInterface::setCustomParameters(const CustomParameters& parameters)
+void UserCodeInterface::setConfig(UserCodeConfig config)
 {
-  mCustomParameters = parameters;
+  setDatabase(config.repository);
+  setCcdbUrl(config.ccdbUrl);
+
+  mCustomParameters = config.customParameters;
   configure();
 }
 

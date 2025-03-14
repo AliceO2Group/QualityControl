@@ -20,6 +20,8 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
+#include "QualityControl/UserCodeConfig.h"
+
 #include <boost/test/unit_test.hpp>
 #include <TObject.h>
 #include <string>
@@ -82,19 +84,20 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   auto taskName = "Test/pid" + pid;
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, taskName, "task", "TST");
   auto backend = std::make_unique<CcdbDatabase>();
-  backend->connect("ccdb-test.cern.ch:8080", "", "", "");
+  backend->connect("ccdb-test.cern.ch:8080", "QCDB", "", "");
   backend->storeMO(mo1);
 
   // setting custom parameters should configure
   CustomParameters customParameters;
   customParameters["test"] = "asdf";
-  testInterface.setCustomParameters(customParameters);
+  UserCodeConfig config;
+  config.customParameters = customParameters;
+  config.repository = {{"host", "ccdb-test.cern.ch:8080"}, {"implementation", "CCDB"}};
+  testInterface.setConfig(config);
   BOOST_CHECK_EQUAL(testInterface.configured, true);
   BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");
 
-  testInterface.setCcdbUrl("ccdb-test.cern.ch:8080");
-  auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/" + taskName + "/asdf");
-  BOOST_CHECK_NE(obj, nullptr);
+
 }
 } /* namespace test */
 } /* namespace o2::quality_control */

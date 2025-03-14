@@ -22,6 +22,8 @@
 #define BOOST_TEST_DYN_LINK
 
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/UserCodeConfig.h"
+
 #include <TH1F.h>
 #include <TList.h>
 #include <boost/test/unit_test.hpp>
@@ -41,7 +43,10 @@ BOOST_AUTO_TEST_CASE(test_checks)
   MeanIsAbove check;
   CustomParameters customParameters;
   customParameters["meanThreshold"] = "1.0";
-  check.setCustomParameters(customParameters);
+  UserCodeConfig config;
+  config.customParameters = customParameters;
+  config.repository = {{"host", "ccdb-test.cern.ch:8080"}, {"implementation", "CCDB"}};
+  check.setConfig(config);
   Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 

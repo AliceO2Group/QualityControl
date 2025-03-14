@@ -37,7 +37,6 @@ void CtpScalers::enableCtpScalers(size_t runNumber, std::string ccdbUrl)
   mCtpFetcher = make_shared<o2::ctp::CTPRateFetcher>();
   mScalersEnabled = true;
   auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
-  ccdbManager.setURL(ccdbUrl);
   mCtpFetcher->setupRun(runNumber, &ccdbManager, /*1726300234140*/ getCurrentTimestamp(), false);
 
   mScalersLastUpdate = std::chrono::steady_clock::time_point::min();
