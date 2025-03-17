@@ -12,8 +12,6 @@ add_library(O2QcCommon)
 target_sources(O2QcCommon
                PRIVATE src/IncreasingEntries.cxx
                        src/WorstOfAllAggregator.cxx
-                       src/FlagCollectionTask.cxx
-                       src/FlagCollectionTaskConfig.cxx
                        src/QualityTask.cxx
                        src/QualityTaskConfig.cxx
                        src/BigScreenCanvas.cxx
@@ -60,7 +58,6 @@ install(TARGETS O2QcCommon
 add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
                             include/Common/WorstOfAllAggregator.h
-                            include/Common/FlagCollectionTask.h
                             include/Common/QualityTask.h
                             include/Common/BigScreen.h
                             include/Common/CcdbInspectorTask.h
@@ -86,9 +83,6 @@ add_root_dictionary(O2QcCommon
                             include/Common/TH2SliceReductor.h
                             include/Common/LHCClockPhaseReductor.h
                     LINKDEF include/Common/LinkDef.h)
-
-install(FILES etc/flagcollection-example.json
-  DESTINATION Modules/Common)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Common
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
