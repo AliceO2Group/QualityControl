@@ -12,6 +12,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/SupermoduleProjectorTask.h"
 #include "QualityControl/DatabaseInterface.h"
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 
 #include <boost/algorithm/string/case_conv.hpp>
 
