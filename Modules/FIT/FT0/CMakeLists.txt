@@ -11,7 +11,8 @@ target_sources(O2QcFT0 PRIVATE src/AgingLaserTask.cxx
                                src/OutOfBunchCollCheck.cxx
                                src/MergedTreeCheck.cxx
                                src/RecPointsQcTask.cxx
-                               src/ChannelGeometry.cxx)
+                               src/ChannelGeometry.cxx
+                               src/AmpTimeDistribution.cxx)
 
 target_include_directories(
   O2QcFT0
@@ -43,6 +44,7 @@ add_root_dictionary(O2QcFT0
           include/FT0/MergedTreeCheck.h
           include/FT0/RecPointsQcTask.h
           include/FT0/ChannelGeometry.h
+          include/FT0/AmpTimeDistribution.h
   LINKDEF include/FT0/LinkDef.h)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FT0
