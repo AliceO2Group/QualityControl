@@ -51,14 +51,18 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoBCMinBias2 = std::make_unique<TH1D>("bcMinBias2", "BC position MB2", norbits, 0, norbits);
   mHistoInputRatios = std::make_unique<TH1DRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
   mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Class; Ratio", nclasses, 0, nclasses, true);
+  mHistoDecodeError = std::make_unique<TH1D>("decodeError", "Errors from decoder", 10, 1, 11);
   getObjectsManager()->startPublishing(mHistoInputs.get());
   getObjectsManager()->startPublishing(mHistoClasses.get());
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
   getObjectsManager()->startPublishing(mHistoInputRatios.get());
   getObjectsManager()->startPublishing(mHistoBCMinBias1.get());
   getObjectsManager()->startPublishing(mHistoBCMinBias2.get());
+  getObjectsManager()->startPublishing(mHistoDecodeError.get());
 
   mDecoder.setDoLumi(1);
+  mDecoder.setDecodeInps(1);
+  mDecoder.setCheckConsistency(1);
   mDecoder.setDoDigits(1);
   for (size_t i = 0; i < nclasses; i++) {
     classNames[i] = "";
@@ -76,6 +80,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoInputRatios->Reset();
   mHistoBCMinBias1->Reset();
   mHistoBCMinBias2->Reset();
+  mHistoDecodeError->Reset();
 
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
@@ -115,6 +120,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
         break;
       }
     }
+    mDecoder.setCTPConfig(*ctpconfigdb);
   } else {
     ILOG(Warning, Support) << "CTP config not found, run:" << run << ENDM;
   }
@@ -215,7 +221,10 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::vector<o2::ctp::CTPDigit> outputDigits;
 
   o2::framework::InputRecord& inputs = ctx.inputs();
-  mDecoder.decodeRaw(inputs, filter, outputDigits, lumiPointsHBF1);
+  int ret = mDecoder.decodeRaw(inputs, filter, outputDigits, lumiPointsHBF1);
+  if (ret > 0) {
+    mHistoDecodeError->Fill(log2(ret) + 1.5);
+  }
 
   // reading the ctp inputs and ctp classes
   for (auto const digit : outputDigits) {
@@ -282,6 +291,7 @@ void CTPRawDataReaderTask::reset()
   mHistoClassRatios->Reset();
   mHistoBCMinBias1->Reset();
   mHistoBCMinBias2->Reset();
+  mHistoDecodeError->Reset();
 }
 
 } // namespace o2::quality_control_modules::ctp

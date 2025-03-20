@@ -56,6 +56,7 @@ class CTPRawDataReaderTask final : public TaskInterface
   std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr; // histogram with ctp class ratios to MB
   std::unique_ptr<TH1D> mHistoBCMinBias1 = nullptr;       // histogram of BC positions to check LHC filling scheme
   std::unique_ptr<TH1D> mHistoBCMinBias2 = nullptr;       // histogram of BC positions to check LHC filling scheme
+  std::unique_ptr<TH1D> mHistoDecodeError = nullptr;      // histogram of erros from decoder
   int mRunNumber;
   int indexMB1 = -1;
   int indexMB2 = -1;

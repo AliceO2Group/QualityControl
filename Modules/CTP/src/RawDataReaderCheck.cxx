@@ -137,6 +137,12 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         result.set(setQualityResult(mVecIndexBad, mVecIndexMedium));
       }
       mHistClassRatioPrevious = (TH1D*)h->Clone();
+    } else if (mo->getName() == "decodeError") {
+      if (h->GetEntries() > 0) {
+        result.set(Quality::Bad);
+      } else {
+        result.set(Quality::Good);
+      }
     } else {
       ILOG(Info, Support) << "Unknown histo:" << moName << ENDM;
     }
@@ -255,6 +261,77 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
     h->SetStats(kFALSE);
     h->GetYaxis()->SetRangeUser(0, h->GetMaximum() * 1.5);
+  } else if (mo->getName() == "decodeError") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (checkResult != Quality::Null) {
+      msg = std::make_shared<TLatex>(0.2, 0.85, Form("Quality: %s", (checkResult.getName()).c_str()));
+      if (checkResult == Quality::Bad) {
+        msg->SetTextColor(kRed);
+      } else if (checkResult == Quality::Good) {
+        msg->SetTextColor(kGreen + 1);
+      }
+      msg->SetTextSize(0.03);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+    }
+    if (checkResult == Quality::Bad) {
+      float initialMessagePos = 0.8;
+      if (h->GetBinContent(1) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "Failed to extract RDD");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(3) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "Two CTP IRs with the same ts");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(4) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "Two digits with the same ts");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(5) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "Two CTP class masks with the same ts");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(6) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "Two digits (Class Mask) with the same ts");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(7) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "Trigger class without input");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(8) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "CTP class mask not compatible with input class mask");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+        initialMessagePos -= 0.04;
+      }
+      if (h->GetBinContent(9) > 0) {
+        msg = std::make_shared<TLatex>(0.2, initialMessagePos, "CTP class not found in the digit");
+        msg->SetTextSize(0.03);
+        msg->SetNDC();
+        h->GetListOfFunctions()->Add(msg->Clone());
+      }
+    }
   } else {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     h->SetStats(kFALSE);

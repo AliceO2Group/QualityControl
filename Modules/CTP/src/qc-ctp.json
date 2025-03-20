@@ -16,7 +16,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "alice-ccdb.cern.ch"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
@@ -48,14 +48,14 @@
               "ccdbName": "https://alice-ccdb.cern.ch",
               "MBclassName" : "CMTVX-B-NOPF",
               "MB1inputName" : "MTVX",
-              "MB2inputName" : "MTVA"
+              "MB2inputName" : "MVBA"
             }
           },
           "PHYSICS": {
             "default": {
               "MBclassName" : "CMTVX-B-NOPF",
               "MB1inputName" : "MTVX",
-              "MB2inputName" : "MTVA"
+              "MB2inputName" : "MVBA"
             },
             "PROTON-PROTON": {
               "MBclassName" : "CMTVX-B-NOPF",
@@ -63,7 +63,7 @@
               "MB2inputName" : "MTVA"
             },
             "Pb-Pb": {
-              "MBclassName" : "CMTVX-B-NOPF",
+              "MBclassName" : "CMTCE-B-NOPF",
               "MB1inputName" : "MTSC",
               "MB2inputName" : "MTCE"
             }
@@ -81,14 +81,14 @@
         "dataSource": [{
           "type": "Task",
           "name": "CTPRawData",
-          "MOs": ["bcMinBias1","bcMinBias2","inputs","classes","inputRatio","classRatio"]
+          "MOs": ["bcMinBias1","bcMinBias2","inputs","classes","inputRatio","classRatio","decodeError"]
         }],
         "checkParameters": {
           "thresholdRateBad": "3",
           "thresholdRateMedium": "2",
           "thresholdRateRatioBad": "3",
           "thresholdRateRatioMedium": "2",
-          "mNSigBC": "2"
+          "nSigmaBC": "1"
         }
       }
     }
