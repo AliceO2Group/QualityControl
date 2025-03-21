@@ -13,7 +13,7 @@ include(GNUInstallDirs)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.169.0
+        VERSION 1.169.1
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES C CXX)
 
