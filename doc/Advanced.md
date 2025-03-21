@@ -1310,7 +1310,7 @@ The new syntax is
 ```
 It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: [ECSDataAdapters.h](https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54). The `default` can be used 
 to ignore the run or the beam type. 
-The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`
+The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`, `cosmic`.
 
 The values can be accessed in various ways described in the following sub-sections.
 

@@ -101,6 +101,8 @@ std::string translateBeamType(const std::string& pdpBeamType)
     result = "Pb-Pb";
   } else if (pdpBeamType == "pPb") {
     result = "Pb-PROTON";
+  } else if (pdpBeamType == "cosmic") {
+    result = "cosmic";
   } else {
     ILOG(Warning, Ops) << "Failed to convert the pdp beam type ('" << pdpBeamType << "'), returning an empty string" << ENDM;
   }
