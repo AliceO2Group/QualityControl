@@ -25,10 +25,11 @@
 #include <DataFormatsFT0/ChannelData.h>
 #include <Framework/InputRecord.h>
 #include <vector>
-
+#include "DataFormatsParameters/GRPLHCIFData.h"
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
-
+#include "DetectorsBase/GRPGeomHelper.h"
+#include "CommonDataFormat/BunchFilling.h"
 namespace o2::quality_control_modules::ft0
 {
 
@@ -38,14 +39,23 @@ RecPointsQcTask::~RecPointsQcTask()
 {
   delete mListHistGarbage;
 }
+void RecPointsQcTask::initHists()
+{
+  for (int iCh = 0; iCh < sNCHANNELS; iCh++) {
+    const std::string name = fmt::format("hAmpVsTime_ch{}", iCh);
+    const std::string title = fmt::format("Amp Vs Time channelID {}; Amp [ADC]; Time [ps]", iCh);
+    mArrAmpTimeDistribution[iCh] = o2::fit::AmpTimeDistribution(name, title, 200, -2000., 2000., 50, 4095, 0); // in total 315 bins along x-axis
+    getObjectsManager()->startPublishing(mArrAmpTimeDistribution[iCh].mHist.get());
+  }
+}
 
 void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "@@@@initialize RecoQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
-  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ps]", NCHANNELS, 0, NCHANNELS, 500, -2050, 2050);
+  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time [ps]", sNCHANNELS, 0, sNCHANNELS, 500, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
-  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", NCHANNELS, 0, NCHANNELS, 200, 0, 1000);
+  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp [#ADC channels]", sNCHANNELS, 0, sNCHANNELS, 200, 0, 1000);
   mHistAmp2Ch->SetOption("colz");
   mHistCollTimeAC = std::make_unique<TH1F>("CollTimeAC", "(T0A+T0C)/2;ps", 100, -1000, 1000);
   mHistCollTimeA = std::make_unique<TH1F>("CollTimeA", "T0A;ps", 100, -1000, 1000);
@@ -87,15 +97,16 @@ void RecPointsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTimeA_perTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TimeA_perTrg", "T0A per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
   mHistTimeC_perTrg = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "TimeC_perTrg", "T0C per Trigger;Time [ps]; Trigger", binsTime, mMapTrgBits);
   mHistBC_perTriggers = helper::registerHist<TH2F>(getObjectsManager(), PublicationPolicy::Forever, "COLZ", "BC_perTriggers", "BC per Triggers;BC; Trigger", binsBC, mMapTrgBits);
-
-  for (const auto& chID : mSetAllowedChIDs) {
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 1000, 0, 4000, 100, -1000, 1000) });
-    if (pairHistAmpVsTime.second) {
-      mListHistGarbage->Add(pairHistAmpVsTime.first->second);
-      getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
+  /*
+    for (const auto& chID : mSetAllowedChIDs) {
+      auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 1000, 0, 4000, 100, -1000, 1000) });
+      if (pairHistAmpVsTime.second) {
+        mListHistGarbage->Add(pairHistAmpVsTime.first->second);
+        getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
+      }
     }
-  }
-
+  */
+  initHists();
   ILOG(Info, Support) << "@@@ histos created" << ENDM;
 }
 
@@ -114,9 +125,8 @@ void RecPointsQcTask::startOfActivity(const Activity& activity)
   mHistTimeA_perTrg->Reset();
   mHistTimeC_perTrg->Reset();
   mHistBC_perTriggers->Reset();
-
-  for (auto& entry : mMapHistAmpVsTime) {
-    entry.second->Reset();
+  for (int iCh = 0; iCh < sNCHANNELS; iCh++) {
+    mArrAmpTimeDistribution[iCh].mHist->Reset();
   }
 }
 
@@ -128,7 +138,9 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   auto chan = ctx.inputs().get<gsl::span<o2::ft0::ChannelDataFloat>>("channels");
   auto recpoints = ctx.inputs().get<gsl::span<o2::ft0::RecPoints>>("recpoints");
-
+  const auto& grplhcif = o2::base::GRPGeomHelper::instance().getGRPLHCIF();
+  const auto& bcSchema = grplhcif ? grplhcif->getBunchFilling().getBCPattern() : o2::BunchFilling::Pattern{};
+  const bool isPbPb = grplhcif ? grplhcif->getAtomicNumberB1() == 82 && grplhcif->getAtomicNumberB2() == 82 : false;
   for (const auto& recpoint : recpoints) {
     const auto bc = recpoint.getInteractionRecord().bc;
     int time[o2::ft0::Constants::sNCHANNELS_PM] = { 0 };
@@ -158,13 +170,14 @@ void RecPointsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+    const bool isMinBiasEvent = (isPbPb && minBias) || (!isPbPb && triggersignals.getVertex()); // for pp only vertex, for PbPb vrt && (CENT || SCENT)
     for (const auto& chData : channels) {
       time[chData.ChId] = chData.CFDTime;
       amp[chData.ChId] = chData.QTCAmpl;
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
-      if (mSetAllowedChIDs.find(static_cast<unsigned int>(chData.ChId)) != mSetAllowedChIDs.end() && minBias) { // ampt-time dependency is needed only for PbPb runs
-        mMapHistAmpVsTime[chData.ChId]->Fill(chData.QTCAmpl, chData.CFDTime);
+      if (bcSchema.test(bc) && isMinBiasEvent) { // ampt-time dependency
+        mArrAmpTimeDistribution[chData.ChId].mHist->Fill(chData.QTCAmpl, chData.CFDTime);
       }
     }
     if (vertexTrigger) {
@@ -239,9 +252,8 @@ void RecPointsQcTask::reset()
   mHistTimeA_perTrg->Reset();
   mHistTimeC_perTrg->Reset();
   mHistBC_perTriggers->Reset();
-
-  for (auto& entry : mMapHistAmpVsTime) {
-    entry.second->Reset();
+  for (int iCh = 0; iCh < sNCHANNELS; iCh++) {
+    mArrAmpTimeDistribution[iCh].mHist->Reset();
   }
 }
 

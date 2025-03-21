@@ -19,7 +19,7 @@
 #define QC_MODULE_FT0_FT0RECOQCTASK_H
 
 #include <Framework/InputRecord.h>
-
+#include <FT0/AmpTimeDistribution.h>
 #include "QualityControl/QcInfoLogger.h"
 #include <FT0Base/Geometry.h>
 #include <DataFormatsFT0/RecPoints.h>
@@ -46,7 +46,7 @@ namespace o2::quality_control_modules::ft0
 
 class RecPointsQcTask final : public TaskInterface
 {
-  static constexpr int NCHANNELS = o2::ft0::Geometry::Nchannels;
+  static constexpr int sNCHANNELS = o2::ft0::Geometry::Nchannels;
 
  public:
   /// \brief Constructor
@@ -62,8 +62,10 @@ class RecPointsQcTask final : public TaskInterface
   void endOfActivity(const Activity& activity) override;
   void reset() override;
   using Detector_t = o2::quality_control_modules::fit::detectorFIT::DetectorFT0;
+  void initHists();
 
  private:
+  std::array<o2::fit::AmpTimeDistribution, sNCHANNELS> mArrAmpTimeDistribution;
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
   unsigned int mTrgPos_minBias;
