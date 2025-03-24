@@ -226,7 +226,7 @@ class ITSTrackTask : public TaskInterface
     // implementation of the function to be minimized
     double operator()(const double* par)
     { // const double -> double
-      assert(fHits != 0);
+      assert(fHits.size() != 0);
 
       int nhits = fHits.size();
       double sum = 0;
