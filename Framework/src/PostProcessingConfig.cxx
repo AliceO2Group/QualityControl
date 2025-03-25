@@ -37,6 +37,7 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   moduleName = config.get<std::string>("qc.postprocessing." + id + ".moduleName");
   className = config.get<std::string>("qc.postprocessing." + id + ".className");
   detectorName = config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC");
+  ccdbUrl = config.get<std::string>("qc.config.conditionDB.url", "");
   consulUrl = config.get<std::string>("qc.config.consul.url", "");
   // if available, use the source repo as defined in the postprocessing task, otherwise the general QCDB
   auto sourceRepo = config.get_child_optional("qc.postprocessing." + id + ".sourceRepo");

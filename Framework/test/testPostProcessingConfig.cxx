@@ -50,4 +50,6 @@ BOOST_AUTO_TEST_CASE(test_configuration_read)
   BOOST_CHECK_EQUAL(ppconfig.stopTriggers[0], "once");
 
   BOOST_CHECK_EQUAL(ppconfig.customParameters.size(), 4);
+
+  BOOST_CHECK_EQUAL(ppconfig.ccdbUrl, "ccdb-test.cern.ch:8080");
 }
