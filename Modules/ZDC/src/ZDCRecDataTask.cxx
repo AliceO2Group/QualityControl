@@ -198,14 +198,12 @@ void ZDCRecDataTask::setBinHisto2D(int numBinX, double minBinX, double maxBinX, 
   setMaxBinY(maxBinY);
 }
 
-// Begin Stefan addition
 // CENTRAL_EVENT_CONFIG -> tdcLimit [ns] ; centraleventconfig [discrete value]
 void ZDCRecDataTask::SetConfigCentralEvent(float tdcLimit, int centraleventconfig)
 {
   settdcLimit(tdcLimit);
   setcentraleventconfigvalue(centraleventconfig);
 }
-// End Stefan addition
 
 void ZDCRecDataTask::dumpHistoStructure()
 {
@@ -565,7 +563,6 @@ void ZDCRecDataTask::initHisto()
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
   addNewHisto("CENTR_ZNC", "h_CENTR_ZNC_cut_ZEM", "ZNC Centroid (cm)", "ADC", "CXZNC", "ADC", "CYZNC", 0);
 
-  // Begin Stefan addition
   // Here we set the parameters for the configuration of the logic which selects the central events
   if (auto param = mCustomParameters.find("CENTRAL_EVENT_CONFIG"); param != mCustomParameters.end()) {
     ILOG(Debug, Devel) << "Custom parameter - CENTRAL_EVENT_CONFIG: " << param->second << ENDM;
@@ -574,7 +571,6 @@ void ZDCRecDataTask::initHisto()
   } else {
     SetConfigCentralEvent(0.0, 0);
   }
-  // End Stefan addition
 }
 
 bool ZDCRecDataTask::add1DHisto(std::string typeH, std::string name, std::string title, std::string typeCh1, std::string ch1, int bin)
@@ -621,12 +617,6 @@ bool ZDCRecDataTask::add2DHisto(std::string typeH, std::string name, std::string
   h2d.ch1 = ch1;
   h2d.typech2 = typeCh2;
   h2d.ch2 = ch2;
-  // Begin Stefan addition
-  if (typeH == "CENTR_ZNA") {
-    // h2d.histo->GetXaxis()->SetTitle("test2");
-    // h2d.histo->GetYaxis()->SetTitle("test2");
-  }
-  // End Stefan Addition
   int ih = (int)mHisto2D.size();
   mHisto2D.push_back(h2d);
   h2d.typeh.clear();
@@ -875,7 +865,7 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           mEv.centroidZNA(x, y);
           mHisto2D.at(i).histo->Fill(x, y);
         } else {
-          if (IsEventCentral()) { // STEFAN
+          if (IsEventCentral()) {
             mEv.centroidZNA(x, y);
             mHisto2D.at(i).histo->Fill(x, y);
           }
@@ -886,7 +876,7 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
           mEv.centroidZNC(x, y);
           mHisto2D.at(i).histo->Fill(x, y);
         } else {
-          if (IsEventCentral()) { // STEFAN
+          if (IsEventCentral()) {
             mEv.centroidZNC(x, y);
             mHisto2D.at(i).histo->Fill(x, y);
           }
@@ -897,7 +887,6 @@ int ZDCRecDataTask::process(const gsl::span<const o2::zdc::BCRecData>& RecBC,
   return 0;
 }
 
-// Begin Stefan addition
 bool ZDCRecDataTask::IsEventCentral()
 {
   if (fcentraleventconfigvalue == 1) {
@@ -911,7 +900,6 @@ bool ZDCRecDataTask::IsEventCentral()
     return false;
   }
 }
-// End Stefan addition
 
 float ZDCRecDataTask::getADCRecValue(std::string typech, std::string ch)
 {

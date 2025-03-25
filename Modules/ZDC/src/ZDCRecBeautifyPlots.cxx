@@ -11,7 +11,7 @@
 
 ///
 /// \file   ZDCRecBeautifyPlots.cxx
-/// \author My Name
+/// \author Stefan Cristi Zugravel
 ///
 
 #include "ZDC/ZDCRecBeautifyPlots.h"

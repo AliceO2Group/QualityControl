@@ -22,7 +22,7 @@
 namespace o2::quality_control_modules::zdc
 {
 
-/// \brief  Example QC Check
+/// \brief  ZDC Beautify for centroids plots
 /// \author Stefan Cristi Zugravel
 class ZDCRecBeautifyPlots : public o2::quality_control::checker::CheckInterface
 {

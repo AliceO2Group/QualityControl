@@ -57,21 +57,6 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     // For -> Histo to check
     for (int ih = 0; ih < (int)mVectHistoCheck.size(); ih++) {
       if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
-        // std::ofstream debugFile;
-        // debugFile.open("debug.txt", std::ios::app);
-        // if (debugFile.good()) {
-        //   debugFile << mo->getName() << " ";
-        //   debugFile << mVectHistoCheck.at(ih).nameHisto;
-        //   debugFile << " = ";
-        //   if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
-        //     debugFile << " equal ";
-        //   }
-        //   else {
-        //     debugFile << " no equal ";
-        //   }
-        //   debugFile << "= \n";
-        //   debugFile.close();
-        // }
         if ((mo->getName() == "hpedSummary")) {
           mVectHistoCheck.at(ih).numE = 0;
           mVectHistoCheck.at(ih).numW = 0;
@@ -211,15 +196,6 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
             if (!std::equal(std::begin(ratio_array), std::end(ratio_array), std::begin(COMPARATOR_ARRAY))) {
               mVectHistoCheck.at(ih).numE += 1;
               mVectHistoCheck.at(ih).stringE = mVectHistoCheck.at(ih).stringE + mVectHistoCheck.at(ih).paramch.at(x).ch + " ";
-              // std::ofstream debugFile;
-              // debugFile.open("debug.txt", std::ios::app);
-              // if (debugFile.good()) {
-              //   debugFile << mVectHistoCheck.at(ih).numE << " ";
-              //   debugFile << mVectHistoCheck.at(ih).stringE << " ";
-              //   //debugFile << mVectHistoCheck.at(ih).paramch.at(x).ch << " ";
-              //   debugFile << "= \n";
-              //   debugFile.close();
-              // }
             }
           }
         }
@@ -243,7 +219,6 @@ Quality ZDCRawDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
       }
     }
   }
-  // dumpStruct();
   return result;
 }
 
@@ -251,8 +226,6 @@ std::string ZDCRawDataCheck::getAcceptedType() { return "TH1"; }
 
 void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // dumpStruct();
-
   for (int ih = 0; ih < (int)mVectHistoCheck.size(); ih++) {
 
     if (mo->getName() == mVectHistoCheck.at(ih).nameHisto) {
@@ -291,15 +264,6 @@ void ZDCRawDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         h->SetFillColor(kGreen);
         msg->Draw();
       } else if (mVectHistoCheck.at(ih).quality == 3) {
-        // std::ofstream debugFile;
-        // debugFile.open("debug.txt", std::ios::app);
-        // if (debugFile.good()) {
-        //   debugFile << mVectHistoCheck.at(ih).numE << " ";
-        //   debugFile << mVectHistoCheck.at(ih).stringE << " ";
-        //   //debugFile << mVectHistoCheck.at(ih).paramch.at(x).ch << " ";
-        //   debugFile << "= \n";
-        //   debugFile.close();
-        // }
         std::string errorSt = getCurrentDataTime() + " Errors --> Call the expert. " + mVectHistoCheck.at(ih).stringE;
         TLatex* msg = new TLatex(mVectHistoCheck.at(ih).posMsgX, mVectHistoCheck.at(ih).posMsgY, errorSt.c_str());
         msg->SetNDC();
@@ -397,7 +361,6 @@ void ZDCRawDataCheck::init(const Activity& activity)
       COMPARATOR_ARRAY[i] = false;
     }
   }
-  // dumpStruct();
 }
 
 void ZDCRawDataCheck::setChName(std::string channel)
