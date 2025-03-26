@@ -63,6 +63,9 @@ class TrackletsTask final : public TaskInterface
   std::shared_ptr<TH1F> mTriggersPerTimeFrame = nullptr;
   std::array<std::shared_ptr<TH2F>, o2::trd::constants::NLAYER> mLayers;
 
+  // New addition: Tracklet charge distributions for each supermodule
+  std::array<std::array<std::unique_ptr<TH1F>, 3>, 18> mTrackletQSupermodule;
+
   // data to pull from CCDB
   const o2::trd::NoiseStatusMCM* mNoiseMap = nullptr;
 };
