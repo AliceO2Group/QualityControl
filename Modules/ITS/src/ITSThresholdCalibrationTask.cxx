@@ -155,6 +155,10 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   else if (scanType == 'P') {
     iScan = 4;
   }
+
+  if (iScan!=CalibType)
+	  ILOG(FATAL) << "Scan Type from Data: "<< scanType << " is different from scan type from .json "<< CalibType << ENDM;
+
   auto splitRes = splitString(inString, "O2");
 
   if (scanType == 'A' || scanType == 'D')
