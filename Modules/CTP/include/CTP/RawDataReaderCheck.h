@@ -20,6 +20,7 @@
 #include "QualityControl/CheckInterface.h"
 #include "CommonConstants/LHCConstants.h"
 #include "DetectorsBase/GRPGeomHelper.h"
+#include <TLatex.h>
 #include <bitset>
 class TH1D;
 
@@ -50,6 +51,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
   int checkChange(TH1D* mHist, TH1D* mHistPrev);
   int checkChangeOfRatio(TH1D* mHist, TH1D* mHistPrev, TH1D* mHistAbs);
+  float setTextPosition(float iPos, std::shared_ptr<TLatex> msg, TH1D* h);
   Quality setQualityResult(std::vector<int>& vBad, std::vector<int>& vMedium);
   void clearIndexVectors();
   long int mTimestamp;
@@ -73,7 +75,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> mVecIndexMedium;                       // vector of ctp input and class indices, which had a relative change
   std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs; // LHC filling scheme
 
-  ClassDefOverride(RawDataReaderCheck, 9);
+  ClassDefOverride(RawDataReaderCheck, 10);
 };
 
 } // namespace o2::quality_control_modules::ctp

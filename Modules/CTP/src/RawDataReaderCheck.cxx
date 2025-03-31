@@ -137,6 +137,12 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         result.set(setQualityResult(mVecIndexBad, mVecIndexMedium));
       }
       mHistClassRatioPrevious = (TH1D*)h->Clone();
+    } else if (mo->getName() == "decodeError") {
+      if (h->GetEntries() > 0) {
+        result.set(Quality::Bad);
+      } else {
+        result.set(Quality::Good);
+      }
     } else {
       ILOG(Info, Support) << "Unknown histo:" << moName << ENDM;
     }
@@ -186,6 +192,14 @@ int RawDataReaderCheck::checkChangeOfRatio(TH1D* mHist, TH1D* mHistPrev, TH1D* m
   }
   return 0;
 }
+float RawDataReaderCheck::setTextPosition(float iPos, std::shared_ptr<TLatex> msg, TH1D* h)
+{
+  msg->SetTextSize(0.03);
+  msg->SetNDC();
+  h->GetListOfFunctions()->Add(msg->Clone());
+  float MessagePos = iPos - 0.04;
+  return MessagePos;
+}
 
 std::string RawDataReaderCheck::getAcceptedType() { return "TH1"; }
 
@@ -194,6 +208,10 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
   std::shared_ptr<TLatex> msg;
   if (mo->getName() == "bcMinBias1" || mo->getName() == "bcMinBias2") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Info, Support) << "null pointer for hist:" << mo->getName() << ENDM;
+      return;
+    }
     h->SetMarkerStyle(20);
     h->SetMarkerSize(0.6);
     if (checkResult != Quality::Null) {
@@ -255,8 +273,47 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
     h->SetStats(kFALSE);
     h->GetYaxis()->SetRangeUser(0, h->GetMaximum() * 1.5);
+  } else if (mo->getName() == "decodeError") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Info, Support) << "null pointer for hist:" << mo->getName() << ENDM;
+      return;
+    }
+    if (checkResult != Quality::Null) {
+      msg = std::make_shared<TLatex>(0.2, 0.85, Form("Quality: %s", (checkResult.getName()).c_str()));
+      if (checkResult == Quality::Bad) {
+        msg->SetTextColor(kRed);
+      } else if (checkResult == Quality::Good) {
+        msg->SetTextColor(kGreen + 1);
+      }
+      msg->SetTextSize(0.03);
+      msg->SetNDC();
+      h->GetListOfFunctions()->Add(msg->Clone());
+    }
+    if (checkResult == Quality::Bad) {
+      float initialMessagePos = 0.8;
+      string messages[9] = { "Failed to extract RDD",
+                             "",
+                             "Two CTP IRs with the same ts",
+                             "Two digits with the same ts",
+                             "Two CTP class masks with the same ts",
+                             "Two digits (Class Mask) with the same ts",
+                             "Trigger class without input",
+                             "CTP class mask not compatible with input class mask",
+                             "CTP class not found in the digit" };
+      for (int i = 1; i < h->GetXaxis()->GetNbins() + 1; i++) {
+        if (h->GetBinContent(i) > 0) {
+          msg = std::make_shared<TLatex>(0.2, initialMessagePos, messages[i - 1].c_str());
+          initialMessagePos = setTextPosition(initialMessagePos, msg, h);
+        }
+      }
+    }
   } else {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Info, Support) << "null pointer for hist:" << mo->getName() << ENDM;
+      return;
+    }
     h->SetStats(kFALSE);
     msg = std::make_shared<TLatex>(0.45, 0.8, Form("Quality: %s", (checkResult.getName()).c_str()));
     std::string groupName = "Input";
