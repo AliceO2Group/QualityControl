@@ -62,6 +62,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
   mgr.setURL(CCDBHost);
   map<string, string> metadata; // can be empty
   metadata["runNumber"] = run;
+  mgr.setFatalWhenNull(false);
   auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, t.timestamp, metadata);
   if (ctpconfigdb == nullptr) {
     LOG(info) << "CTP config not in database, timestamp:" << t.timestamp;
@@ -125,6 +126,7 @@ void CTPTrendingTask::initCTP(Trigger& t)
 }
 void CTPTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
+  initCTP(t);
 }
 
 void CTPTrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
