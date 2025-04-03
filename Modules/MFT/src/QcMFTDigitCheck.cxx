@@ -16,6 +16,7 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 /// \author David Grund
+/// \author Sara Haidlova
 ///
 
 // C++
@@ -177,41 +178,67 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
           ILOG(Error, Support) << "Could not cast mDigitChipMap to TH2F." << ENDM;
           return Quality::Null;
         }
-        // loop over bins in each chip map
+        // loop over bins in occupancy maps
         for (int iBinX = 0; iBinX < hDigitChipOccupancyMap->GetNbinsX(); iBinX++) {
-          isEmpty = true;
+          int emptyValidChips = 0;
+          bool hasNonEmptyChip = false;
+
           for (int iBinY = 0; iBinY < hDigitChipOccupancyMap->GetNbinsY(); iBinY++) {
+            // Check if the bin contains data before further checks
             if (hDigitChipOccupancyMap->GetBinContent(iBinX + 1, iBinY + 1) != 0) {
-              isEmpty = false; // if there is an unempty bin, the ladder is not empty
-              break;
-            } else {
-              // check if empty ladders are masked
-              for (int i = 0; i < mMaskedChips.size(); i++) {
-                if (mo->getName().find(mChipMapName[i]) != std::string::npos) {
-                  if (iBinX + 1 == hDigitChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]) && iBinY + 1 == hDigitChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[i]])) {
-                    isEmpty = false;
-                  } else {
-                    isEmpty = true;
+              hasNonEmptyChip = true;
+              break; // Exit early if a non-empty chip is found (most of them should be non-empty)
+            }
+
+            bool isMasked = false;
+            bool isOutsideAcc = false;
+
+            // Check if chip is outside acceptance
+            for (int k = 0; k < 21; k++) {
+              if (mo->getName().find(MFTTable.mDigitChipMapNames[i]) != std::string::npos) {
+                if (iBinX + 1 == MFTTable.mBinX[i][k] && iBinY + 1 == MFTTable.mBinY[i][k]) {
+                  isOutsideAcc = true;
+                  break;
+                }
+              }
+            }
+
+            // Check if chip is masked if it is in detector acceptance
+            if (!isOutsideAcc) {
+              for (int j = 0; j < mMaskedChips.size(); j++) {
+                if (mo->getName().find(mChipMapName[j]) != std::string::npos) {
+                  int maskedX = hDigitChipOccupancyMap->GetXaxis()->FindBin(mX[mMaskedChips[j]]);
+                  int maskedY = hDigitChipOccupancyMap->GetYaxis()->FindBin(mY[mMaskedChips[j]]);
+                  if (iBinX + 1 == maskedX && iBinY + 1 == maskedY) {
+                    isMasked = true;
+                    break; // break the loop if you find the bin in the masked list
                   }
                 }
               }
             }
+
+            // If chip is not masked and not outside acceptance, count it
+            if (!isMasked && !isOutsideAcc) {
+              emptyValidChips++;
+            }
           }
-          // count empty ladders
+
+          // Determine if column is empty
+          isEmpty = (emptyValidChips > 0 && !hasNonEmptyChip);
+
           if (isEmpty) {
             mEmptyCount++;
             adjacentCount++;
           } else {
             adjacentCount = 0;
           }
-          // set bool for adjacent ladders
+
           if (adjacentCount >= mLadderThresholdBad) {
             mAdjacentLaddersEmpty = true;
           }
         }
       }
     }
-
     if (mo->getName() == "mDigitOccupancySummary") {
       auto* hDigitOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
       if (hDigitOccupancySummary == nullptr) {
