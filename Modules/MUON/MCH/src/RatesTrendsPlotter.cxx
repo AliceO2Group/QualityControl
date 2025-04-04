@@ -31,7 +31,6 @@ RatesTrendsPlotter::RatesTrendsPlotter(std::string path, bool fullPlots) : mPath
 {
   mReductor = std::make_unique<TH2ElecMapReductor>();
 
-
   mOrbits = std::make_unique<TrendGraph>(fmt::format("{}Orbits", path), "Orbits", "orbits");
   addCanvas(mOrbits.get(), "");
 

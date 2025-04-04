@@ -34,22 +34,6 @@ void DigitsPostProcessing::configure(const boost::property_tree::ptree& config)
 
 void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(rateSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mElecMapOnCycle.reset();
-    mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
-  obj = mCcdbObjects.find(rateSignalSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mElecMapSignalOnCycle.reset();
-    mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
   //----------------------------------
   // Rate plotters
   //----------------------------------
@@ -58,51 +42,56 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mRatesPlotterOnCycle.reset();
-  mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
-  mRatesPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
-
   mRatesPlotterSignal.reset();
   mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mRatesPlotterSignalOnCycle.reset();
-  mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
-  mRatesPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  //----------------------------------
+  // Rate plotters for last cycle
+  //----------------------------------
+
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(rateSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mElecMapOnCycle.reset();
+      mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+    }
+
+    obj = mCcdbObjects.find(rateSignalSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mElecMapSignalOnCycle.reset();
+      mElecMapSignalOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+    }
+
+    mRatesPlotterOnCycle.reset();
+    mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
+    mRatesPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    mRatesPlotterSignalOnCycle.reset();
+    mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
+    mRatesPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 
   //----------------------------------
   // Rate trends
   //----------------------------------
 
-  mRatesTrendsPlotter.reset();
-  mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", mFullHistos);
-  mRatesTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableTrending) {
+    mRatesTrendsPlotter.reset();
+    mRatesTrendsPlotter = std::make_unique<RatesTrendsPlotter>("Trends/Rates/", mFullHistos);
+    mRatesTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mRatesTrendsPlotterSignal.reset();
-  mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", mFullHistos);
-  mRatesTrendsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+    mRatesTrendsPlotterSignal.reset();
+    mRatesTrendsPlotterSignal = std::make_unique<RatesTrendsPlotter>("Trends/RatesSignal/", mFullHistos);
+    mRatesTrendsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
 
 void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(orbitsSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mDigitsOrbitsOnCycle.reset();
-    mDigitsOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
-  }
-
-  obj = mCcdbObjects.find(orbitsSignalSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mDigitsSignalOrbitsOnCycle.reset();
-    mDigitsSignalOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
-  }
-
   //----------------------------------
   // Orbit plotters
   //----------------------------------
@@ -111,17 +100,36 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
   mOrbitsPlotter = std::make_unique<OrbitsPlotter>("Orbits/");
   mOrbitsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mOrbitsPlotterOnCycle.reset();
-  mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
-  mOrbitsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
-
   mOrbitsPlotterSignal.reset();
   mOrbitsPlotterSignal = std::make_unique<OrbitsPlotter>("OrbitsSignal/");
   mOrbitsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mOrbitsPlotterSignalOnCycle.reset();
-  mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
-  mOrbitsPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  //----------------------------------
+  // Orbit plotters for last cycle
+  //----------------------------------
+
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(orbitsSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mDigitsOrbitsOnCycle.reset();
+      mDigitsOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
+    }
+
+    obj = mCcdbObjects.find(orbitsSignalSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mDigitsSignalOrbitsOnCycle.reset();
+      mDigitsSignalOrbitsOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
+    }
+
+    mOrbitsPlotterOnCycle.reset();
+    mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
+    mOrbitsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    mOrbitsPlotterSignalOnCycle.reset();
+    mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
+    mOrbitsPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
@@ -132,6 +140,8 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
   const auto& activity = t.activity;
 
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+  mEnableLastCycleHistos = getConfigurationParameter<bool>(mCustomParameters, "EnableLastCycleHistos", mEnableLastCycleHistos, activity);
+  mEnableTrending = getConfigurationParameter<bool>(mCustomParameters, "EnableTrending", mEnableTrending, activity);
 
   mChannelRateMin = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMin", mChannelRateMin, activity);
   mChannelRateMax = getConfigurationParameter<float>(mCustomParameters, "ChannelRateMax", mChannelRateMax, activity);
@@ -186,12 +196,20 @@ void DigitsPostProcessing::updateRateHistos(Trigger t, repository::DatabaseInter
     TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mRatesPlotter->update(hr);
-      // extract the average occupancies on the last cycle
-      mElecMapOnCycle->update(hr);
-      mRatesPlotterOnCycle->update(mElecMapOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mElecMapOnCycle->update(hr);
+        mRatesPlotterOnCycle->update(mElecMapOnCycle.get());
+      }
 
-      auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
-      mRatesTrendsPlotter->update(time, mElecMapOnCycle.get());
+      if (mEnableTrending) {
+        auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
+        if (mEnableLastCycleHistos) {
+          mRatesTrendsPlotter->update(time, mElecMapOnCycle.get());
+        } else {
+          mRatesTrendsPlotter->update(time, hr);
+        }
+      }
     }
   }
 
@@ -200,12 +218,20 @@ void DigitsPostProcessing::updateRateHistos(Trigger t, repository::DatabaseInter
     TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mRatesPlotterSignal->update(hr);
-      // extract the average occupancies on the last cycle
-      mElecMapSignalOnCycle->update(hr);
-      mRatesPlotterSignalOnCycle->update(mElecMapSignalOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mElecMapSignalOnCycle->update(hr);
+        mRatesPlotterSignalOnCycle->update(mElecMapSignalOnCycle.get());
+      }
 
-      auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
-      mRatesTrendsPlotterSignal->update(time, mElecMapSignalOnCycle.get());
+      if (mEnableTrending) {
+        auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
+        if (mEnableLastCycleHistos) {
+          mRatesTrendsPlotterSignal->update(time, mElecMapSignalOnCycle.get());
+        } else {
+          mRatesTrendsPlotterSignal->update(time, hr);
+        }
+      }
     }
   }
 }
@@ -219,9 +245,11 @@ void DigitsPostProcessing::updateOrbitHistos(Trigger t, repository::DatabaseInte
     TH2F* hr = obj->second.get<TH2F>();
     if (hr) {
       mOrbitsPlotter->update(hr);
-      // extract the average occupancies on the last cycle
-      mDigitsOrbitsOnCycle->update(hr);
-      mOrbitsPlotterOnCycle->update(mDigitsOrbitsOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mDigitsOrbitsOnCycle->update(hr);
+        mOrbitsPlotterOnCycle->update(mDigitsOrbitsOnCycle.get());
+      }
     }
   }
 
@@ -230,9 +258,11 @@ void DigitsPostProcessing::updateOrbitHistos(Trigger t, repository::DatabaseInte
     TH2F* hr = obj->second.get<TH2F>();
     if (hr) {
       mOrbitsPlotterSignal->update(hr);
-      // extract the average occupancies on the last cycle
-      mDigitsSignalOrbitsOnCycle->update(hr);
-      mOrbitsPlotterSignalOnCycle->update(mDigitsSignalOrbitsOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mDigitsSignalOrbitsOnCycle->update(hr);
+        mOrbitsPlotterSignalOnCycle->update(mDigitsSignalOrbitsOnCycle.get());
+      }
     }
   }
 }

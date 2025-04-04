@@ -74,6 +74,8 @@ class PreclustersPostProcessing : public PostProcessingInterface
   static std::string clusterSizeSourceName() { return "clsize"; }
 
   bool mFullHistos{ false };
+  bool mEnableLastCycleHistos{ false };
+  bool mEnableTrending{ false };
 
   PostProcessingConfigMCH mConfig;
 
