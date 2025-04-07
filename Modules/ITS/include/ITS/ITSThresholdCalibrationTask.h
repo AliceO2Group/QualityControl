@@ -61,8 +61,8 @@ class ITSThresholdCalibrationTask : public TaskInterface
     float status;
     float Tot;    // time over threshold
     float TotRms; // time over threshold rms
-    float Rt;     // rise time
-    float RtRms;  // rise time rms
+    float ToA;    // time of arrival
+    float ToARms; // time of arrival rms
   };
   struct CalibrationResStructPixel {
     int Layer;
@@ -135,8 +135,8 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TH1F *hCalibrationThrNoiseLayer[NLayer], *hCalibrationThrNoiseRMSLayer[NLayer];
 
   // Histograms for pulse-length scan
-  TH2F *hTimeOverThreshold[3], *hTimeOverThresholdRms[3], *hRiseTime[3], *hRiseTimeRms[3];
-  TH1F *hTimeOverThresholdLayer[NLayer], *hTimeOverThresholdRmsLayer[NLayer], *hRiseTimeLayer[NLayer], *hRiseTimeRmsLayer[NLayer];
+  TH2F *hTimeOverThreshold[3], *hTimeOverThresholdRms[3], *hToA[3], *hToARms[3];
+  TH1F *hTimeOverThresholdLayer[NLayer], *hTimeOverThresholdRmsLayer[NLayer], *hToALayer[NLayer], *hToARmsLayer[NLayer];
 
   o2::itsmft::ChipMappingITS mp;
 };
