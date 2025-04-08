@@ -24,6 +24,7 @@
 #include "MCHBase/Digit.h"
 #endif
 #include "MCHDigitFiltering/DigitFilter.h"
+#include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
 
 class TH1F;
@@ -67,6 +68,9 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
   template <typename T>
   void publishObject(T* histo, std::string drawOption, bool statBox, bool isExpert);
 
+  bool mEnable1DRateMaps{ true };  // whether to publish 1D maps of channel rates
+  bool mEnable2DRateMaps{ false }; // whether to publish 2D maps of channel rates
+
   bool mFullHistos{ false }; // publish extra diagnostics plots
 
   o2::mch::DigitFilter mIsSignalDigit;
@@ -76,6 +80,10 @@ class DigitsTask /*final*/ : public TaskInterface // todo add back the "final" w
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
   std::unique_ptr<TH2FRatio> mHistogramOccupancyElec;       // Occupancy histogram (Elec view)
   std::unique_ptr<TH2FRatio> mHistogramSignalOccupancyElec; // Occupancy histogram (Elec view) for signal-like digits
+
+  // 1D rate histograms using Elec view, where each x bin corresponds to the unique ID of a DualSAMPA board
+  std::unique_ptr<TH1DRatio> mHistogramRatePerDualSampa;
+  std::unique_ptr<TH1DRatio> mHistogramRateSignalPerDualSampa;
 
   std::unique_ptr<TH2F> mHistogramDigitsOrbitElec;
   std::unique_ptr<TH2F> mHistogramDigitsSignalOrbitElec;
