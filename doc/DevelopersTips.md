@@ -145,7 +145,12 @@ firewall-cmd --reload
 
 ### Monitoring setup for building the grafana dashboard with prod data
 
-1. Go to http://pcald24.cern.ch:3000/?orgId=1
+1. Go to [http://pcald24.cern.ch:3000/?orgId=1](http://alio2-bld4-mx-dev01-gpn:3000/?orgId=1)
+
+### Check data in influxdb
+
+2. http://alio2-cr1-hv-ifx01:8086/orgs/4aa0b3ea40118044
+3. username root
 
 
 ### Avoid writing QC objects to a repository
