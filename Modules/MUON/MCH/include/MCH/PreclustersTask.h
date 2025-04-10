@@ -64,9 +64,15 @@ class PreclustersTask /*final*/ : public o2::quality_control::core::TaskInterfac
 
   void plotPrecluster(const o2::mch::PreCluster& preCluster, gsl::span<const o2::mch::Digit> digits);
 
+  bool mEnable1DPseudoeffMaps{ true };  // whether to publish 1D maps of channel pseudo-efficiencies
+  bool mEnable2DPseudoeffMaps{ false }; // whether to publish 2D maps of channel pseudo-efficiencies
+
   o2::mch::DigitFilter mIsSignalDigit;
 
   std::unique_ptr<TH2FRatio> mHistogramPseudoeffElec; // Mergeable object, Occupancy histogram (Elec view)
+
+  // 1D pseudo-efficiency histogram using Elec view, where each x bin corresponds to the unique ID of a DualSAMPA board
+  std::unique_ptr<TH1DRatio> mHistogramPseudoeffPerDualSampa;
 
   std::unique_ptr<TH1DRatio> mHistogramPreclustersPerDE;       // number of pre-clusters per DE and per TF
   std::unique_ptr<TH1DRatio> mHistogramPreclustersSignalPerDE; // number of pre-clusters with signal per DE and per TF

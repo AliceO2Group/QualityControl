@@ -62,6 +62,10 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
 
+  // flags to enable the publication of either 1D and 2D maps of channel rates
+  mEnable1DRateMaps = getConfigurationParameter<bool>(mCustomParameters, "Enable1DRateMaps", mEnable1DRateMaps);
+  mEnable2DRateMaps = getConfigurationParameter<bool>(mCustomParameters, "Enable2DRateMaps", mEnable2DRateMaps);
+
   // flag to enable extra disagnostics plots; it also enables on-cycle plots
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos);
 
@@ -70,13 +74,25 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Histograms in electronics coordinates
-  mHistogramOccupancyElec = std::make_unique<TH2FRatio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
-  mHistogramOccupancyElec->Sumw2(kFALSE);
-  publishObject(mHistogramOccupancyElec.get(), "colz", false, false);
+  if (mEnable1DRateMaps) {
+    mHistogramRatePerDualSampa = std::make_unique<TH1DRatio>("RatePerDualSampa", "Average rate per dual sampa;DS index;rate (kHz)", o2::mch::NumberOfDualSampas, 0, o2::mch::NumberOfDualSampas, false);
+    mHistogramRatePerDualSampa->Sumw2(kFALSE);
+    publishObject(mHistogramRatePerDualSampa.get(), "hist", false, false);
 
-  mHistogramSignalOccupancyElec = std::make_unique<TH2FRatio>("OccupancySignal_Elec", "Occupancy (signal)", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
-  mHistogramSignalOccupancyElec->Sumw2(kFALSE);
-  publishObject(mHistogramSignalOccupancyElec.get(), "colz", false, false);
+    mHistogramRateSignalPerDualSampa = std::make_unique<TH1DRatio>("RateSignalPerDualSampa", "Average rate per dual sampa (signal);DS index;rate (kHz)", o2::mch::NumberOfDualSampas, 0, o2::mch::NumberOfDualSampas, false);
+    mHistogramRateSignalPerDualSampa->Sumw2(kFALSE);
+    publishObject(mHistogramRateSignalPerDualSampa.get(), "hist", false, false);
+  }
+
+  if (mEnable2DRateMaps) {
+    mHistogramOccupancyElec = std::make_unique<TH2FRatio>("Occupancy_Elec", "Occupancy", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
+    mHistogramOccupancyElec->Sumw2(kFALSE);
+    publishObject(mHistogramOccupancyElec.get(), "colz", false, false);
+
+    mHistogramSignalOccupancyElec = std::make_unique<TH2FRatio>("OccupancySignal_Elec", "Occupancy (signal)", nElecXbins, 0, nElecXbins, 64, 0, 64, true);
+    mHistogramSignalOccupancyElec->Sumw2(kFALSE);
+    publishObject(mHistogramSignalOccupancyElec.get(), "colz", false, false);
+  }
 
   mHistogramDigitsOrbitElec = std::make_unique<TH2F>("DigitOrbit_Elec", "Digit orbits vs DS Id", nElecXbins, 0, nElecXbins, 130, -1, 129);
   publishObject(mHistogramDigitsOrbitElec.get(), "colz", true, false);
@@ -159,9 +175,17 @@ void DigitsTask::plotDigit(const o2::mch::Digit& digit)
   // fecId and channel uniquely identify each physical pad
   int fecId = getDsIndex(DsDetId{ deId, dsId });
 
-  mHistogramOccupancyElec->getNum()->Fill(fecId, channel);
-  if (isSignal) {
-    mHistogramSignalOccupancyElec->getNum()->Fill(fecId, channel);
+  if (mEnable1DRateMaps) {
+    mHistogramRatePerDualSampa->getNum()->Fill(fecId);
+    if (isSignal) {
+      mHistogramRateSignalPerDualSampa->getNum()->Fill(fecId);
+    }
+  }
+  if (mEnable2DRateMaps) {
+    mHistogramOccupancyElec->getNum()->Fill(fecId, channel);
+    if (isSignal) {
+      mHistogramSignalOccupancyElec->getNum()->Fill(fecId, channel);
+    }
   }
 
   //--------------------------------------------------------------------------
@@ -201,8 +225,17 @@ void DigitsTask::updateOrbits()
   static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
   static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
 
-  mHistogramOccupancyElec->getDen()->SetBinContent(1, 1, mNOrbits * sOrbitLengthInMilliseconds);
-  mHistogramSignalOccupancyElec->getDen()->SetBinContent(1, 1, mNOrbits * sOrbitLengthInMilliseconds);
+  if (mEnable1DRateMaps) {
+    for (int dsIndex = 0; dsIndex <= NumberOfDualSampas; dsIndex++) {
+      mHistogramRatePerDualSampa->getDen()->SetBinContent(dsIndex + 1, mNOrbits * sOrbitLengthInMilliseconds * numberOfDualSampaChannels(dsIndex));
+      mHistogramRateSignalPerDualSampa->getDen()->SetBinContent(dsIndex + 1, mNOrbits * sOrbitLengthInMilliseconds * numberOfDualSampaChannels(dsIndex));
+    }
+  }
+
+  if (mEnable2DRateMaps) {
+    mHistogramOccupancyElec->getDen()->SetBinContent(1, 1, mNOrbits * sOrbitLengthInMilliseconds);
+    mHistogramSignalOccupancyElec->getDen()->SetBinContent(1, 1, mNOrbits * sOrbitLengthInMilliseconds);
+  }
 }
 
 void DigitsTask::resetOrbits()
@@ -217,8 +250,14 @@ void DigitsTask::endOfCycle()
   updateOrbits();
 
   // update mergeable ratios
-  mHistogramOccupancyElec->update();
-  mHistogramSignalOccupancyElec->update();
+  if (mEnable1DRateMaps) {
+    mHistogramRatePerDualSampa->update();
+    mHistogramRateSignalPerDualSampa->update();
+  }
+  if (mEnable2DRateMaps) {
+    mHistogramOccupancyElec->update();
+    mHistogramSignalOccupancyElec->update();
+  }
 }
 
 void DigitsTask::endOfActivity(const Activity& /*activity*/)

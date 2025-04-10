@@ -16,6 +16,7 @@
 ///
 
 #include "MCH/PreclustersTask.h"
+#include "MUONCommon/Helpers.h"
 #include "MCH/Helpers.h"
 #ifdef MCH_HAS_MAPPING_FACTORY
 #include "MCHMappingFactory/CreateSegmentation.h"
@@ -30,6 +31,7 @@ using namespace std;
 using namespace o2::mch;
 using namespace o2::mch::raw;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control_modules::muon;
 
 namespace o2
 {
@@ -54,6 +56,10 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Devel) << "initialize PreclustersTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  // flags to enable the publication of either 1D and 2D maps of channel pseudo-efficiencies
+  mEnable1DPseudoeffMaps = getConfigurationParameter<bool>(mCustomParameters, "Enable1DPseudoeffMaps", mEnable1DPseudoeffMaps);
+  mEnable2DPseudoeffMaps = getConfigurationParameter<bool>(mCustomParameters, "Enable2DPseudoeffMaps", mEnable2DPseudoeffMaps);
+
   mIsSignalDigit = o2::mch::createDigitFilter(20, true, true);
 
   mHistogramPreclustersPerDE = std::make_unique<TH1DRatio>("PreclustersPerDE", "Number of pre-clusters for each DE", getNumDE(), 0, getNumDE());
@@ -64,9 +70,17 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
   const uint32_t nElecXbins = NumberOfDualSampas;
 
   // Histograms in electronics coordinates
-  mHistogramPseudoeffElec = std::make_unique<TH2FRatio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64);
-  mHistogramPseudoeffElec->Sumw2(kFALSE);
-  publishObject(mHistogramPseudoeffElec.get(), "colz", false);
+  if (mEnable1DPseudoeffMaps) {
+    mHistogramPseudoeffPerDualSampa = std::make_unique<TH1DRatio>("PseudoeffPerDualSampa", "Average pseudo-efficiency per dual sampa;DS index;efficiency", o2::mch::NumberOfDualSampas, 0, o2::mch::NumberOfDualSampas, false);
+    mHistogramPseudoeffPerDualSampa->Sumw2(kFALSE);
+    publishObject(mHistogramPseudoeffPerDualSampa.get(), "hist", false);
+  }
+
+  if (mEnable2DPseudoeffMaps) {
+    mHistogramPseudoeffElec = std::make_unique<TH2FRatio>("Pseudoeff_Elec", "Pseudoeff", nElecXbins, 0, nElecXbins, 64, 0, 64);
+    mHistogramPseudoeffElec->Sumw2(kFALSE);
+    publishObject(mHistogramPseudoeffElec.get(), "colz", false);
+  }
 
   //----------------------------------
   // Charge distribution histograms
@@ -337,11 +351,21 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
   if (isGoodDen[0]) {
     // good cluster on non-bending side, check if there is data from the bending side as well
     if (fecIdB >= 0 && channelB >= 0) {
-      mHistogramPseudoeffElec->getDen()->Fill(fecIdB, channelB);
+      if (mEnable1DPseudoeffMaps) {
+        mHistogramPseudoeffPerDualSampa->getDen()->Fill(fecIdB);
+      }
+      if (mEnable2DPseudoeffMaps) {
+        mHistogramPseudoeffElec->getDen()->Fill(fecIdB, channelB);
+      }
     }
     if (isGoodNum[0]) { // Check if associated to something on Bending
       if (fecIdB >= 0 && channelB >= 0) {
-        mHistogramPseudoeffElec->getNum()->Fill(fecIdB, channelB);
+        if (mEnable1DPseudoeffMaps) {
+          mHistogramPseudoeffPerDualSampa->getNum()->Fill(fecIdB);
+        }
+        if (mEnable2DPseudoeffMaps) {
+          mHistogramPseudoeffElec->getNum()->Fill(fecIdB, channelB);
+        }
       }
     }
   }
@@ -349,11 +373,21 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
   if (isGoodDen[1]) {
     // good cluster on bending side, check if there is data from the non-bending side as well
     if (fecIdNB >= 0 && channelNB >= 0) {
-      mHistogramPseudoeffElec->getDen()->Fill(fecIdNB, channelNB);
+      if (mEnable1DPseudoeffMaps) {
+        mHistogramPseudoeffPerDualSampa->getDen()->Fill(fecIdNB);
+      }
+      if (mEnable2DPseudoeffMaps) {
+        mHistogramPseudoeffElec->getDen()->Fill(fecIdNB, channelNB);
+      }
     }
     if (isGoodNum[1]) { // Check if associated to something on Non-Bending
       if (fecIdNB >= 0 && channelNB >= 0) {
-        mHistogramPseudoeffElec->getNum()->Fill(fecIdNB, channelNB);
+        if (mEnable1DPseudoeffMaps) {
+          mHistogramPseudoeffPerDualSampa->getNum()->Fill(fecIdNB);
+        }
+        if (mEnable2DPseudoeffMaps) {
+          mHistogramPseudoeffElec->getNum()->Fill(fecIdNB, channelNB);
+        }
       }
     }
   }
@@ -398,7 +432,12 @@ void PreclustersTask::endOfCycle()
   ILOG(Info, Devel) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // update mergeable ratios
-  mHistogramPseudoeffElec->update();
+  if (mEnable1DPseudoeffMaps) {
+    mHistogramPseudoeffPerDualSampa->update();
+  }
+  if (mEnable2DPseudoeffMaps) {
+    mHistogramPseudoeffElec->update();
+  }
   mHistogramPreclustersPerDE->update();
   mHistogramPreclustersSignalPerDE->update();
 }
