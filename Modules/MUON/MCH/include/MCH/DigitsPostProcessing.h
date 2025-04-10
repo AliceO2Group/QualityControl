@@ -62,8 +62,10 @@ class DigitsPostProcessing : public PostProcessingInterface
   static std::string orbitsSourceName() { return "orbits"; }
   static std::string orbitsSignalSourceName() { return "orbits_signal"; }
 
-  int64_t mRefTimeStamp{ 0 };
   bool mFullHistos{ false };
+  bool mEnableLastCycleHistos{ false };
+  bool mEnableTrending{ false };
+
   float mChannelRateMin{ 0 };
   float mChannelRateMax{ 100 };
 

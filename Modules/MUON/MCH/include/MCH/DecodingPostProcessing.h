@@ -74,6 +74,8 @@ class DecodingPostProcessing : public PostProcessingInterface
   static std::string syncStatusSourceName() { return "syncstatus"; }
 
   bool mFullHistos{ false };
+  bool mEnableLastCycleHistos{ false };
+  bool mEnableTrending{ false };
 
   PostProcessingConfigMCH mConfig;
 

@@ -40,16 +40,6 @@ void DecodingPostProcessing::configure(const boost::property_tree::ptree& config
 
 void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(errorsSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mErrorsOnCycle.reset();
-    mErrorsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
   //----------------------------------
   // Decoding errors plotters
   //----------------------------------
@@ -58,25 +48,24 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
   mErrorsPlotter = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/");
   mErrorsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mErrorsPlotterOnCycle.reset();
-  mErrorsPlotterOnCycle = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/LastCycle/");
-  mErrorsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(errorsSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mErrorsOnCycle.reset();
+      mErrorsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+    }
+
+    mErrorsPlotterOnCycle.reset();
+    mErrorsPlotterOnCycle = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/LastCycle/");
+    mErrorsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
 
 void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(hbPacketsSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mHBPacketsOnCycle.reset();
-    mHBPacketsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
   //----------------------------------
   // HeartBeat packets plotters
   //----------------------------------
@@ -85,25 +74,24 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
   mHBPacketsPlotter = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/", mFullHistos);
   mHBPacketsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mHBPacketsPlotterOnCycle.reset();
-  mHBPacketsPlotterOnCycle = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/LastCycle/", mFullHistos);
-  mHBPacketsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(hbPacketsSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mHBPacketsOnCycle.reset();
+      mHBPacketsOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+    }
+
+    mHBPacketsPlotterOnCycle.reset();
+    mHBPacketsPlotterOnCycle = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/LastCycle/", mFullHistos);
+    mHBPacketsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
 
 void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(syncStatusSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mSyncStatusOnCycle.reset();
-    mSyncStatusOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
   //----------------------------------
   // Sync status  plotters
   //----------------------------------
@@ -112,9 +100,18 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
   mSyncStatusPlotter = std::make_unique<FECSyncStatusPlotter>("SyncErrors/");
   mSyncStatusPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mSyncStatusPlotterOnCycle.reset();
-  mSyncStatusPlotterOnCycle = std::make_unique<FECSyncStatusPlotter>("SyncErrors/LastCycle/");
-  mSyncStatusPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(syncStatusSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mSyncStatusOnCycle.reset();
+      mSyncStatusOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+    }
+
+    mSyncStatusPlotterOnCycle.reset();
+    mSyncStatusPlotterOnCycle = std::make_unique<FECSyncStatusPlotter>("SyncErrors/LastCycle/");
+    mSyncStatusPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
@@ -125,6 +122,8 @@ void DecodingPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef
   const auto& activity = t.activity;
 
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+  mEnableLastCycleHistos = getConfigurationParameter<bool>(mCustomParameters, "EnableLastCycleHistos", mEnableLastCycleHistos, activity);
+  mEnableTrending = getConfigurationParameter<bool>(mCustomParameters, "EnableTrending", mEnableTrending, activity);
 
   mCcdbObjects.clear();
   mCcdbObjects.emplace(errorsSourceName(), CcdbObjectHelper());
@@ -176,9 +175,11 @@ void DecodingPostProcessing::updateDecodingErrorsHistos(Trigger t, repository::D
     TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mErrorsPlotter->update(hr);
-      //  extract the average occupancies on the last cycle
-      mErrorsOnCycle->update(hr);
-      mErrorsPlotterOnCycle->update(mErrorsOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        //  extract the average occupancies on the last cycle
+        mErrorsOnCycle->update(hr);
+        mErrorsPlotterOnCycle->update(mErrorsOnCycle.get());
+      }
     }
   }
 }
@@ -192,9 +193,11 @@ void DecodingPostProcessing::updateHeartBeatPacketsHistos(Trigger t, repository:
     TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mHBPacketsPlotter->update(hr);
-      // extract the average occupancies on the last cycle
-      mHBPacketsOnCycle->update(hr);
-      mHBPacketsPlotterOnCycle->update(mHBPacketsOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mHBPacketsOnCycle->update(hr);
+        mHBPacketsPlotterOnCycle->update(mHBPacketsOnCycle.get());
+      }
     }
   }
 }
@@ -208,9 +211,11 @@ void DecodingPostProcessing::updateSyncStatusHistos(Trigger t, repository::Datab
     TH2F* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mSyncStatusPlotter->update(hr);
-      // extract the average occupancies on the last cycle
-      mSyncStatusOnCycle->update(hr);
-      mSyncStatusPlotterOnCycle->update(mSyncStatusOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mSyncStatusOnCycle->update(hr);
+        mSyncStatusPlotterOnCycle->update(mSyncStatusOnCycle.get());
+      }
     }
   }
 }

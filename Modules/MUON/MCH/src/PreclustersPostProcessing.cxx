@@ -32,15 +32,6 @@ void PreclustersPostProcessing::configure(const boost::property_tree::ptree& con
 
 void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(effSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
-  }
-
   //----------------------------------
   // Efficiency plotters
   //----------------------------------
@@ -49,33 +40,33 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
   mEfficiencyPlotter = std::make_unique<EfficiencyPlotter>("Efficiency/", mFullHistos);
   mEfficiencyPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mEfficiencyPlotterOnCycle.reset();
-  mEfficiencyPlotterOnCycle = std::make_unique<EfficiencyPlotter>("Efficiency/LastCycle/", mFullHistos);
-  mEfficiencyPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(effSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mElecMapOnCycle = std::make_unique<HistoOnCycle<TH2FRatio>>();
+    }
+
+    mEfficiencyPlotterOnCycle.reset();
+    mEfficiencyPlotterOnCycle = std::make_unique<EfficiencyPlotter>("Efficiency/LastCycle/", mFullHistos);
+    mEfficiencyPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 
   //----------------------------------
   // Efficiency trends
   //----------------------------------
 
-  mEfficiencyTrendsPlotter.reset();
-  mEfficiencyTrendsPlotter = std::make_unique<EfficiencyTrendsPlotter>("Trends/", mFullHistos);
-  mEfficiencyTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableTrending) {
+    mEfficiencyTrendsPlotter.reset();
+    mEfficiencyTrendsPlotter = std::make_unique<EfficiencyTrendsPlotter>("Trends/", mFullHistos);
+    mEfficiencyTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
 
 void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(clusterChargeSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mClusterChargeOnCycle.reset();
-    mClusterChargeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
-  }
-
   //----------------------------------
   // Cluster charge plotters
   //----------------------------------
@@ -84,33 +75,34 @@ void PreclustersPostProcessing::createClusterChargeHistos(Trigger t, repository:
   mClusterChargePlotter = std::make_unique<ClusterChargePlotter>("ClusterCharge/", mFullHistos);
   mClusterChargePlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mClusterChargePlotterOnCycle.reset();
-  mClusterChargePlotterOnCycle = std::make_unique<ClusterChargePlotter>("ClusterCharge/LastCycle/", mFullHistos);
-  mClusterChargePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(clusterChargeSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mClusterChargeOnCycle.reset();
+      mClusterChargeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
+    }
+
+    mClusterChargePlotterOnCycle.reset();
+    mClusterChargePlotterOnCycle = std::make_unique<ClusterChargePlotter>("ClusterCharge/LastCycle/", mFullHistos);
+    mClusterChargePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 
   //----------------------------------
   // Cluster charge trends
   //----------------------------------
 
-  mClusterChargeTrendsPlotter.reset();
-  mClusterChargeTrendsPlotter = std::make_unique<ClusterChargeTrendsPlotter>("Trends/", mFullHistos);
-  mClusterChargeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableTrending) {
+    mClusterChargeTrendsPlotter.reset();
+    mClusterChargeTrendsPlotter = std::make_unique<ClusterChargeTrendsPlotter>("Trends/", mFullHistos);
+    mClusterChargeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
 
 void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::DatabaseInterface* qcdb)
 {
-  //------------------------------------------
-  // Helpers to extract plots from last cycle
-  //------------------------------------------
-
-  auto obj = mCcdbObjects.find(clusterSizeSourceName());
-  if (obj != mCcdbObjects.end()) {
-    mClusterSizeOnCycle.reset();
-    mClusterSizeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
-  }
-
   //----------------------------------
   // Cluster size plotters
   //----------------------------------
@@ -119,17 +111,28 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
   mClusterSizePlotter = std::make_unique<ClusterSizePlotter>("ClusterSize/", mFullHistos);
   mClusterSizePlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
-  mClusterSizePlotterOnCycle.reset();
-  mClusterSizePlotterOnCycle = std::make_unique<ClusterSizePlotter>("ClusterSize/LastCycle/", mFullHistos);
-  mClusterSizePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableLastCycleHistos) {
+    // Helpers to extract plots from last cycle
+    auto obj = mCcdbObjects.find(clusterSizeSourceName());
+    if (obj != mCcdbObjects.end()) {
+      mClusterSizeOnCycle.reset();
+      mClusterSizeOnCycle = std::make_unique<HistoOnCycle<TH2F>>();
+    }
+
+    mClusterSizePlotterOnCycle.reset();
+    mClusterSizePlotterOnCycle = std::make_unique<ClusterSizePlotter>("ClusterSize/LastCycle/", mFullHistos);
+    mClusterSizePlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 
   //----------------------------------
   // Cluster size trends
   //----------------------------------
 
-  mClusterSizeTrendsPlotter.reset();
-  mClusterSizeTrendsPlotter = std::make_unique<ClusterSizeTrendsPlotter>("Trends/", mFullHistos);
-  mClusterSizeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  if (mEnableTrending) {
+    mClusterSizeTrendsPlotter.reset();
+    mClusterSizeTrendsPlotter = std::make_unique<ClusterSizeTrendsPlotter>("Trends/", mFullHistos);
+    mClusterSizeTrendsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+  }
 }
 
 //_________________________________________________________________________________________
@@ -140,6 +143,8 @@ void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistry
   const auto& activity = t.activity;
 
   mFullHistos = getConfigurationParameter<bool>(mCustomParameters, "FullHistos", mFullHistos, activity);
+  mEnableLastCycleHistos = getConfigurationParameter<bool>(mCustomParameters, "EnableLastCycleHistos", mEnableLastCycleHistos, activity);
+  mEnableTrending = getConfigurationParameter<bool>(mCustomParameters, "EnableTrending", mEnableTrending, activity);
 
   mCcdbObjects.clear();
   mCcdbObjects.emplace(effSourceName(), CcdbObjectHelper());
@@ -191,12 +196,20 @@ void PreclustersPostProcessing::updateEfficiencyHistos(Trigger t, repository::Da
     TH2FRatio* hr = obj->second.get<TH2FRatio>();
     if (hr) {
       mEfficiencyPlotter->update(hr);
-      // extract the average occupancies on the last cycle
-      mElecMapOnCycle->update(hr);
-      mEfficiencyPlotterOnCycle->update(mElecMapOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mElecMapOnCycle->update(hr);
+        mEfficiencyPlotterOnCycle->update(mElecMapOnCycle.get());
+      }
 
-      auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
-      mEfficiencyTrendsPlotter->update(time, mElecMapOnCycle.get());
+      if (mEnableTrending) {
+        auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
+        if (mEnableLastCycleHistos) {
+          mEfficiencyTrendsPlotter->update(time, mElecMapOnCycle.get());
+        } else {
+          mEfficiencyTrendsPlotter->update(time, hr);
+        }
+      }
     }
   }
 }
@@ -210,12 +223,20 @@ void PreclustersPostProcessing::updateClusterChargeHistos(Trigger t, repository:
     TH2F* h = obj->second.get<TH2F>();
     if (h) {
       mClusterChargePlotter->update(h);
-      // extract the average occupancies on the last cycle
-      mClusterChargeOnCycle->update(h);
-      mClusterChargePlotterOnCycle->update(mClusterChargeOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mClusterChargeOnCycle->update(h);
+        mClusterChargePlotterOnCycle->update(mClusterChargeOnCycle.get());
+      }
 
-      auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
-      mClusterChargeTrendsPlotter->update(time, mClusterChargeOnCycle.get());
+      if (mEnableTrending) {
+        auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
+        if (mEnableLastCycleHistos) {
+          mClusterChargeTrendsPlotter->update(time, mClusterChargeOnCycle.get());
+        } else {
+          mClusterChargeTrendsPlotter->update(time, h);
+        }
+      }
     }
   }
 }
@@ -229,12 +250,20 @@ void PreclustersPostProcessing::updateClusterSizeHistos(Trigger t, repository::D
     TH2F* h = obj->second.get<TH2F>();
     if (h) {
       mClusterSizePlotter->update(h);
-      // extract the average occupancies on the last cycle
-      mClusterSizeOnCycle->update(h);
-      mClusterSizePlotterOnCycle->update(mClusterSizeOnCycle.get());
+      if (mEnableLastCycleHistos) {
+        // extract the average occupancies on the last cycle
+        mClusterSizeOnCycle->update(h);
+        mClusterSizePlotterOnCycle->update(mClusterSizeOnCycle.get());
+      }
 
-      auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
-      mClusterSizeTrendsPlotter->update(time, mClusterSizeOnCycle.get());
+      if (mEnableTrending) {
+        auto time = obj->second.getTimeStamp() / 1000; // ROOT expects seconds since epoch
+        if (mEnableLastCycleHistos) {
+          mClusterSizeTrendsPlotter->update(time, mClusterSizeOnCycle.get());
+        } else {
+          mClusterSizeTrendsPlotter->update(time, h);
+        }
+      }
     }
   }
 }
