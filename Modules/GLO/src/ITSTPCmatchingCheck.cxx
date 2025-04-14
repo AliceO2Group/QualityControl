@@ -9,35 +9,30 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
 /// \file   ITSTPCmatchingCheck.cxx
 /// \author felix.schlepper@cern.ch
-///
 
 #include "GLO/ITSTPCmatchingCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include <DataFormatsQualityControl/FlagType.h>
+#include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
 
 #include <Rtypes.h>
 #include <TH1.h>
+#include <TF1.h>
 #include <TPaveText.h>
 #include <TMath.h>
 #include <TArrow.h>
 #include <TText.h>
-#include <TBox.h>
 #include <TLine.h>
 #include <TLegend.h>
-#include <TFile.h>
 #include <TPolyMarker.h>
 
-#include <DataFormatsQualityControl/FlagType.h>
-#include <DataFormatsQualityControl/FlagTypeFactory.h>
-
+#include <format>
 #include <utility>
-#include <type_traits>
-#include "fmt/format.h"
 
 using namespace std;
 using namespace o2::quality_control;
@@ -52,10 +47,10 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
   Quality phiQual = Quality::Good;
   Quality etaQual = Quality::Good;
 
-  for (auto& [moName, mo] : *moMap) {
-    (void)moName;
+  for (auto& [_, mo] : *moMap) {
+    const std::string moName = mo->GetName();
 
-    if (mShowPt && mo->getName() == "mFractionITSTPCmatch_ITS_Hist") {
+    if (mShowPt && moName == "mFractionITSTPCmatch_ITS_Hist") {
       auto* eff = dynamic_cast<TH1*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatch_ITS check!" << ENDM;
@@ -84,18 +79,20 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           result.updateMetadata("checkPtQuality", "bad");
 
           std::string cBins{ "Bad matching efficiency in: " };
-          for (const auto& [binLow, binUp] : ranges) {
-            float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          if (mLimitRange >= 0 && ranges.size() > mLimitRange) {
+            result.updateMetadata("checkPtBins", "too many bad bins");
+          } else {
+            for (const auto& [binLow, binUp] : ranges) {
+              float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
+              cBins += std::format("{:.1f}-{:.1f},", low, up);
+            }
+            cBins.pop_back(); // remove last `,`
+            cBins += " (GeV/c)";
+            result.updateMetadata("checkPtBins", cBins);
           }
-          cBins.pop_back(); // remove last `,`
-          cBins += " (GeV/c)";
-          result.updateMetadata("checkPtBins", cBins);
         }
       }
-    }
-
-    if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS_Hist") {
+    } else if (mShowPhi && moName == "mFractionITSTPCmatchPhi_ITS_Hist") {
       auto* eff = dynamic_cast<TH1*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatchPhi_ITS check!" << ENDM;
@@ -122,19 +119,21 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
           result.addFlag(FlagTypeFactory::BadTracking(), "Check TPC sectors or ITS staves QC!");
           result.updateMetadata("checkPhiQuality", "bad");
 
-          std::string cBins{ "Bad matching efficiency in: " };
-          for (const auto& [binLow, binUp] : ranges) {
-            float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          if (mLimitRange >= 0 && ranges.size() > mLimitRange) {
+            result.updateMetadata("checkPhiBins", "too many bad bins");
+          } else {
+            std::string cBins{ "Bad matching efficiency in: " };
+            for (const auto& [binLow, binUp] : ranges) {
+              float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
+              cBins += std::format("{:.1f}-{:.1f},", low, up);
+            }
+            cBins.pop_back(); // remove last `,`
+            cBins += " (rad)";
+            result.updateMetadata("checkPhiBins", cBins);
           }
-          cBins.pop_back(); // remove last `,`
-          cBins += " (rad)";
-          result.updateMetadata("checkPhiBins", cBins);
         }
       }
-    }
-
-    if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS_Hist") {
+    } else if (mShowEta && moName == "mFractionITSTPCmatchEta_ITS_Hist") {
       auto* eff = dynamic_cast<TH1*>(mo->getObject());
       if (eff == nullptr) {
         ILOG(Error) << "Failed cast for ITSTPCmatchEta_ITS check!" << ENDM;
@@ -161,13 +160,17 @@ Quality ITSTPCmatchingCheck::check(std::map<std::string, std::shared_ptr<Monitor
         if (etaQual == Quality::Bad) {
           result.updateMetadata("checkEtaQuality", "bad");
 
-          std::string cBins{ "Bad matching efficiency in: " };
-          for (const auto& [binLow, binUp] : ranges) {
-            float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
-            cBins += fmt::format("{:.1f}-{:.1f},", low, up);
+          if (mLimitRange >= 0 && ranges.size() > mLimitRange) {
+            result.updateMetadata("checkEtaBins", "too many bad bins");
+          } else {
+            std::string cBins{ "Bad matching efficiency in: " };
+            for (const auto& [binLow, binUp] : ranges) {
+              float low = eff->GetXaxis()->GetBinLowEdge(binLow), up = eff->GetXaxis()->GetBinUpEdge(binUp);
+              cBins += std::format("{:.1f}-{:.1f},", low, up);
+            }
+            cBins.pop_back(); // remove last `,`
+            result.updateMetadata("checkEtaBins", cBins);
           }
-          cBins.pop_back(); // remove last `,`
-          result.updateMetadata("checkEtaBins", cBins);
         }
       }
     }
@@ -195,7 +198,9 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     return;
   }
 
-  if (mShowPt && mo->getName() == "mFractionITSTPCmatch_ITS_Hist") {
+  const auto name = mo->getName();
+
+  if (mShowPt && name == "mFractionITSTPCmatch_ITS_Hist") {
     auto* eff = dynamic_cast<TH1*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatch_ITS_Hist beautify!" << ENDM;
@@ -250,11 +255,11 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     auto* good = new TPolyMarker();
     good->SetMarkerColor(kGreen);
     good->SetMarkerStyle(25);
-    good->SetMarkerSize(2);
+    good->SetMarkerSize(1);
     auto* bad = new TPolyMarker();
     bad->SetMarkerColor(kRed);
     bad->SetMarkerStyle(25);
-    bad->SetMarkerSize(2);
+    bad->SetMarkerSize(1);
     auto binLow = eff->FindFixBin(mMinPt), binUp = eff->FindFixBin(mMaxPt);
     for (int iBin = binLow; iBin <= binUp; ++iBin) {
       auto x = eff->GetBinCenter(iBin);
@@ -296,9 +301,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-  }
-
-  if (mShowPhi && mo->getName() == "mFractionITSTPCmatchPhi_ITS_Hist") {
+  } else if (mShowPhi && name == "mFractionITSTPCmatchPhi_ITS_Hist") {
     auto* eff = dynamic_cast<TH1*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatchPhi_ITS_Hist beautify!" << ENDM;
@@ -379,9 +382,7 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
-  }
-
-  if (mShowEta && mo->getName() == "mFractionITSTPCmatchEta_ITS_Hist") {
+  } else if (mShowEta && name == "mFractionITSTPCmatchEta_ITS_Hist") {
     auto* eff = dynamic_cast<TH1*>(mo->getObject());
     if (eff == nullptr) {
       ILOG(Error) << "Failed cast for ITSTPCmatchEta_ITS_Hist beautify!" << ENDM;
@@ -480,6 +481,54 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Not-handled Quality flag, don't panic...");
     }
     eff->GetListOfFunctions()->Add(msg);
+  } else if (mShowK0s && (name.starts_with("mK0sMassVsPtVsOcc_Cycle_pmass") || name.starts_with("mK0sMassVsPtVsOcc_Integral_pmass"))) {
+    auto* h = dynamic_cast<TH1*>(mo->getObject());
+    if (!h) {
+      ILOG(Error) << "Failed cast for " << name << " beautify!" << ENDM;
+      return;
+    }
+    auto isCycle = name.find("Cycle") != std::string::npos;
+    auto isHigh = name.find("high") != std::string::npos;
+    auto isLow = name.find("low") != std::string::npos;
+    auto isOcc = name.ends_with("Occ");
+    auto isPt = name.ends_with("Pt");
+    auto msg = new TPaveText(0.6, 0.6, 0.88, 0.88, "NDC;NB");
+    if (!isLow && !isHigh) {
+      h->SetTitle(Form("K0s invariant mass (integrated over #it{p}_{T} and occupancy, %s);K0s mass (GeV/c^{2});entries", (isCycle) ? "last cycle" : "integrated"));
+    } else {
+      h->SetTitle(Form("K0s invariant mass (integrated over%s#it{p}_{T} and%soccupancy, last cycle);K0s mass (GeV/c^{2});entries",
+                       (isPt) ? ((isLow) ? " low " : " high ") : " ",
+                       (isOcc) ? ((isLow) ? " low " : " high ") : " "));
+    }
+    if (!mK0sFitter.fit(h, true)) {
+      msg->AddText("Fit: Failed");
+      msg->SetFillColor(kRed);
+      msg->SetTextColor(kWhite);
+    } else {
+      auto unc = mK0sFitter.getUncertainty();
+      auto rerr = mK0sFitter.getRelativeError();
+      auto max = h->GetMaximum(), min = h->GetMinimum(), textp{ (max - min) * 0.1 };
+      auto l = new TLine(mK0sFitter.mMassK0s, 0, mK0sFitter.mMassK0s, max);
+      l->SetLineStyle(kDotted);
+      h->GetListOfFunctions()->Add(l);
+      auto t = new TText(mK0sFitter.mMassK0s - 0.025, textp, "PDG K0s");
+      h->GetListOfFunctions()->Add(t);
+      if (unc > mAccUncertainty || rerr > mAccRelError) {
+        msg->AddText("Fit: BAD");
+        msg->AddText("Not converged");
+        msg->AddText(Form("Discrepant %.2f", unc));
+        msg->AddText(Form("RError %.2f%%", rerr * 1e2));
+        msg->SetFillColor(kRed);
+        msg->SetTextColor(kWhite);
+      } else {
+        msg->AddText("Fit: GOOD");
+        msg->AddText(Form("Mass %.1f #pm %.1f (MeV)", mK0sFitter.getMass() * 1e3, mK0sFitter.getSigma() * 1e3));
+        msg->AddText(Form("Consistent %.2f", unc));
+        msg->AddText(Form("RError %.2f%%", rerr * 1e2));
+        msg->SetFillColor(kGreen);
+      }
+    }
+    h->GetListOfFunctions()->Add(msg);
   }
 }
 
@@ -487,31 +536,38 @@ void ITSTPCmatchingCheck::startOfActivity(const Activity& activity)
 {
   mActivity = make_shared<Activity>(activity);
 
-  mShowPt = common::getFromExtendedConfig(activity, mCustomParameters, "showPt", true);
-  if (mShowPt) {
+  if ((mShowPt = common::getFromExtendedConfig(activity, mCustomParameters, "showPt", false))) {
     mThresholdPt = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdPt", 0.5f);
     mMinPt = common::getFromExtendedConfig(activity, mCustomParameters, "minPt", 1.0f);
     mMaxPt = common::getFromExtendedConfig(activity, mCustomParameters, "maxPt", 1.999f);
   }
 
-  mShowPhi = common::getFromExtendedConfig(activity, mCustomParameters, "showPhi", true);
-  if (mShowPt) {
+  if ((mShowPhi = common::getFromExtendedConfig(activity, mCustomParameters, "showPhi", false))) {
     mThresholdPhi = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdPhi", 0.3f);
   }
 
-  mShowEta = common::getFromExtendedConfig(activity, mCustomParameters, "showEta", false);
-  if (mShowEta) {
+  if ((mShowEta = common::getFromExtendedConfig(activity, mCustomParameters, "showEta", false))) {
     mThresholdEta = common::getFromExtendedConfig(activity, mCustomParameters, "thresholdEta", 0.4f);
     mMinEta = common::getFromExtendedConfig(activity, mCustomParameters, "minEta", -0.8f);
     mMaxEta = common::getFromExtendedConfig(activity, mCustomParameters, "maxEta", 0.8f);
   }
+
+  if ((mShowK0s = common::getFromExtendedConfig(activity, mCustomParameters, "showK0s", false))) {
+    mAccRelError = common::getFromExtendedConfig(activity, mCustomParameters, "acceptableK0sRError", 0.2f);
+    mAccUncertainty = common::getFromExtendedConfig(activity, mCustomParameters, "acceptableK0sUncertainty", 2.f);
+    mK0sFitter.init(mCustomParameters, activity);
+  }
+
+  mLimitRange = common::getFromExtendedConfig(activity, mCustomParameters, "limitRanges", 5);
+  mIsPbPb = activity.mBeamType == "Pb-Pb";
 }
 
-std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums)
+std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vector<int>& nums) noexcept
 {
   std::vector<std::pair<int, int>> ranges;
-  if (nums.empty())
+  if (nums.empty()) {
     return ranges;
+  }
 
   int start = nums[0];
   int end = start;
@@ -520,11 +576,11 @@ std::vector<std::pair<int, int>> ITSTPCmatchingCheck::findRanges(const std::vect
     if (nums[i] == end + 1) {
       end = nums[i];
     } else {
-      ranges.push_back(std::make_pair(start, end));
+      ranges.emplace_back(start, end);
       start = end = nums[i];
     }
   }
-  ranges.push_back(std::make_pair(start, end)); // Add the last range
+  ranges.emplace_back(start, end); // Add the last range
   return ranges;
 }
 
