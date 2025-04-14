@@ -64,7 +64,7 @@ class RepositoryBenchmark : public fair::mq::Device
 
   // variables for the timer
   boost::asio::deadline_timer* mTimer; /// the asynchronous timer to send monitoring data
-  boost::asio::io_service io;
+  boost::asio::io_context io;
   std::thread* th;
 };
 

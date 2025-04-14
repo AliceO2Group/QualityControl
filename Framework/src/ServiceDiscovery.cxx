@@ -24,7 +24,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <iostream>
 #include <InfoLogger/InfoLoggerMacros.hxx>
 #include <boost/system/error_code.hpp>
@@ -136,7 +136,7 @@ void ServiceDiscovery::runHealthServer()
   threadInfoLogger.setContext(context);
 
   // Find a free port and create the endpoint and the acceptor
-  boost::asio::io_service io_service;
+  boost::asio::io_context io_context;
   tcp::acceptor* acceptor = nullptr;
   size_t port = 0;
   std::random_device rd;  // obtain a random number from hardware
@@ -153,7 +153,7 @@ void ServiceDiscovery::runHealthServer()
       cycle++;
 
       tcp::endpoint endpoint(tcp::v4(), port);
-      acceptor = new tcp::acceptor(io_service, endpoint);
+      acceptor = new tcp::acceptor(io_context, endpoint);
     } catch (boost::system::system_error& e) {
       ILOG(Debug, Trace) << "ServiceDiscovery::runHealthServer - cound not bind to " << port << ENDM;
       continue; // try the next one
@@ -177,16 +177,16 @@ void ServiceDiscovery::runHealthServer()
 
   // run the thread
   try {
-    boost::asio::deadline_timer timer(io_service);
+    boost::asio::deadline_timer timer(io_context);
     while (mThreadRunning) {
-      io_service.reset();
+      io_context.restart();
       timer.expires_from_now(boost::posix_time::seconds(1));
       acceptor->async_accept([this](boost::system::error_code ec, tcp::socket socket) {
       });
       timer.async_wait([&](boost::system::error_code ec) {
-        io_service.stop();
+        io_context.stop();
       });
-      io_service.run();
+      io_context.run();
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
