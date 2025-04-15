@@ -19,7 +19,6 @@
 
 #include <memory>
 #include <functional>
-#include <Framework/ServiceRegistryRef.h>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/PostProcessingInterface.h"

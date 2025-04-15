@@ -51,10 +51,6 @@ class ConfigurationInterface;
 
 namespace o2::quality_control
 {
-namespace core
-{
-class ServiceDiscovery;
-}
 namespace checker
 {
 class Aggregator;
@@ -150,7 +146,6 @@ class AggregatorRunner : public framework::Task
 
   void initDatabase();
   void initMonitoring();
-  void initServiceDiscovery();
   void initLibraries();
   void initAggregators();
 
@@ -203,9 +198,6 @@ class AggregatorRunner : public framework::Task
   int mTotalNumberObjectsReceived;
   int mTotalNumberAggregatorExecuted;
   int mTotalNumberObjectsProduced;
-
-  // Service discovery
-  std::shared_ptr<core::ServiceDiscovery> mServiceDiscovery;
 };
 
 } // namespace o2::quality_control::checker

@@ -33,7 +33,6 @@
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/Aggregator.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureSpecReader.h"
@@ -73,9 +72,6 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
 AggregatorRunner::~AggregatorRunner()
 {
   ILOG(Debug, Trace) << "AggregatorRunner destructor (" << this << ")" << ENDM;
-  if (mServiceDiscovery != nullptr) {
-    mServiceDiscovery->deregister();
-  }
 }
 
 void AggregatorRunner::prepareInputs()
@@ -127,7 +123,6 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
     }
     initDatabase();
     initMonitoring();
-    initServiceDiscovery();
     initAggregators();
   } catch (...) {
     ILOG(Fatal) << "Unexpected exception during initialization: "
@@ -251,18 +246,6 @@ void AggregatorRunner::initMonitoring()
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("AggregatorRunnerName", mDeviceName);
   mTimer.reset(1000000); // 10 s.
-}
-
-void AggregatorRunner::initServiceDiscovery()
-{
-  auto consulUrl = mRunnerConfig.consulUrl;
-  if (consulUrl.empty()) {
-    mServiceDiscovery = nullptr;
-    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
-    return;
-  }
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
-  ILOG(Info, Devel) << "ServiceDiscovery initialized";
 }
 
 void AggregatorRunner::initAggregators()

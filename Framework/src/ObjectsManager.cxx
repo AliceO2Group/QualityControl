@@ -17,7 +17,6 @@
 #include "QualityControl/ObjectsManager.h"
 
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/MonitorObjectCollection.h"
 #include <Common/Exceptions.h>
 #include <TObjArray.h>
@@ -36,23 +35,14 @@ namespace o2::quality_control::core
 const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
 const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
-ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID, bool noDiscovery)
-  : mTaskName(std::move(taskName)), mTaskClass(std::move(taskClass)), mDetectorName(std::move(detectorName)), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, int parallelTaskID)
+  : mTaskName(std::move(taskName)), mTaskClass(std::move(taskClass)), mDetectorName(std::move(detectorName))
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
   mMonitorObjects->SetName(mTaskName.c_str());
   mMonitorObjects->setDetector(mDetectorName);
   mMonitorObjects->setTaskName(mTaskName);
-
-  // register with the discovery service
-  if (!noDiscovery && !consulUrl.empty()) {
-    std::string uniqueTaskID = mTaskName + "_" + std::to_string(parallelTaskID);
-    mServiceDiscovery = std::make_unique<ServiceDiscovery>(consulUrl, mTaskName, uniqueTaskID);
-  } else {
-    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
-    mServiceDiscovery = nullptr;
-  }
 }
 
 ObjectsManager::~ObjectsManager()
@@ -81,37 +71,7 @@ void ObjectsManager::startPublishingImpl(TObject* object, PublicationPolicy publ
   newObject->setActivity(mActivity);
   newObject->setCreateMovingWindow(std::find(mMovingWindowsList.begin(), mMovingWindowsList.end(), object->GetName()) != mMovingWindowsList.end());
   mMonitorObjects->Add(newObject);
-  mUpdateServiceDiscovery = true;
   mPublicationPoliciesForMOs[newObject] = publicationPolicy;
-}
-
-void ObjectsManager::updateServiceDiscovery()
-{
-  if (!mUpdateServiceDiscovery || mServiceDiscovery == nullptr) {
-    return;
-  }
-  // prepare the string of comma separated objects and publish it
-  string objects;
-  for (auto tobj : *mMonitorObjects) {
-    auto* mo = dynamic_cast<MonitorObject*>(tobj);
-    if (mo) {
-      objects += mo->getPath() + ",";
-    } else {
-      ILOG(Error, Devel) << "ObjectsManager::updateServiceDiscovery : dynamic_cast returned nullptr." << ENDM;
-    }
-  }
-  objects.pop_back();
-  mServiceDiscovery->_register(objects);
-  mUpdateServiceDiscovery = false;
-}
-
-void ObjectsManager::removeAllFromServiceDiscovery()
-{
-  if (mServiceDiscovery == nullptr) {
-    return;
-  }
-  mServiceDiscovery->_register("");
-  mUpdateServiceDiscovery = true;
 }
 
 void ObjectsManager::stopPublishing(TObject* object)
@@ -161,7 +121,6 @@ void ObjectsManager::stopPublishing(PublicationPolicy policy)
 
 void ObjectsManager::stopPublishingAll()
 {
-  removeAllFromServiceDiscovery();
   mMonitorObjects->Clear();
   mPublicationPoliciesForMOs.clear();
 }
