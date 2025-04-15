@@ -1,41 +1,11 @@
-name: Clang format
+---
+name: Formatting
 
-on: [pull_request]
+'on': [pull_request_target]
 
 jobs:
-  clang-format:
-    # We need at least 20.04 to install clang-format-11.
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          # To get the merge base, we need the full history.
-          fetch-depth: 0
-      - name: Install prerequisites
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo apt update -y
-          sudo apt install -y clang-format-11
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-11 100
-          sudo update-alternatives --install /usr/bin/git-clang-format git-clang-format /usr/bin/git-clang-format-11 100
-      - name: Run clang-format on changed files
-        run: |
-          set -x
-          git fetch origin ${{ github.event.pull_request.base.ref }}
-          git fetch origin pull/${{ github.event.pull_request.number }}/head:${{ github.event.pull_request.head.ref }}
-          BASE_COMMIT=$(git merge-base HEAD ${{ github.event.pull_request.base.sha }})
-          COMMIT_FILES=$(git diff --diff-filter=d --name-only "$BASE_COMMIT" -- '*.cxx' '*.h' ':!*LinkDef*')
-          if [ "$COMMIT_FILES" == "" ]; then
-            exit 0 ;# nothing to check
-          fi
-
-          RESULT_OUTPUT=$(git-clang-format --commit ${BASE_COMMIT} --diff ${COMMIT_FILES})
-          if [ "$RESULT_OUTPUT" == "no modified files to format" ] || [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ]; then
-            exit 0 ;# all good
-          else
-            git-clang-format --commit $BASE_COMMIT --diff
-            echo "$RESULT_OUTPUT"
-            exit 1
-          fi
+  formatting:
+    name: PR formatting
+    uses: alisw/ali-bot/.github/workflows/c++-code-formatting.yml@master
+    secrets:
+      alibuild_github_token: ${{ secrets.ALIBUILD_GITHUB_TOKEN }}
