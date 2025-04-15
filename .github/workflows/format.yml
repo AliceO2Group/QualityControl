@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   clang-format:
     # We need at least 20.04 to install clang-format-11.
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
         with:
