@@ -48,7 +48,8 @@
               "ccdbName": "https://alice-ccdb.cern.ch",
               "MBclassName" : "CMTVX-B-NOPF",
               "MB1inputName" : "MTVX",
-              "MB2inputName" : "MVBA"
+              "MB2inputName" : "MVBA",
+              "consistencyCheck" : "false"
             }
           },
           "PHYSICS": {
