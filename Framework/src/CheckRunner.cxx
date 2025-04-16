@@ -29,14 +29,12 @@
 #include <utility>
 // QC
 #include "QualityControl/DatabaseFactory.h"
-#include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
-#include "QualityControl/WorkflowType.h"
 
 #include <TSystem.h>
 
@@ -164,9 +162,6 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
 CheckRunner::~CheckRunner()
 {
   ILOG(Debug, Trace) << "CheckRunner destructor (" << this << ")" << ENDM;
-  if (mServiceDiscovery != nullptr) {
-    mServiceDiscovery->deregister();
-  }
 }
 
 void CheckRunner::init(framework::InitContext& iCtx)
@@ -176,7 +171,6 @@ void CheckRunner::init(framework::InitContext& iCtx)
     Bookkeeping::getInstance().init(mConfig.bookkeepingUrl);
     initDatabase();
     initMonitoring();
-    initServiceDiscovery();
     initLibraries(); // we have to load libraries before we load ConfigurableParams, otherwise the corresponding ROOT dictionaries won't be found
 
     if (!ConfigParamGlo::keyValues.empty()) {
@@ -413,7 +407,6 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
     objects += path + ",";
   }
   objects.pop_back(); // remove last comma
-  mServiceDiscovery->_register(objects);
 }
 
 void CheckRunner::initDatabase()
@@ -429,17 +422,6 @@ void CheckRunner::initMonitoring()
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   mTimer.reset(10000000); // 10 s.
-}
-
-void CheckRunner::initServiceDiscovery()
-{
-  if (mConfig.consulUrl.empty()) {
-    mServiceDiscovery = nullptr;
-    ILOG(Warning, Support) << "Service Discovery disabled" << ENDM;
-    return;
-  }
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
-  ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
 }
 
 void CheckRunner::initLibraries()

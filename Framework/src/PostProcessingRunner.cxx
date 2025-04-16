@@ -94,7 +94,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   mSourceDatabase = configureDatabase(mRunnerConfig.sourceDatabase, "Source");
   mDestinationDatabase = configureDatabase(mRunnerConfig.destinationDatabase, "Destination");
 
-  mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mRunnerConfig.consulUrl);
+  mObjectManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName);
   mObjectManager->setActivity(mActivity);
   mServices.registerService<DatabaseInterface>(mSourceDatabase.get());
   if (mPublicationCallback == nullptr) {

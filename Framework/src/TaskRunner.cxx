@@ -106,7 +106,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector->addGlobalTag("DetectorName", mTaskConfig.detectorName);
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.parallelTaskID);
   mObjectsManager->setMovingWindowsList(mTaskConfig.movingWindows);
 
   // setup timekeeping
@@ -408,7 +408,6 @@ void TaskRunner::startOfActivity()
 
   mCollector->setRunNumber(mActivity.mId);
   mTask->startOfActivity(mActivity);
-  mObjectsManager->updateServiceDiscovery();
 }
 
 void TaskRunner::endOfActivity()
@@ -420,7 +419,6 @@ void TaskRunner::endOfActivity()
   mTimekeeper->setEndOfActivity(mActivity.mValidity.getMax(), mTaskConfig.fallbackActivity.mValidity.getMax(), now, activity_helpers::getCcdbEorTimeAccessor(mActivity.mId));
 
   mTask->endOfActivity(mObjectsManager->getActivity());
-  mObjectsManager->removeAllFromServiceDiscovery();
   mObjectsManager->stopPublishing(PublicationPolicy::ThroughStop);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
@@ -480,7 +478,6 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   saveToFile();
 
   publishCycleStats();
-  mObjectsManager->updateServiceDiscovery();
 
   mCycleNumber++;
   mCycleOn = false;

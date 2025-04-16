@@ -163,7 +163,7 @@ TEST_CASE("test_trending_task")
 
   // Test "trendIfAllInputs". There should not be anything in DB so we don't have any input sources available
   {
-    auto objectManager = std::make_shared<ObjectsManager>(taskName, "o2::quality_control::postprocessing::TrendingTask", "TST", "");
+    auto objectManager = std::make_shared<ObjectsManager>(taskName, "o2::quality_control::postprocessing::TrendingTask", "TST", 0);
     ServiceRegistry services;
     services.registerService<DatabaseInterface>(repository.get());
 
@@ -238,7 +238,7 @@ TEST_CASE("test_trending_task")
   // Running the task
   ServiceRegistry services;
   services.registerService<DatabaseInterface>(repository.get());
-  auto objectManager = std::make_shared<ObjectsManager>(taskName, "o2::quality_control::postprocessing::TrendingTask", "TST", "");
+  auto objectManager = std::make_shared<ObjectsManager>(taskName, "o2::quality_control::postprocessing::TrendingTask", "TST");
 
   TrendingTask task;
   task.setName(trendingTaskName);

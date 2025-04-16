@@ -23,10 +23,7 @@
 #include "QualityControl/MonitorObjectCollection.h"
 #include <Mergers/Mergeable.h>
 // stl
-#include <concepts>
 #include <string>
-#include <memory>
-#include <type_traits>
 
 class TObject;
 
@@ -49,8 +46,6 @@ enum class PublicationPolicy {
   Forever
 };
 
-class ServiceDiscovery;
-
 /// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
 ///
 /// Keeps a list of the objects to publish, encapsulates them and does the actual publication.
@@ -69,7 +64,7 @@ class ObjectsManager
    * @param parallelTaskID ID of a parallel Task, use 0 if there is only one.
    * @param noDiscovery If true disables the use of ServiceDiscovery
    */
-  ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
+  ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, int parallelTaskID = 0);
   virtual ~ObjectsManager();
 
   static const std::string gDrawOptionsKey;
@@ -203,19 +198,6 @@ class ObjectsManager
   MonitorObject* getMonitorObject(size_t index);
 
   /**
-   * \brief Update the list of objects stored in the Service Discovery.
-   * Update the list of objects stored in the Service Discovery.
-   */
-  void updateServiceDiscovery();
-
-  /**
-   * \brief Remove all objects from the ServiceDiscovery.
-   * Remove all objects from the ServiceDiscovery even though they still might be published by the task.
-   * This is typically used at End of Activity.
-   */
-  void removeAllFromServiceDiscovery();
-
-  /**
    * \brief Sets the validity interval of all registered objects.
    */
   void setValidity(ValidityInterval);
@@ -237,8 +219,6 @@ class ObjectsManager
   std::string mTaskName;
   std::string mTaskClass;
   std::string mDetectorName;
-  std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
-  bool mUpdateServiceDiscovery;
   Activity mActivity;
   std::vector<std::string> mMovingWindowsList;
 
