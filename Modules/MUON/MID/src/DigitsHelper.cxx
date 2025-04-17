@@ -17,6 +17,8 @@
 #include <fmt/format.h>
 #include "TH1.h"
 #include "TH2.h"
+#include "MIDRaw/CrateMapper.h"
+#include "MIDRaw/CrateParameters.h"
 #include "MIDBase/DetectorParameters.h"
 #include "MIDBase/GeometryParameters.h"
 #include "MIDGlobalMapping/GlobalMapper.h"
@@ -32,6 +34,7 @@ void DigitsHelper::initMaps()
 {
   o2::mid::GlobalMapper gm;
   auto infos = gm.buildStripsInfo();
+  o2::mid::CrateMapper cm;
 
   auto stripHistoB = makeStripMapHisto("templateStripB", "templateStripB", 0);
   auto stripHistoNB = makeStripMapHisto("templateStripNB", "templateStripNB", 1);
