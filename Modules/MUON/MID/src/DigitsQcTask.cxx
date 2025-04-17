@@ -24,9 +24,14 @@
 #include <Framework/InputRecord.h>
 #include "DataFormatsMID/ColumnData.h"
 #include "DataFormatsMID/ROFRecord.h"
+#include "MIDBase/Mapping.h"
 #include "MIDBase/DetectorParameters.h"
 #include "MIDBase/GeometryParameters.h"
 #include "MIDWorkflow/ColumnDataSpecsUtils.h"
+#include "MIDGlobalMapping/GlobalMapper.h"
+#include "MIDRaw/CrateMapper.h"
+#include "MIDRaw/CrateParameters.h"
+#include "MIDRaw/Decoder.h"
 #include "MID/DigitsHelper.h"
 
 namespace o2::quality_control_modules::mid
@@ -51,6 +56,15 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mLBHighRate = std::make_unique<TH1F>("LBHighRate", "LocalBoardHigherRate", 1, 0, 1.);
   getObjectsManager()->startPublishing(mLBHighRate.get());
+
+  mGBTRate = std::make_unique<TH1F>("GBTRate", "GBTRate", 32, 0, 32.);
+  getObjectsManager()->startPublishing(mGBTRate.get());
+
+  mCRURate = std::make_unique<TH1F>("CRURate", "CRURate", 2, 0, 2.);
+  getObjectsManager()->startPublishing(mCRURate.get());
+
+  mEPRate = std::make_unique<TH1F>("EPRate", "EPRate", 4, 0, 4.);
+  getObjectsManager()->startPublishing(mEPRate.get());
 
   std::array<string, 4> chId{ "11", "12", "21", "22" };
 
@@ -128,15 +142,51 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   unsigned long int prevSize = 0;
   o2::InteractionRecord prevIr;
   bool isFirst = true;
+
+  o2::mid::CrateMapper cm;
+
   for (auto& rof : rofs) {
     auto eventDigits = digits.subspan(rof.firstEntry, rof.nEntries);
     evtSizeB.fill(0);
     evtSizeNB.fill(0);
+
     for (auto& col : eventDigits) {
+
       auto ich = o2::mid::detparams::getChamber(col.deId);
       evtSizeB[ich] += mDigitsHelper.countDigits(col, 0);
       evtSizeNB[ich] += mDigitsHelper.countDigits(col, 1);
       mDigitsHelper.fillStripHisto(col, mHits.get());
+
+      for (int lineId = 0; lineId < 4; lineId++) {
+        if (col.getBendPattern(lineId)) {
+          auto locId = cm.deLocalBoardToRO(col.deId, col.columnId, lineId);
+
+          int crateId = o2::mid::raw::getCrateId(locId);
+          int cruId = o2::mid::crateparams::isRightSide(crateId) ? 0 : 1;
+          int epId = 0;
+          switch (crateId % 8) {
+            case 0:
+            case 1:
+            case 4:
+            case 5:
+              epId = 0;
+              break;
+            case 2:
+            case 3:
+            case 6:
+            case 7:
+              epId = 1;
+              break;
+          }
+          auto locIdInCrate = o2::mid::raw::getLocId(locId);
+          auto gbtId = o2::mid::crateparams::getGBTIdFromBoardInCrate(locIdInCrate);
+          auto gbtUniqueId = o2::mid::crateparams::makeGBTUniqueId(crateId, gbtId);
+          mGBTRate->Fill(gbtUniqueId);
+          mCRURate->Fill(cruId);
+          int epIndex = 2 * cruId + epId;
+          mEPRate->Fill(epIndex);
+        }
+      }
     }
 
     unsigned long int sizeTot = 0;
@@ -218,6 +268,10 @@ void DigitsQcTask::reset()
   resetDisplayHistos();
 
   mDigitBCCounts->Reset();
+
+  mGBTRate->Reset();
+  mCRURate->Reset();
+  mEPRate->Reset();
 }
 
 } // namespace o2::quality_control_modules::mid

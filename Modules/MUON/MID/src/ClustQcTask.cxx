@@ -184,7 +184,7 @@ void ClustQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       } // loop on MT //
-    }   // cluster in ROF //
+    } // cluster in ROF //
     mMultClust11->Fill(multClusterMT11);
     mMultClust12->Fill(multClusterMT12);
     mMultClust21->Fill(multClusterMT21);

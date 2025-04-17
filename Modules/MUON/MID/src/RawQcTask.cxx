@@ -232,7 +232,6 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       int isLoc = (statusWord >> 6) & 1;
       int busyLoc = (statusWord >> 5) & 1;
       int decisionLoc = (statusWord >> 4) & 1;
-
       int isPhys = (triggerWord >> 2) & 1;
       int isCalib = (triggerWord >> 3) & 1;
       int sOrb = triggerWord & 1;

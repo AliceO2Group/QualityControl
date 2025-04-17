@@ -478,12 +478,12 @@ void TracksQcTask::monitorData(o2::framework::ProcessingContext& ctx)
                     mTrackLocalBoardsNBRatio44Map->Fill(-colId - 0.5, linePos, NBFired);
                   }
                 } // board in line loop
-              }   // board loop
-            }     // only fire board in the line
-          }       //(EffFlag>2)
-        }         //(EffFlag>1)
-      }           // Efficiency part (EffFlag>0)
-    }             // tracks in ROF
+              } // board loop
+            } // only fire board in the line
+          } //(EffFlag>2)
+        } //(EffFlag>1)
+      } // Efficiency part (EffFlag>0)
+    } // tracks in ROF
     mMultTracks->Fill(multTracks);
 
   } //  ROFRecords //
