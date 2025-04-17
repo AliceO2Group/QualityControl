@@ -69,6 +69,7 @@ class CTPRawDataReaderTask final : public TaskInterface
   long int mTimestamp;
   std::string classNames[nclasses];
   int mIndexMBclass = -1; // index for the MB ctp class, which is used as scaling for the ratios
+  bool mConsistCheck = 0;
 };
 
 } // namespace o2::quality_control_modules::ctp

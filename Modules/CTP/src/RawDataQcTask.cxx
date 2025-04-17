@@ -62,7 +62,6 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDecoder.setDoLumi(1);
   mDecoder.setDecodeInps(1);
-  mDecoder.setCheckConsistency(1);
   mDecoder.setDoDigits(1);
   for (size_t i = 0; i < nclasses; i++) {
     classNames[i] = "";
@@ -204,6 +203,13 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoBCMinBias2->SetTitle(Form("%s; %s; %s", title2.Data(), titleX2.Data(), titley2.Data()));
   mHistoClassRatios->SetTitle(Form("Class Ratio to %s", MBclassName.c_str()));
   mHistoInputRatios->SetTitle(Form("Input Ratio to %s", nameInput1.c_str()));
+
+  std::string performConsistencyCheck = getFromExtendedConfig<string>(activity, mCustomParameters, "consistencyCheck", "true");
+  if (performConsistencyCheck == "true") {
+    mDecoder.setCheckConsistency(1);
+  } else {
+    mDecoder.setCheckConsistency(0);
+  }
 }
 
 void CTPRawDataReaderTask::startOfCycle()
