@@ -1295,10 +1295,10 @@ The new syntax is
               "myOwnKey1": "myOwnValue1b",
               "myOwnKey2": "myOwnValue2b"
             },
-            "PROTON-PROTON": {
+            "pp": {
               "myOwnKey1": "myOwnValue1c"
             },
-            "Pb-Pb": {
+            "PbPb": {
               "myOwnKey1": "myOwnValue1d"
             }
           },
@@ -1310,7 +1310,7 @@ The new syntax is
 ```
 It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: [ECSDataAdapters.h](https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54). The `default` can be used 
 to ignore the run or the beam type. 
-The beam type is one of the following: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON`, `cosmic`.
+The beam type is one of the following: `pp`, `PbPb`, `pPb`, `cosmic`.
 
 The values can be accessed in various ways described in the following sub-sections.
 
@@ -1322,9 +1322,9 @@ However, before returning an empty value we try to substitute the runType and th
 ```c++
 // returns an Optional<string> if it finds the key `myOwnKey` for the runType and beamType of the provided activity, 
 // or if it can find the key with the runType or beamType substituted with "default". 
-auto param = mCustomParameters.atOptional("myOwnKey1", activity); // activity is "PHYSICS", "Pb-Pb" , returns "myOwnValue1d"
+auto param = mCustomParameters.atOptional("myOwnKey1", activity); // activity is "PHYSICS", "PbPb" , returns "myOwnValue1d"
 // same but passing directly the run and beam types
-auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns "myOwnValue1d"
+auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS", "PbPb"); // returns "myOwnValue1d"
 // or with only the run type
 auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS"); // returns "myOwnValue1b"
 ```
@@ -1340,8 +1340,8 @@ mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
 mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
 
-mCustomParameters.at("myOwnKey1", "PHYSICS", "PROTON-PROTON"); // returns `myOwnValue1c`
-mCustomParameters.at("myOwnKey1", "PHYSICS", "Pb-Pb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "pp"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "PbPb"); // returns `myOwnValue1d`
 mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
 
 mCustomParameters.at("myOwnKey1", activity); // result will depend on activity
@@ -1434,7 +1434,7 @@ The configuration looks like
             }
           },
           "PHYSICS": {
-            "PROTON-PROTON": {
+            "pp": {
               "referenceRun" : "551890"
             }
           }
@@ -1540,7 +1540,7 @@ should not be present in real configuration files.
         "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data",
         "start" : "0",                    "": "Activity start time in ms since epoch. One can use it as a filter in post-processing",
         "end" : "1234",                   "": "Activity end time in ms since epoch. One can use it as a filter in post-processing", 
-        "beamType" : "PROTON-PROTON",     "": "Beam type: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON` ", 
+        "beamType" : "pp",                "": "Beam type: `pp`, `PbPb`, `pPb` ", 
         "partitionName" : "",             "": "Partition name", 
         "fillNumber" : "123",             "": "Fill Number"
       },
