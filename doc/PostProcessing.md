@@ -600,7 +600,7 @@ In the example configuration below, the relationship between the input and outpu
             }
           },
           "PHYSICS": {
-            "PROTON-PROTON": {
+            "pp": {
               "referenceRun" : "551890"
             }
           }

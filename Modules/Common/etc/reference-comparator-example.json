@@ -34,7 +34,7 @@
             }
           },
           "PHYSICS": {
-            "PROTON-PROTON": {
+            "pp": {
               "referenceRun" : "551890"
             }
           }
