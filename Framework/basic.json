@@ -84,7 +84,7 @@
         }],
         "extendedCheckParameters": {
           "physics": {
-            "PROTON-PROTON": {
+            "pp": {
               "myOwnKey1": "myOwnValue1c"
             }
           }

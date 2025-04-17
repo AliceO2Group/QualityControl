@@ -11,7 +11,7 @@
       "Activity": {
         "number": "42",
         "type": "PHYSICS",
-        "beamType" : "PbPb",     "": "Beam type: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON` "
+        "beamType" : "PbPb",     "": "Beam type: `pp`, `PbPb`, `pPb` "
       },
       "monitoring": {
         "url": "infologger:///debug?qc"
@@ -91,7 +91,7 @@
                                           "maxcluoccL5": "0.2",
                                           "maxcluoccL6": "0.2"
                         },
-                        "PROTON-PROTON": {
+                        "pp": {
 				          "maxcluoccL0": "5",
                                           "maxcluoccL1": "3",
                                           "maxcluoccL2": "3",
@@ -100,7 +100,7 @@
                                           "maxcluoccL5": "0.2",
                                           "maxcluoccL6": "0.2"
                         },
-                        "Pb-Pb": {
+                        "PbPb": {
 				          "maxcluoccL0": "65",
                                           "maxcluoccL1": "35",
                                           "maxcluoccL2": "25",
