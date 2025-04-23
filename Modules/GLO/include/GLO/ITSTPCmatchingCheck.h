@@ -9,10 +9,9 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
 /// \file   ITSTPCmatchingCheck.h
+/// \brief  Check for ITS-TPC sync. matching efficiency
 /// \author felix.schlepper@cern.ch
-///
 
 #ifndef QC_MODULE_GLO_GLOITSTPCMATCHINGCHECK_H
 #define QC_MODULE_GLO_GLOITSTPCMATCHINGCHECK_H
@@ -20,33 +19,35 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/Quality.h"
 
+#include "GLO/Helpers.h"
+
 #include <vector>
-#include <tuple>
 
 namespace o2::quality_control_modules::glo
 {
 
 /// \brief  Check for ITS-TPC sync. matching efficiency
 /// \author felix.schlepper@cern.ch
-class ITSTPCmatchingCheck : public o2::quality_control::checker::CheckInterface
+class ITSTPCmatchingCheck final : public o2::quality_control::checker::CheckInterface
 {
  public:
-  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  void startOfActivity(const Activity& activity) override;
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) final;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) final;
+  void startOfActivity(const Activity& activity) final;
 
  private:
-  std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums);
+  static std::vector<std::pair<int, int>> findRanges(const std::vector<int>& nums) noexcept;
+
   std::shared_ptr<Activity> mActivity;
 
   // Pt
-  bool mShowPt{ true };
+  bool mShowPt{ false };
   float mMinPt{ 1. };
   float mMaxPt{ 1.999 };
   float mThresholdPt{ 0.5 };
 
   // Phi
-  bool mShowPhi{ true };
+  bool mShowPhi{ false };
   float mThresholdPhi{ 0.3 };
 
   // Eta
@@ -55,7 +56,17 @@ class ITSTPCmatchingCheck : public o2::quality_control::checker::CheckInterface
   float mMinEta{ -0.8 };
   float mMaxEta{ 0.8 };
 
-  ClassDefOverride(ITSTPCmatchingCheck, 1);
+  // K0s
+  bool mShowK0s{ false };
+  float mAccRelError{ 0.02 };
+  float mAccUncertainty{ 2 };
+  helpers::K0sFitter mK0sFitter;
+
+  // Other
+  int mLimitRange{ -1 };
+  bool mIsPbPb{ false };
+
+  ClassDefOverride(ITSTPCmatchingCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::glo

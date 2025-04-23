@@ -20,8 +20,16 @@
 #include "QualityControl/TaskInterface.h"
 #include "GLOQC/MatchITSTPCQC.h"
 #include "Common/TH1Ratio.h"
+#include "GLO/Helpers.h"
+#include "GLO/Reductors.h"
+
+#include <CommonConstants/PhysicsConstants.h>
 
 #include <memory>
+#include <limits>
+
+#include <TH2F.h>
+#include <TH3F.h>
 
 using namespace o2::quality_control::core;
 
@@ -33,12 +41,6 @@ namespace o2::quality_control_modules::glo
 class ITSTPCMatchingTask final : public TaskInterface
 {
  public:
-  /// \brief Constructor
-  ITSTPCMatchingTask() = default;
-  /// Destructor
-  ~ITSTPCMatchingTask() override = default;
-
-  // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(const Activity& activity) override;
   void startOfCycle() override;
@@ -48,11 +50,30 @@ class ITSTPCMatchingTask final : public TaskInterface
   void reset() override;
 
  private:
+  template <typename T>
+  static constexpr T OptValue = std::numeric_limits<T>::max();
+
   o2::gloqc::MatchITSTPCQC mMatchITSTPCQC;
 
+  bool mIsSync{ false };
+  bool mIsPbPb{ false };
+
+  bool mDoMTCRatios{ false };
   std::unique_ptr<common::TH1FRatio> mEffPt;
   std::unique_ptr<common::TH1FRatio> mEffEta;
   std::unique_ptr<common::TH1FRatio> mEffPhi;
+
+  bool mDoK0s{ false };
+  bool mPublishK0s3D{ false };
+  float mSplitTPCOccupancy{ OptValue<float> };
+  float mSplitPt{ OptValue<float> };
+  std::unique_ptr<TH3F> mK0sCycle;
+  std::unique_ptr<TH3F> mK0sIntegral;
+  helpers::K0sFitter mK0sFitter;
+
+  bool mDoPVITS{ false };
+  std::unique_ptr<TH2F> mPVITSCycle;
+  std::unique_ptr<TH2F> mPVITSIntegral;
 };
 
 } // namespace o2::quality_control_modules::glo
