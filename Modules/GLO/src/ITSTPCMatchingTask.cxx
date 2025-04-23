@@ -83,7 +83,7 @@ void ITSTPCMatchingTask::startOfActivity(const Activity& activity)
 {
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
   mMatchITSTPCQC.reset();
-  mIsPbPb = activity.mBeamType == "Pb-Pb";
+  mIsPbPb = activity.mBeamType == "PbPb";
 }
 
 void ITSTPCMatchingTask::startOfCycle()
