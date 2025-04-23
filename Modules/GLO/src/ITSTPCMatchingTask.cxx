@@ -146,33 +146,33 @@ void ITSTPCMatchingTask::endOfCycle()
     }
 
     if (mDoPVITS) {
-      const auto* h = (mIsPbPb) ? mMatchITSTPCQC.getHistoPVNContVsITSTracksPbPb() : mMatchITSTPCQC.getHistoPVNContVsITSTracks();
-      if (!h) {
-        ILOG(Fatal) << "Could not retrieve pv ITS histogram!" << ENDM;
-      }
+      // const auto* h = (mIsPbPb) ? mMatchITSTPCQC.getHistoPVNContVsITSTracksPbPb() : mMatchITSTPCQC.getHistoPVNContVsITSTracks();
+      // if (!h) {
+      //   ILOG(Fatal) << "Could not retrieve pv ITS histogram!" << ENDM;
+      // }
 
-      mPVITSCycle.reset();
-      mPVITSCycle.reset(dynamic_cast<TH2F*>(h->Clone("mPVNContVsITSTracks_Cycle")));
-      if (!mPVITSCycle) {
-        ILOG(Fatal) << "Could not retrieve pv ITS histogram for current cycle!" << ENDM;
-      }
-      if (!mPVITSIntegral) {
-        mPVITSIntegral.reset(dynamic_cast<TH2F*>(h->Clone("mPVNContVsITSTracks_Integral")));
-        if (!mPVITSIntegral) {
-          ILOG(Fatal) << "Could not retrieve pv ITS histogram for integral!" << ENDM;
-        }
-      }
-      if (mPVITSCycle->GetEntries() != h->GetEntries()) {
-        mPVITSCycle->Reset();
-        mPVITSCycle->Add(h, mPVITSCycle.get(), 1., -1.);
-        mPVITSIntegral->Reset();
-        mPVITSIntegral->Add(h);
+      // mPVITSCycle.reset();
+      // mPVITSCycle.reset(dynamic_cast<TH2F*>(h->Clone("mPVNContVsITSTracks_Cycle")));
+      // if (!mPVITSCycle) {
+      //   ILOG(Fatal) << "Could not retrieve pv ITS histogram for current cycle!" << ENDM;
+      // }
+      // if (!mPVITSIntegral) {
+      //   mPVITSIntegral.reset(dynamic_cast<TH2F*>(h->Clone("mPVNContVsITSTracks_Integral")));
+      //   if (!mPVITSIntegral) {
+      //     ILOG(Fatal) << "Could not retrieve pv ITS histogram for integral!" << ENDM;
+      //   }
+      // }
+      // if (mPVITSCycle->GetEntries() != h->GetEntries()) {
+      //   mPVITSCycle->Reset();
+      //   mPVITSCycle->Add(h, mPVITSCycle.get(), 1., -1.);
+      //   mPVITSIntegral->Reset();
+      //   mPVITSIntegral->Add(h);
 
-        getObjectsManager()->startPublishing(mPVITSCycle.get(), PublicationPolicy::Once);
-        getObjectsManager()->startPublishing(mPVITSIntegral.get(), PublicationPolicy::Once);
-        getObjectsManager()->startPublishing(mPVITSCycle->ProfileX(), PublicationPolicy::Once);
-        getObjectsManager()->startPublishing(mPVITSIntegral->ProfileX(), PublicationPolicy::Once);
-      }
+      //   getObjectsManager()->startPublishing(mPVITSCycle.get(), PublicationPolicy::Once);
+      //   getObjectsManager()->startPublishing(mPVITSIntegral.get(), PublicationPolicy::Once);
+      //   getObjectsManager()->startPublishing(mPVITSCycle->ProfileX(), PublicationPolicy::Once);
+      //   getObjectsManager()->startPublishing(mPVITSIntegral->ProfileX(), PublicationPolicy::Once);
+      // }
     }
 
     if (mDoK0s) {

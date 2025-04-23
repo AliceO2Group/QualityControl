@@ -35,7 +35,7 @@ Documents the available task in the module and their parameters.
  - `splitK0sMassPt=float` splitting point in pt to define low and high region by default off
  + K0Fitter options
 #### ITS-PV
- - `doPVITSQC=false` produce ITS vs PV plots
+ - `doPVITSQC=false` produce ITS vs PV plots (not implemented yet)
 
 ## ITS-TPC Matching Check
 ### Parameters
