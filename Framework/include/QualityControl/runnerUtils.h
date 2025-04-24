@@ -42,8 +42,8 @@ std::string getFirstCheckName(const std::string& configurationSource);
 bool hasChecks(const std::string& configSource);
 
 template <typename T>
-requires std::is_arithmetic_v<T>
-  T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
+  requires std::is_arithmetic_v<T>
+T computeNumericalActivityField(framework::ServiceRegistryRef services, const std::string& name, T fallbackNumber = 0)
 {
   T result = 0;
 
@@ -85,8 +85,6 @@ std::string templateILDiscardFile(std::string& originalFile, framework::InitCont
 uint64_t getCurrentTimestamp();
 
 void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters infologgerDiscardParameters, std::string facility, std::string detectorName = "");
-
-std::string translateBeamType(const std::string& pdpBeamType);
 
 } // namespace o2::quality_control::core
 

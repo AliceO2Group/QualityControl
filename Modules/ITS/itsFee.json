@@ -11,7 +11,7 @@
             "Activity": {
 		        "number": "42",        
 		        "type": "PHYSICS",     
-        		"beamType" : "PbPb",     "": "Beam type: `PROTON-PROTON`, `Pb-Pb`, `Pb-PROTON` "
+        		"beamType" : "PbPb",     "": "Beam type: `pp`, `PbPb`, `pPb` "
             },
             "monitoring": {
                 "url": "infologger:///debug?qc"
@@ -78,10 +78,10 @@
             		"default": {
               			"expectedROFperOrbit": "18"
             		},
-            		"PROTON-PROTON": {
+                "pp": {
               			"expectedROFperOrbit": "18"
             		},
-            		"Pb-Pb": {
+            		"PbPb": {
               			"expectedROFperOrbit": "6"
             		}
           	},

@@ -58,12 +58,12 @@
               "MB1inputName" : "MTVX",
               "MB2inputName" : "MVBA"
             },
-            "PROTON-PROTON": {
+            "pp": {
               "MBclassName" : "CMTVX-B-NOPF",
               "MB1inputName" : "MTVX",
               "MB2inputName" : "MTVA"
             },
-            "Pb-Pb": {
+            "PbPb": {
               "MBclassName" : "CMTCE-B-NOPF",
               "MB1inputName" : "MTSC",
               "MB2inputName" : "MTCE"

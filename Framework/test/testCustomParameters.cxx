@@ -138,23 +138,23 @@ TEST_CASE("test_at_optional")
 TEST_CASE("test_at_optional_activity")
 {
   Activity activity;
-  activity.mBeamType = "PROTON-PROTON";
+  activity.mBeamType = "pp";
   activity.mType = "PHYSICS";
 
   CustomParameters cp;
   cp.set("aaa", "AAA");
   cp.set("bbb", "BBB");
   cp.set("aaa", "asdf", "PHYSICS");
-  cp.set("aaa", "CCC", "PHYSICS", "PROTON-PROTON");
-  cp.set("aaa", "DDD", "PHYSICS", "Pb-Pb");
-  cp.set("aaa", "AAA", "TECHNICAL", "PROTON-PROTON");
+  cp.set("aaa", "CCC", "PHYSICS", "pp");
+  cp.set("aaa", "DDD", "PHYSICS", "PbPb");
+  cp.set("aaa", "AAA", "TECHNICAL", "pp");
 
   CHECK(cp.atOptional("aaa", activity).value() == "CCC");
   CHECK(cp.atOptional("abc", activity).has_value() == false);
   CHECK(cp.atOptional("abc", activity).value_or("bla") == "bla");
 
   Activity activity2;
-  activity.mBeamType = "Pb-Pb";
+  activity.mBeamType = "PbPb";
   activity.mType = "PHYSICS";
   CHECK(cp.atOptional("aaa", activity).value() == "DDD");
 }
@@ -214,21 +214,21 @@ TEST_CASE("test_default_if_not_found_at_optional")
   // prepare the CP
   cp.set("key", "valueDefaultDefault", "default", "default");
   cp.set("key", "valuePhysicsDefault", "PHYSICS", "default");
-  cp.set("key", "valuePhysicsPbPb", "PHYSICS", "Pb-Pb");
+  cp.set("key", "valuePhysicsPbPb", "PHYSICS", "PbPb");
   cp.set("key", "valueCosmicsDefault", "COSMICS", "default");
-  cp.set("key", "valueCosmicsDefault", "default", "PROTON-PROTON");
+  cp.set("key", "valueCosmicsDefault", "default", "pp");
 
   // check the data
   CHECK(cp.atOptional("key").value() == "valueDefaultDefault");
   CHECK(cp.atOptional("key", "PHYSICS").value() == "valuePhysicsDefault");
-  CHECK(cp.atOptional("key", "PHYSICS", "Pb-Pb").value() == "valuePhysicsPbPb");
+  CHECK(cp.atOptional("key", "PHYSICS", "PbPb").value() == "valuePhysicsPbPb");
   CHECK(cp.atOptional("key", "COSMICS", "default").value() == "valueCosmicsDefault");
-  CHECK(cp.atOptional("key", "default", "PROTON-PROTON").value() == "valueCosmicsDefault");
+  CHECK(cp.atOptional("key", "default", "pp").value() == "valueCosmicsDefault");
 
   // check when something is missing
-  CHECK(cp.atOptional("key", "PHYSICS", "PROTON-PROTON").value() == "valuePhysicsDefault");   // key is not defined for pp
-  CHECK(cp.atOptional("key", "TECHNICAL", "STRANGE").value() == "valueDefaultDefault");       // key is not defined for run nor beam
-  CHECK(cp.atOptional("key", "TECHNICAL", "PROTON-PROTON").value() == "valueCosmicsDefault"); // key is not defined for technical
+  CHECK(cp.atOptional("key", "PHYSICS", "pp").value() == "valuePhysicsDefault");        // key is not defined for pp
+  CHECK(cp.atOptional("key", "TECHNICAL", "STRANGE").value() == "valueDefaultDefault"); // key is not defined for run nor beam
+  CHECK(cp.atOptional("key", "TECHNICAL", "pp").value() == "valueCosmicsDefault");      // key is not defined for technical
 }
 
 TEST_CASE("test_default_if_not_found_at")
@@ -242,21 +242,21 @@ TEST_CASE("test_default_if_not_found_at")
   // prepare the CP
   cp.set("key", "valueDefaultDefault", "default", "default");
   cp.set("key", "valuePhysicsDefault", "PHYSICS", "default");
-  cp.set("key", "valuePhysicsPbPb", "PHYSICS", "Pb-Pb");
+  cp.set("key", "valuePhysicsPbPb", "PHYSICS", "PbPb");
   cp.set("key", "valueCosmicsDefault", "COSMICS", "default");
-  cp.set("key", "valueCosmicsDefault", "default", "PROTON-PROTON");
+  cp.set("key", "valueCosmicsDefault", "default", "pp");
 
   // check the data
   CHECK(cp.at("key") == "valueDefaultDefault");
   CHECK(cp.at("key", "PHYSICS") == "valuePhysicsDefault");
-  CHECK(cp.at("key", "PHYSICS", "Pb-Pb") == "valuePhysicsPbPb");
+  CHECK(cp.at("key", "PHYSICS", "PbPb") == "valuePhysicsPbPb");
   CHECK(cp.at("key", "COSMICS", "default") == "valueCosmicsDefault");
-  CHECK(cp.at("key", "default", "PROTON-PROTON") == "valueCosmicsDefault");
+  CHECK(cp.at("key", "default", "pp") == "valueCosmicsDefault");
 
   // check when something is missing
-  CHECK(cp.at("key", "PHYSICS", "PROTON-PROTON") == "valuePhysicsDefault");   // key is not defined for pp
-  CHECK(cp.at("key", "TECHNICAL", "STRANGE") == "valueDefaultDefault");       // key is not defined for run nor beam
-  CHECK(cp.at("key", "TECHNICAL", "PROTON-PROTON") == "valueCosmicsDefault"); // key is not defined for technical
+  CHECK(cp.at("key", "PHYSICS", "pp") == "valuePhysicsDefault");        // key is not defined for pp
+  CHECK(cp.at("key", "TECHNICAL", "STRANGE") == "valueDefaultDefault"); // key is not defined for run nor beam
+  CHECK(cp.at("key", "TECHNICAL", "pp") == "valueCosmicsDefault");      // key is not defined for technical
 }
 
 TEST_CASE("test_getAllDefaults")
