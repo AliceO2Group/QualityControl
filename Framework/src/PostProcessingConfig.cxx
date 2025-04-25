@@ -67,6 +67,7 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
       customParameters.set(key, value.get_value<std::string>());
     }
   }
+  validityFromLastTriggerOnly = ppTree.get<bool>("validityFromLastTriggerOnly", false);
 }
 
 } // namespace o2::quality_control::postprocessing

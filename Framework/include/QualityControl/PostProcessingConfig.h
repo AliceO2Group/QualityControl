@@ -43,6 +43,7 @@ struct PostProcessingConfig : public o2::quality_control::core::UserCodeConfig {
   core::Activity activity;
   bool matchAnyRunNumber = false;
   bool critical;
+  bool validityFromLastTriggerOnly = false;
 };
 
 } // namespace o2::quality_control::postprocessing
