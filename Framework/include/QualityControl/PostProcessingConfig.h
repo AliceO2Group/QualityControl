@@ -39,7 +39,7 @@ struct PostProcessingConfig : public o2::quality_control::core::UserCodeConfig {
   std::vector<std::string> updateTriggers = {};
   std::vector<std::string> stopTriggers = {};
   std::string kafkaBrokersUrl;
-  std::string kafkaTopic;
+  std::string kafkaTopicAliECSRun;
   core::Activity activity;
   bool matchAnyRunNumber = false;
   bool critical;
