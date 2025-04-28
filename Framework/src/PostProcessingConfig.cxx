@@ -34,13 +34,16 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
     matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false)),
     critical(true)
 {
-  moduleName = config.get<std::string>("qc.postprocessing." + id + ".moduleName");
-  className = config.get<std::string>("qc.postprocessing." + id + ".className");
-  detectorName = config.get<std::string>("qc.postprocessing." + id + ".detectorName", "MISC");
+  auto ppTree = config.get_child("qc.postprocessing." + id);
+
+  moduleName = ppTree.get<std::string>("moduleName");
+  className = ppTree.get<std::string>("className");
+  detectorName = ppTree.get<std::string>("detectorName", "MISC");
   ccdbUrl = config.get<std::string>("qc.config.conditionDB.url", "");
   consulUrl = config.get<std::string>("qc.config.consul.url", "");
+
   // if available, use the source repo as defined in the postprocessing task, otherwise the general QCDB
-  auto sourceRepo = config.get_child_optional("qc.postprocessing." + id + ".sourceRepo");
+  auto sourceRepo = ppTree.get_child_optional("sourceRepo");
   auto databasePath = sourceRepo ? "qc.postprocessing." + id + ".sourceRepo" : "qc.config.database";
   auto qcdbUrl = config.get<std::string>(databasePath + ".implementation") == "CCDB" ? config.get<std::string>(databasePath + ".host") : "";
   // build the config of the qcdb
@@ -50,16 +53,15 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   };
   repository = dbConfig;
 
-  for (const auto& initTrigger : config.get_child("qc.postprocessing." + id + ".initTrigger")) {
+  for (const auto& initTrigger : ppTree.get_child("initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }
-  for (const auto& updateTrigger : config.get_child("qc.postprocessing." + id + ".updateTrigger")) {
+  for (const auto& updateTrigger : ppTree.get_child("updateTrigger")) {
     updateTriggers.push_back(updateTrigger.second.get_value<std::string>());
   }
-  for (const auto& stopTrigger : config.get_child("qc.postprocessing." + id + ".stopTrigger")) {
+  for (const auto& stopTrigger : ppTree.get_child("stopTrigger")) {
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
   }
-  auto ppTree = config.get_child("qc.postprocessing." + id);
   if (ppTree.count("extendedTaskParameters")) {
     customParameters.populateCustomParameters(ppTree.get_child("extendedTaskParameters"));
   } else if (ppTree.count("taskParameters") > 0) {
