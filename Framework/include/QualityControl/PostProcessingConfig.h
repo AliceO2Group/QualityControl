@@ -42,7 +42,6 @@ struct PostProcessingConfig : public o2::quality_control::core::UserCodeConfig {
   std::string kafkaTopic;
   core::Activity activity;
   bool matchAnyRunNumber = false;
-  bool critical;
 };
 
 } // namespace o2::quality_control::postprocessing

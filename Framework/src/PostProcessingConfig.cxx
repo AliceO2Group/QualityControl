@@ -31,8 +31,7 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
              config.get<std::string>("qc.config.Activity.provenance", "qc"),
              { config.get<uint64_t>("qc.config.Activity.start", 0),
                config.get<uint64_t>("qc.config.Activity.end", -1) }),
-    matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false)),
-    critical(true)
+    matchAnyRunNumber(config.get<bool>("qc.config.postprocessing.matchAnyRunNumber", false))
 {
   auto ppTree = config.get_child("qc.postprocessing." + id);
 
