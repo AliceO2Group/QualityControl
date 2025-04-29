@@ -1594,7 +1594,6 @@ This is the global structure of the configuration in QC.
       
     }
   },
-  "dataSamplingPoliciesFile": "json:///path/to/data/sampling/config.json",
   "dataSamplingPolicies": [
 
   ]
@@ -1613,8 +1612,8 @@ There are six QC-related components:
 * "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
   run.
 
-The configuration file can also include a path to Data Sampling configuration ("dataSamplingPoliciesFile") or the
-list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Utilities/DataSampling) to find more information.
+The configuration file can also include a list of Data Sampling Policies.
+Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Utilities/DataSampling) to find more information.
 
 ### Common configuration
 
