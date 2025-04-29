@@ -184,9 +184,6 @@
       }
     }
   },
-  "dataSamplingPoliciesFile_comment": "In case that policies are stored in different file, specify its path below. When both dataSamplingPolicies and dataSamplingPoliciesFile are specified, the latter has higher priority",
-  "dataSamplingPoliciesFile": "json:///home/genghiskhan/alice/QualityControl/dataSamplingConfig.json",
-  "dataSamplingPolicies_comment": "this is ignored when dataSamplingPoliciesFile is specified",
   "dataSamplingPolicies": [
     {
       "id": "ex1",
