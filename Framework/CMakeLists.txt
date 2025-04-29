@@ -116,7 +116,6 @@ add_library(O2QualityControl
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
   src/QualitiesToFlagCollectionConverter.cxx
-  src/Calculators.cxx
   src/DataSourceSpec.cxx
   src/RootFileSink.cxx
   src/RootFileSource.cxx
@@ -201,8 +200,6 @@ set(EXE_SRCS
   src/runRepositoryBenchmark.cxx
   src/runPostProcessing.cxx
   src/runPostProcessingOCC.cxx
-  src/runLocationCalculator.cxx
-  src/runMergerCalculator.cxx
   src/runUploadRootObjects.cxx
   src/runFileMerger.cxx
   src/runMetadataUpdater.cxx
@@ -219,8 +216,6 @@ set(EXE_NAMES
   o2-qc-repository-benchmark
   o2-qc-run-postprocessing
   o2-qc-run-postprocessing-occ
-  o2-qc-location-calculator
-  o2-qc-merger-calculator
   o2-qc-upload-root-objects
   o2-qc-file-merger
   o2-qc-metadata-updater
@@ -239,8 +234,6 @@ set(EXE_OLD_NAMES
   repositoryBenchmark
   qcRunPostProcessing
   qcRunPostProcessingOCC
-  o2-qc-location-calculator
-  o2-qc-merger-calculator
   o2-qc-upload-root-objects
   o2-qc-file-merger
   o2-qc-metadata-updater
