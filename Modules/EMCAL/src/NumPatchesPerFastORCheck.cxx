@@ -177,8 +177,8 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
         for (std::vector<FastORNoiseLevel>::iterator itFinal = finalBadFastORs.begin(); itFinal != finalBadFastORs.end(); itFinal++) {
           auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(itFinal->mFastORID);
           auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(itFinal->mFastORID);
-          FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
-          std::string errorMessage = "TRU " + std::to_string(truID) + " has a noisy FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
+          FastORNoiseInfo obj{ itFinal->mCounts, static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+          std::string errorMessage = "TRU " + std::to_string(truID) + " has a noisy FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU. (" + std::to_string(itFinal->mCounts) + "counts)";
           messagebuilder << errorMessage << std::endl;
           if (mLogLevelIL > 1) {
             ILOG(Error, Support) << errorMessage << ENDM;
@@ -220,8 +220,8 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
         for (std::vector<FastORNoiseLevel>::iterator itFinal = finalMedFastORs.begin(); itFinal != finalMedFastORs.end(); itFinal++) {
           auto [truID, fastorTRU] = mTriggerMapping->getTRUFromAbsFastORIndex(itFinal->mFastORID);
           auto [truID1, posEta, posPhi] = mTriggerMapping->getPositionInTRUFromAbsFastORIndex(itFinal->mFastORID);
-          FastORNoiseInfo obj{ static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
-          std::string errorMessage = "TRU " + std::to_string(truID) + " has a high rate in FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU.";
+          FastORNoiseInfo obj{ itFinal->mCounts, static_cast<int>(truID), static_cast<int>(fastorTRU), static_cast<int>(posPhi), static_cast<int>(posEta) };
+          std::string errorMessage = "TRU " + std::to_string(truID) + " has a high rate in FastOR at position " + std::to_string(fastorTRU) + " (eta " + std::to_string(posEta) + ", phi " + std::to_string(posPhi) + ") in TRU. (" + std::to_string(itFinal->mCounts) + "counts)";
           messagebuilder << errorMessage << std::endl;
           if (mLogLevelIL > 2) {
             ILOG(Warning, Support) << errorMessage << ENDM;
@@ -262,7 +262,7 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
       int iErr = 0;
       for (const auto& noiseinfo : mNoisyTRUPositions) {
         stringstream errorMessageIndiv;
-        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " is noisy." << std::endl;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " is noisy. (" << noiseinfo.mCounts << " counts)" << std::endl;
         msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -277,7 +277,7 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
       }
       for (const auto& noiseinfo : mHighCountTRUPositions) {
         stringstream errorMessageIndiv;
-        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts." << std::endl;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts. (" << noiseinfo.mCounts << " counts)" << std::endl;
         msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
@@ -301,7 +301,7 @@ void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
       int iErr = 0;
       for (const auto& noiseinfo : mHighCountTRUPositions) {
         stringstream errorMessageIndiv;
-        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts." << std::endl;
+        errorMessageIndiv << "Position " << noiseinfo.mFastORIndex << " (eta " << noiseinfo.mPosEta << ", phi " << noiseinfo.mPosPhi << ") in TRU " << noiseinfo.mTRUIndex << " has high counts. (" << noiseinfo.mCounts << " counts)" << std::endl;
         msg = new TLatex(0.15, 0.8 - iErr / 25., errorMessageIndiv.str().c_str());
         msg->SetNDC();
         msg->SetTextSize(16);
