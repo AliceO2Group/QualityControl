@@ -4,7 +4,7 @@
 # Detectors
 /Modules/TOF/      @njacazio
 /Modules/PID/      @njacazio
-/Modules/EMCAL/    @mfasDa @jokonig @Barthelemy @knopers8
+/Modules/EMCAL/    @jokonig @Barthelemy @knopers8
 /Modules/TPC/      @wiechula
 /Modules/MFT/      @diana0x0f
 /Modules/ITS/      @iravasen @IsakovAD
