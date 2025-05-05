@@ -1594,7 +1594,6 @@ This is the global structure of the configuration in QC.
       
     }
   },
-  "dataSamplingPoliciesFile": "json:///path/to/data/sampling/config.json",
   "dataSamplingPolicies": [
 
   ]
@@ -1613,8 +1612,8 @@ There are six QC-related components:
 * "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
   run.
 
-The configuration file can also include a path to Data Sampling configuration ("dataSamplingPoliciesFile") or the
-list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Utilities/DataSampling) to find more information.
+The configuration file can also include a list of Data Sampling Policies.
+Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Utilities/DataSampling) to find more information.
 
 ### Common configuration
 
@@ -1879,14 +1878,20 @@ declared inside in the "postprocessing" path. Please also refer to [the Post-pro
         "moduleName": "QcSkeleton",           "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",                "": "3-letter code of the detector.",
         "initTrigger": [                      "", "List of initialization triggers",
-          "startofrun",                       "", "An example of an init trigger"
+          "userorcontrol",                    "", "An example of an init trigger"
         ],
         "updateTrigger": [                    "", "List of update triggers",
           "10min",                            "", "An example of an update trigger"
         ],
         "stopTrigger": [                      "", "List of stop triggers",
-          "endofrun",                         "", "An example of a stop trigger"
-        ]
+          "userorcontrol",                    "", "An example of a stop trigger"
+        ],
+        "validityFromLastTriggerOnly": "false",  "": "If true, the output objects will use validity of the last trigger,",
+                                                 "": "otherwise a union of all triggers' validity is used by default.",
+        "sourceRepo": {                          "": "It allows to specify a different repository for the input objects.",
+          "implementation": "CCDB",
+          "host": "another-test.cern.ch:8080"
+        }
       }
     }
   }

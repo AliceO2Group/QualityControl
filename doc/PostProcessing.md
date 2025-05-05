@@ -164,6 +164,7 @@ Each of the three methods can be invoked by one or more triggers. Below are list
    pass and run.
 * `"once"` - Once - triggers only first time it is checked
 * `"always"` - Always - triggers each time it is checked
+* `"userorcontrol"` - triggers when upon corresponding START and STOP state transitions. This is the recommended trigger for `initTrigger` and `stopTrigger`.
 
 #### Using different databases
 
@@ -187,6 +188,23 @@ The destination repository is always the global one defined in the global config
       }
       ...
     }
+```
+
+#### Output object validity
+
+By default, the objects published by post-processing tasks use narrowest validity which contains all past triggers (except of `userorcontrol`).
+In other words, a trend's validity covers all of the input objects' validity.
+
+If a post-processing task is not used for trending, but e.g. to decorate or correlate some moving window objects while preserving their validity, one can set the `validityFromLastTriggerOnly` parameter:
+
+```
+    "postprocessing": {
+      "MyPostProcessingTaskID": {
+        ...
+        "validityFromLastTriggerOnly": "true",       "": "false by default"
+        ...
+      }
+      ...
 ```
 
 ### Running it
