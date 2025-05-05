@@ -251,6 +251,10 @@ void PostProcessingRunner::reset()
 
 void PostProcessingRunner::updateValidity(const Trigger& trigger)
 {
+  if (mTaskConfig.validityFromLastTriggerOnly) {
+    mActivity.mValidity = gInvalidValidityInterval;
+  }
+
   if (trigger == TriggerType::UserOrControl) {
     // we ignore it, because it would not make sense to use current time in tracking objects from the past,
     // especially in asynchronous postprocessing
