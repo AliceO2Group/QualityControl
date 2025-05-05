@@ -42,6 +42,7 @@ struct PostProcessingConfig : public o2::quality_control::core::UserCodeConfig {
   std::string kafkaTopicAliECSRun;
   core::Activity activity;
   bool matchAnyRunNumber = false;
+  bool validityFromLastTriggerOnly = false;
 };
 
 } // namespace o2::quality_control::postprocessing
