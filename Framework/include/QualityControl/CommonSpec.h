@@ -44,6 +44,8 @@ struct CommonSpec {
   LogDiscardParameters infologgerDiscardParameters;
   double postprocessingPeriod = 30.0;
   std::string bookkeepingUrl;
+  std::string kafkaBrokersUrl;
+  std::string kafkaTopicAliECSRun = "aliecs.run";
 };
 
 } // namespace o2::quality_control::core
