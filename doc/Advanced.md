@@ -1669,6 +1669,10 @@ should not be present in real configuration files.
       "bookkeeping": {                    "": "Configuration of the bookkeeping (optional)",
         "url": "localhost:4001",          "": "Url of the bookkeeping API (port is usually different from web interface)"
       },
+      "kafka": {
+        "url": "kafka-broker:123",        "": "url of the kafka broker",
+        "topicAliecsRun":"aliecs.run",    "": "the topic where AliECS publishes Run Events, 'aliecs.run' by default"
+      },
       "postprocessing": {                 "": "Configuration parameters for post-processing",
         "periodSeconds": 10.0,            "": "Sets the interval of checking all the triggers. One can put a very small value",
                                           "": "for async processing, but use 10 or more seconds for synchronous operations",

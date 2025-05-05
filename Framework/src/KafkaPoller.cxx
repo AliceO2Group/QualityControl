@@ -62,7 +62,7 @@ void fillActivityWithoutTimestamp(const events::Event& event, Activity& activity
 void start_of_run::fillActivity(const events::Event& event, Activity& activity)
 {
   fillActivityWithoutTimestamp(event, activity);
-  activity.mValidity.setMin(event.timestamp());
+  activity.mValidity = ValidityInterval{ uint64_t(event.timestamp()), std::numeric_limits<validity_time_t>::max() };
 }
 
 bool start_of_run::isValid(const events::Event& event, const std::string& environmentID, int runNumber)
@@ -87,7 +87,7 @@ bool start_of_run::isValid(const events::Event& event, const std::string& enviro
 void end_of_run::fillActivity(const events::Event& event, Activity& activity)
 {
   fillActivityWithoutTimestamp(event, activity);
-  activity.mValidity.setMax(event.timestamp());
+  activity.mValidity = ValidityInterval{ std::numeric_limits<validity_time_t>::min(), uint64_t(event.timestamp()) };
 }
 
 bool end_of_run::isValid(const events::Event& event, const std::string& environmentID, int runNumber)

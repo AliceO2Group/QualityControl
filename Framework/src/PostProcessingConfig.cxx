@@ -40,6 +40,8 @@ PostProcessingConfig::PostProcessingConfig(const std::string& id, const boost::p
   detectorName = ppTree.get<std::string>("detectorName", "MISC");
   ccdbUrl = config.get<std::string>("qc.config.conditionDB.url", "");
   consulUrl = config.get<std::string>("qc.config.consul.url", "");
+  kafkaBrokersUrl = config.get<std::string>("qc.config.kafka.url", "");
+  kafkaTopicAliECSRun = config.get<std::string>("qc.config.kafka.topicAliecsRun", "aliecs.run");
 
   // if available, use the source repo as defined in the postprocessing task, otherwise the general QCDB
   auto sourceRepo = ppTree.get_child_optional("sourceRepo");

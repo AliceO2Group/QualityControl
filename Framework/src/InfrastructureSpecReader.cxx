@@ -81,6 +81,8 @@ CommonSpec InfrastructureSpecReader::readSpecEntry<CommonSpec>(const std::string
   };
   spec.postprocessingPeriod = commonTree.get<double>("postprocessing.periodSeconds", spec.postprocessingPeriod);
   spec.bookkeepingUrl = commonTree.get<std::string>("bookkeeping.url", spec.bookkeepingUrl);
+  spec.kafkaBrokersUrl = commonTree.get<std::string>("kafka.url", spec.kafkaBrokersUrl);
+  spec.kafkaTopicAliECSRun = commonTree.get<std::string>("kafka.topicAliecsRun", spec.kafkaTopicAliECSRun);
 
   return spec;
 }
