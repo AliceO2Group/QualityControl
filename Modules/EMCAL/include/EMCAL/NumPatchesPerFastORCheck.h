@@ -21,6 +21,7 @@
 #include "EMCALBase/TriggerMappingV2.h"
 #include "EMCALBase/Geometry.h"
 #include <set>
+#include <functional>
 
 namespace o2::quality_control_modules::emcal
 {
@@ -43,6 +44,7 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
   std::string getAcceptedType() override;
 
   struct FastORNoiseInfo {
+    int mCounts;
     int mTRUIndex;
     int mFastORIndex;
     int mPosPhi;
@@ -50,15 +52,25 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
 
     bool operator==(const FastORNoiseInfo& other) const
     {
-      return mTRUIndex == other.mTRUIndex && mFastORIndex == other.mFastORIndex;
+      return mCounts == other.mCounts && mFastORIndex == other.mFastORIndex;
     }
     bool operator<(const FastORNoiseInfo& other) const
     {
-      if (mTRUIndex < other.mTRUIndex) {
+      if (mCounts < other.mCounts) {
         return true;
       }
       if (mTRUIndex == other.mTRUIndex) {
         return mFastORIndex < other.mFastORIndex;
+      }
+      return false;
+    }
+    bool operator>(const FastORNoiseInfo& other) const
+    {
+      if (mCounts > other.mCounts) {
+        return true;
+      }
+      if (mTRUIndex == other.mTRUIndex) {
+        return mFastORIndex > other.mFastORIndex;
       }
       return false;
     }
@@ -90,14 +102,14 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
    * threshold cuts                               *
    ************************************************/
 
-  float mBadSigmaNumPatchesPerFastOR = 5.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean bad check
+  float mBadSigmaNumPatchesPerFastOR = 5.;   ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean bad check
   float mMedSigmaNumPatchesPerFastOR = 999.; ///< Number of sigmas used in the Number of Patches Per FastOR fastORs outside of mean medium check
-  int mLogLevelIL = 0;                     ///< Log level on InfoLogger
+  int mLogLevelIL = 0;                       ///< Log level on InfoLogger
 
   o2::emcal::Geometry* mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);                                  ///< Geometry for mapping position between SM and full EMCAL
   std::unique_ptr<o2::emcal::TriggerMappingV2> mTriggerMapping = std::make_unique<o2::emcal::TriggerMappingV2>(mGeometry); ///!<! Trigger mapping
-  std::set<FastORNoiseInfo> mNoisyTRUPositions;                                                                            ///< Positions of all found noisy TRUs (bad quality)
-  std::set<FastORNoiseInfo> mHighCountTRUPositions;                                                                        ///< Positions of all FastORs with high count rate (medium Quality)
+  std::set<FastORNoiseInfo, std::greater<FastORNoiseInfo>> mNoisyTRUPositions;                                             ///< Positions of all found noisy TRUs (bad quality)
+  std::set<FastORNoiseInfo, std::greater<FastORNoiseInfo>> mHighCountTRUPositions;                                         ///< Positions of all FastORs with high count rate (medium Quality)
 
   ClassDefOverride(NumPatchesPerFastORCheck, 1);
 };
