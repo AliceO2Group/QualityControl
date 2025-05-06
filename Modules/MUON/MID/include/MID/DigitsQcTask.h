@@ -69,6 +69,10 @@ class DigitsQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mNbLBHighRate{ nullptr };
   std::unique_ptr<TH1F> mLBHighRate{ nullptr };
 
+  std::unique_ptr<TH1F> mGBTRate{ nullptr };
+  std::unique_ptr<TH1F> mCRURate{ nullptr };
+  std::unique_ptr<TH1F> mEPRate{ nullptr };
+
   std::array<std::unique_ptr<TH1F>, 5> mMultHitB{};
   std::array<std::unique_ptr<TH1F>, 5> mMultHitNB{};
   std::unique_ptr<TH1F> mMeanMultiHits;
@@ -82,6 +86,8 @@ class DigitsQcTask final : public TaskInterface
   std::array<std::unique_ptr<TH2F>, 4> mNBendHitsMap{};
 
   std::unique_ptr<TH1F> mDigitBCCounts{ nullptr };
+
+  o2::mid::Mapping mMapping;
 };
 
 } // namespace o2::quality_control_modules::mid
