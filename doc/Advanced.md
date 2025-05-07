@@ -2117,6 +2117,67 @@ The values are relative to the canvas size, so in the example above the label wi
 
 In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
 
+### Readout chain (optional)
+
+In this second example, we are going to use the Readout as our data source.
+This example assumes that Readout has been compiled beforehand (`aliBuild build Readout --defaults o2`).
+
+![alt text](images/readout-schema.png)
+
+This workflow is a bit different from the basic one. The _Readout_ is not a DPL, nor a FairMQ, device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Data Sampling_, which then injects data to the task. This is handled in the _Readout_ as long as you enable the corresponding configuration flag.
+
+The first thing is to load the environment for the readout in a new terminal: `alienv enter Readout/latest`.
+
+Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout-qc.cfg` and make sure that the following properties are correct:
+
+```
+# Enable the data sampling
+[consumer-fmq-qc]
+consumerType=FairMQChannel
+enableRawFormat=1
+fmq-name=readout-qc
+fmq-address=ipc:///tmp/readout-pipe-1
+fmq-type=pub
+fmq-transport=zeromq
+unmanagedMemorySize=2G
+memoryPoolNumberOfPages=500
+memoryPoolPageSize=1M
+enabled=1
+(...)
+```
+
+Start Readout in a terminal:
+```
+o2-readout-exe file://$READOUT_ROOT/etc/readout-qc.cfg
+```
+
+Start in another terminal the proxy, DataSampling and QC workflows:
+```
+o2-qc-run-readout | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
+```
+
+The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
+
+#### Getting real data from readout
+
+See [these instructions for readout](ModulesDevelopment.md#readout) and [these for O2 utilities](ModulesDevelopment.md#dpl-workflow).
+
+#### Readout data format as received by the Task
+
+The header is an O2 header populated with data from the header built by the Readout.
+The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
+
+__Configuration file__
+
+The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
+To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config` when launch `o2-qc`.
+
+To change the fraction of the data being monitored, change the option `fraction`.
+
+```
+"fraction": "0.01",
+```
+
 ---
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
