@@ -5,13 +5,18 @@ Configuration reference
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer QualityControl/doc/Configuration.md -->
 <!--ts-->
-   * [Global configuration structure](./QualityControl/doc/Configuration.md#global-configuration-structure)
-   * [Common configuration](./QualityControl/doc/Configuration.md#common-configuration)
-   * [QC Tasks configuration](./QualityControl/doc/Configuration.md#qc-tasks-configuration)
-   * [QC Checks configuration](./QualityControl/doc/Configuration.md#qc-checks-configuration)
-   * [QC Aggregators configuration](./QualityControl/doc/Configuration.md#qc-aggregators-configuration)
-   * [QC Post-processing configuration](./QualityControl/doc/Configuration.md#qc-post-processing-configuration)
-   * [External tasks configuration](./QualityControl/doc/Configuration.md#external-tasks-configuration)
+   * [Configuration reference](#configuration-reference)
+   * [Global configuration structure](#global-configuration-structure)
+   * [Common configuration](#common-configuration)
+   * [QC Tasks configuration](#qc-tasks-configuration)
+   * [QC Checks configuration](#qc-checks-configuration)
+   * [QC Aggregators configuration](#qc-aggregators-configuration)
+   * [QC Post-processing configuration](#qc-post-processing-configuration)
+   * [External tasks configuration](#external-tasks-configuration)
+   * [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one)
+   * [Templating config files](#templating-config-files)
+   * [Definition and access of simple user-defined task configuration ("taskParameters")](#definition-and-access-of-simple-user-defined-task-configuration-taskparameters)
+   * [Definition and access of user-defined configuration ("extendedTaskParameters")](#definition-and-access-of-user-defined-configuration-extendedtaskparameters)
 <!--te-->
 
 
@@ -369,6 +374,348 @@ Below the external task configuration structure is described. Note that more tha
   }
 }
 ```
+
+## Merging multiple configuration files into one
+
+To merge multiple QC configuration files into one, one can use `jq` in the following way:
+
+```
+jq -n 'reduce inputs as $s (input; .qc.tasks += ($s.qc.tasks) | .qc.checks += ($s.qc.checks)  | .qc.externalTasks += ($s.qc.externalTasks) | .qc.postprocessing += ($s.qc.postprocessing)| .dataSamplingPolicies += ($s.dataSamplingPolicies))' $QC_JSON_GLOBAL $JSON_FILES > $MERGED_JSON_FILENAME
+```
+
+However, one should pay attention to avoid duplicate task definition keys (e.g. having RawTask twice, each for a different detector), otherwise only one of them would find its way to a merged file.
+In such case, one can add the `taskName` parameter in the body of a task configuration structure to use the preferred name and change the root key to a unique id, which shall be used only for the purpose of navigating a configuration file.
+If `taskName` does not exist, it is taken from the root key value.
+Please remember to update also the references to the task in other actors which refer it (e.g. in Check's data source).
+
+These two tasks will **not** be merged correctly:
+
+```json
+      "RawTask": {
+        "className": "o2::quality_control_modules::abc::RawTask",
+        "moduleName": "QcA",
+        "detectorName": "A",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-a"
+        }
+      }
+```
+
+```json
+      "RawTask": {
+        "className": "o2::quality_control_modules::xyz::RawTask",
+        "moduleName": "QcB",
+        "detectorName": "B",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-b"
+        }
+      }
+```
+
+The following tasks will be merged correctly:
+
+```json
+      "RawTaskA": {
+        "taskName": "RawTask",
+        "className": "o2::quality_control_modules::abc::RawTask",
+        "moduleName": "QcA",
+        "detectorName": "A",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-a"
+        }
+      }
+```
+
+```json
+      "RawTaskB": {
+        "taskName": "RawTask"
+        "className": "o2::quality_control_modules::xyz::RawTask",
+        "moduleName": "QcB",
+        "detectorName": "B",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-b"
+        }
+      }
+```
+
+The same approach can be applied to other actors in the QC framework, like Checks (`checkName`), Aggregators(`aggregatorName`), External Tasks (`taskName`) and Postprocessing Tasks (`taskName`).
+
+## Templating config files
+
+> [!WARNING]  
+> Templating only works when using aliECS, i.e. in production and staging.
+
+The templating is provided by a template engine called `jinja`. You can use any of its feature. A couple are described below and should satisfy the vast majority of the needs.
+
+### Preparation
+
+> [!IMPORTANT]
+> Workflows have already been migrated to apricot. This should not be needed anymore.
+
+To template a config file, modify the corresponding workflow in `ControlWorkflows`. This is needed because we won't use directly `Consul`  but instead go through `apricot` to template it.
+
+1. Replace `consul-json` by `apricot`
+2. Replace `consul_endpoint` by `apricot_endpoint`
+3. Make sure to have single quotes around the URI
+
+Example:
+
+```
+o2-qc --config consul-json://{{ consul_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching --remote -b
+```
+
+becomes
+
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching' --remote -b
+```
+
+Make sure that you are able to run with the new workflow before actually templating.
+
+### Include a config file
+
+To include a config file (e.g. named `mch_digits`) add this line :
+
+```
+{% include "MCH/mch_digits" %}
+```
+
+The content of the file `mch_digits` is then copied into the config file. Thus make sure that you include all the commas and stuff.
+
+#### Configuration files organisation
+
+Once you start including files, you must put the included files inside the corresponding detector subfolder (that have already been created for you).
+
+Common config files includes are provided in the `COMMON` subfolder.
+
+### Conditionals
+
+The `if` looks like
+
+```
+{% if [condition] %} …  {% endif %}
+```
+
+The condition probably requires some external info, such as the run type or a detectors list. Thus you must pass the info in the ControlWorkflows.
+
+It could look like this
+
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/tpc-pulser-calib-qcmn?run_type={{ run_type }}' ...
+```
+
+or
+
+```
+o2-qc --config 'apricot://{{ apricot_endpoint }}/o2/components/qc/ANY/any/mch-qcmn-epn-full-track-matching?detectors={{ detectors }}' ...
+```
+
+Then use it like this:
+
+```
+{% if run_type == "PHYSICS" %}
+...
+{% endif %}
+```
+
+or like this respectively:
+
+```
+{% if "mch" in detectors|lower %}
+...
+{% endif %}
+```
+
+### Test and debug
+
+To see how a config file will look like once templated, simply open a browser at this address: `{{apricot_endpoint}}/components/qc/ANY/any/tpc-pulser-calib-qcmn?process=true`
+Replace `{{apricot_endpoint}}` by the value you can find in Consul under `o2/runtime/aliecs/vars/apricot_endpoint` (it is different on staging and prod).
+_Note that there is no `o2` in the path!!!_
+
+### Example
+
+We are going to create in staging a small example to demonstrate the above.
+First create 2 files if they don't exist yet:
+
+**o2/components/qc/ANY/any/templating_demo**
+
+```
+{
+  "qc": {
+    "config": {% include "TST/templating_included" %}
+    {% if run_type == "PHYSICS" %} ,"aggregators": "included"  {% endif %}
+  }
+}
+```
+
+Here we simply include 1 file from a subfolder and add a piece if a certain condition is successful.
+
+**o2/components/qc/ANY/any/TST/templating_included**
+
+```
+{
+  bookkeeping": {
+    "url": "alio2-cr1-hv-web01.cern.ch:4001"
+  }
+}
+```
+
+And now you can try it out:
+
+```
+http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true
+```
+
+--> the file is included inside the other.
+
+```
+[http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true](http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?process=true&run_type=PHYSICS)
+```
+
+--> the file is included and the condition is true thus we have an extra line.
+
+## Definition and access of simple user-defined task configuration ("taskParameters")
+
+The new, extended, way of defining such parameters, not only in Tasks but also in Checks, Aggregators and PP tasks,
+is described in the next section.
+
+A task can access custom parameters declared in the configuration file at `qc.tasks.<task_id>.taskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The syntax is
+
+```json
+    "tasks": {
+      "QcTask": {
+        "taskParameters": {
+          "myOwnKey1": "myOwnValue1"
+        },
+```
+
+It is accessed with : `mCustomParameters["myOwnKey"]`.
+
+## Definition and access of user-defined configuration ("extendedTaskParameters")
+
+User code, whether it is a Task, a Check, an Aggregator or a PostProcessing task, can access custom parameters declared in the configuration file.
+They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
+
+The following table gives the path in the config file and the name of the configuration parameter for the various types of user code:
+
+| User code      | Config File item                                       |
+|----------------|--------------------------------------------------------|
+| Task           | `qc.tasks.<task_id>.extendedTaskParameters`            |
+| Check          | `qc.checks.<check_id>.extendedCheckParameters`         |
+| Aggregator     | `qc.aggregators.<agg_id>.extendedAggregatorParameters` |
+| PostProcessing | `qc.postprocessing.<pp_id>.extendedTaskParameters`     |
+
+The new syntax is
+
+```json
+    "tasks": {
+      "QcTask": {
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "myOwnKey1": "myOwnValue1",
+              "myOwnKey2": "myOwnValue2",
+              "myOwnKey3": "myOwnValue3"
+            }
+          },
+          "PHYSICS": {
+            "default": {
+              "myOwnKey1": "myOwnValue1b",
+              "myOwnKey2": "myOwnValue2b"
+            },
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            },
+            "PbPb": {
+              "myOwnKey1": "myOwnValue1d"
+            }
+          },
+          "COSMICS": {
+            "myOwnKey1": "myOwnValue1e",
+            "myOwnKey2": "myOwnValue2e"
+          }
+        },
+```
+
+It allows to have variations of the parameters depending on the run and beam types. The proper run types can be found here: [ECSDataAdapters.h](https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Parameters/include/DataFormatsParameters/ECSDataAdapters.h#L54). The `default` can be used
+to ignore the run or the beam type.
+The beam type comes from the parameter `pdp_beam_type` set by ECS and can be one of the following: `pp`, `PbPb`, `pPb`, `pO`, `OO`, `NeNe`, `cosmic`, `technical`.
+See `[readout-dataflow](https://github.com/AliceO2Group/ControlWorkflows/blob/master/workflows/readout-dataflow.yaml)` to verify the possible values.
+
+The values can be accessed in various ways described in the following sub-sections.
+
+### Access optional values with or without activity
+
+The value for the key, runType and beamType is returned if found, or an empty value otherwise.
+However, before returning an empty value we try to substitute the runType and the beamType with "default".
+
+```c++
+// returns an Optional<string> if it finds the key `myOwnKey` for the runType and beamType of the provided activity, 
+// or if it can find the key with the runType or beamType substituted with "default". 
+auto param = mCustomParameters.atOptional("myOwnKey1", activity); // activity is "PHYSICS", "PbPb" , returns "myOwnValue1d"
+// same but passing directly the run and beam types
+auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS", "PbPb"); // returns "myOwnValue1d"
+// or with only the run type
+auto param = mCustomParameters.atOptional("myOwnKey1", "PHYSICS"); // returns "myOwnValue1b"
+```
+
+### Access values directly specifying the run and beam type or an activity
+
+The value for the key, runType and beamType is returned if found, or an exception is thrown otherwise..
+However, before throwing we try to substitute the runType and the beamType with "default".
+
+```c++
+mCustomParameters["myOwnKey"]; // considering that run and beam type are `default` --> returns `myOwnValue`
+mCustomParameters.at("myOwnKey"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default"); // returns `myOwnValue`
+mCustomParameters.at("myOwnKey", "default", "default"); // returns `myOwnValue`
+
+mCustomParameters.at("myOwnKey1", "PHYSICS", "pp"); // returns `myOwnValue1c`
+mCustomParameters.at("myOwnKey1", "PHYSICS", "PbPb"); // returns `myOwnValue1d`
+mCustomParameters.at("myOwnKey2", "COSMICS"); // returns `myOwnValue2e`
+
+mCustomParameters.at("myOwnKey1", activity); // result will depend on activity
+```
+
+### Access values and return default if not found
+
+The correct way of accessing a parameter and to default to a value if it is not there, is the following:
+
+```c++
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "1" /*default value*/, "physics", "pp");
+  int casted = std::stoi(param);
+
+  // alternatively
+  std::string param = mCustomParameters.atOrDefaultValue("myOwnKey1", "1" /*default value*/, activity); // see below how to get the activity
+```
+
+### Find a value
+
+Finally the way to search for a value and only act if it is there is the following:
+
+```c++
+  if (auto param2 = mCustomParameters.find("myOwnKey1", "physics", "pp"); param2 != cp.end()) {
+    int casted = std::stoi(param);
+  }
+```
+
+### Retrieve the activity in the modules
+
+In a task, the `activity` is provided in `startOfActivity`.
+
+In a Check, it is returned by `getActivity()`.
+
+In an Aggregator, it is returned by `getActivity()`.
+
+In a postprocessing task, it is available in the objects manager: `getObjectsManager()->getActivity()`
+
+
 ---
 
-[← Go back to Advanced](Advanced.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
+[← Go back to Framework](Framework.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
