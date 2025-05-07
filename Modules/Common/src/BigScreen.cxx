@@ -62,7 +62,7 @@ void BigScreen::initialize(quality_control::postprocessing::Trigger t, framework
   int backgroundColor = getFromExtendedConfig<int>(t.activity, mCustomParameters, "backgroundColor", 0);
 
   mMaxObjectTimeShift = getFromExtendedConfig<int>(t.activity, mCustomParameters, "maxObjectTimeShift", mMaxObjectTimeShift);
-  mIgnoreActivity = getFromExtendedConfig<bool>(t.activity, mCustomParameters, "maxObjectTimeShift", mIgnoreActivity);
+  mIgnoreActivity = getFromExtendedConfig<bool>(t.activity, mCustomParameters, "ignoreActivity", mIgnoreActivity);
 
   auto labels = o2::utils::Str::tokenize(getFromExtendedConfig<std::string>(t.activity, mCustomParameters, "labels"), ',', false, false);
   if (labels.size() > (nRows * nCols)) {
