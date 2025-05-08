@@ -17,7 +17,6 @@ For a general overview of our (O2) software, organization and processes, please 
         * [Environment loading](doc/QuickStart.md#environment-loading)
     * [Execution](doc/QuickStart.md#execution)
         * [Basic workflow](doc/QuickStart.md#basic-workflow)
-        * [Readout chain (optional)](doc/QuickStart.md#readout-chain-optional)
         * [Post-processing example](doc/QuickStart.md#post-processing-example)
 * [Modules development](doc/ModulesDevelopment.md)
     * [Context](doc/ModulesDevelopment.md#context)

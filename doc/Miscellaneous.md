@@ -10,15 +10,15 @@ Miscellaneous
    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
    * [Canvas options](#canvas-options)
    * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
-   * [Data Sampling monitoring](#data-sampling-monitoring)
-   * [Monitoring metrics](#monitoring-metrics)
-   * [Common check IncreasingEntries](#common-check-increasingentries)
-   * [Common check TrendCheck](#common-check-trendcheck)
-         * [Full configuration example](#full-configuration-example)
-   * [Update the shmem segment size of a detector](#update-the-shmem-segment-size-of-a-detector)
-      * [Readout chain (optional)](#readout-chain-optional)
-         * [Getting real data from readout](#getting-real-data-from-readout)
-         * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
+* [Data Sampling monitoring](#data-sampling-monitoring)
+* [Monitoring metrics](#monitoring-metrics)
+* [Common check IncreasingEntries](#common-check-increasingentries)
+* [Common check TrendCheck](#common-check-trendcheck)
+      * [Full configuration example](#full-configuration-example)
+* [Update the shmem segment size of a detector](#update-the-shmem-segment-size-of-a-detector)
+   * [Readout chain (optional)](#readout-chain-optional)
+      * [Getting real data from readout](#getting-real-data-from-readout)
+      * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
 <!--te-->
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
@@ -360,4 +360,4 @@ To change the fraction of the data being monitored, change the option `fraction`
 
 ---
 
-[← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Configuration →](Configuration.md)
+[← Go back to FLP Suite](FLPsuite.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to FAQ →](FAQ.md)

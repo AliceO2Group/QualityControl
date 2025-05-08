@@ -147,7 +147,6 @@ In production at P2 and in staging, some common items are defined globally in th
 * consul
 * conditionDB
 * bookkeeping
-*
 
 It is mandatory to use them by including the file:
 
@@ -578,7 +577,9 @@ http://alio2-cr1-hv-mvs00.cern.ch:32188/components/qc/ANY/any/templating_demo?pr
 
 --> the file is included and the condition is true thus we have an extra line.
 
-## Definition and access of simple user-defined task configuration ("taskParameters")
+## Definition and access of user-defined task configuration
+
+###  Simple and limited approach ("taskParameters")
 
 The new, extended, way of defining such parameters, not only in Tasks but also in Checks, Aggregators and PP tasks,
 is described in the next section.
@@ -597,7 +598,7 @@ The syntax is
 
 It is accessed with : `mCustomParameters["myOwnKey"]`.
 
-## Definition and access of user-defined configuration ("extendedTaskParameters")
+### Advanced approach with beam and run type parametrization ("extendedTaskParameters")
 
 User code, whether it is a Task, a Check, an Aggregator or a PostProcessing task, can access custom parameters declared in the configuration file.
 They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
@@ -718,4 +719,4 @@ In a postprocessing task, it is available in the objects manager: `getObjectsMan
 
 ---
 
-[← Go back to Framework](Framework.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
+[← Go back to Framework](Framework.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to FLP Suite →](FLPsuite.md)
