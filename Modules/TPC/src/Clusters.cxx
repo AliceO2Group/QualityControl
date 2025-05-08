@@ -20,6 +20,7 @@
 #include "DataFormatsTPC/ClusterNative.h"
 #include "TPCBase/Painter.h"
 #include "Framework/InputRecordWalker.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -41,6 +42,8 @@ void Clusters::initialize(InitContext& /*ctx*/)
   ILOG(Debug, Devel) << "initialize TPC Clusters QC task" << ENDM;
 
   mQCClusters.setName("ClusterData");
+
+  mNHBFPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
 
   const auto last = mCustomParameters.end();
   const auto itMergeable = mCustomParameters.find("mergeableOutput");
@@ -73,7 +76,8 @@ void Clusters::initialize(InitContext& /*ctx*/)
     mWrapperVector.emplace_back(&mQCClusters.getClusters().getSigmaTime());
     mWrapperVector.emplace_back(&mQCClusters.getClusters().getSigmaPad());
     mWrapperVector.emplace_back(&mQCClusters.getClusters().getTimeBin());
-    mWrapperVector.emplace_back(&mQCClusters.getClusters().getOccupancy());
+    auto occupancy = mQCClusters.getClusters().getOccupancy(mNHBFPerTF);
+    mWrapperVector.emplace_back(&occupancy);
 
     addAndPublish(getObjectsManager(), mNClustersCanvasVec, { "c_Sides_N_Clusters", "c_ROCs_N_Clusters_1D", "c_ROCs_N_Clusters_2D" });
     addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });

@@ -18,6 +18,7 @@
 #include "TPCBase/Painter.h"
 #include "TPCBase/CDBInterface.h"
 #include "TPCQC/Helpers.h"
+#include "DetectorsBase/GRPGeomHelper.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -140,6 +141,8 @@ void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistryRef)
 {
   mCdbApi.init(mHost);
 
+  mNHBFPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
+
   if (mCalDetCanvasVec.size() > 0) {
     mCalDetCanvasVec.clear();
   }
@@ -215,12 +218,12 @@ void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
   o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
   calDetIter++;
 
-  calDet = clusters.getOccupancy();
+  auto occupancy = clusters.getOccupancy(mNHBFPerTF);
   vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  o2::tpc::painter::makeSummaryCanvases(calDet, int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2), false, &vecPtr);
+  o2::tpc::painter::makeSummaryCanvases(occupancy, int(mRanges[occupancy.getName()].at(0)), mRanges[occupancy.getName()].at(1), mRanges[occupancy.getName()].at(2), false, &vecPtr);
   calDetIter++;
   vecPtr = toVector(mCalDetCanvasVec.at(calDetIter));
-  makeRadialProfile(calDet, vecPtr.at(0), int(mRanges[calDet.getName()].at(0)), mRanges[calDet.getName()].at(1), mRanges[calDet.getName()].at(2));
+  makeRadialProfile(occupancy, vecPtr.at(0), int(mRanges[occupancy.getName()].at(0)), mRanges[occupancy.getName()].at(1), mRanges[occupancy.getName()].at(2));
   calDetIter++;
 }
 
