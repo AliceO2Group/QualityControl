@@ -30,7 +30,10 @@
         "cycleDurationSeconds": "10",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSources": [
-          { "type": "dataSamplingPolicy", "name": "tpc-tracks" },
+          {
+            "type": "dataSamplingPolicy",
+            "name": "tpc-tracks"
+          },
           {
             "type": "direct",
             "query": "meanvertex:GLO/MEANVERTEX/0?lifetime=condition&ccdb-path=GLO/Calib/MeanVertex"
@@ -66,7 +69,9 @@
           {
             "type": "Task",
             "name": "Tracks",
-            "MOs": ["example"]
+            "MOs": [
+              "example"
+            ]
           }
         ]
       }

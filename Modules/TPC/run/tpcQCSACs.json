@@ -8,8 +8,7 @@
         "password": "not_applicable",
         "name": "not_applicable"
       },
-      "Activity": {
-      },
+      "Activity": {},
       "monitoring": {
         "url": "infologger:///debug?qc"
       },
@@ -33,35 +32,78 @@
         "doLatest": "false",
         "rejectOutliersSACZeroScale": "true",
         "maxDeviationOutlierSACZero": "2.",
-        "timestamps_comment": [ "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
-                                "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
-                                "An empty array to get the the latest version will be the main use case.",
-                                "The array is mapped to the output objects sequentially",
-                                "If you want to pick the latest file in the CCDB manually, you can use -1."
+        "timestamps_comment": [
+          "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
+          "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
+          "An empty array to get the the latest version will be the main use case.",
+          "The array is mapped to the output objects sequentially",
+          "If you want to pick the latest file in the CCDB manually, you can use -1."
         ],
         "timestamps": [
-          { "SACZero":"1686390443945" },
-          { "SACOne":"-1" },
-          { "SACDelta":"-1" },
-          { "SACFourierCoeffs":"-1" }
-        ],
-        "lookupMetaData_comment": [ "Not used in the current version" ],
-        "lookupMetaData": [
           {
+            "SACZero": "1686390443945"
+          },
+          {
+            "SACOne": "-1"
+          },
+          {
+            "SACDelta": "-1"
+          },
+          {
+            "SACFourierCoeffs": "-1"
           }
+        ],
+        "lookupMetaData_comment": [
+          "Not used in the current version"
+        ],
+        "lookupMetaData": [
+          {}
         ],
         "storeMetaData_comment": "Not used in the current version",
         "storeMetaData": [
-          {
-          }
+          {}
         ],
-        "histogramRanges_comment" : [ "nBins", "min", "max" ],
+        "histogramRanges_comment": [
+          "nBins",
+          "min",
+          "max"
+        ],
         "histogramRanges": [
-          { "SACZero" : [ "250",  "-50", "-50" ] },
-          { "SACZeroScaled" : [ "250",  "-5", "2" ] },
-          { "SACOne" : [ "250",  "-100", "100" ] },
-          { "SACDelta" : [ "250",  "-10", "10" ] },
-          { "SACFourierCoeffs" : [ "250",  "-10", "10" ] }
+          {
+            "SACZero": [
+              "250",
+              "-50",
+              "-50"
+            ]
+          },
+          {
+            "SACZeroScaled": [
+              "250",
+              "-5",
+              "2"
+            ]
+          },
+          {
+            "SACOne": [
+              "250",
+              "-100",
+              "100"
+            ]
+          },
+          {
+            "SACDelta": [
+              "250",
+              "-10",
+              "10"
+            ]
+          },
+          {
+            "SACFourierCoeffs": [
+              "250",
+              "-10",
+              "10"
+            ]
+          }
         ],
         "initTrigger": [
           "once"
