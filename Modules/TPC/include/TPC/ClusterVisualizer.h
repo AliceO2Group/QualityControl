@@ -65,7 +65,14 @@ class ClusterVisualizer final : public quality_control::postprocessing::PostProc
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
+  template <class T>
+  void makeRadialProfile(o2::tpc::CalDet<T>& calDet, TCanvas* canv, int nbinsY, float yMin, float yMax);
+
+  template <class T>
+  void fillRadialHisto(TH2D& h2D, const o2::tpc::CalDet<T>& calDet, const o2::tpc::Side side);
+
  private:
+  int mNHBFPerTF = 32;
   o2::ccdb::CcdbApi mCdbApi;
   std::string mHost;
   std::vector<std::vector<std::unique_ptr<TCanvas>>> mCalDetCanvasVec{}; ///< vector containing a vector of summary canvases for every CalDet object
