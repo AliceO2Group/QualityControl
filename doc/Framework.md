@@ -5,35 +5,63 @@ Framework
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
 <!--ts-->
-* [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
-* [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
-* [Multi-node setups](#multi-node-setups)
-* [Batch processing](#batch-processing)
-* [Moving window](#moving-window)
-* [Monitor cycles](#monitor-cycles)
-* [Writing a DPL data producer](#writing-a-dpl-data-producer)
-* [Custom merging](#custom-merging)
-* [Critical, resilient and non-critical tasks](#critical-resilient-and-non-critical-tasks)
-* [QC with DPL Analysis](#qc-with-dpl-analysis)
-   * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
-* [Propagating Check results to RCT in Bookkeeping](#propagating-check-results-to-rct-in-bookkeeping)
-   * [Conversion details](#conversion-details)
-* [Solving performance issues](#solving-performance-issues)
-   * [Dispatcher](#dispatcher)
-   * [QC Tasks](#qc-tasks-1)
-   * [Mergers](#mergers)
-* [Understanding and reducing memory footprint](#understanding-and-reducing-memory-footprint)
+   * [Framework](#framework)
+   * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
+   * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
+   * [Multi-node setups](#multi-node-setups)
+   * [Batch processing](#batch-processing)
+   * [Moving window](#moving-window)
+   * [Monitor cycles](#monitor-cycles)
+   * [Custom merging](#custom-merging)
+   * [Critical, resilient and non-critical tasks](#critical-resilient-and-non-critical-tasks)
+   * [QC with DPL Analysis](#qc-with-dpl-analysis)
+   * [Propagating Check results to RCT in Bookkeeping](#propagating-check-results-to-rct-in-bookkeeping)
+   * [Solving performance issues](#solving-performance-issues)
+   * [Understanding and reducing memory footprint](#understanding-and-reducing-memory-footprint)
 <!--te-->
 
 ## Plugging the QC to an existing DPL workflow
 
-Your existing DPL workflow can simply be considered a publisher. Therefore, replace `o2-qc-run-producer` with your own workflow.
+Your existing DPL workflow can simply be considered a publisher. Therefore, you can simply replace `o2-qc-run-producer` with your own workflow in the examples we have seen so far. 
 
-For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do :
+As an example, if TPC wants to monitor the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do :
 
 ```
 o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
 ```
+
+The config file `tpcQCPID.json` has to specify what output we want to monitor. E.g. if the tpc workflow has the output `{"TPC", "CLUSTERS"}`, we should add a dataSamplingPolicy for it and refer to it in a task : 
+
+```
+  "dataSamplingPolicies": [
+    {
+      "id": "tpc-cluster",              "":"ID we refer to"
+      "active": "true",
+      "machines": [],
+      "query" : "data:TPC/CLUSTERS",    "":"The query to match the output in the workflow"
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+        }
+      ],
+      "blocking": "false"
+    },
+(...)    
+    "someTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "60",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tpc-cluster",          "":"Refer to the ID of the policy"
+        }
+      }
+```
+The "query" syntax of the policy is the same as the one used in the DPL. It must match the output of another device, whether it is in the same workflow or in a piped one.
+The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. Moreover, the `origin` (first element after the colon) is used as detectorName.
 
 ## Production of QC objects outside this framework
 
@@ -51,14 +79,11 @@ Let be a device in the main data flow that produces a histogram on a channel def
     "externalTasks": {
       "External-1": {
         "active": "true",
-        "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding. The origin (e.g. TST) is used as detector name for the objects."
+        "query": "External-1:TST/HISTO/0" ,  "":"Query specifying where the objects to be checked and stored are coming from. Use the task name as binding. The origin (e.g. TST) is used as detector name for the objects."
       }
     },
     "checks": {
 ```
-
-The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one.
-The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. Moreover, the `origin` (first element after the colon) is used as detectorName.
 
 ### Example 1: basic
 
@@ -115,9 +140,9 @@ o2-qc-run-producer | o2-qc-run-histo-producer --producers 3 --histograms 3 | o2-
 
 ## Multi-node setups
 
-During the data-taking Quality Control runs on a distributed computing system. Some QC Tasks are
-executed on dedicated QC servers, while others run on FLPs and EPNs. In the first case, messages
-coming from Data Sampling should reach QC servers where they are processed. In the latter case,
+During the data-taking, Quality Control runs on a distributed computing system. Some QC Tasks are
+executed on dedicated QC servers, while others run on FLPs and EPNs. In the latter case, messages
+coming from Data Sampling should reach QC servers where they are processed. In the first case,
 locally produced Monitor Objects should be merged on QC servers and then have Checks run on them.
 By **remote QC tasks** we mean those which run on QC servers (**remote machines**), while **local QC Tasks**
 run on FLPs and EPNs (**local machines**).
@@ -459,26 +484,7 @@ It is possible to specify various durations for different period of times. It is
 
 In this example, a cycle of 60 seconds is used for the first 5 minutes (300 seconds), then a cycle of 3 minutes (180 seconds) between 5 minutes and 10 minutes after SOR, and finally a cycle of 5 minutes for the rest of the run. The last `validitySeconds` is not used and is just applied for the rest of the run.
 
-## Writing a DPL data producer
 
-For your convenience, and although it does not lie within the QC scope, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
-
-As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files :
-
-* [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) :
-  This is an executable with a basic data producer in the Data Processing Layer.
-  There are 2 important functions here :
-    * `customize(...)` to add parameters to the executable. Note that it must be written before the includes for the dataProcessing.
-    * `defineDataProcessing(...)` to define the workflow to be ran, in our case the device(s) publishing the number.
-* [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) :
-  The key elements are :
-    1. The include `#include <Framework/DataProcessorSpec.h>`
-    2. The function `getDataProducerExampleSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
-    3. The function `getDataProducerExampleAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data.
-* [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) :
-  This is just the implementation of the header described just above. You will probably want to modify `getDataProducerExampleSpec` and the inner-most block of `getDataProducerExampleAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
-
-You will probably write it in your detector's O2 directory rather than in the QC repository.
 
 ## Custom merging
 
@@ -647,13 +653,13 @@ Null QOs are marked with purple.
 
 ![](images/qo_flag_conversion_10.svg)
 
-# Solving performance issues
+## Solving performance issues
 
 Problems with performance in message passing systems like QC usually manifest in backpressure seen in input channels of processes which are too slow.
 QC processes usually use one worker thread, thus one can also observe that they use a full CPU core when struggling to consume incoming data.
 When observing performance issues with QC setups, consider the following actions to improve it.
 
-## Dispatcher
+### Dispatcher
 
 Dispatcher will usually cause backpressure when it is requested to sample too much data.
 In particular, copying many small messages takes more time than less messages of equivalent size.
@@ -663,7 +669,7 @@ To improve the performance:
 * adapt the data format to pack data in fewer messages
 * when in need of 100% data, do not use Data Sampling, but connect to the data source directly
 
-## QC Tasks
+### QC Tasks
 
 QC Tasks are implemented by the users, thus the maximum possible input data throughput largely depends on the task implementation.
 If a QC Task cannot cope with the input messages, consider:
@@ -671,7 +677,7 @@ If a QC Task cannot cope with the input messages, consider:
 * using performance measurement tools (like `perf top`) to understand where the task spends the most time and optimize this part of code
 * if one task instance processes data, spawn one task per machine and merge the result objects instead
 
-## Mergers
+### Mergers
 
 The performance of Mergers depends on the type of objects being merged, as well as their number and size.
 The following points might help avoid backpressure:
@@ -680,14 +686,14 @@ The following points might help avoid backpressure:
 * if an object has its custom Merge() method, check if it could be optimized
 * enable multi-layer Mergers to split the computations across multiple processes (config parameter "mergersPerLayer")
 
-# Understanding and reducing memory footprint
+## Understanding and reducing memory footprint
 
 When developing a QC module, please be considerate in terms of memory usage.
 Large histograms could be optionally enabled/disabled depending on the context that the QC is ran.
 Investigate if reducing the bin size (e.g. TH2D to TH2F) would still provide satisfactory results.
 Consider loading only the parts of detector geometry which are being used by a given task.
 
-## Analysing memory usage with valgrind
+### Analysing memory usage with valgrind
 
 0) Install valgrind, if not yet installed
 

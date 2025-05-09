@@ -3,20 +3,18 @@
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 /path/to/README.md-->
 <!--ts-->
-* [Post-processing](#post-processing)
-  * [The post-processing framework](#the-post-processing-framework)
-    * [Post-processing interface](#post-processing-interface)
-    * [Configuration](#configuration)
-  * [Definition and access of user-specific configuration](#definition-and-access-of-user-specific-configuration)
-    * [Running it](#running-it)
-  * [Convenience classes](#convenience-classes)
-    * [The TrendingTask class](#the-trendingtask-class)
-    * [The SliceTrendingTask class](#the-slicetrendingtask-class)
-    * [The ReferenceComparatorTask class](#the-referencecomparatortask-class)
-    * [The CcdbInspectorTask class](#the-ccdbinspectortask-class)
-    * [The QualityTask class](#the-qualitytask-class)
-    * [The BigScreen class](#the-bigscreen-class)
-  * [More examples](#more-examples)
+* [The post-processing framework](#the-post-processing-framework)
+   * [Post-processing interface](#post-processing-interface)
+   * [Configuration](#configuration)
+   * [Running it](#running-it)
+* [Convenience classes](#convenience-classes)
+   * [The TrendingTask class](#the-trendingtask-class)
+   * [The SliceTrendingTask class](#the-slicetrendingtask-class)
+   * [The ReferenceComparatorTask class](#the-referencecomparatortask-class)
+   * [The CcdbInspectorTask class](#the-ccdbinspectortask-class)
+   * [The QualityTask class](#the-qualitytask-class)
+   * [The BigScreen class](#the-bigscreen-class)
+* [More examples](#more-examples)
 <!--te-->
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](Advanced.md)

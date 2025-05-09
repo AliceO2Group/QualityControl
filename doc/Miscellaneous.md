@@ -358,6 +358,27 @@ To change the fraction of the data being monitored, change the option `fraction`
 "fraction": "0.01",
 ```
 
+## Writing a DPL data producer
+
+For your convenience, and although it does not lie within the QC scope, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
+
+As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files :
+
+* [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) :
+  This is an executable with a basic data producer in the Data Processing Layer.
+  There are 2 important functions here :
+    * `customize(...)` to add parameters to the executable. Note that it must be written before the includes for the dataProcessing.
+    * `defineDataProcessing(...)` to define the workflow to be ran, in our case the device(s) publishing the number.
+* [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) :
+  The key elements are :
+    1. The include `#include <Framework/DataProcessorSpec.h>`
+    2. The function `getDataProducerExampleSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
+    3. The function `getDataProducerExampleAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data.
+* [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) :
+  This is just the implementation of the header described just above. You will probably want to modify `getDataProducerExampleSpec` and the inner-most block of `getDataProducerExampleAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
+
+You will probably write it in your detector's O2 directory rather than in the QC repository.
+
 ---
 
 [← Go back to FLP Suite](FLPsuite.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to FAQ →](FAQ.md)

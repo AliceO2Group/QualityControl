@@ -84,8 +84,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
+          "fraction": "0.1"
         }
       ],
       "blocking": "false"
