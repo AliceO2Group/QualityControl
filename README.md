@@ -20,7 +20,7 @@ For a general overview of our (O2) software, organization and processes, please 
         * [Post-processing example](doc/QuickStart.md#post-processing-example)
 * [Modules development](doc/ModulesDevelopment.md)
     * [Context](doc/ModulesDevelopment.md#context)
-      * [QC architecture](doc/ModulesDevelopment.md#qc-architecture)
+        * [QC architecture](doc/ModulesDevelopment.md#qc-architecture)
         * [DPL](doc/ModulesDevelopment.md#dpl)
         * [Data Sampling](doc/ModulesDevelopment.md#data-sampling)
         * [Code Organization](doc/ModulesDevelopment.md#code-organization)
