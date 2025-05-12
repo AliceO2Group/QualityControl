@@ -88,9 +88,8 @@ should not be present in real configuration files.
         "host": "ccdb-test.cern.ch:8080", "": "URL of a DB.",
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
-      "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
-                                               "change or the values might come from other source (e.g. ECS+Bookkeeping)." ],
-        "number": "42",                   "": "Activity number.",
+      "Activity": {                       "": ["Configuration of a QC Activity (Run). DO NOT USE IN PRODUCTION! " ],
+        "number": "42",                   "": "Activity number. ",
         "type": "PHYSICS",                "": "Activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
@@ -721,4 +720,4 @@ TODO we miss the definition of the datasampling policies
 
 ---
 
-[← Go back to Framework](Framework.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to FLP Suite →](FLPsuite.md)
+[← Go back to Post-Processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to QCDB →](QCDB.md)

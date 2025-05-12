@@ -120,4 +120,4 @@ in the config:
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
 ```
 
-[← Go back to Advanced Topics](Advanced.md) | [↑ Go to the Table of Content ↑](../README.md) 
+[← Go back to Miscellaneous](Miscellaneous.md) | [↑ Go to the Table of Content ↑](../README.md) 

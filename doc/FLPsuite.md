@@ -205,4 +205,4 @@ See the details [here](https://github.com/AliceO2Group/QualityControl/blob/maste
 
 ---
 
-[← Go back to Configuration](Configuration.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Miscellaneous →](Miscellaneous.md)
+[← Go back to QCDB](QCDB.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Miscellaneous →](Miscellaneous.md)

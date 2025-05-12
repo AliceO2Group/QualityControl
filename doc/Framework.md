@@ -18,6 +18,7 @@ Framework
    * [Propagating Check results to RCT in Bookkeeping](#propagating-check-results-to-rct-in-bookkeeping)
    * [Solving performance issues](#solving-performance-issues)
    * [Understanding and reducing memory footprint](#understanding-and-reducing-memory-footprint)
+   * [Monitoring](#monitoring)
 <!--te-->
 
 ## Plugging the QC to an existing DPL workflow
@@ -735,5 +736,18 @@ ms_print massif.out.976329 > massif_abc_task.log
 ```
 
 6) Consider reducing the size and number of the biggest histogram. Consider disabling histograms which will not be useful for async QC (no allocations, no startPublishing).
+
+## Monitoring
+
+The QC uses the [O2 Monitoring](https://github.com/AliceO2Group/Monitoring/) library to monitor metrics.
+The user code has access to an instance of the Monitoring via the variable `mMonitoring`.
+It can be used this way:
+```
+mMonitoring->send({ 42, "my/metric" }); // send the value 42 keyed with "my/metric" 
+```
+By default the Monitoring will be printed in the terminal. If a proper Monitoring system
+is setup, one can update the monitoring url in the config file to point to it.
+
+---
 
 [← Go back to Post-Processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Configuration →](Configuration.md)

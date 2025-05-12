@@ -12,8 +12,6 @@
    * [Post-processing example](#post-processing-example)
 <!--te-->
 
-[↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
-
 ## Read this first!
 
 This page will give you a basic idea of the QC and how to run it. Please read it *in its entirety* and run the commands along the way. Do not start developing your module before you have reached the next section called "Modules Development". Also, make sure you have pulled the latest QC version.

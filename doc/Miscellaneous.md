@@ -21,9 +21,6 @@ Miscellaneous
       * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
 <!--te-->
 
-[← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
-
-
 
 # Asynchronous Data and Monte Carlo QC operations
 
