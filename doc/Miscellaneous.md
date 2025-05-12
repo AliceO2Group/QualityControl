@@ -14,11 +14,9 @@ Miscellaneous
 * [Monitoring metrics](#monitoring-metrics)
 * [Common check IncreasingEntries](#common-check-increasingentries)
 * [Common check TrendCheck](#common-check-trendcheck)
-      * [Full configuration example](#full-configuration-example)
 * [Update the shmem segment size of a detector](#update-the-shmem-segment-size-of-a-detector)
-   * [Readout chain (optional)](#readout-chain-optional)
-      * [Getting real data from readout](#getting-real-data-from-readout)
-      * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
+* [Readout chain](#readout-chain)
+* [Writing a DPL data producer](#writing-a-dpl-data-producer)
 <!--te-->
 
 
@@ -294,14 +292,15 @@ The values are relative to the canvas size, so in the example above the label wi
 
 In consul go to `o2/runtime/aliecs/defaults` and modify the file corresponding to the detector: [det]_qc_shm_segment_size
 
-## Readout chain (optional)
+# Readout chain 
 
-In this second example, we are going to use the Readout as our data source.
+In this section we are going to use the Readout as our data source. This is a rare occurence nowadays as detectors have
+DPL workflows they can plug QC to. 
 This example assumes that Readout has been compiled beforehand (`aliBuild build Readout --defaults o2`).
 
 ![alt text](images/readout-schema.png)
 
-This workflow is a bit different from the basic one. The _Readout_ is not a DPL, nor a FairMQ, device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Data Sampling_, which then injects data to the task. This is handled in the _Readout_ as long as you enable the corresponding configuration flag.
+This workflow is a bit different. The _Readout_ is not a DPL, nor a FairMQ, device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Data Sampling_, which then injects data to the task. This is handled in the _Readout_ as long as you enable the corresponding configuration flag.
 
 The first thing is to load the environment for the readout in a new terminal: `alienv enter Readout/latest`.
 
@@ -355,7 +354,7 @@ To change the fraction of the data being monitored, change the option `fraction`
 "fraction": "0.01",
 ```
 
-## Writing a DPL data producer
+# Writing a DPL data producer
 
 For your convenience, and although it does not lie within the QC scope, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
 

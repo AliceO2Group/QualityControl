@@ -5,7 +5,6 @@ Framework
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
 <!--ts-->
-   * [Framework](#framework)
    * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
    * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
    * [Multi-node setups](#multi-node-setups)
@@ -750,4 +749,4 @@ is setup, one can update the monitoring url in the config file to point to it.
 
 ---
 
-[← Go back to Post-Processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Configuration →](Configuration.md)
+[← Go back to Modules development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Configuration →](Configuration.md)

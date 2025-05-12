@@ -31,8 +31,6 @@
 * [A more advanced example](#a-more-advanced-example)
 <!--te-->
 
-[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
-
 ## Context
 
 Before developing a module, one should have a bare idea of what the QualityControl is and how it is designed. The following sections explore these aspects.
@@ -589,4 +587,4 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
 
 ---
 
-[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
+[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Framework →](Framework.md)

@@ -5,7 +5,6 @@ Configuration reference
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer QualityControl/doc/Configuration.md -->
 <!--ts-->
-   * [Configuration reference](#configuration-reference)
    * [Global configuration structure](#global-configuration-structure)
    * [Common configuration](#common-configuration)
    * [QC Tasks configuration](#qc-tasks-configuration)
