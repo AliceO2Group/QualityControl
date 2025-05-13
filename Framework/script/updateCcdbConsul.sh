@@ -4,20 +4,7 @@
 # set -x
 
 HEAD_NODES=(
-#  alio2-cr1-flp162
-#  alio2-cr1-flp146
-#  alio2-cr1-flp160
-#  alio2-cr1-flp187
-#  alio2-cr1-flp148
-#  alio2-cr1-flp182
-#  alio2-cr1-flp159
-#  alio2-cr1-flp164
-#  alio2-cr1-flp178
-#  alio2-cr1-hv-head01
-#  alio2-cr1-flp166
-#  alio2-cr1-flp181
-#  alio2-cr1-mvs03
-  barth-test-cc7.cern.ch
+  ali-staging-consul.cern.ch
 #ali-consul.cern.ch
 )
 echo "Number of nodes: ${#HEAD_NODES[@]}"
@@ -53,6 +40,28 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
     if [[ $file == *repoCleanerConfig.yaml* ]]; then
       echo "   it is the repo cleaner config file, we skip it"
       continue
+    fi
+
+    if [[ "$file" == */ ]]; then
+        echo "   path finishes with / and is directory"
+        continue
+    fi
+
+    # example how to use jq to do the job. 
+    new_content=$(jq '
+      if has("qc") and .qc?.config?.bookkeeping?.url == null then
+          .qc.config.bookkeeping.url = "alio2-cr1-hv-mvs00.cern.ch:4001"
+      else
+        .
+      end
+    ' $local_file)
+    if [ $? -eq 0 ]; then
+        echo "jq succeeded"
+        cat  $local_file
+        echo $new_content | jq .
+        #      consul kv put "$file" "$new_content"
+    else
+        echo "jq failed"
     fi
 
     # download
