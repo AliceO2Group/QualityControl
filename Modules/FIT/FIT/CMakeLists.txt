@@ -4,6 +4,7 @@ set(MODULE_NAME "O2QcFIT")
 add_library(${MODULE_NAME})
 
 target_sources(${MODULE_NAME} PRIVATE src/LevelCheck.cxx)
+target_sources(${MODULE_NAME} PRIVATE src/MIPCheck.cxx)
 target_sources(${MODULE_NAME} PRIVATE src/RawDataMetricTask.cxx)
 target_sources(${MODULE_NAME} PRIVATE src/RecoFITQcTask.cxx)
 
@@ -28,6 +29,7 @@ install(TARGETS ${MODULE_NAME}
 
 add_root_dictionary(${MODULE_NAME}
   HEADERS include/FIT/LevelCheck.h
+          include/FIT/MIPCheck.h
           include/FIT/RawDataMetricTask.h
           include/FIT/RecoFITQcTask.h
   LINKDEF include/FIT/LinkDef.h)
