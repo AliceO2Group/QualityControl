@@ -35,6 +35,9 @@
 #include <TCanvas.h>
 #include <TGraph.h>
 
+#include <memory>
+#include <string>
+
 class TH1F;
 class TCanvas;
 class TLegend;
@@ -79,6 +82,27 @@ class PostProcTask final : public quality_control::postprocessing::PostProcessin
   std::unique_ptr<TProfile> mTime;
   std::unique_ptr<TH2Poly> mHistStatsSideA;
   std::unique_ptr<TH2Poly> mHistStatsSideC;
+
+  /// Sum of count in bins vs amplitude for detector channels 0 to 31 (A-side inner).
+  /// In other words a projection of range 1-32 in the 2D histogram amplitude vs channel
+  /// from the DigitQcTask.
+  std::unique_ptr<TH1F> mHistAmpAInner;
+
+  /// Sum of count in bins vs amplitude for detector channels 32 to 95 (A-side outer).
+  /// In other words a projection of range 33-96 in the 2D histogram amplitude vs channel
+  /// from the DigitQcTask.
+  std::unique_ptr<TH1F> mHistAmpAOuter;
+
+  /// Sum of count in bins vs amplitude for detector channels 96 to 207 (C-side).
+  /// In other words a projection of range 97-208 in the 2D histogram amplitude vs channel
+  /// from the DigitQcTask.
+  std::unique_ptr<TH1F> mHistAmpC;
+
+  /// Sum of normalized count in bins vs amplitude for all detector channels (0-207).
+  /// In other words the sum of Y projections for each bin in the 2D histogram amplitude vs channel
+  /// from the DigitQcTask, where each projection is scaled with 1/(counts in that projection)
+  std::unique_ptr<TH1F> mHistAmpNormPerChannel;
+
   ChannelGeometry mChannelGeometry; //!
   // Configurations
   int mLowTimeThreshold{ -192 };

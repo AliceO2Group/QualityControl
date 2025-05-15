@@ -23,6 +23,154 @@
       }
     },
     "checks": {
+      "ASideInnerMIPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::MIPCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "AmpAInner"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "nameObjectToCheck": "AmpAInner",
+          "nPeaksToFit": "2",
+          "gausParamsMean": "14, 28",
+          "gausParamsSigma": "3, 7",
+          "fitRangeLow": "11",
+          "fitRangeHigh": "35",
+          "meanWarningsLow": "12, 26",
+          "meanWarningsHigh": "16, 30",
+          "meanErrorsLow": "10, 24",
+          "meanErrorsHigh": "18, 32",
+          "sigmaWarnings": "4, -1",
+          "sigmaErrors": "5, -1",
+          "drawMeanWarningsLow": "false, false",
+          "drawMeanWarningsHigh": "false, false",
+          "drawMeanErrorsLow": "true, true",
+          "drawMeanErrorsHigh": "true, true",
+          "drawSigmaWarnings": "false, false",
+          "drawSigmaErrors": "fasle, false",
+          "labelPos": "0.15, 0.2, 0.85, 0.45"
+        }
+      },
+      "ASideOuterMIPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::MIPCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "AmpAOuter"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "nameObjectToCheck": "AmpAOuter",
+          "nPeaksToFit": "2",
+          "gausParamsMean": "14, 28",
+          "gausParamsSigma": "3, 7",
+          "fitRangeLow": "11",
+          "fitRangeHigh": "35",
+          "meanWarningsLow": "12, 26",
+          "meanWarningsHigh": "16, 30",
+          "meanErrorsLow": "10, 24",
+          "meanErrorsHigh": "18, 32",
+          "sigmaWarnings": "4, -1",
+          "sigmaErrors": "5, -1",
+          "drawMeanWarningsLow": "false, false",
+          "drawMeanWarningsHigh": "false, false",
+          "drawMeanErrorsLow": "true, true",
+          "drawMeanErrorsHigh": "true, true",
+          "drawSigmaWarnings": "false, false",
+          "drawSigmaErrors": "fasle, false",
+          "labelPos": "0.15, 0.2, 0.85, 0.45"
+        }
+      },
+      "CSideMIPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::MIPCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "AmpC"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "nameObjectToCheck": "AmpC",
+          "nPeaksToFit": "2",
+          "gausParamsMean": "14, 28",
+          "gausParamsSigma": "3, 7",
+          "fitRangeLow": "11",
+          "fitRangeHigh": "35",
+          "meanWarningsLow": "12, 26",
+          "meanWarningsHigh": "16, 30",
+          "meanErrorsLow": "10, 24",
+          "meanErrorsHigh": "18, 32",
+          "sigmaWarnings": "4, -1",
+          "sigmaErrors": "5, -1",
+          "drawMeanWarningsLow": "false, false",
+          "drawMeanWarningsHigh": "false, false",
+          "drawMeanErrorsLow": "true, true",
+          "drawMeanErrorsHigh": "true, true",
+          "drawSigmaWarnings": "false, false",
+          "drawSigmaErrors": "fasle, false",
+          "labelPos": "0.15, 0.2, 0.85, 0.45"
+        }
+      },
+      "AllChannelsMIPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::fit::MIPCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "PostProc",
+            "MOs": [
+              "AmpNormPerChannel"
+            ]
+          }
+        ],
+        "checkParameters": {
+          "nameObjectToCheck": "AmpNormPerChannel",
+          "nPeaksToFit": "2",
+          "gausParamsMean": "14, 28",
+          "gausParamsSigma": "3, 7",
+          "fitRangeLow": "11",
+          "fitRangeHigh": "35",
+          "meanWarningsLow": "12, 26",
+          "meanWarningsHigh": "16, 30",
+          "meanErrorsLow": "10, 24",
+          "meanErrorsHigh": "18, 32",
+          "sigmaWarnings": "4, -1",
+          "sigmaErrors": "5, -1",
+          "drawMeanWarningsLow": "false, false",
+          "drawMeanWarningsHigh": "false, false",
+          "drawMeanErrorsLow": "true, true",
+          "drawMeanErrorsHigh": "true, true",
+          "drawSigmaWarnings": "false, false",
+          "drawSigmaErrors": "fasle, false",
+          "labelPos": "0.15, 0.2, 0.85, 0.45"
+        }
+      },
       "OutOfBunchCollCheck": {
         "active": "true",
         "className": "o2::quality_control_modules::ft0::OutOfBunchCollCheck",

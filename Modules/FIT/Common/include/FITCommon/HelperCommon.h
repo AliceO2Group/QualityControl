@@ -26,6 +26,8 @@
 #include <type_traits>
 #include <regex>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -50,7 +52,8 @@ inline ValueType getConfigFromPropertyTree(const boost::property_tree::ptree& co
 
 template <typename Param_t,
           typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
-                                             std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
+                                             std::is_same<std::string, Param_t>::value ||
+                                             std::is_integral<Param_t>::value>>
 inline auto parseParameters(const std::string& param, const std::string& del)
 {
   std::regex reg(del);
@@ -58,11 +61,18 @@ inline auto parseParameters(const std::string& param, const std::string& del)
   std::vector<Param_t> vecResult;
   for (auto it = first; it != last; it++) {
     if constexpr (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value) {
-      vecResult.push_back(std::stoi(*it));
+      if (!boost::algorithm::trim_copy<std::string>(*it).empty()) {
+        vecResult.push_back(std::stoi(*it));
+      }
     } else if constexpr (std::is_floating_point<Param_t>::value) {
-      vecResult.push_back(std::stod(*it));
+      if (!boost::algorithm::trim_copy<std::string>(*it).empty()) {
+        vecResult.push_back(std::stof(*it));
+      }
     } else if constexpr (std::is_same<std::string, Param_t>::value) {
       vecResult.push_back(*it);
+    } else if constexpr (std::is_same<bool, Param_t>::value) {
+      std::string trimmed = boost::algorithm::trim_copy<std::string>(*it);
+      vecResult.push_back(boost::algorithm::to_lower_copy(trimmed) == "true" || trimmed == "1");
     }
   }
   return vecResult;

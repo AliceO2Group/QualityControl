@@ -32,6 +32,7 @@
 #include "FITCommon/HelperCommon.h"
 
 #include <iostream>
+#include <string>
 
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::fit;
@@ -83,6 +84,10 @@ void PostProcTask::reset()
   mHistBcTrgOutOfBunchColl.reset();
   mAmpl.reset();
   mTime.reset();
+  mHistAmpAInner.reset();
+  mHistAmpAOuter.reset();
+  mHistAmpC.reset();
+  mHistAmpNormPerChannel.reset();
   mMapHistsToDecompose.clear();
 }
 
@@ -104,7 +109,11 @@ void PostProcTask::initialize(Trigger trg, framework::ServiceRegistryRef service
   mHistTrgValidation = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "TrgValidation", "SW + HW only to validated triggers fraction", mMapTrgBits);
   mAmpl = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mTime = helper::registerHist<TProfile>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
-
+  mHistAmpAInner = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "AmpAInner", "FT0 A-side inner channel amplitudes (ch 0-31);Channel amplitude (ADC ch);Counts", 4200, -100, 4100);
+  mHistAmpAOuter = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "AmpAOuter", "FT0 A-side outer channel amplitudes (ch 32-95);Channel amplitude (ADC ch);Counts", 4200, -100, 4100);
+  mHistAmpC = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "AmpC", "FT0 C-side channel ampltitudes (ch 96-207);Channel amplitude (ADC ch);Counts", 4200, -100, 4100);
+  mHistAmpNormPerChannel = helper::registerHist<TH1F>(getObjectsManager(), quality_control::core::PublicationPolicy::ThroughStop, "", "AmpNormPerChannel", "FT0 channel amplitudes normalized per channel (ch 0-207);Channel amplitude (ADC ch);#sum_{ch}AmpHist_{ch} #times (1/counts_{ch})", 4200, -100, 4100);
+  mHistAmpNormPerChannel->Sumw2(kFALSE);
   mChannelGeometry.init(-200., 200., -200., 200., 10.); // values - borders for hist and margin
 
   mHistStatsSideA = mChannelGeometry.makeHistSideA("GeoChannelStatA", "Channel occupancy, side-A");
@@ -175,6 +184,35 @@ void PostProcTask::update(Trigger trg, framework::ServiceRegistryRef serviceReg)
     std::unique_ptr<TH1D> projNom(hAmpPerChannel->ProjectionX("projNom", hAmpPerChannel->GetYaxis()->FindBin(1.0), -1));
     std::unique_ptr<TH1D> projDen(hAmpPerChannel->ProjectionX("projDen"));
     mHistCFDEff->Divide(projNom.get(), projDen.get());
+
+    // Channel amplitudes for A-side inner, A-side outer, C-side and all channels
+    mHistAmpAInner->Reset();
+    mHistAmpAOuter->Reset();
+    mHistAmpC->Reset();
+    mHistAmpNormPerChannel->Reset();
+
+    std::unique_ptr<TH1D> projAInner(hAmpPerChannel->ProjectionY("projAInner", 1, 32));
+    std::unique_ptr<TH1D> projAOuter(hAmpPerChannel->ProjectionY("projAOuter", 33, 96));
+    std::unique_ptr<TH1D> projC(hAmpPerChannel->ProjectionY("projC", 97, 208));
+
+    mHistAmpAInner->Add(projAInner.get());
+    mHistAmpAOuter->Add(projAOuter.get());
+    mHistAmpC->Add(projC.get());
+
+    // Iterate over channels
+    int entries = mHistAmpNormPerChannel->GetEntries();
+    for (int iBin = 1; iBin < hAmpPerChannel->GetXaxis()->GetNbins() + 1; iBin++) {
+      std::unique_ptr<TH1D> ampForChannel(hAmpPerChannel->ProjectionY(Form("ampForChannel%i", iBin - 1), iBin, iBin));
+      ampForChannel->Sumw2(kFALSE);
+
+      // Here height of the bins of each detector channel must be divided by the sum of all bins (= number of events) in that channel.
+      // This is needed to equalize the weight of all channels independently of the load (central channels are loaded more).
+      const double integral = ampForChannel->Integral();
+      const double scale = integral > 0. ? 1. / integral : 0.;
+      mHistAmpNormPerChannel->Add(ampForChannel.get(), scale);
+      entries += ampForChannel->GetEntries();
+    }
+    mHistAmpNormPerChannel->SetEntries(entries);
   }
   // Times
   auto hTimePerChannel = mPostProcHelper.template getObject<TH2F>("TimePerChannel");
