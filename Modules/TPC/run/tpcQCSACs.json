@@ -17,7 +17,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "http://alice-ccdb.cern.ch"
+        "url": "http://ccdb-test.cern.ch:8080"
       },
       "postprocessing": {
         "matchAnyRunNumber": "true"
@@ -29,10 +29,11 @@
         "className": "o2::quality_control_modules::tpc::SACs",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "dataSourceURL": "http://alice-ccdb.cern.ch",
-        "doLatest": "false",
+        "dataSourceURL": "http://ccdb-test.cern.ch:8080",
+        "doLatest": "true",
         "rejectOutliersSACZeroScale": "true",
         "maxDeviationOutlierSACZero": "2.",
+        "doSACFourierCoeffs": "false", 
         "timestamps_comment": [ "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
                                 "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
                                 "An empty array to get the the latest version will be the main use case.",
@@ -40,9 +41,7 @@
                                 "If you want to pick the latest file in the CCDB manually, you can use -1."
         ],
         "timestamps": [
-          { "SACZero":"1686390443945" },
-          { "SACOne":"-1" },
-          { "SACDelta":"-1" },
+          { "SACContainer":"-1" },
           { "SACFourierCoeffs":"-1" }
         ],
         "lookupMetaData_comment": [ "Not used in the current version" ],
@@ -68,7 +67,7 @@
         ],
         "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:ccdb:TPC/Calib/Noise'",
         "updateTrigger": [
-          "once"
+          "foreachlatest:ccdb:TPC/Calib/SAC"
         ],
         "stopTrigger": [
           "userorcontrol"
