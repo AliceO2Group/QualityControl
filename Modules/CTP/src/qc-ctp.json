@@ -38,10 +38,13 @@
         "detectorName": "CTP",
         "cycleDurationSeconds": "60",
         "resetAfterCycles": "1",
-        "dataSource": {
+        "dataSources": [{
           "type": "dataSamplingPolicy",
           "name": "ctp-raw"
-        },
+        },{
+          "type": "direct",
+          "query": "ctp-config:CTP/CONFIG/0?lifetime=condition&ccdb-path=CTP/Config/Config&ccdb-run-dependent=1s"
+        }],
         "extendedTaskParameters": {
           "default": {
             "default": {
@@ -49,7 +52,8 @@
               "MBclassName" : "CMTVX-B-NOPF",
               "MB1inputName" : "MTVX",
               "MB2inputName" : "MVBA",
-              "consistencyCheck" : "false"
+              "consistencyCheck" : "true",
+              "readCTPconfigInMonitorData": "true"
             }
           },
           "PHYSICS": {
