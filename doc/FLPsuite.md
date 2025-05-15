@@ -10,7 +10,6 @@ FLP Suite
    * [Get all the task output to the infologger](#get-all-the-task-output-to-the-infologger)
    * [Using a different config file with the general QC](#using-a-different-config-file-with-the-general-qc)
    * [Enable the repo cleaner](#enable-the-repo-cleaner)
-   * [Definition of new arguments](#definition-of-new-arguments)
    * [Reference data](#reference-data)
 <!--te-->
 
@@ -113,22 +112,6 @@ By defaults there is a _disabled_ cron job :
 3. run by hand the repo-cleaner to check that the config file is ok
 3. update the cron job to use the modified config file
 4. uncomment the cron job
-
-## Definition of new arguments
-
-One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
-
-For example, to add two parameters of different types do :
-
-```
-void customize(std::vector<ConfigParamSpec>& workflowOptions)
-{
-  workflowOptions.push_back(
-    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
-  workflowOptions.push_back(
-    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
-}
-```
 
 ## Reference data
 

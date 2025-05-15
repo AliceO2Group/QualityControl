@@ -33,13 +33,15 @@ The detector name and the taskname are set in the config file :
 
 ```json
 "tasks": {
-  "QcTask": {       <---------- task name
+  "QcTask": {       <---------- task ID
     "active": "true",
+    "taskName": "QcTask",   <--------- task name
     "className": "o2::quality_control_modules::skeleton::SkeletonTask",
     "moduleName": "QcSkeleton",
     "detectorName": "TST",       <---------- detector name
 ```
 
+If the task name is not specified then we use the task ID.
 The quality is stored as a CCDB metadata of the object.
 
 ## Custom metadata for QC objects in the QCDB
@@ -59,14 +61,6 @@ It is also possible to add or update metadata of a MonitorObject directly:
 ```
   MonitorObject* mo = getMonitorObject(objectName);
   mo->addOrUpdateMetadata(key, value);
-```
-
-## Instructions to move an object in the QCDB
-
-The script `o2-qc-repo-move-objects` lets the user move an object, and thus all the versions attached to it. E.g.:
-
-```
-python3 o2-qc-repo-move-objects --url http://ccdb-test.cern.ch:8080 --path qc/TST/MO/Bob --new-path qc/TST/MO/Bob2 --log-level 10 
 ```
 
 ## Accessing objects in CCDB

@@ -25,8 +25,6 @@
 * [Naming convention](#naming-convention)
 * [Committing code](#committing-code)
 * [Data sources](#data-sources)
-   * [Readout](#readout)
-   * [DPL workflow](#dpl-workflow)
 * [Run number and other run attributes (period, pass type, provenance)](#run-number-and-other-run-attributes-period-pass-type-provenance)
 * [A more advanced example](#a-more-advanced-example)
 <!--te-->
@@ -450,65 +448,7 @@ General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-
 
 ## Data sources
 
-In the final system, the qc gets real data from the DPL devices or the readout processes. During development a number of possibilities are available for the detector teams to develop their QC. We list them below. 
-
-### Readout
-
-When connecting the QC directly to the readout using the `o2-qc-run-readout` proxy, remember to add this consumer to the config file of the readout and to enable it: 
-```json
-[consumer-fmq-qc]
-consumerType=FairMQChannel
-enableRawFormat=1
-fmq-name=readout-qc
-fmq-address=ipc:///tmp/readout-pipe-1
-fmq-type=pub
-fmq-transport=zeromq
-unmanagedMemorySize=2G
-memoryPoolNumberOfPages=500
-memoryPoolPageSize=1M
-enabled=1
-```
-
-__Random data__
-
-Add one or several dummy equipments:
-```
-[equipment-dummy-1]
-name=dummy-1
-equipmentType=dummy
-enabled=1
-eventMaxSize=200
-eventMinSize=100
-memoryPoolNumberOfPages=100
-memoryPoolPageSize=128k
-fillData=1
-```
-
-__Live detector data__
-
-If a part or the whole detector is ready and connected to 1 or several CRUs in the FLP, configure the readout to get data from there. The exact configuration items should be discussed with the readout experts. 
-
-This is the most realistic test one can do but it is also not very practical as you have to control the data taking and be on the machine equipped with a CRU. See the next section to alleviate this situation.
-
-__Detector data file__
-
-To record a data file with readout while getting data from a CRU, add the following piece to the readout configuration file:
-```
-[consumer-rec]
-enabled=1
-consumerType=fileRecorder
-fileName=/tmp/dataRecorder_flp1.raw
-```
-
-To read it back with readout, for instance on another machine, add: 
-```
-[equipment-player-1]
-equipmentType=player
-memoryPoolPageSize=1M
-memoryPoolNumberOfPages=1000
-filePath=/path/to/dataRecorder_flp1.raw 
-autoChunk=1
-```
+In the final system, the qc gets real data from the DPL devices or the readout processes. During development a number of possibilities are available for the detector teams to develop their QC. We list them below.
 
 ### DPL workflow
 
