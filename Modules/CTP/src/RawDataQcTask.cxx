@@ -102,8 +102,8 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     bool ok;
     auto& mgr = o2::ccdb::BasicCCDBManager::instance();
     mgr.setURL(ccdbName);
-    map<string, string> metadata;     // can be empty
-    metadata["runNumber"] =  run;
+    map<string, string> metadata; // can be empty
+    metadata["runNumber"] = run;
     auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, mTimestamp, metadata);
     if (ctpconfigdb == nullptr) {
       LOG(info) << "CTP config not in database, timestamp:" << mTimestamp;
