@@ -11,7 +11,7 @@
 
 ///
 /// \file   SACs.cxx
-/// \author Thomas Klemenz
+/// \author Thomas Klemenz, Marcel Lesch
 ///
 
 // O2 includes
@@ -129,6 +129,10 @@ void SACs::configure(const boost::property_tree::ptree& config)
     ILOG(Warning, Support) << "No rejection for outliers in SAC Zero Scale!" << ENDM;
   }
   mSACZeroMaxDeviation = config.get<float>("qc.postprocessing." + id + ".maxDeviationOutlierSACZero", 3.);
+  mDoSACFourierCoeffs = config.get<bool>("qc.postprocessing." + id + ".doSACFourierCoeffs", false);
+  if (mDoSACFourierCoeffs) {
+    ILOG(Warning, Support) << "SAC Fourier Coeffs activated, these are currently not in use!" << ENDM;
+  }
 }
 
 void SACs::initialize(Trigger, framework::ServiceRegistryRef)
@@ -147,11 +151,13 @@ void SACs::initialize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->startPublishing(mSACZeroSides.get());
   getObjectsManager()->startPublishing(mSACDeltaSides.get());
   getObjectsManager()->startPublishing(mSACOneSides.get());
-  getObjectsManager()->startPublishing(mFourierCoeffsA.get());
-  getObjectsManager()->startPublishing(mFourierCoeffsC.get());
   getObjectsManager()->startPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->startPublishing(mSACZeroScale.get());
   getObjectsManager()->startPublishing(mSACZeroOutliers.get());
+  if (mDoSACFourierCoeffs) {
+    getObjectsManager()->startPublishing(mFourierCoeffsA.get());
+    getObjectsManager()->startPublishing(mFourierCoeffsC.get());
+  }
 }
 
 void SACs::update(Trigger, framework::ServiceRegistryRef)
@@ -165,26 +171,34 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
   mSACZeroScale.get()->Clear();
   mSACZeroOutliers.get()->Clear();
 
-  o2::tpc::SACZero* sacZero = nullptr;
-  o2::tpc::SACDelta<unsigned char>* sacDelta = nullptr;
-  o2::tpc::SACOne* sacOne = nullptr;
+  o2::tpc::SAC<unsigned char>* sacContainer = nullptr;
   o2::tpc::FourierCoeffSAC* sacFFT = nullptr;
 
   if (mDoLatest) {
-    std::vector<long> availableTimestampsSACZero = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC0), 1, mTimestamps["SACZero"]);
-    std::vector<long> availableTimestampsSACDelta = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSACDelta), 1, mTimestamps["SACDelta"]);
-    std::vector<long> availableTimestampsSACOne = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC1), 1, mTimestamps["SACOne"]);
+    std::vector<long> availableTimestampsSACContainer = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSAC), 1, mTimestamps["SACContainer"]);
     std::vector<long> availableTimestampsSACFourierCoeffs = getDataTimestamps(mCdbApi, CDBTypeMap.at(CDBType::CalSACFourier), 1, mTimestamps["SACFourierCoeffs"]);
 
-    sacZero = mCdbApi.retrieveFromTFileAny<SACZero>(CDBTypeMap.at(CDBType::CalSAC0), std::map<std::string, std::string>{}, availableTimestampsSACZero[0]);
-    sacDelta = mCdbApi.retrieveFromTFileAny<SACDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalSACDelta), std::map<std::string, std::string>{}, availableTimestampsSACDelta[0]);
-    sacOne = mCdbApi.retrieveFromTFileAny<SACOne>(CDBTypeMap.at(CDBType::CalSAC1), std::map<std::string, std::string>{}, availableTimestampsSACOne[0]);
-    sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, availableTimestampsSACFourierCoeffs[0]);
+    sacContainer = mCdbApi.retrieveFromTFileAny<SAC<unsigned char>>(CDBTypeMap.at(CDBType::CalSAC), std::map<std::string, std::string>{}, availableTimestampsSACContainer[0]);
+    if (mDoSACFourierCoeffs) {
+      sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, availableTimestampsSACFourierCoeffs[0]);
+    }
   } else {
-    sacZero = mCdbApi.retrieveFromTFileAny<SACZero>(CDBTypeMap.at(CDBType::CalSAC0), std::map<std::string, std::string>{}, mTimestamps["SACZero"]);
-    sacDelta = mCdbApi.retrieveFromTFileAny<SACDelta<unsigned char>>(CDBTypeMap.at(CDBType::CalSACDelta), std::map<std::string, std::string>{}, mTimestamps["SACDelta"]);
-    sacOne = mCdbApi.retrieveFromTFileAny<SACOne>(CDBTypeMap.at(CDBType::CalSAC1), std::map<std::string, std::string>{}, mTimestamps["SACOne"]);
-    sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, mTimestamps["SACFourierCoeffs"]);
+    sacContainer = mCdbApi.retrieveFromTFileAny<SAC<unsigned char>>(CDBTypeMap.at(CDBType::CalSAC), std::map<std::string, std::string>{}, mTimestamps["SACContainer"]);
+    if (mDoSACFourierCoeffs) {
+      sacFFT = mCdbApi.retrieveFromTFileAny<FourierCoeffSAC>(CDBTypeMap.at(CDBType::CalSACFourier), std::map<std::string, std::string>{}, mTimestamps["SACFourierCoeffs"]);
+    }
+  }
+
+  o2::tpc::SACZero* sacZero = nullptr;
+  o2::tpc::SACDelta<unsigned char>* sacDelta = nullptr;
+  o2::tpc::SACOne* sacOne = nullptr;
+
+  if (!sacContainer) {
+    ILOG(Error, Support) << "No SAC Container fetched" << ENDM;
+  } else {
+    sacZero = &(sacContainer->mSACZero);
+    sacDelta = &(sacContainer->mSACDelta);
+    sacOne = &(sacContainer->mSACOne);
   }
 
   if (sacZero) {
@@ -211,9 +225,7 @@ void SACs::update(Trigger, framework::ServiceRegistryRef)
     mSACs.drawFourierCoeffSAC(Side::C, mRanges["SACFourierCoeffs"].at(0), mRanges["SACFourierCoeffs"].at(1), mRanges["SACFourierCoeffs"].at(2), mFourierCoeffsC.get());
   }
 
-  delete sacZero;
-  delete sacDelta;
-  delete sacOne;
+  delete sacContainer;
   delete sacFFT;
 
   mSACs.setSACZero(nullptr);
@@ -228,20 +240,25 @@ void SACs::finalize(Trigger, framework::ServiceRegistryRef)
   getObjectsManager()->stopPublishing(mSACZeroSides.get());
   getObjectsManager()->stopPublishing(mSACOneSides.get());
   getObjectsManager()->stopPublishing(mSACDeltaSides.get());
-  getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
-  getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
   getObjectsManager()->stopPublishing(mSACZeroSidesScaled.get());
   getObjectsManager()->stopPublishing(mSACZeroScale.get());
   getObjectsManager()->stopPublishing(mSACZeroOutliers.get());
 
+  if (mDoSACFourierCoeffs) {
+    getObjectsManager()->stopPublishing(mFourierCoeffsA.get());
+    getObjectsManager()->stopPublishing(mFourierCoeffsC.get());
+  }
+
   mSACZeroSides.reset();
   mSACOneSides.reset();
   mSACDeltaSides.reset();
-  mFourierCoeffsA.reset();
-  mFourierCoeffsC.reset();
   mSACZeroSidesScaled.reset();
   mSACZeroScale.reset();
   mSACZeroOutliers.reset();
+  if (mDoSACFourierCoeffs) {
+    mFourierCoeffsA.reset();
+    mFourierCoeffsC.reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::tpc

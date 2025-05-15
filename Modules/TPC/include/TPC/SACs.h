@@ -11,7 +11,7 @@
 
 ///
 /// \file   SACs.h
-/// \author Thomas Klemenz
+/// \author Thomas Klemenz, Marcel Lesch
 ///
 
 #ifndef QUALITYCONTROL_SACS_H
@@ -86,6 +86,7 @@ class SACs : public quality_control::postprocessing::PostProcessingInterface
 
   bool mRejectOutliersSACZeroScale;
   float mSACZeroMaxDeviation;
+  bool mDoSACFourierCoeffs;
 };
 
 } // namespace o2::quality_control_modules::tpc
