@@ -61,7 +61,6 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoDecodeError.get());
 
   mDecoder.setDoLumi(1);
-  mDecoder.setDecodeInps(1);
   mDecoder.setDoDigits(1);
   for (size_t i = 0; i < nclasses; i++) {
     classNames[i] = "";
@@ -213,6 +212,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   std::string performConsistencyCheck = getFromExtendedConfig<string>(activity, mCustomParameters, "consistencyCheck", "true");
   if (performConsistencyCheck == "true") {
     mDecoder.setCheckConsistency(1);
+    mDecoder.setDecodeInps(1);
   } else {
     mDecoder.setCheckConsistency(0);
   }
