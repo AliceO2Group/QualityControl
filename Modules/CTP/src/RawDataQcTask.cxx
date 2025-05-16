@@ -51,7 +51,7 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoBCMinBias2 = std::make_unique<TH1D>("bcMinBias2", "BC position MB2", norbits, 0, norbits);
   mHistoInputRatios = std::make_unique<TH1DRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
   mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Class; Ratio", nclasses, 0, nclasses, true);
-  mHistoDecodeError = std::make_unique<TH1D>("decodeError", "Errors from decoder", 10, 1, 11);
+  mHistoDecodeError = std::make_unique<TH1D>("decodeError", "Errors from decoder", nclasses, 0, nclasses);
   getObjectsManager()->startPublishing(mHistoInputs.get());
   getObjectsManager()->startPublishing(mHistoClasses.get());
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
@@ -61,7 +61,6 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoDecodeError.get());
 
   mDecoder.setDoLumi(1);
-  mDecoder.setDecodeInps(1);
   mDecoder.setDoDigits(1);
   for (size_t i = 0; i < nclasses; i++) {
     classNames[i] = "";
@@ -84,7 +83,12 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
 
-  auto MBclassName = getFromExtendedConfig<string>(activity, mCustomParameters, "MBclassName", "CMTVX-B-NOPF");
+  std::string readCTPConfig = getFromExtendedConfig<string>(activity, mCustomParameters, "readCTPconfigInMonitorData", "false");
+  if (readCTPConfig == "true") {
+    mReadCTPconfigInMonitorData = true;
+  }
+
+  mMBclassName = getFromExtendedConfig<string>(activity, mCustomParameters, "MBclassName", "CMTVX-B-NOPF");
 
   std::string run = std::to_string(mRunNumber);
   std::string ccdbName = mCustomParameters["ccdbName"];
@@ -93,40 +97,42 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   }
   /// the ccdb reading to be futher discussed
   // o2::ctp::CTPRunManager::setCCDBHost(ccdbName);
-  bool ok;
-  // o2::ctp::CTPConfiguration CTPconfig = o2::ctp::CTPRunManager::getConfigFromCCDB(mTimestamp, run, ok);
-  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
-  mgr.setURL(ccdbName);
-  map<string, string> metadata; // can be empty
-  metadata["runNumber"] = run;
-  auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, mTimestamp, metadata);
-  if (ctpconfigdb == nullptr) {
-    LOG(info) << "CTP config not in database, timestamp:" << mTimestamp;
-    ok = 0;
-  } else {
-    // ctpconfigdb->printStream(std::cout);
-    LOG(info) << "CTP config found. Run:" << run;
-    ok = 1;
-  }
-  if (ok) {
-    // get the index of the MB reference class
-    ILOG(Info, Support) << "CTP config found, run:" << run << ENDM;
-    std::vector<o2::ctp::CTPClass> ctpcls = ctpconfigdb->getCTPClasses();
-    for (size_t i = 0; i < ctpcls.size(); i++) {
-      classNames[i] = ctpcls[i].name.c_str();
-      if (ctpcls[i].name.find(MBclassName) != std::string::npos) {
-        mIndexMBclass = ctpcls[i].getIndex() + 1;
-        break;
-      }
+  if (!mReadCTPconfigInMonitorData) {
+    bool ok;
+    auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+    mgr.setURL(ccdbName);
+    map<string, string> metadata; // can be empty
+    metadata["runNumber"] = run;
+    auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, mTimestamp, metadata);
+    if (ctpconfigdb == nullptr) {
+      LOG(info) << "CTP config not in database, timestamp:" << mTimestamp;
+      ok = 0;
+    } else {
+      LOG(info) << "CTP config found. Run:" << run;
+      ok = 1;
     }
-    mDecoder.setCTPConfig(*ctpconfigdb);
-  } else {
-    ILOG(Warning, Support) << "CTP config not found, run:" << run << ENDM;
+    if (ok) {
+      // get the index of the MB reference class
+      ILOG(Info, Support) << "CTP config found, run:" << run << ENDM;
+      std::vector<o2::ctp::CTPClass> ctpcls = ctpconfigdb->getCTPClasses();
+      for (size_t i = 0; i < ctpcls.size(); i++) {
+        classNames[i] = ctpcls[i].name.c_str();
+        if (ctpcls[i].name.find(mMBclassName) != std::string::npos) {
+          mIndexMBclass = ctpcls[i].getIndex() + 1;
+          break;
+        }
+      }
+      mDecoder.setCTPConfig(*ctpconfigdb);
+    } else {
+      ILOG(Warning, Support) << "CTP config not found, run:" << run << ENDM;
+    }
+    if (mIndexMBclass == -1) {
+      mMBclassName = "CMBV0 (default)";
+      mIndexMBclass = 1;
+    }
+    mHistoClassRatios->SetTitle(Form("Class Ratio to %s", mMBclassName.c_str()));
   }
-  if (mIndexMBclass == -1) {
-    MBclassName = "CMBV0 (default)";
-    mIndexMBclass = 1;
-  }
+
   std::string nameInput1 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB1inputName", "MTVX");
   std::string nameInput2 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB2inputName", "MT0A");
 
@@ -201,12 +207,12 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     titleX2 += Form(" - %d", mShiftInput2);
   }
   mHistoBCMinBias2->SetTitle(Form("%s; %s; %s", title2.Data(), titleX2.Data(), titley2.Data()));
-  mHistoClassRatios->SetTitle(Form("Class Ratio to %s", MBclassName.c_str()));
   mHistoInputRatios->SetTitle(Form("Input Ratio to %s", nameInput1.c_str()));
 
   std::string performConsistencyCheck = getFromExtendedConfig<string>(activity, mCustomParameters, "consistencyCheck", "true");
   if (performConsistencyCheck == "true") {
     mDecoder.setCheckConsistency(1);
+    mDecoder.setDecodeInps(1);
   } else {
     mDecoder.setCheckConsistency(0);
   }
@@ -226,10 +232,47 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
   std::vector<o2::ctp::CTPDigit> outputDigits;
 
+  if (mReadCTPconfigInMonitorData) {
+    if (mCTPconfig == nullptr) {
+      mCTPconfig = ctx.inputs().get<o2::ctp::CTPConfiguration*>("ctp-config").get();
+      // mCTPconfig = ctpConfigPtr.get();
+      if (mCTPconfig != nullptr) {
+        ILOG(Info, Support) << "CTP config found" << ENDM;
+        std::vector<o2::ctp::CTPClass> ctpcls = mCTPconfig->getCTPClasses();
+        for (size_t i = 0; i < ctpcls.size(); i++) {
+          classNames[i] = ctpcls[i].name.c_str();
+          if (ctpcls[i].name.find(mMBclassName) != std::string::npos) {
+            mIndexMBclass = ctpcls[i].getIndex() + 1;
+            break;
+          }
+        }
+        mDecoder.setCTPConfig(*mCTPconfig);
+      }
+    }
+    for (int i = 0; i < nclasses; i++) {
+      if (classNames[i] == "") {
+        mHistoClasses.get()->GetXaxis()->SetBinLabel(i + 1, Form("%i", i + 1));
+        mHistoClassRatios.get()->GetXaxis()->SetBinLabel(i + 1, Form("%i", i + 1));
+      } else {
+        mHistoClasses.get()->GetXaxis()->SetBinLabel(i + 1, Form("%s", classNames[i].c_str()));
+        mHistoClassRatios.get()->GetXaxis()->SetBinLabel(i + 1, Form("%s", classNames[i].c_str()));
+      }
+    }
+
+    if (mIndexMBclass == -1) {
+      mMBclassName = "CMBV0 (default)";
+      mIndexMBclass = 1;
+    }
+    mHistoClassRatios->SetTitle(Form("Class Ratio to %s", mMBclassName.c_str()));
+  }
+
   o2::framework::InputRecord& inputs = ctx.inputs();
   int ret = mDecoder.decodeRaw(inputs, filter, outputDigits, lumiPointsHBF1);
-  if (ret > 0) {
-    mHistoDecodeError->Fill(log2(ret) + 1.5);
+  mClassErrorsA = mDecoder.getClassErrorsA();
+  for (size_t i = 0; i < o2::ctp::CTP_NCLASSES; i++) {
+    if (mClassErrorsA[i] > 0) {
+      mHistoDecodeError->Fill(i, mClassErrorsA[i]);
+    }
   }
 
   // reading the ctp inputs and ctp classes
