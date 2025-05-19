@@ -3,41 +3,31 @@
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 /path/to/README.md-->
 <!--ts-->
-* [Modules development](#modules-development)
-   * [Context](#context)
-      * [QC architecture](#qc-architecture)
-      * [DPL](#dpl)
-      * [Data Sampling](#data-sampling)
-         * [Custom Data Sampling Condition](#custom-data-sampling-condition)
-         * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
-      * [Code Organization](#code-organization)
-      * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
-      * [User-defined modules](#user-defined-modules)
-      * [Repository](#repository)
-         * [Paths](#paths)
-   * [Module creation](#module-creation)
-   * [Test run](#test-run)
-      * [Saving the QC objects in a local file](#saving-the-qc-objects-in-a-local-file)
-   * [Modification of the Task](#modification-of-the-task)
-   * [Check](#check)
-      * [Configuration](#configuration)
-      * [Implementation](#implementation)
-     * [Results](#results)
-   * [Quality Aggregation](#quality-aggregation)
-      * [Quick try](#quick-try)
-      * [Configuration](#configuration-1)
-      * [Implementation](#implementation-1)
-   * [Naming convention](#naming-convention)
-   * [Committing code](#committing-code)
-   * [Data sources](#data-sources)
-      * [Readout](#readout)
-      * [DPL workflow](#dpl-workflow)
-   * [Run number and other run attributes (period, pass type, provenance)](#run-number-and-other-run-attributes-period-pass-type-provenance)
-   * [A more advanced example](#a-more-advanced-example)
-   * [Monitoring](#monitoring)
+* [Context](#context)
+   * [QC architecture](#qc-architecture)
+   * [DPL](#dpl)
+   * [Data Sampling](#data-sampling)
+   * [Code Organization](#code-organization)
+   * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
+   * [User-defined modules](#user-defined-modules)
+   * [Repository](#repository)
+* [Module creation](#module-creation)
+* [Test run](#test-run)
+* [Modification of the Task](#modification-of-the-task)
+* [Check](#check)
+   * [Configuration](#configuration)
+   * [Implementation](#implementation)
+   * [Results](#results)
+* [Quality Aggregation](#quality-aggregation)
+   * [Quick try](#quick-try)
+   * [Configuration](#configuration-1)
+   * [Implementation](#implementation-1)
+* [Naming convention](#naming-convention)
+* [Committing code](#committing-code)
+* [Data sources](#data-sources)
+* [Run number and other run attributes (period, pass type, provenance)](#run-number-and-other-run-attributes-period-pass-type-provenance)
+* [A more advanced example](#a-more-advanced-example)
 <!--te-->
-
-[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
 
 ## Context
 
@@ -47,13 +37,13 @@ Before developing a module, one should have a bare idea of what the QualityContr
 
 ![alt text](images/Architecture.png)
 
-The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, encapsulated in a MonitorObject that are merged (if needed) and then checked. The checkers output a QualityObject along with the MonitorObjects which might have been modified. The MonitorObjects and the QualityObjects are stored in the repository. The QualityObjects can also optionally be aggregated by the Aggregators to produce additional QualityObjects that are also saved in the database. 
+The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, encapsulated in a MonitorObject that are merged (if needed) and then checked. The checkers output a QualityObject along with the MonitorObjects which might have been modified. The MonitorObjects and the QualityObjects are stored in the repository. The QualityObjects can also be aggregated by the Aggregators to produce additional QualityObjects that are also saved in the database. 
 
 Asynchronously, the Post-processing can retrieve MonitorObjects from the database when certain events happen (new version of an object, new run) and produce new TObjects such as a trending plot.
 
 ### DPL
 
-[Data Processing Layer](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) is a software framework developed as a part of O2 project. It structurizes the computing into units called _Data Processors_ - processes that communicate with each other via messages. DPL takes care of generating and running the processing topology out of user declaration code, serializing and deserializing messages, providing the data processors with all the anticipated messages for a given timestamp and much more. Each piece of data is characterized by its `DataHeader`, which consists (among others) of `dataOrigin`, `dataDescription` and `SubSpecification` - for example `{"MFT", "TRACKS", 0}`.
+[Data Processing Layer](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) is a software framework developed as a part of the O2 project. It defines and runs workflows made of _DataProcessors_ (aka _Devices_) communicating with each other via messages. 
 
 An example of a workflow definition which describes the processing steps (_Data Processors_), their inputs and their outputs can be seen in [runBasic.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runBasic.cxx). In the QC we define the workflows in files whose names are prefixed with `run`.
 
@@ -87,8 +77,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
+          "fraction": "0.1"
         }
       ],
       "blocking": "false"
@@ -150,12 +139,10 @@ One can of course build using `aliBuild` (`aliBuild build --defaults o2 QualityC
 After the initial use of `aliBuild`, which is necessary, the correct way of building is to load the environment with `alienv` and then go to the build directory and run `make` or `ninja`.
 
 ```
-alienv load QualityControl/latest
+alienv enter QualityControl/latest
 cd sw/BUILD/QualityControl-latest/QualityControl
 make -j8 install # or ninja -j8 install , also adapt to the number of cores available
 ```
-
-If you need to use the QCG or Readout, load `O2Suite` instead of `QualityControl`.
 
 ### User-defined modules
 
@@ -461,65 +448,7 @@ General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-
 
 ## Data sources
 
-In the final system, the qc gets real data from the DPL devices or the readout processes. During development a number of possibilities are available for the detector teams to develop their QC. We list them below. 
-
-### Readout
-
-When connecting the QC directly to the readout using the `o2-qc-run-readout` proxy, remember to add this consumer to the config file of the readout and to enable it: 
-```json
-[consumer-fmq-qc]
-consumerType=FairMQChannel
-enableRawFormat=1
-fmq-name=readout-qc
-fmq-address=ipc:///tmp/readout-pipe-1
-fmq-type=pub
-fmq-transport=zeromq
-unmanagedMemorySize=2G
-memoryPoolNumberOfPages=500
-memoryPoolPageSize=1M
-enabled=1
-```
-
-__Random data__
-
-Add one or several dummy equipments:
-```
-[equipment-dummy-1]
-name=dummy-1
-equipmentType=dummy
-enabled=1
-eventMaxSize=200
-eventMinSize=100
-memoryPoolNumberOfPages=100
-memoryPoolPageSize=128k
-fillData=1
-```
-
-__Live detector data__
-
-If a part or the whole detector is ready and connected to 1 or several CRUs in the FLP, configure the readout to get data from there. The exact configuration items should be discussed with the readout experts. 
-
-This is the most realistic test one can do but it is also not very practical as you have to control the data taking and be on the machine equipped with a CRU. See the next section to alleviate this situation.
-
-__Detector data file__
-
-To record a data file with readout while getting data from a CRU, add the following piece to the readout configuration file:
-```
-[consumer-rec]
-enabled=1
-consumerType=fileRecorder
-fileName=/tmp/dataRecorder_flp1.raw
-```
-
-To read it back with readout, for instance on another machine, add: 
-```
-[equipment-player-1]
-equipmentType=player
-memoryPoolPageSize=1M
-memoryPoolNumberOfPages=1000
-filePath=/path/to/dataRecorder_flp1.raw 
-autoChunk=1
-```
+In the final system, the qc gets real data from the DPL devices or the readout processes. During development a number of possibilities are available for the detector teams to develop their QC. We list them below.
 
 ### DPL workflow
 
@@ -596,17 +525,6 @@ or
 o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced.json
 ```
 
-## Monitoring
-
-The QC uses the [O2 Monitoring](https://github.com/AliceO2Group/Monitoring/) library to monitor metrics. 
-The user code has access to an instance of the Monitoring via the variable `mMonitoring`. 
-It can be used this way: 
-```
-mMonitoring->send({ 42, "my/metric" }); // send the value 42 keyed with "my/metric" 
-```
-By default the Monitoring will be printed in the terminal. If a proper Monitoring system 
-is setup, one can update the monitoring url in the config file to point to it. 
-
 ---
 
-[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
+[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Framework →](Framework.md)

@@ -562,3 +562,27 @@ Just run aliBuild with following parameters from the folder with prepared alidis
 ```
 aliBuild build QualityControl --defaults o2 --docker --architecture slc8_x86-64
 ```
+
+## Instructions to move an object in the QCDB
+
+The script `o2-qc-repo-move-objects` lets the user move an object, and thus all the versions attached to it. E.g.:
+
+```
+python3 o2-qc-repo-move-objects --url http://ccdb-test.cern.ch:8080 --path qc/TST/MO/Bob --new-path qc/TST/MO/Bob2 --log-level 10 
+```
+
+## Definition of new arguments
+
+One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
+
+For example, to add two parameters of different types do :
+
+```
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
+}
+```
