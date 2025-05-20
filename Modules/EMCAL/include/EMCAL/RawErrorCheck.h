@@ -113,6 +113,8 @@ class RawErrorCheck : public o2::quality_control::checker::CheckInterface
   std::map<int, int> mErrorCountThresholdRFE;  ///< Thresholds for Raw Fit Error histogram
   std::map<int, int> mErrorCountThresholdGEE;  ///< Thresholds for Geometry Error histogram
   std::map<int, int> mErrorCountThresholdGTE;  ///< Thresholds for Gain Type Error histogram
+
+  std::map<int, std::array<int, 2>> mErrorCountThresholdRDESummary; ///< Thresholds for Raw Data Error Summary histograms. Values are for error and warning
 };
 
 } // namespace o2::quality_control_modules::emcal

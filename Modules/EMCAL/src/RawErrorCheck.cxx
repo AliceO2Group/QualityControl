@@ -60,6 +60,7 @@ void RawErrorCheck::configure()
                     keyThresRawFitError = "ThresholdRFE",
                     keyThresholdGeometryError = "ThresholdGEE",
                     keyThresholdGainTypeError = "ThresholdGTE";
+
   try {
     for (auto& [param, value] : mCustomParameters.getAllDefaults()) {
       if (param.find(keyThreshRawdataErrors) == 0) {
@@ -75,6 +76,41 @@ void RawErrorCheck::configure()
           }
         } else {
           ILOG(Error) << "Thresholds for histogram RawDataErrors: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      // Raw data error summary hists start with RDESummaryErr for error values and RDESummaryWarn for warning values
+      std::string strSummaryErr = "RDESummaryErr";
+      if (param.starts_with(strSummaryErr)) {
+        auto errortype = param.substr(strSummaryErr.length());
+        auto errorcode = findErrorCodeRDE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram RawDataErrors Summary Errors: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdRDESummary[errorcode][0] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram RawDataErrors Summary Errors: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram RawDataErrors Summary Errors: Requested error type " << errortype << " not found" << ENDM;
+        }
+      }
+
+      std::string strSummaryWarn = "RDESummaryWarn";
+      if (param.starts_with(strSummaryWarn)) {
+        auto errortype = param.substr(strSummaryWarn.length());
+        auto errorcode = findErrorCodeRDE(errortype);
+        if (errorcode > -1) {
+          try {
+            auto threshold = std::stoi(value);
+            ILOG(Info) << "Setting custom threshold in Histogram RawDataErrors Summary Warning: " << errortype << " <= " << threshold << ENDM;
+            mErrorCountThresholdRDESummary[errorcode][1] = threshold;
+          } catch (...) {
+            ILOG(Error) << "Thresholds for histogram RawDataErrors Summary Warning: Failure in decoding threshold value (" << value << ") for error type " << errortype << ENDM;
+          }
+        } else {
+          ILOG(Error) << "Thresholds for histogram RawDataErrors Summary Warning: Requested error type " << errortype << " not found" << ENDM;
         }
       }
 
@@ -182,7 +218,8 @@ void RawErrorCheck::configure()
 
 Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  std::array<std::string, 7> errorhists = { { "RawDataErrors", "PageErrors", "MajorAltroErrors", "MinorAltroError", "RawFitError", "GeometryError", "GainTypeError" } };
+  std::array<std::string, 1> errorSummaryHists = { { "RawDataErrors" } };
+  std::array<std::string, 6> errorhists = { { "PageErrors", "MajorAltroErrors", "MinorAltroError", "RawFitError", "GeometryError", "GainTypeError" } };
   std::array<std::string, 2> gainhists = { { "NoHGPerDDL", "NoLGPerDDL" } };
   std::array<std::string, 2> channelgainhists = { { "ChannelLGnoHG", "ChannelHGnoLG" } };
   Quality result = Quality::Good;
@@ -198,7 +235,50 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   };
 
   for (auto& [moName, mo] : *moMap) {
-    if (std::find(errorhists.begin(), errorhists.end(), mo->getName()) != errorhists.end()) {
+    if (std::find(errorSummaryHists.begin(), errorSummaryHists.end(), mo->getName()) != errorSummaryHists.end()) {
+      // Check for presence of error codes
+      auto* errorhist = dynamic_cast<TH2*>(mo->getObject());
+
+      for (int errorcode = 0; errorcode < errorhist->GetYaxis()->GetNbins(); errorcode++) {
+        // try to find a threshold for the number of errors per bin
+        int threshold = 0;
+        auto thresholdHandler = thresholdConfigErrorHists.find(mo->getName());
+        if (thresholdHandler != thresholdConfigErrorHists.end()) {
+          auto thresholdFound = thresholdHandler->second->find(errorcode);
+          if (thresholdFound != thresholdHandler->second->end()) {
+            threshold = thresholdFound->second;
+          }
+        }
+        // try to find the threshold for the number of links from when on it is considered to be warning ot bad
+        int thresholdTotalErrBad = 0;
+        int thresholdTotalErrWarn = 0;
+        if (mErrorCountThresholdRDESummary.contains(errorcode)) {
+          thresholdTotalErrBad = mErrorCountThresholdRDESummary[errorcode][0];
+          thresholdTotalErrWarn = mErrorCountThresholdRDESummary[errorcode][1];
+        }
+
+        int numErrors = 0;
+        for (int linkID = 0; linkID < errorhist->GetXaxis()->GetNbins(); linkID++) {
+          int nErr = errorhist->GetBinContent(linkID + 1, errorcode + 1);
+          if (nErr > threshold) {
+            numErrors++;
+          }
+        }
+
+        if (numErrors > thresholdTotalErrBad) { // Number of raw error exceeds the threshold and is considered to be bad
+          if (result != Quality::Bad) {
+            result = Quality::Bad;
+          }
+          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(thresholdTotalErrBad));
+
+        } else if (numErrors > thresholdTotalErrWarn) { // Number of raw error exceeds the threshold but is considered to be okay. Error can be fixed at beam dump
+          if (result != Quality::Medium) {
+            result = Quality::Medium;
+          }
+          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(thresholdTotalErrWarn) + " not critical ");
+        }
+      }
+    } else if (std::find(errorhists.begin(), errorhists.end(), mo->getName()) != errorhists.end()) {
       // Check for presence of error codes
       auto* errorhist = dynamic_cast<TH2*>(mo->getObject());
 
@@ -298,6 +378,19 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     if (mNotifyInfologger) {
       for (const auto& flag : checkResult.getFlags()) {
         ILOG(Warning, Devel) << "Raw Error in " << mo->GetName() << " found: " << flag.second << ENDM;
+      }
+    }
+  } else if (checkResult == Quality::Medium) {
+    TLatex* msg = new TLatex(0.2, 0.8, "#color[802]{Non-critical error codes present: call EMCAL oncall at beam dump}");
+    msg->SetNDC();
+    msg->SetTextSize(16);
+    msg->SetTextFont(43);
+    h->GetListOfFunctions()->Add(msg);
+    msg->Draw();
+    // Notify about found errors on the infoLogger:
+    if (mNotifyInfologger) {
+      for (const auto& flag : checkResult.getFlags()) {
+        ILOG(Warning, Devel) << "Non-critical raw Error in " << mo->GetName() << " found: " << flag.second << " call EMCal oncall at beam dump!" << ENDM;
       }
     }
   }
