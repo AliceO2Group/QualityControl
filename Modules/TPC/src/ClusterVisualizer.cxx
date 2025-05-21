@@ -158,13 +158,11 @@ void ClusterVisualizer::initialize(Trigger, framework::ServiceRegistryRef)
                   mStoreMaps.size() > 1 ? mStoreMaps.at(calDetIter) : mStoreMaps.at(0));
     calDetIter++;
   }
-  if (mIsClusters) {
-    mCalDetCanvasVec.emplace_back(std::vector<std::unique_ptr<TCanvas>>());
-    addAndPublish(getObjectsManager(),
-                  mCalDetCanvasVec.back(),
-                  { "c_radial_profile_Occupancy" },
-                  mStoreMaps.size() > 1 ? mStoreMaps.at(calDetIter) : mStoreMaps.at(0));
-  }
+  mCalDetCanvasVec.emplace_back(std::vector<std::unique_ptr<TCanvas>>());
+  addAndPublish(getObjectsManager(),
+                mCalDetCanvasVec.back(),
+                { "c_radial_profile_Occupancy" },
+                mStoreMaps.size() > 1 ? mStoreMaps.at(calDetIter) : mStoreMaps.at(0));
 }
 
 void ClusterVisualizer::update(Trigger t, framework::ServiceRegistryRef)
