@@ -58,10 +58,11 @@
           { "N_Clusters" :  [ "100",  "0", "100"    ] },
           { "N_RawDigits" : [ "100",  "0", "100"    ] },
           { "Q_Max" :       [ "200",  "0", "200"    ] },
-          { "Time_Bin" :    [ "1000", "0", "100000" ] }
+          { "Time_Bin" :    [ "1000", "0", "100000" ] },
+          { "Occupancy" :  [ "100", "0", "0.001"    ] }
         ],
         "path_comment": "This is the path of the RawDigitData object that shall be visualized.",
-        "path": "TPC/MO/RawDigits/RawDigitData",
+        "path": "qc/TPC/MO/RawDigits/RawDigitData",
         "dataType_comment": "This is the switch for 'RawDigits' or 'Clusters' task. Choose 'raw' or 'clusters'.",
         "dataType": "raw",
         "initTrigger": [

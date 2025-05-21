@@ -38,7 +38,8 @@
           "mergeableOutput": "true",
           "NRawDigitsNBins": "100",  "NRawDigitsXMin": "0", "NRawDigitsXMax": "100",
           "QmaxNBins":       "200",  "QmaxXMin":       "0", "QmaxXMax":       "200",
-          "TimeBinNBins":    "1000", "TimeBinXMin":    "0", "TimeBinXMax":    "100000"
+          "TimeBinNBins":    "1000", "TimeBinXMin":    "0", "TimeBinXMax":    "100000",
+          "OccupancyNBins":    "1000", "OccupancyXMin":    "0", "OccupancyXMax":    "100000"
         },
         "location": "local",
         "localMachines": [
