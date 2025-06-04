@@ -269,13 +269,13 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result != Quality::Bad) {
             result = Quality::Bad;
           }
-          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(thresholdTotalErrBad));
+          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above critical threshold: Call oncall!");
 
         } else if (numErrors > thresholdTotalErrWarn) { // Number of raw error exceeds the threshold but is considered to be okay. Error can be fixed at beam dump
           if (result != Quality::Medium) {
             result = Quality::Medium;
           }
-          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(thresholdTotalErrWarn) + " not critical ");
+          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " below critical threshold: Call oncall at beam dump");
         }
       }
     } else if (std::find(errorhists.begin(), errorhists.end(), mo->getName()) != errorhists.end()) {
@@ -301,7 +301,7 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           if (result != Quality::Bad) {
             result = Quality::Bad;
           }
-          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above threshold " + std::to_string(threshold));
+          result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above critical threshold: Call oncall!");
         }
       }
     } else if (std::find(gainhists.begin(), gainhists.end(), mo->GetName()) != gainhists.end()) {
@@ -390,7 +390,7 @@ void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     // Notify about found errors on the infoLogger:
     if (mNotifyInfologger) {
       for (const auto& flag : checkResult.getFlags()) {
-        ILOG(Warning, Devel) << "Non-critical raw Error in " << mo->GetName() << " found: " << flag.second << " call EMCal oncall at beam dump!" << ENDM;
+        ILOG(Warning, Devel) << "Non-critical raw Error in " << mo->GetName() << " found: " << flag.second << ENDM;
       }
     }
   }
