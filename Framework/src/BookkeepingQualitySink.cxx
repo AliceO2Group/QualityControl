@@ -20,10 +20,11 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
 #include <DataFormatsQualityControl/QualityControlFlagCollection.h>
-#include "QualityControl/Bookkeeping.h"
 #include "QualityControl/QualitiesToFlagCollectionConverter.h"
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/runnerUtils.h"
+
 #include <BookkeepingApi/QcFlagServiceClient.h>
 #include <BookkeepingApi/BkpClientFactory.h>
 #include <CCDB/BasicCCDBManager.h>
@@ -40,6 +41,12 @@ void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::Comp
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("BookkeepingQualitySinkCompletionPolicy", matcher));
+}
+
+void BookkeepingQualitySink::init(framework::InitContext& iCtx)
+{
+  initInfologger(iCtx, {}, "bkqsink/", "");
+  ILOG(Info, Devel) << "Initialized BookkeepingQualitySink" << ENDM;
 }
 
 void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance provenance)
@@ -69,6 +76,7 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
       }
       if (!runNumber.has_value()) {
         runNumber = flagCollection->getRunNumber();
+        QcInfoLogger::setRun(runNumber.value());
       }
       if (!passName.has_value()) {
         passName = flagCollection->getPassName();

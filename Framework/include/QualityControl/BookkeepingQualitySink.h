@@ -41,6 +41,7 @@ class BookkeepingQualitySink : public framework::Task
 
   void init(framework::InitContext&) override;
   void run(framework::ProcessingContext&) override;
+  void init(framework::InitContext& iCtx) override;
 
   void endOfStream(framework::EndOfStreamContext& context) override;
   void stop() override;
