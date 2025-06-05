@@ -40,7 +40,8 @@
           "QtotNBins":      "600",  "QtotXMin":      "0", "QtotXMax":      "6000",
           "SigmaPadNBins":  "200",  "SigmaPadXMin":  "0", "SigmaPadXMax":  "3.8",
           "SigmaTimeNBins": "200",  "SigmaTimeXMin": "0", "SigmaTimeXMax": "2.5",
-          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000"
+          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000",
+          "Occupancy":      "1000", "OccupancyXMin": "0", "OccupancyXMax": "1"
         },
         "location": "remote"
       }
