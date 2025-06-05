@@ -43,7 +43,11 @@ void Bookkeeping::init(const std::string& url)
   }
 
   try {
-    mClient = BkpClientFactory::create(url);
+    if (auto tokenEnv = std::getenv("QC_BKP_CLIENT_TOKEN"); tokenEnv != NULL) {
+      mClient = BkpClientFactory::create(url, tokenEnv);
+    } else {
+      mClient = BkpClientFactory::create(url);
+    }
   } catch (std::runtime_error& error) {
     ILOG(Warning, Support) << "Error connecting to Bookkeeping: " << error.what() << ENDM;
     return;
