@@ -115,7 +115,8 @@ void TrendingCalibDiagnostics::trendValues(const Trigger& t, repository::Databas
         ILOG(Info, Support) << "Retrieved calibration file '" << dataSource.path << "'." << ENDM;
         row = calib_object->getFrequencyROW();
         if (row <= 0) {
-          return;
+          ILOG(Info, Support) << "Readout window size " << row << "." << ENDM;
+          continue;
         }
 
         const auto& vec = calib_object->getVector();
