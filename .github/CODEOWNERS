@@ -2,8 +2,7 @@
 *       @Barthelemy @knopers8 @justonedev1
 
 # Detectors
-/Modules/TOF/      @njacazio
-/Modules/PID/      @njacazio
+/Modules/TOF/      @ercolessi
 /Modules/EMCAL/    @jokonig @Barthelemy @knopers8
 /Modules/TPC/      @wiechula
 /Modules/MFT/      @AlexianL
