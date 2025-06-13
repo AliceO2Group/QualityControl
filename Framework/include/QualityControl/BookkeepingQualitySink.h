@@ -40,6 +40,7 @@ class BookkeepingQualitySink : public framework::Task
   BookkeepingQualitySink(const std::string& grpcUri, Provenance, SendCallback sendCallback = send);
 
   void run(framework::ProcessingContext&) override;
+  void init(framework::InitContext& iCtx) override;
 
   void endOfStream(framework::EndOfStreamContext& context) override;
   void stop() override;
