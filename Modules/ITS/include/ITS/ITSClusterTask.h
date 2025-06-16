@@ -96,7 +96,7 @@ class ITSClusterTask : public TaskInterface
   TH1L* hClusterSizeLayerSummary[NLayer] = { nullptr };
   TH1L* hClusterTopologyLayerSummary[NLayer] = { nullptr };
   TH1L* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
-  TH1D* hClusterOccupancyDistribution[NLayer] = { nullptr }; // number of clusters with npix > 1, per chip, per ROF
+  TH2D* hClusterOccupancyDistribution[NLayer] = { nullptr }; // number of clusters and hits per chip, per ROF. From clusters with npix > 2
 
   // Anomalies plots
   TH2D* hLongClustersPerChip[3] = { nullptr };

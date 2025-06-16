@@ -42,6 +42,7 @@ ITSClusterTask::~ITSClusterTask()
 {
   delete hEmptyLaneFractionGlobal;
   delete hClusterVsBunchCrossing;
+
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
 
     if (!mEnableLayers[iLayer])
@@ -155,7 +156,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
-    int nClusters3pixLay[7] = {0};
+    int nClusters3pixLay[7] = { 0 };
+    int nDigits3pixLay[7] = { 0 };
     int nClusters3pix = 0;
     int nLongClusters[ChipBoundary[NLayerIB]] = {};
     int nHitsFromClusters[ChipBoundary[NLayerIB]] = {}; // only IB is implemented at the moment
@@ -216,7 +218,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       if (npix > 2) {
         nClusters3pixLay[lay]++;
-	nClusters3pix++;
+        nClusters3pix++;
+        nDigits3pixLay[lay] += npix;
       }
 
       if (lay < NLayerIB) {
@@ -277,14 +280,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     hClusterVsBunchCrossing->Fill(bcdata.bc, nClusters3pix); // we count only the number of clusters, not their sizes
-    for (int lay = 0; lay < 7; lay++){
-      if (nClusters3pixLay[lay] > 0){
-	int nchips = mNStaves[lay]*mNHicPerStave[lay]*mNChipsPerHic[lay];
-	hClusterOccupancyDistribution[lay]->Fill(TMath::Log10(1.*nClusters3pixLay[lay]/nchips));
+    for (int lay = 0; lay < 7; lay++) {
+      if (nClusters3pixLay[lay] > 0) {
+        int nchips = mNStaves[lay] * mNHicPerStave[lay] * mNChipsPerHic[lay];
+        hClusterOccupancyDistribution[lay]->Fill(1. * nClusters3pixLay[lay] / nchips, 1. * nDigits3pixLay[lay] / nchips);
       }
     }
-  
-      
 
     // filling these anomaly plots once per ROF, ignoring chips w/o long clusters
     for (int ichip = 0; ichip < ChipBoundary[NLayerIB]; ichip++) {
@@ -410,6 +411,7 @@ void ITSClusterTask::reset()
     if (!mEnableLayers[iLayer])
       continue;
 
+    hClusterOccupancyDistribution[iLayer]->Reset();
     hClusterSizeLayerSummary[iLayer]->Reset();
     hGroupedClusterSizeLayerSummary[iLayer]->Reset();
     hClusterTopologyLayerSummary[iLayer]->Reset();
@@ -489,10 +491,15 @@ void ITSClusterTask::createAllHistos()
     formatAxes(hClusterSizeLayerSummary[iLayer], "Cluster Size (pixels)", "counts", 1, 1.10);
     hClusterSizeLayerSummary[iLayer]->SetStats(0);
 
-    hClusterOccupancyDistribution[iLayer] = new TH1D(Form("Layer%d/ClustersPerChipPerEvt", iLayer), Form("Layer%d/ClustersPerChipPerEvt", iLayer), 100, -4, 5);
-    hClusterOccupancyDistribution[iLayer]->SetTitle(Form("log10 n_clusters with npix > 2 / chip / evt - Layer%d",iLayer));
+    double dynbin[7][4] = { { 300, 100, 500, 1000 }, { 300, 100, 500, 1000 }, { 300, 100, 500, 1000 }, // IB
+                            { 300, 5, 500, 50 },
+                            { 300, 5, 500, 50 }, // ML
+                            { 300, 1.5, 500, 15 },
+                            { 300, 1.5, 500, 15 } }; // OL
+    hClusterOccupancyDistribution[iLayer] = new TH2D(Form("Layer%d/OccupancyPerChipPerEvt", iLayer), Form("Layer%d/OccupancyPerChipPerEvt", iLayer), (int)dynbin[iLayer][0], 0, dynbin[iLayer][1], (int)dynbin[iLayer][2], 0, dynbin[iLayer][3]);
+    hClusterOccupancyDistribution[iLayer]->SetTitle(Form("hits/chip/evt, form clusters with npix>2 - Layer%d", iLayer));
     addObject(hClusterOccupancyDistribution[iLayer]);
-    formatAxes(hClusterOccupancyDistribution[iLayer],"n clus","events",1,1.10);
+    formatAxes(hClusterOccupancyDistribution[iLayer], "N clus", "N hit", 1, 1.10);
     hClusterOccupancyDistribution[iLayer]->SetStats(0);
 
     hGroupedClusterSizeLayerSummary[iLayer] = new TH1L(Form("Layer%d/AverageGroupedClusterSizeSummary", iLayer), Form("Layer%dAverageGroupedClusterSizeSummary", iLayer), 128 * 128, 0, 128 * 128);
