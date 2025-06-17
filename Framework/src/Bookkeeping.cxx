@@ -26,6 +26,17 @@ using namespace o2::bkp::api;
 namespace o2::quality_control::core
 {
 
+std::string readClientToken()
+{
+  if (auto tokenEnv = std::getenv("QC_BKP_CLIENT_TOKEN"); tokenEnv != NULL && std::strlen(tokenEnv) > 0) {
+    ILOG(Info, Ops) << "Using token from environment variable QC_BKP_CLIENT_TOKEN" << ENDM;
+    return tokenEnv;
+  }
+
+  ILOG(Debug, Devel) << "Could not find an env var QC_BKP_CLIENT_TOKEN, using BKP client without an authentication token" << ENDM;
+  return "";
+}
+
 void Bookkeeping::init(const std::string& url)
 {
   if (mInitialized) {
@@ -42,9 +53,11 @@ void Bookkeeping::init(const std::string& url)
     return;
   }
 
+  const auto token = readClientToken();
+
   try {
-    if (auto tokenEnv = std::getenv("QC_BKP_CLIENT_TOKEN"); tokenEnv != NULL) {
-      mClient = BkpClientFactory::create(url, tokenEnv);
+    if (!token.empty()) {
+      mClient = BkpClientFactory::create(url, token);
     } else {
       mClient = BkpClientFactory::create(url);
     }
@@ -79,4 +92,29 @@ void Bookkeeping::registerProcess(int runNumber, const std::string& name, const 
   }
   mClient->dplProcessExecution()->registerProcessExecution(runNumber, type, getHostName(), name, args, detector);
 }
+
+std::vector<int> Bookkeeping::sendFlagsForSynchronous(uint32_t runNumber, const std::string& detectorName, const std::vector<QcFlag>& qcFlags)
+{
+  if (!mInitialized) {
+    return {};
+  }
+  return mClient->qcFlag()->createForSynchronous(runNumber, detectorName, qcFlags);
+}
+
+std::vector<int> Bookkeeping::sendFlagsForDataPass(uint32_t runNumber, const std::string& passName, const std::string& detectorName, const std::vector<QcFlag>& qcFlags)
+{
+  if (!mInitialized) {
+    return {};
+  }
+  return mClient->qcFlag()->createForDataPass(runNumber, passName, detectorName, qcFlags);
+}
+
+std::vector<int> Bookkeeping::sendFlagsForSimulationPass(uint32_t runNumber, const std::string& productionName, const std::string& detectorName, const std::vector<QcFlag>& qcFlags)
+{
+  if (!mInitialized) {
+    return {};
+  }
+  return mClient->qcFlag()->createForSimulationPass(runNumber, productionName, detectorName, qcFlags);
+}
+
 } // namespace o2::quality_control::core

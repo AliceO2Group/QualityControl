@@ -39,6 +39,7 @@ class BookkeepingQualitySink : public framework::Task
   // sendCallback is mainly used for testing without the necessity to do grpc calls
   BookkeepingQualitySink(const std::string& grpcUri, Provenance, SendCallback sendCallback = send);
 
+  void init(framework::InitContext&) override;
   void run(framework::ProcessingContext&) override;
 
   void endOfStream(framework::EndOfStreamContext& context) override;

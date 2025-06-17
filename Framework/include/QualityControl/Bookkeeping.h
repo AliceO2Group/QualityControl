@@ -23,6 +23,9 @@ namespace o2::quality_control::core
 {
 class Activity;
 
+// \brief A singleton class to handle the bookkeeping service interactions.
+//
+// All calls in QC code to Bookkeeping service should go through this class.
 class Bookkeeping
 {
  public:
@@ -38,6 +41,11 @@ class Bookkeeping
 
   void init(const std::string& url);
   void registerProcess(int runNumber, const std::string& name, const std::string& detector, bkp::DplProcessType type, const std::string& args);
+
+  // send QC flags to the bookkeeping service
+  std::vector<int> sendFlagsForSynchronous(uint32_t runNumber, const std::string& detectorName, const std::vector<QcFlag>& qcFlags);
+  std::vector<int> sendFlagsForDataPass(uint32_t runNumber, const std::string& passName, const std::string& detectorName, const std::vector<QcFlag>& qcFlags);
+  std::vector<int> sendFlagsForSimulationPass(uint32_t runNumber, const std::string& productionName, const std::string& detectorName, const std::vector<QcFlag>& qcFlags);
 
  private:
   Bookkeeping() = default;

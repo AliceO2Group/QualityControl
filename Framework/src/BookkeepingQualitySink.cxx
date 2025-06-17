@@ -44,8 +44,7 @@ void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::Comp
 
 void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance provenance)
 {
-  auto bkpClient = o2::bkp::api::BkpClientFactory::create(grpcUri);
-  auto& qcClient = bkpClient->qcFlag();
+  auto& bkpClient = o2::quality_control::core::Bookkeeping::getInstance();
 
   std::optional<int> runNumber;
   std::optional<std::string> passName;
@@ -98,20 +97,19 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
     try {
       switch (provenance) {
         case Provenance::SyncQC:
-          qcClient->createForSynchronous(runNumber.value(), detector, bkpQcFlags);
+          bkpClient.sendFlagsForSynchronous(runNumber.value(), detector, bkpQcFlags);
           break;
         case Provenance::AsyncQC:
-          qcClient->createForDataPass(runNumber.value(), passName.value(), detector, bkpQcFlags);
+          bkpClient.sendFlagsForDataPass(runNumber.value(), passName.value(), detector, bkpQcFlags);
           break;
         case Provenance::MCQC:
-          qcClient->createForSimulationPass(runNumber.value(), periodName.value(), detector, bkpQcFlags);
+          bkpClient.sendFlagsForSimulationPass(runNumber.value(), periodName.value(), detector, bkpQcFlags);
           break;
       }
+      ILOG(Info, Support) << "Sent " << bkpQcFlags.size() << " flags for detector '" << detector << "'" << ENDM;
     } catch (const std::runtime_error& err) {
-      ILOG(Error, Support) << "Failed to send flags for detector: " << detector
-                           << " with error: " << err.what() << ENDM;
+      ILOG(Error, Support) << "Encountered errors while sending flags for detector '" << detector << "', details: " << err.what() << ENDM;
     }
-    ILOG(Info, Support) << "Sent " << bkpQcFlags.size() << " flags for detector: " << detector << ENDM;
   }
 }
 
@@ -128,6 +126,11 @@ auto collectionForQualityObject(const QualityObject& qualityObject) -> std::uniq
     qualityObject.getActivity().mPeriodName,
     qualityObject.getActivity().mPassName,
     qualityObject.getActivity().mProvenance);
+}
+
+void BookkeepingQualitySink::init(framework::InitContext& context)
+{
+  o2::quality_control::core::Bookkeeping::getInstance().init(mGrpcUri);
 }
 
 void BookkeepingQualitySink::run(framework::ProcessingContext& context)
