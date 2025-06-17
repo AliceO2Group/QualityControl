@@ -587,6 +587,11 @@ If you need the directory structure preserved, add the argument `--preserve-dire
 
 The framework allows to propagate Quality Objects (QOs) produced by Checks and Aggregators to RCT in Bookkeeping.
 The synchronisation is done once, at the end of workflow runtime, i.e. at the End of Run or in the last stage of QC merging on Grid.
+Check results are converted into Flags, which are documented in [O2/DataFormats/QualityControl](https://github.com/AliceO2Group/AliceO2/tree/dev/DataFormats/QualityControl).
+Information about the object validity is preserved, which allows for time-based flagging of good/bad data.
+
+### Configuration details
+
 Propagation can be enabled by adding the following key-value pair to Check/Aggregator configuration:
 
 ```json
@@ -595,10 +600,25 @@ Propagation can be enabled by adding the following key-value pair to Check/Aggre
 
 Using it for Aggregators is discouraged, as the information on which exact Check failed is lost or at least obfuscated.
 
-Also, make sure that the configuration file includes the Bookkeeping URL and there is an env var `QC_BKP_CLIENT_TOKEN` with authentication token for setups external to P2.
+To allow QC to connect to Bookkeeping, include the its URL in the QC configuration file, e.g.:
 
-Check results are converted into Flags, which are documented in [O2/DataFormats/QualityControl](https://github.com/AliceO2Group/AliceO2/tree/dev/DataFormats/QualityControl).
-Information about the object validity is preserved, which allows for time-based flagging of good/bad data.
+```json
+{
+  "qc": {
+    "config": {
+      "bookkeeping": {
+        "url": "bookkeeping.cern.ch:12345"
+      }
+    }
+  }
+}
+```
+
+For setups external to P2, one also needs to provide a BKP client token.
+It can be done by creating a file named `qc_bkp_client_token` in the working directory, containing just the token.
+In such case, please ensure minimal permissions for the file, so that it is not readable by other users.
+Alternatively, it can be provided as an environment variable `QC_BKP_CLIENT_TOKEN`.
+Then, avoid printing the environment variable in the logs.
 
 ### Conversion details
 
