@@ -20,6 +20,8 @@
 #include "BookkeepingApi/BkpClientFactory.h"
 #include "BookkeepingApi/BkpClient.h"
 #include <unistd.h>
+#include <filesystem>
+#include <fstream>
 
 using namespace o2::bkp::api;
 
@@ -28,12 +30,33 @@ namespace o2::quality_control::core
 
 std::string readClientToken()
 {
+  // first we try to find the token in the environment variable
   if (auto tokenEnv = std::getenv("QC_BKP_CLIENT_TOKEN"); tokenEnv != NULL && std::strlen(tokenEnv) > 0) {
     ILOG(Info, Ops) << "Using token from environment variable QC_BKP_CLIENT_TOKEN" << ENDM;
     return tokenEnv;
   }
 
-  ILOG(Debug, Devel) << "Could not find an env var QC_BKP_CLIENT_TOKEN, using BKP client without an authentication token" << ENDM;
+  // if the environment variable is not set, we try to read it from a file
+  const std::string tokenFileName = "qc_bkp_client_token.txt";
+  std::filesystem::path tokenPath = std::filesystem::current_path() / tokenFileName;
+
+  std::error_code ec;
+  if (std::filesystem::exists(tokenPath, ec) && !ec.value()) {
+    std::string token;
+    std::ifstream tokenFile(tokenPath);
+    // from now on, we throw if something goes wrong, because the user is clearly trying to use a token file
+    if (!tokenFile.is_open()) {
+      throw std::runtime_error("BKP token file '" + tokenFileName + "' was provided but cannot be opened, check permissions");
+    }
+    std::getline(tokenFile, token);
+    if (token.empty()) {
+      throw std::runtime_error("BKP token file '" + tokenFileName + "' was provided but it is empty, please provide a valid token");
+    }
+    ILOG(Debug, Devel) << "Using token from file qc_bkp_client_token" << ENDM;
+    return token;
+  }
+
+  ILOG(Debug, Devel) << "Could not find an env var QC_BKP_CLIENT_TOKEN nor a qc_bkp_client_token.txt file, using BKP client without an authentication token" << ENDM;
   return "";
 }
 
