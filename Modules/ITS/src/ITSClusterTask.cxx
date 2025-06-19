@@ -40,6 +40,7 @@ ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 
 ITSClusterTask::~ITSClusterTask()
 {
+  delete hTFCounter;
   delete hEmptyLaneFractionGlobal;
   delete hClusterVsBunchCrossing;
 
@@ -370,6 +371,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
+  hTFCounter->Fill(0);
+
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   ILOG(Debug, Devel) << "Time in QC Cluster Task:  " << difference << ENDM;
@@ -404,6 +407,7 @@ void ITSClusterTask::endOfActivity(const Activity& /*activity*/)
 void ITSClusterTask::reset()
 {
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
+  hTFCounter->Reset();
   hClusterVsBunchCrossing->Reset();
   hEmptyLaneFractionGlobal->Reset("ICES");
   mGeneralOccupancy->Reset();
@@ -451,6 +455,11 @@ void ITSClusterTask::reset()
 
 void ITSClusterTask::createAllHistos()
 {
+  hTFCounter = new TH1D("TFcounter", "TFcounter", 1, 0, 1);
+  hTFCounter->SetTitle("TF counter");
+  addObject(hTFCounter);
+  formatAxes(hTFCounter, "", "TF", 1, 1.10);
+
   hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusters", "BunchCrossingIDvsClusters", nBCbins, 0, 4095, 150, 0, 3000);
   hClusterVsBunchCrossing->SetTitle("#clusters vs BC id for clusters with npix > 2");
   addObject(hClusterVsBunchCrossing);

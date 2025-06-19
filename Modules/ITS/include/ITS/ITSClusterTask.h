@@ -77,6 +77,9 @@ class ITSClusterTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
 
+  // Task
+  TH1D* hTFCounter = nullptr;
+
   // Inner barrel
   TH1D* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
   TH1D* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
