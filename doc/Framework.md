@@ -615,7 +615,7 @@ To allow QC to connect to Bookkeeping, include the its URL in the QC configurati
 ```
 
 For setups external to P2, one also needs to provide a BKP client token.
-It can be done by creating a file named `qc_bkp_client_token` in the working directory, containing just the token.
+It can be done by creating a file named `qc_bkp_client_token.txt` in the working directory, containing just the token.
 In such case, please ensure minimal permissions for the file, so that it is not readable by other users.
 Alternatively, it can be provided as an environment variable `QC_BKP_CLIENT_TOKEN`.
 Then, avoid printing the environment variable in the logs.
