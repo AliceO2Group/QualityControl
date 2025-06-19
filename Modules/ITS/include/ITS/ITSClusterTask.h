@@ -77,6 +77,9 @@ class ITSClusterTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
 
+  // Task
+  TH1D* hTFCounter = nullptr;
+
   // Inner barrel
   TH1D* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
   TH1D* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
@@ -96,6 +99,7 @@ class ITSClusterTask : public TaskInterface
   TH1L* hClusterSizeLayerSummary[NLayer] = { nullptr };
   TH1L* hClusterTopologyLayerSummary[NLayer] = { nullptr };
   TH1L* hGroupedClusterSizeLayerSummary[NLayer] = { nullptr };
+  TH2D* hClusterOccupancyDistribution[NLayer] = { nullptr }; // number of clusters and hits per chip, per ROF. From clusters with npix > 2
 
   // Anomalies plots
   TH2D* hLongClustersPerChip[3] = { nullptr };
