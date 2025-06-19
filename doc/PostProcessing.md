@@ -287,7 +287,7 @@ In such case, to reduce a Monitor Object or Quality Object, one has to inherit R
 
 All the values are stored in a **TTree**.
 Each data source forms a separate branch, with its leaves being the individual values.
-Additionally added columns include a `time` branch and a `metadata` branch (now consisting only of `runNumber`).
+Additionally added columns include a `time` branch and a `metadata` branch, consisting of `runNumber` (integer) and `runNumberStr` (string/label).
 
 The TTree is stored back to the **QC database** each time it is updated.
 In addition, the class exposes the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) interface, which allows to instantaneously generate **plots** with trends, correlations or histograms that are also sent to the QC database.

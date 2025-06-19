@@ -184,8 +184,9 @@ bool TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
     mTime = t.activity.mValidity.getMax() / 1000;
   }
   mMetaData.runNumber = t.activity.mId;
-  bool wereAllSourcesInvoked = true;
+  std::snprintf(mMetaData.runNumberStr, MaxRunNumberStringLength + 1, "%d", t.activity.mId);
 
+  bool wereAllSourcesInvoked = true;
   for (auto& dataSource : mConfig.dataSources) {
     if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
       wereAllSourcesInvoked = false;

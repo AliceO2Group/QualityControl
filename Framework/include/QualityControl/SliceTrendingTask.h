@@ -65,8 +65,12 @@ class SliceTrendingTask : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistryRef) final;
 
  private:
+  static constexpr size_t MaxRunNumberStringLength = 6;
   struct MetaData {
+    // we store run numbers both as an integer and as a string to allow users to select whether they need
+    // a trend in integer or label domain (the latter will contain evenly-spaced data points)
     Int_t runNumber = 0;
+    char runNumberStr[MaxRunNumberStringLength + 1] = { 0 }; // 6 characters + null terminator
   };
   struct TitleSettings {
     std::string observableX;
