@@ -530,7 +530,7 @@ This post-processing task draws a given set of plots in comparison with their co
 Currently the source of reference data is specified as a run-type and beam-type specific `referenceRun` number. This will be modified once a centralized way of accessing reference plots will become available in the framework.
 The `notOlderThan` option allows to ignore monitor objects that are older than a given number of seconds. A value of -1 means "no limit".
 The `ignorePeriodForReference` and `ignorePassForReference` boolean parameters control whether the period and/or pass names should be matched or not when querying the reference plots from the database.
-A value of `"1"` (default) means that the reference plots are not required to match the period and/or pass names of the current run, while a value of `"0"` means that the reference plot is retrieved only if the corresponding period and/or pass names match those of the current run.
+A value of `"true"` (default) means that the reference plots are not required to match the period and/or pass names of the current run, while a value of `"false"` means that the reference plot is retrieved only if the corresponding period and/or pass names match those of the current run.
 
 The input MonitorObjects to be processed are logically divided in **dataGroups**. Each group is configured via the following parameters:
 
@@ -538,6 +538,7 @@ The input MonitorObjects to be processed are logically divided in **dataGroups**
 * `referencePath` (optional): specifies the path for the reference objects, if not set the `inputPath` is used
 * `outputPath`: path in the QCDB where the output objects are stored
 * `drawRatioOnly`: boolean parameter specifying wether to only draw the ratio plots, or the current/reference comparisons as well
+* `legendHeight`: space reserved for the legend above the histograms, in fractions of the pad height; if the height is set to zero, the legend is not shown
 * `drawOption1D`: the ROOT draw option to be used for the 1-D histograms
 * `drawOption2D`: the ROOT draw option to be used for the 2-D histograms
 
@@ -609,8 +610,8 @@ In the example configuration below, the relationship between the input and outpu
             "default": {
               "notOlderThan" : "300",
               "referenceRun" : "551875",
-              "ignorePeriodForReference": "1",
-              "ignorePassForReference": "1"
+              "ignorePeriodForReference": "true",
+              "ignorePassForReference": "true"
             }
           },
           "PHYSICS": {
@@ -627,6 +628,7 @@ In the example configuration below, the relationship between the input and outpu
             "outputPath": "Tracks/WithCuts",
             "normalizeReference": "true",
             "drawRatioOnly": "false",
+            "legendHeight": "0.2",  
             "drawOption1D": "E",
             "drawOption2D": "COL",
             "inputObjects": [
@@ -660,7 +662,8 @@ In the example configuration below, the relationship between the input and outpu
               "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
               "threshold" : "0.5",
               "threshold:TrackEta" : "0.2",
-              "rangeX:TrackEta" : "-3.5,-2.5"
+              "rangeX:TrackEta" : "-3.5,-2.5",
+              "ratioPlotRange" : "0.5"
             }
           }
         },

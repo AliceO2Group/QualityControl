@@ -153,7 +153,10 @@ The configuration looks like
               "referenceRun" : "500",
               "moduleName" : "QualityControl",
               "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
-              "threshold" : "0.5"
+              "threshold" : "0.2",
+              "ratioPlotRange" : "0.5",
+              "ignorePeriodForReference" : "true",
+              "ignorePassForReference" : "true"
             }
           },
           "PHYSICS": {
@@ -168,7 +171,9 @@ The configuration looks like
 The check needs the following parameters
 * `referenceRun` to specify what is the run of reference and retrieve the reference data.
 * `comparatorName` to decide how to compare, see below for their descriptions.
-* `threshold` to specifie the value used to discriminate between good and bad matches between the histograms.
+* `threshold` to specify the value used to discriminate between good and bad matches between the histograms.
+* `ratioPlotRange` to specify a custom vertical scale for the ratio plot. The vertical values are between 1.0 - range and 1.0 + range.
+* `ignorePeriodForReference`, `ignorePassForReference`: boolean flags specifying wether to ignore the period or pass names of the reference run; needed for comparing runs from different periods and/or reconstruction passes.
 
 Three comparators are provided:
 
