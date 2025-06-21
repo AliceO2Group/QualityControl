@@ -17,6 +17,7 @@
 
 #include "Common/ReferenceComparatorTask.h"
 #include "Common/ReferenceComparatorPlot.h"
+#include "Common/Utils.h"
 #include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/MonitorObject.h"
@@ -104,10 +105,10 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
   mHistograms.clear();
 
   auto& qcdb = services.get<repository::DatabaseInterface>();
-  mNotOlderThan = std::stoi(getCustomParameter(mCustomParameters, "notOlderThan", trigger.activity, "120"));
-  mReferenceRun = std::stoi(getCustomParameter(mCustomParameters, "referenceRun", trigger.activity, "0"));
-  mIgnorePeriodForReference = std::stoi(getCustomParameter(mCustomParameters, "ignorePeriodForReference", trigger.activity, "1")) != 0;
-  mIgnorePassForReference = std::stoi(getCustomParameter(mCustomParameters, "ignorePassForReference", trigger.activity, "1")) != 0;
+  mNotOlderThan = getFromExtendedConfig<int>(trigger.activity, mCustomParameters, "notOlderThan", 120);
+  mReferenceRun = getFromExtendedConfig<int>(trigger.activity, mCustomParameters, "referenceRun", 0);
+  mIgnorePeriodForReference = getFromExtendedConfig<bool>(trigger.activity, mCustomParameters, "ignorePeriodForReference", true);
+  mIgnorePassForReference = getFromExtendedConfig<bool>(trigger.activity, mCustomParameters, "ignorePassForReference", true);
 
   ILOG(Info, Devel) << "Reference run set to '" << mReferenceRun << "' for activity " << trigger.activity << ENDM;
 
@@ -149,9 +150,10 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
       plotVec.push_back(fullPath);
 
       // create and store the plotter object
-      mHistograms[fullPath] = std::make_shared<ReferenceComparatorPlot>(referenceHistogram, fullOutPath,
+      mHistograms[fullPath] = std::make_shared<ReferenceComparatorPlot>(referenceHistogram, mReferenceRun, fullOutPath,
                                                                         group.normalizeReference,
                                                                         group.drawRatioOnly,
+                                                                        group.legendHeight,
                                                                         group.drawOption1D,
                                                                         group.drawOption2D);
       auto* outObject = mHistograms[fullPath]->getMainCanvas();
