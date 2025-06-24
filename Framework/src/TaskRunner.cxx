@@ -470,8 +470,6 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
     registerToBookkeeping();
   }
 
-  // this stays until we move to using mTimekeeper.
-  auto nowMs = getCurrentTimestamp();
   mObjectsManager->setValidity(mTimekeeper->getValidity());
   mNumberObjectsPublishedInCycle += publish(outputs);
   mTotalNumberObjectsPublished += mNumberObjectsPublishedInCycle;
