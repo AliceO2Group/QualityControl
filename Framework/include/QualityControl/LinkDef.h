@@ -13,6 +13,7 @@
 #pragma link C++ class o2::quality_control::checker::AggregatorInterface + ;
 #pragma link C++ class o2::quality_control::postprocessing::PostProcessingInterface + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTask + ;
+#pragma link C++ class o2::quality_control::core::LateTaskInterface +;
 #pragma link C++ class o2::quality_control::core::MonitorObjectCollection + ;
 #pragma link C++ class o2::quality_control::core::ValidityInterval + ;
 #pragma link C++ class o2::quality_control::postprocessing::SliceInfo + ;

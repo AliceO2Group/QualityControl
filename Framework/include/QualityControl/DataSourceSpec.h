@@ -32,6 +32,7 @@ enum class DataSourceType {
   Check,
   Aggregator,
   PostProcessingTask,
+  LateTask,
   ExternalTask,
   Invalid
 };
