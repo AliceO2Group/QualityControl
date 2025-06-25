@@ -74,6 +74,7 @@ class CTPRawDataReaderTask final : public TaskInterface
   const o2::ctp::CTPConfiguration* mCTPconfig = nullptr;
   std::string mMBclassName;
   std::array<uint64_t, o2::ctp::CTP_NCLASSES> mClassErrorsA;
+  bool mPerformConsistencyCheck = false;
 };
 
 } // namespace o2::quality_control_modules::ctp

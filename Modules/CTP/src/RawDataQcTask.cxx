@@ -51,14 +51,12 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoBCMinBias2 = std::make_unique<TH1D>("bcMinBias2", "BC position MB2", norbits, 0, norbits);
   mHistoInputRatios = std::make_unique<TH1DRatio>("inputRatio", "Input Ratio to MTVX; Input; Ratio;", ninps, 0, ninps, true);
   mHistoClassRatios = std::make_unique<TH1DRatio>("classRatio", "Class Ratio to MB; Class; Ratio", nclasses, 0, nclasses, true);
-  mHistoDecodeError = std::make_unique<TH1D>("decodeError", "Errors from decoder", nclasses, 0, nclasses);
   getObjectsManager()->startPublishing(mHistoInputs.get());
   getObjectsManager()->startPublishing(mHistoClasses.get());
   getObjectsManager()->startPublishing(mHistoClassRatios.get());
   getObjectsManager()->startPublishing(mHistoInputRatios.get());
   getObjectsManager()->startPublishing(mHistoBCMinBias1.get());
   getObjectsManager()->startPublishing(mHistoBCMinBias2.get());
-  getObjectsManager()->startPublishing(mHistoDecodeError.get());
 
   mDecoder.setDoLumi(1);
   mDecoder.setDoDigits(1);
@@ -78,7 +76,6 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoInputRatios->Reset();
   mHistoBCMinBias1->Reset();
   mHistoBCMinBias2->Reset();
-  mHistoDecodeError->Reset();
 
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
@@ -213,8 +210,14 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   if (performConsistencyCheck == "true") {
     mDecoder.setCheckConsistency(1);
     mDecoder.setDecodeInps(1);
+    mPerformConsistencyCheck = true;
   } else {
     mDecoder.setCheckConsistency(0);
+  }
+
+  if (mPerformConsistencyCheck) {
+    mHistoDecodeError = std::make_unique<TH1D>("decodeError", "Errors from decoder", nclasses, 0, nclasses);
+    getObjectsManager()->startPublishing(mHistoDecodeError.get());
   }
 }
 
@@ -269,9 +272,11 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   o2::framework::InputRecord& inputs = ctx.inputs();
   int ret = mDecoder.decodeRaw(inputs, filter, outputDigits, lumiPointsHBF1);
   mClassErrorsA = mDecoder.getClassErrorsA();
-  for (size_t i = 0; i < o2::ctp::CTP_NCLASSES; i++) {
-    if (mClassErrorsA[i] > 0) {
-      mHistoDecodeError->Fill(i, mClassErrorsA[i]);
+  if (mPerformConsistencyCheck) {
+    for (size_t i = 0; i < o2::ctp::CTP_NCLASSES; i++) {
+      if (mClassErrorsA[i] > 0) {
+        mHistoDecodeError->Fill(i, mClassErrorsA[i]);
+      }
     }
   }
 
@@ -340,7 +345,8 @@ void CTPRawDataReaderTask::reset()
   mHistoClassRatios->Reset();
   mHistoBCMinBias1->Reset();
   mHistoBCMinBias2->Reset();
-  mHistoDecodeError->Reset();
+  if (mPerformConsistencyCheck)
+    mHistoDecodeError->Reset();
 }
 
 } // namespace o2::quality_control_modules::ctp
