@@ -14,8 +14,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef LATETASKINTERFACE_H
-#define LATETASKINTERFACE_H
+#ifndef QC_CORE_LATETASKINTERFACE_H
+#define QC_CORE_LATETASKINTERFACE_H
 
 #include <memory>
 // O2
@@ -89,7 +89,14 @@ class LateTaskInterface : public UserCodeInterface
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
   virtual void startOfActivity(const Activity& activity) = 0;
-  virtual void process(std::map<std::string, std::shared_ptr<const core::MonitorObject>>& moMap, std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap) = 0;
+  // todo:
+  //   we could come up with a dedicated QC data interface which supports our data sources.
+  //   similarly to InputRecord, it could provide a facade to MOs and QOs cached by us in our internal format and expose
+  //   methods to check if a requested resource is there, to get it, and to iterate over all available resources.
+  //   optionally, it could also hide DPL's InputRecord or decorate it with a method which allows to access sampled
+  //   and unsampled data in a unified way.
+  // virtual void process(std::map<std::string, std::shared_ptr<const core::MonitorObject>>& moMap, std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap) = 0;
+  virtual void process(o2::framework::ProcessingContext& ctx) = 0;
   virtual void endOfActivity(const Activity& activity) = 0;
   virtual void reset() = 0;
 
@@ -99,7 +106,6 @@ class LateTaskInterface : public UserCodeInterface
   // Setters and getters
   void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
   void setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring);
-
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
   std::shared_ptr<o2::monitoring::Monitoring> mMonitoring;
@@ -110,4 +116,4 @@ class LateTaskInterface : public UserCodeInterface
 
 } // namespace o2::quality_control::core
 
-#endif // LATETASKINTERFACE_H
+#endif // QC_CORE_LATETASKINTERFACE_H

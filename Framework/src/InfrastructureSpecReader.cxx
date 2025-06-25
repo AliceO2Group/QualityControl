@@ -19,9 +19,12 @@
 #include "QualityControl/PostProcessingDevice.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/AggregatorRunner.h"
+#include "QualityControl/LateTaskRunner.h"
 
 #include <DataSampling/DataSampling.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+
+#include <ranges>
 
 using namespace o2::utilities;
 using namespace o2::framework;
@@ -47,6 +50,7 @@ InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost:
   spec.aggregators = readSectionSpec<AggregatorSpec>(wholeTree, "aggregators");
   spec.postProcessingTasks = readSectionSpec<PostProcessingTaskSpec>(wholeTree, "postprocessing");
   spec.externalTasks = readSectionSpec<ExternalTaskSpec>(wholeTree, "externalTasks");
+  spec.lateTasks = readSectionSpec<LateTaskSpec>(wholeTree, "lateTasks");
 
   return spec;
 }
@@ -200,6 +204,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
     { "Check", DataSourceType::Check },
     { "Aggregator", DataSourceType::Aggregator },
     { "PostProcessing", DataSourceType::PostProcessingTask },
+    { "LateTask", DataSourceType::LateTask },
     { "ExternalTask", DataSourceType::ExternalTask }
   };
 
@@ -269,6 +274,20 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.inputs = { { dss.name, Check::createCheckDataOrigin(detectorName), Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
+          dss.subInputs.push_back(moName.second.get_value<std::string>());
+        }
+      }
+      break;
+    }
+    case DataSourceType::LateTask: {
+      dss.id = dataSourceTree.get<std::string>("name");
+      // this allows us to have tasks with the same name for different detectors
+      dss.name = wholeTree.get<std::string>("qc.lateTasks." + dss.id + ".taskName", dss.id);
+      auto detectorName = wholeTree.get<std::string>("qc.lateTasks." + dss.id + ".detectorName");
+
+      dss.inputs = { { dss.name, LateTaskRunner::createDataOrigin(detectorName), LateTaskRunner::createDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      if (dataSourceTree.count("MOs") > 0) {
+        for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
         }
       }
@@ -391,6 +410,39 @@ PostProcessingTaskSpec
   ppts.tree = wholeTree;
 
   return ppts;
+}
+
+template <>
+LateTaskSpec
+  InfrastructureSpecReader::readSpecEntry<LateTaskSpec>(const std::string& lateTaskId, const boost::property_tree::ptree& lateTaskTree, const boost::property_tree::ptree& wholeTree)
+{
+  LateTaskSpec lts;
+
+  lts.taskName = lateTaskTree.get<std::string>("taskName", lateTaskId);
+  lts.active = lateTaskTree.get<bool>("active", lts.active);
+  lts.critical = lateTaskTree.get<bool>("critical", lts.critical);
+  lts.className = lateTaskTree.get<std::string>("className");
+  lts.moduleName = lateTaskTree.get<std::string>("moduleName");
+  lts.detectorName = lateTaskTree.get<std::string>("detectorName", lts.detectorName);
+
+  const auto& dataSourcesTree = lateTaskTree.get_child("dataSources");
+  for (const auto& dataSourceTree : dataSourcesTree | std::views::values) {
+    lts.dataSources.push_back(readSpecEntry<DataSourceSpec>(lateTaskId, dataSourceTree, wholeTree));
+  }
+
+  // TODO unify checking presence of parameters
+  if (auto policy = lateTaskTree.get_optional<std::string>("policy"); policy.has_value()) {
+    lts.updatePolicy = UpdatePolicyTypeUtils::FromString(policy.get());
+  }
+
+  // if (lateTaskTree.count("grpGeomRequest") > 0) {
+    // lts.grpGeomRequestSpec = readSpecEntry<GRPGeomRequestSpec>(lts.taskName, lateTaskTree.get_child("grpGeomRequest"), wholeTree);
+  // }
+  // if (lateTaskTree.count("globalTrackingDataRequest") > 0) {
+    // lts.globalTrackingDataRequest = readSpecEntry<GlobalTrackingDataRequestSpec>(lts.taskName, lateTaskTree.get_child("globalTrackingDataRequest"), wholeTree);
+  // }
+
+  return lts;
 }
 
 template <>
