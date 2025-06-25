@@ -41,7 +41,6 @@ class TaskFactory
 
   /// \brief Create a new instance of a TaskInterface.
   /// The TaskInterface actual class is decided based on the parameters passed.
-  /// \todo make it static ?
   /// \author Barthelemy von Haller
   static TaskInterface* create(const TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
 };
