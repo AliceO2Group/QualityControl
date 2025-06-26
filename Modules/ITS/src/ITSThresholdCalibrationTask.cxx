@@ -60,8 +60,8 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
     if (iScan == TOT) {
       delete hTimeOverThreshold[iBarrel];
       delete hTimeOverThresholdRms[iBarrel];
-      delete hRiseTime[iBarrel];
-      delete hRiseTimeRms[iBarrel];
+      delete hToA[iBarrel];
+      delete hToARms[iBarrel];
     }
     if (iScan > 3) {
       delete hCalibrationDColChipAverage[iBarrel];
@@ -74,8 +74,8 @@ ITSThresholdCalibrationTask::~ITSThresholdCalibrationTask()
     for (int iLayer = 0; iLayer < NLayer; iLayer++) {
       delete hTimeOverThresholdLayer[iLayer];
       delete hTimeOverThresholdRmsLayer[iLayer];
-      delete hRiseTimeLayer[iLayer];
-      delete hRiseTimeRmsLayer[iLayer];
+      delete hToALayer[iLayer];
+      delete hToARmsLayer[iLayer];
     }
   }
 }
@@ -211,13 +211,13 @@ void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
         // fill 2D plots for the pulse length scan
         hTimeOverThreshold[iBarrel]->SetBinContent(currentChip, currentStave, result.Tot);
         hTimeOverThresholdRms[iBarrel]->SetBinContent(currentChip, currentStave, result.TotRms);
-        hRiseTime[iBarrel]->SetBinContent(currentChip, currentStave, result.Rt);
-        hRiseTimeRms[iBarrel]->SetBinContent(currentChip, currentStave, result.RtRms);
+        hToA[iBarrel]->SetBinContent(currentChip, currentStave, result.ToA);
+        hToARms[iBarrel]->SetBinContent(currentChip, currentStave, result.ToARms);
         // fill 1D plots for the pulse length scan
         hTimeOverThresholdLayer[result.Layer]->Fill(result.Tot);
         hTimeOverThresholdRmsLayer[result.Layer]->Fill(result.TotRms);
-        hRiseTimeLayer[result.Layer]->Fill(result.Rt);
-        hRiseTimeRmsLayer[result.Layer]->Fill(result.RtRms);
+        hToALayer[result.Layer]->Fill(result.ToA);
+        hToARmsLayer[result.Layer]->Fill(result.ToARms);
       }
     }
   }
@@ -339,10 +339,10 @@ ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask
         result.Tot = std::stof(data) / 1000; // to get micro-seconds
       } else if (name == "TotRms") {
         result.TotRms = std::stof(data) / 1000; // to get micro-seconds
-      } else if (name == "Rt") {
-        result.Rt = std::stof(data); // this will be in nano-seconds automatically
-      } else if (name == "RtRms") {
-        result.RtRms = std::stof(data); // this will be in nano-seconds automatically
+      } else if (name == "ToA") {
+        result.ToA = std::stof(data); // this will be in nano-seconds automatically
+      } else if (name == "ToARms") {
+        result.ToARms = std::stof(data); // this will be in nano-seconds automatically
       }
     }
   }
@@ -391,8 +391,8 @@ void ITSThresholdCalibrationTask::reset()
     if (iScan == TOT) {
       hTimeOverThreshold[iBarrel]->Reset();
       hTimeOverThresholdRms[iBarrel]->Reset();
-      hRiseTime[iBarrel]->Reset();
-      hRiseTimeRms[iBarrel]->Reset();
+      hToA[iBarrel]->Reset();
+      hToARms[iBarrel]->Reset();
     }
     if (iScan > 3) {
       hCalibrationDColChipAverage[iBarrel]->Reset();
@@ -404,8 +404,8 @@ void ITSThresholdCalibrationTask::reset()
     for (int iLayer = 0; iLayer < NLayer; iLayer++) {
       hTimeOverThresholdLayer[iLayer]->Reset();
       hTimeOverThresholdRmsLayer[iLayer]->Reset();
-      hRiseTimeLayer[iLayer]->Reset();
-      hRiseTimeRmsLayer[iLayer]->Reset();
+      hToALayer[iLayer]->Reset();
+      hToARmsLayer[iLayer]->Reset();
     }
   }
 }
@@ -507,20 +507,20 @@ void ITSThresholdCalibrationTask::createAllHistos()
       addObject(hTimeOverThresholdRms[iBarrel]);
 
       // Rise time 2D plot
-      hRiseTime[iBarrel] = new TH2F(Form("RiseTime%s", sBarrelType[iBarrel].Data()), Form("Rise time for %s (in ns)", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-      hRiseTime[iBarrel]->SetStats(0);
+      hToA[iBarrel] = new TH2F(Form("ToA%s", sBarrelType[iBarrel].Data()), Form("ToA for %s (in ns)", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+      hToA[iBarrel]->SetStats(0);
       if (iBarrel != 0)
-        formatAxes(hRiseTime[iBarrel], "Chip", "", 1, 1.10);
-      formatLayers(hRiseTime[iBarrel], iBarrel);
-      addObject(hRiseTime[iBarrel]);
+        formatAxes(hToA[iBarrel], "Chip", "", 1, 1.10);
+      formatLayers(hToA[iBarrel], iBarrel);
+      addObject(hToA[iBarrel]);
 
       // Rise time RMS 2D plot
-      hRiseTimeRms[iBarrel] = new TH2F(Form("RiseTimeRms%s", sBarrelType[iBarrel].Data()), Form("Rise time RMS for %s (in ns)", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
-      hRiseTimeRms[iBarrel]->SetStats(0);
+      hToARms[iBarrel] = new TH2F(Form("ToARms%s", sBarrelType[iBarrel].Data()), Form("ToA RMS for %s (in ns)", sBarrelType[iBarrel].Data()), nChips[iBarrel], -0.5, nChips[iBarrel] - 0.5, nStaves[iBarrel], -0.5, nStaves[iBarrel] - 0.5);
+      hToARms[iBarrel]->SetStats(0);
       if (iBarrel != 0)
-        formatAxes(hRiseTimeRms[iBarrel], "Chip", "", 1, 1.10);
-      formatLayers(hRiseTimeRms[iBarrel], iBarrel);
-      addObject(hRiseTimeRms[iBarrel]);
+        formatAxes(hToARms[iBarrel], "Chip", "", 1, 1.10);
+      formatLayers(hToARms[iBarrel], iBarrel);
+      addObject(hToARms[iBarrel]);
     }
   }
 
@@ -549,14 +549,14 @@ void ITSThresholdCalibrationTask::createAllHistos()
       addObject(hTimeOverThresholdRmsLayer[iLayer]);
 
       // Rise time for each layer
-      hRiseTimeLayer[iLayer] = new TH1F(Form("RiseTimeLayer%d", iLayer), Form("Rise time distribution for Layer%d", iLayer), 1600, 0, 800);
-      formatAxes(hRiseTimeLayer[iLayer], "Rise time (ns) ", "Counts", 1, 1.10);
-      addObject(hRiseTimeLayer[iLayer]);
+      hToALayer[iLayer] = new TH1F(Form("ToALayer%d", iLayer), Form("ToA distribution for Layer%d", iLayer), 1600, 0, 800);
+      formatAxes(hToALayer[iLayer], "ToA (ns) ", "Counts", 1, 1.10);
+      addObject(hToALayer[iLayer]);
 
       // Rise time RMS for each layer
-      hRiseTimeRmsLayer[iLayer] = new TH1F(Form("RiseTimeRmsLayer%d", iLayer), Form("Rise time Rms distribution for Layer%d", iLayer), 1000, 0, 500);
-      formatAxes(hRiseTimeRmsLayer[iLayer], "Rise time Rms (ns) ", "Counts", 1, 1.10);
-      addObject(hRiseTimeRmsLayer[iLayer]);
+      hToARmsLayer[iLayer] = new TH1F(Form("ToARmsLayer%d", iLayer), Form("ToA Rms distribution for Layer%d", iLayer), 1000, 0, 500);
+      formatAxes(hToARmsLayer[iLayer], "ToA Rms (ns) ", "Counts", 1, 1.10);
+      addObject(hToARmsLayer[iLayer]);
     }
   }
 
