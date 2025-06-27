@@ -673,6 +673,11 @@ Null QOs are marked with purple.
 
 ![](images/qo_flag_conversion_10.svg)
 
+## Registration of QC devices into the BookKeeping
+
+By default, the QC tasks, PP tasks, check runners, and aggregators are registered in the BK. 
+To disable this behaviour, pass the following environment variable : `O2_QC_DONT_REGISTER_IN_BK` (in the ECS). 
+
 ## Solving performance issues
 
 Problems with performance in message passing systems like QC usually manifest in backpressure seen in input channels of processes which are too slow.
