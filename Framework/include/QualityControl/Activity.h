@@ -39,7 +39,8 @@ class Activity
            ValidityInterval validity = gFullValidityInterval,
            const std::string& beamType = "",
            const std::string& partitionName = "",
-           int fillNumber = 0)
+           int fillNumber = 0,
+           int originalId = 0)
     : mId(id),
       mType(type),
       mPeriodName(periodName),
@@ -48,7 +49,8 @@ class Activity
       mValidity(validity),
       mBeamType(beamType),
       mPartitionName(partitionName),
-      mFillNumber(fillNumber) {}
+      mFillNumber(fillNumber),
+      mOriginalId(originalId) {}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -80,6 +82,7 @@ class Activity
   std::string mBeamType{};
   std::string mPartitionName{};
   int mFillNumber{ 0 };
+  int mOriginalId{ 0 }; // original run number of REPLAY runs
 
   ClassDef(Activity, 6);
 };

@@ -97,7 +97,8 @@ should not be present in real configuration files.
         "end" : "1234",                   "": "Activity end time in ms since epoch. One can use it as a filter in post-processing", 
         "beamType" : "pp",                "": "Beam type: `pp`, `PbPb`, `pPb` ", 
         "partitionName" : "",             "": "Partition name", 
-        "fillNumber" : "123",             "": "Fill Number"
+        "fillNumber" : "123",             "": "Fill Number",
+        "originalRunNumber" : "100",      "": "When it is a REPLAY run, this contains the original run number"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",

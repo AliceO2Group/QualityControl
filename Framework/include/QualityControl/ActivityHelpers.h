@@ -115,6 +115,7 @@ Activity commonActivityFields(const RangeOfActivities auto& activities)
   setMemberIfCommon(result, activities, &Activity::mBeamType);
   setMemberIfCommon(result, activities, &Activity::mPartitionName);
   setMemberIfCommon(result, activities, &Activity::mFillNumber);
+  setMemberIfCommon(result, activities, &Activity::mOriginalId);
   return result;
 }
 
