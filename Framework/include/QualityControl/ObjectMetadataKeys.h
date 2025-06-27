@@ -44,6 +44,7 @@ constexpr auto periodName = "PeriodName";
 constexpr auto beamType = "BeamType";
 constexpr auto fillNumber = "FillNumber";
 constexpr auto partitionName = "PartitionName";
+constexpr auto originalRunNumber = "OriginalRunNumber";
 
 } // namespace o2::quality_control::repository::metadata_keys
 

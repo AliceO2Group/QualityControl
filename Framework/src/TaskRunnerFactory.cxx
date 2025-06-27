@@ -162,7 +162,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     { globalConfig.activityStart, globalConfig.activityEnd },
     globalConfig.activityBeamType,
     globalConfig.activityPartitionName,
-    globalConfig.activityFillNumber
+    globalConfig.activityFillNumber,
+    globalConfig.activityOriginalNumber
   };
 
   o2::globaltracking::RecoContainer rd;

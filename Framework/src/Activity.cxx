@@ -34,7 +34,8 @@ std::ostream& operator<<(std::ostream& out, const Activity& activity)
       << ", " << metadata_keys::validUntil << ": " << activity.mValidity.getMax()
       << ", " << metadata_keys::beamType << ": '" << activity.mBeamType << "'"
       << ", " << metadata_keys::partitionName << ": '" << activity.mPartitionName << "'"
-      << ", " << metadata_keys::fillNumber << ": '" << activity.mFillNumber << "'";
+      << ", " << metadata_keys::fillNumber << ": '" << activity.mFillNumber << "'"
+      << ", " << metadata_keys::originalRunNumber << ": '" << activity.mOriginalId << "'";
   return out;
 }
 
@@ -72,7 +73,8 @@ bool Activity::operator==(const Activity& other) const
          mPassName == other.mPassName &&
          mProvenance == other.mProvenance &&
          mValidity == other.mValidity &&
-         mBeamType == other.mBeamType;
+         mBeamType == other.mBeamType &&
+         mOriginalId == other.mOriginalId;
 }
 
 } // namespace o2::quality_control::core

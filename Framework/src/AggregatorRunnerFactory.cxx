@@ -79,7 +79,8 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractRunnerConfig(const core::
     { commonSpec.activityStart, commonSpec.activityEnd },
     commonSpec.activityBeamType,
     commonSpec.activityPartitionName,
-    commonSpec.activityFillNumber
+    commonSpec.activityFillNumber,
+    commonSpec.activityOriginalNumber
   };
 
   return {
