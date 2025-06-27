@@ -46,7 +46,21 @@ void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::Comp
 void BookkeepingQualitySink::init(framework::InitContext& iCtx)
 {
   initInfologger(iCtx, {}, "bkqsink/", "");
+
+  try { // registering state machine callbacks
+    iCtx.services().get<framework::CallbackService>().set<framework::CallbackService::Id::Start>([this, services = iCtx.services()]() mutable { start(services); });
+  } catch (o2::framework::RuntimeErrorRef& ref) {
+    ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
+  }
+
   ILOG(Info, Devel) << "Initialized BookkeepingQualitySink" << ENDM;
+}
+
+void BookkeepingQualitySink::start(framework::ServiceRegistryRef services)
+{
+  Activity fallback; // no proper fallback as we don't have the config in this device
+  auto currentActivity = computeActivity(services, fallback);
+  QcInfoLogger::setRun(currentActivity.mId);
 }
 
 void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance provenance)
@@ -76,7 +90,6 @@ void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQ
       }
       if (!runNumber.has_value()) {
         runNumber = flagCollection->getRunNumber();
-        QcInfoLogger::setRun(runNumber.value());
       }
       if (!passName.has_value()) {
         passName = flagCollection->getPassName();

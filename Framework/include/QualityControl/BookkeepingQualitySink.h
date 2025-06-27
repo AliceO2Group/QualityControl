@@ -51,6 +51,9 @@ class BookkeepingQualitySink : public framework::Task
   static void send(const std::string& grpcUri, const FlagsMap&, Provenance);
 
  private:
+  /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
+  void start(framework::ServiceRegistryRef services);
+
   std::string mGrpcUri;
   Provenance mProvenance;
   SendCallback mSendCallback;
