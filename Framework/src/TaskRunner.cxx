@@ -306,11 +306,6 @@ void TaskRunner::start(ServiceRegistryRef services)
   mNoMoreCycles = false;
   mCycleNumber = 0;
 
-  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_AT_START")) {
-    // until we are sure it works, we have to turn it on
-    registerToBookkeeping();
-  }
-
   try {
     startOfActivity();
     startCycle();
@@ -442,13 +437,6 @@ void TaskRunner::registerToBookkeeping()
   ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
   try {
     Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
-    if (gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES")) {
-      ILOG(Debug, Devel) << "O2_QC_REGISTER_IN_BK_X_TIMES set to " << gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES") << ENDM;
-      int iterations = std::stoi(gSystem->Getenv("O2_QC_REGISTER_IN_BK_X_TIMES"));
-      for (int i = 1; i < iterations; i++) { // start at 1 because we already did it once
-        Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
-      }
-    }
   } catch (std::runtime_error& error) {
     ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
   }
@@ -465,8 +453,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
     << "(" << mTimekeeper->getTimerangeIdRange().getMin() << ", " << mTimekeeper->getTimerangeIdRange().getMax() << ")" << ENDM;
   mTask->endOfCycle();
 
-  if (mCycleNumber == 0 && gSystem->Getenv("O2_QC_REGISTER_IN_BK")) {
-    // until we are sure it works, we have to turn it on
+  if (mCycleNumber == 0) { // register at the end of the first cycle
     registerToBookkeeping();
   }
 
