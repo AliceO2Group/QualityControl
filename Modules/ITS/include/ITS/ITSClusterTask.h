@@ -80,6 +80,7 @@ class ITSClusterTask : public TaskInterface
   // Inner barrel
   TH1D* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
   TH1D* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
+  TH1D* hClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
 
   std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryIB[NLayer];
   std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryIB[NLayer];
