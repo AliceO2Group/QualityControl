@@ -84,6 +84,7 @@ class ITSTrackTask : public TaskInterface
   std::unique_ptr<TH2DRatio> hAngularDistribution;
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;
+  TH2D* hVertexContvsZ;
   TH1D* hVertexZ;
   TH1D* hVertexContributors;
   TH1D* hAssociatedClusterFraction;
