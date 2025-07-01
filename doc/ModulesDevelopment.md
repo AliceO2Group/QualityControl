@@ -136,12 +136,17 @@ The Data Sampling code is part of the AliceO2 repository.
 
 One can of course build using `aliBuild` (`aliBuild build --defaults o2 QualityControl`). However, that will take quite some time as it checks all dependencies and builds everything. 
 
-After the initial use of `aliBuild`, which is necessary, the correct way of building is to load the environment with `alienv` and then go to the build directory and run `make` or `ninja`.
+After the initial use of `aliBuild`, which is necessary, the quicker way of building is to load the build environment and run `ninja`:
 
 ```
-alienv enter QualityControl/latest
 cd sw/BUILD/QualityControl-latest/QualityControl
-make -j8 install # or ninja -j8 install , also adapt to the number of cores available
+
+# option 1
+WORK_DIR=~/alice/sw source ~/alice/sw/ubuntu2204_x86-64/QualityControl/latest/etc/profile.d/init.sh # replace paths as needed
+# option 2
+direnv allow # needs direnv installed, which will then load the build environment automatically
+
+ninja -j8 install # adapt to the number of cores available
 ```
 
 ### User-defined modules
@@ -203,11 +208,14 @@ We will refer in the following section to the module as `Tst` and the task as `R
 
 Now that there is a module, we can build it and test it. First let's build it :
 ```
-# We are in ~/alice, call alienv if not already done
-alienv enter QualityControl/latest
-# Go to the build directory of QualityControl.
 cd sw/BUILD/QualityControl-latest/QualityControl
-make -j8 install # or ninja, replace 8 by the number of cores on your machine
+
+# option 1
+WORK_DIR=~/alice/sw source ~/alice/sw/ubuntu2204_x86-64/QualityControl/latest/etc/profile.d/init.sh # replace paths as needed
+# option 2
+direnv allow # needs direnv installed, which will then load the build environment automatically
+
+ninja -j8 install # adapt to the number of cores available
 ```
 
 To test whether it works, we are going to run a basic workflow made of a producer and the qc, which corresponds to the one we saw in the [QuickStart](QuickStart.md#basic-workflow).
@@ -244,6 +252,7 @@ and
 Now we can run it
 
 ```
+alienv enter QualityControl/latest # enter runtime environment
 o2-qc-run-producer | o2-qc --config json://$HOME/alice/QualityControl/Modules/TST/basic-tst.json
 ```
 
