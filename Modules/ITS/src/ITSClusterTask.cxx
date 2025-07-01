@@ -157,8 +157,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
-    int nClusters3pixLay[7] = { 0 };
     int nDigits3pixLay[7] = { 0 };
+    int nClusters3pixLay[7] = { 0 };
     int nClusters3pix = 0;
     int nLongClusters[ChipBoundary[NLayerIB]] = {};
     int nHitsFromClusters[ChipBoundary[NLayerIB]] = {}; // only IB is implemented at the moment
