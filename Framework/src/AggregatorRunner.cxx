@@ -378,7 +378,7 @@ void AggregatorRunner::start(ServiceRegistryRef services)
   }
 
   // register ourselves to the BK
-  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+  if (!gSystem->Getenv("O2_QC_DONT_REGISTER_IN_BK")) { // Set this variable to disable the registration
     ILOG(Debug, Devel) << "Registering aggregator to BookKeeping" << ENDM;
     try {
       Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, AggregatorRunner::getDetectorName(mAggregators), bkp::DplProcessType::QC_AGGREGATOR, "");

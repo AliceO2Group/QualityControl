@@ -187,7 +187,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   QcInfoLogger::setRun(mActivity.mId);
 
   // register ourselves to the BK
-  if (gSystem->Getenv("O2_QC_REGISTER_IN_BK")) { // until we are sure it works, we have to turn it on
+  if (!gSystem->Getenv("O2_QC_DONT_REGISTER_IN_BK")) { // Set this variable to disable the registration
     ILOG(Debug, Devel) << "Registering pp task to BookKeeping" << ENDM;
     try {
       Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bkp::DplProcessType::QC_POSTPROCESSING, "");
