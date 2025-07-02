@@ -134,15 +134,15 @@ void TH1SliceReductor::GetTH1StatsY(TH1* hist, float stats[3],
 
   // Safety measures.
   if (lowerBin <= 0 || upperBin <= 0) {
-    ILOG(Error, Support) << "Error: Negative bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
+    ILOG(Error, Support) << "Error: Negative bin in TH1SliceReductor::GetTH1StatsY" << ENDM;
     exit(0);
   }
   if (upperBin < lowerBin) {
-    ILOG(Error, Support) << "Error: Upper bin smaller than lower bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
+    ILOG(Error, Support) << "Error: Upper bin smaller than lower bin in TH1SliceReductor::GetTH1StatsY" << ENDM;
     exit(0);
   }
   if (nTotalBins < iterateBins) {
-    ILOG(Error, Support) << "Error: Bin region bigger than total amount of bins TH1ReducterTPC::GetTH1StatsY" << ENDM;
+    ILOG(Error, Support) << "Error: Bin region bigger than total amount of bins TH1SliceReductor::GetTH1StatsY" << ENDM;
     exit(0);
   }
 

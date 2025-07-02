@@ -145,6 +145,8 @@ void SliceTrendingTask::trendValues(const Trigger& t,
     mTime = t.activity.mValidity.getMax() / 1000;
   }
   mMetaData.runNumber = t.activity.mId;
+  std::snprintf(mMetaData.runNumberStr, MaxRunNumberStringLength + 1, "%d", t.activity.mId);
+
   for (auto& dataSource : mConfig.dataSources) {
     mNumberPads[dataSource.name] = 0;
     mSources[dataSource.name]->clear();

@@ -56,11 +56,15 @@ class TrendingTask : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistryRef) override;
 
  private:
+  static constexpr size_t MaxRunNumberStringLength = 6;
   struct {
+    // we store run numbers both as an integer and as a string to allow users to select whether they need
+    // a trend in integer or label domain (the latter will contain evenly-spaced data points)
     Long64_t runNumber = 0;
+    char runNumberStr[MaxRunNumberStringLength + 1] = { 0 }; // 6 characters + null terminator
     static const char* getBranchLeafList()
     {
-      return "runNumber/L";
+      return "runNumber/L:runNumberStr/C";
     }
   } mMetaData;
 
