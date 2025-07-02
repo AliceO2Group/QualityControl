@@ -6,7 +6,7 @@ idna==3.7
 psutil==6.1.0
 python-consul==1.1.0
 PyYAML==6.0.1
-requests==2.32.2
+requests==2.32.4
 responses==0.25.0
 six==1.16.0
 urllib3==2.5.0
