@@ -37,7 +37,14 @@ class ReferenceComparatorPlot
   /// \param drawRatioOnly if true only  the ratio between current and reference plot is draw, otherwise also the individual plots are drawn in addition
   /// \param drawOption1D ROOT draw option to be used for 1-D plots
   /// \param drawOption2D ROOT draw option to be used for 2-D plots
-  ReferenceComparatorPlot(TH1* referenceHistogram, const std::string& outputPath, bool scaleReference, bool drawRatioOnly, const std::string& drawOption1D, const std::string& drawOption2D);
+  ReferenceComparatorPlot(TH1* referenceHistogram,
+                          int referenceRun,
+                          const std::string& outputPath,
+                          bool scaleReference,
+                          bool drawRatioOnly,
+                          double legendHeight,
+                          const std::string& drawOption1D,
+                          const std::string& drawOption2D);
   virtual ~ReferenceComparatorPlot() = default;
 
   TObject* getMainCanvas();

@@ -47,6 +47,7 @@
             "outputPath": "Tracks/WithCuts",
             "normalizeReference": "true",
             "drawRatioOnly": "false",
+            "legendHeight": "0.2",
             "drawOption1D": "E",
             "drawOption2D": "COL",
             "inputObjects": [
@@ -78,6 +79,7 @@
             "default": {      
               "moduleName" : "QualityControl",
               "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
+              "ratioPlotRange" : "0.5",
               "threshold" : "0.5"
             }
           }

@@ -44,6 +44,8 @@ struct ReferenceComparatorTaskConfig : quality_control::postprocessing::PostProc
     bool normalizeReference{ false };
     // wether to only draw the current/reference ratio, or the inidividual histograms as well
     bool drawRatioOnly{ false };
+    // space reserved for the legend above the histograms, in fractions of the pad height
+    double legendHeight{ 0.2 };
     // ROOT option to be used for drawing 1-D plots ("HIST" by default)
     std::string drawOption1D{ "HIST" };
     // ROOT option to be used for drawing 2-D plots ("COLZ" by default)

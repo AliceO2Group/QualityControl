@@ -34,6 +34,7 @@ ReferenceComparatorTaskConfig::ReferenceComparatorTaskConfig(std::string name, c
       dataGroupConfig.second.get<std::string>("outputPath"),
       dataGroupConfig.second.get<bool>("normalizeReference", false),
       dataGroupConfig.second.get<bool>("drawRatioOnly", false),
+      dataGroupConfig.second.get<double>("legendHeight", 0.2),
       dataGroupConfig.second.get<std::string>("drawOption1D", "HIST"),
       dataGroupConfig.second.get<std::string>("drawOption2D", "COLZ")
     };
