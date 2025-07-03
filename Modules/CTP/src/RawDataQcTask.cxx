@@ -231,7 +231,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   static constexpr double sOrbitLengthInMS = o2::constants::lhc::LHCOrbitMUS / 1000;
   auto nOrbitsPerTF = 32.;
   //   get the input
-  std::vector<o2::framework::InputSpec> filter;
+  std::vector<o2::framework::InputSpec> filter{ o2::framework::InputSpec{ "filter", o2::framework::ConcreteDataTypeMatcher{ "CTP", "RAWDATA" }, o2::framework::Lifetime::Timeframe } };
   std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
   std::vector<o2::ctp::CTPDigit> outputDigits;
 
