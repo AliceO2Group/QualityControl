@@ -229,7 +229,10 @@ void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
 
     if (checkResult == Quality::Null) {
-      msg = std::make_shared<TLatex>(0.2, 0.8, Form("Check was not performed, LHC information not available"));
+      if (lhcDataFileFound)
+        msg = std::make_shared<TLatex>(0.2, 0.8, Form("Check was not performed, LHC filling scheme empty"));
+      else
+        msg = std::make_shared<TLatex>(0.2, 0.8, Form("Check was not performed, LHC information not available"));
       msg->SetTextColor(kBlack);
       msg->SetTextSize(0.03);
       msg->SetNDC();
@@ -419,6 +422,7 @@ void RawDataReaderCheck::startOfActivity(const core::Activity& activity)
   auto lhcifdata = UserCodeInterface::retrieveConditionAny<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF", metadata, mTimestamp);
   if (lhcifdata == nullptr) {
     ILOG(Info, Support) << "LHC data not found for timestamp:" << mTimestamp << ENDM;
+    lhcDataFileFound = false;
     return;
   } else {
     ILOG(Info, Support) << "LHC data found for timestamp:" << mTimestamp << ENDM;

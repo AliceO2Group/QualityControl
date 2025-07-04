@@ -74,6 +74,7 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   std::vector<int> mVecIndexBad;                          // vector of ctp input and class indices, which had a big relative change
   std::vector<int> mVecIndexMedium;                       // vector of ctp input and class indices, which had a relative change
   std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs; // LHC filling scheme
+  bool lhcDataFileFound = true;
 
   ClassDefOverride(RawDataReaderCheck, 10);
 };
