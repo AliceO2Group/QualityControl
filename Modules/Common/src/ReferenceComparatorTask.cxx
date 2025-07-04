@@ -167,6 +167,18 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
 
 //_________________________________________________________________________________________
 
+std::shared_ptr<ReferenceComparatorPlot> ReferenceComparatorTask::getComparatorPlot(std::string plotName)
+{
+  // check if a corresponding output plot was initialized
+  auto iter = mHistograms.find(plotName);
+  if (iter == mHistograms.end()) {
+    return {};
+  }
+  return iter->second;
+}
+
+//_________________________________________________________________________________________
+
 void ReferenceComparatorTask::update(quality_control::postprocessing::Trigger trigger, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -194,10 +206,7 @@ void ReferenceComparatorTask::update(quality_control::postprocessing::Trigger tr
       }
 
       // update the plot ratios and the histograms with superimposed reference
-      auto referenceMO = mReferencePlots[plotName];
-      TH1* referenceHistogram = dynamic_cast<TH1*>(referenceMO->getObject());
-
-      iter->second->update(histogram, referenceHistogram);
+      iter->second->update(histogram);
     }
   }
 }

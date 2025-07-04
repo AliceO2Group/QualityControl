@@ -159,21 +159,21 @@ static std::shared_ptr<HIST> createHisto2D(const char* name, const char* title, 
 class ReferenceComparatorPlotImpl
 {
  public:
-  ReferenceComparatorPlotImpl(bool scaleReference)
-    : mScaleReference(scaleReference)
+  ReferenceComparatorPlotImpl(TH1* referenceHistogram, bool scaleReference)
+    : mReferenceHistogram(referenceHistogram), mScaleReference(scaleReference)
   {
   }
 
   virtual ~ReferenceComparatorPlotImpl() = default;
 
-  virtual TObject* init(TH1* referenceHistogram, std::string outputPath, bool scaleReference, bool drawRatioOnly, std::string drawOption)
+  virtual TObject* getMainCanvas()
   {
     return nullptr;
   }
 
-  virtual TObject* getMainCanvas()
+  TH1* getReferenceHistogram()
   {
-    return nullptr;
+    return mReferenceHistogram;
   }
 
   void setScaleRef(bool scaleReference)
@@ -183,9 +183,10 @@ class ReferenceComparatorPlotImpl
 
   bool getScaleReference() { return mScaleReference; }
 
-  virtual void update(TH1* histogram, TH1* referenceHistogram) = 0;
+  virtual void update(TH1* histogram) = 0;
 
  private:
+  TH1* mReferenceHistogram{ nullptr };
   bool mScaleReference{ true };
 };
 
@@ -200,7 +201,7 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
                                 bool drawRatioOnly,
                                 double legendHeight,
                                 const std::string& drawOption)
-    : ReferenceComparatorPlotImpl(scaleReference), mLegendHeight(legendHeight)
+    : ReferenceComparatorPlotImpl(referenceHistogram, scaleReference), mLegendHeight(legendHeight)
   {
     float labelSize = 0.04;
 
@@ -343,8 +344,9 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     return mCanvas.get();
   }
 
-  void update(TH1* hist, TH1* referenceHistogram)
+  void update(TH1* hist)
   {
+    TH1* referenceHistogram = getReferenceHistogram();
     if (!hist || !referenceHistogram) {
       return;
     }
@@ -389,7 +391,7 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
                                 bool scaleReference,
                                 bool drawRatioOnly,
                                 const std::string& drawOption)
-    : ReferenceComparatorPlotImpl(scaleReference)
+    : ReferenceComparatorPlotImpl(referenceHistogram, scaleReference)
   {
     if (!referenceHistogram) {
       return;
@@ -498,8 +500,9 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
     return mCanvas.get();
   }
 
-  void update(TH1* histogram, TH1* referenceHistogram)
+  void update(TH1* histogram)
   {
+    TH1* referenceHistogram = getReferenceHistogram();
     if (!histogram || !referenceHistogram) {
       return;
     }
@@ -559,10 +562,10 @@ TObject* ReferenceComparatorPlot::getMainCanvas()
   return (mImplementation.get() ? mImplementation->getMainCanvas() : nullptr);
 }
 
-void ReferenceComparatorPlot::update(TH1* histogram, TH1* referenceHistogram)
+void ReferenceComparatorPlot::update(TH1* histogram)
 {
   if (mImplementation) {
-    mImplementation->update(histogram, referenceHistogram);
+    mImplementation->update(histogram);
   }
 }
 

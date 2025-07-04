@@ -50,6 +50,9 @@ class ReferenceComparatorTask : public quality_control::postprocessing::PostProc
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
+  std::map<std::string, std::shared_ptr<ReferenceComparatorPlot>>& getComparatorPlots() { return mHistograms; }
+  std::shared_ptr<ReferenceComparatorPlot> getComparatorPlot(std::string plotName);
+
   struct HistoWithRef {
     std::shared_ptr<TH1> mPlot;
     std::shared_ptr<TH1> mRefPlot;
