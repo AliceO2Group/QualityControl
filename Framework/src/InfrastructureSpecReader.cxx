@@ -230,7 +230,12 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
-          dss.subInputs.push_back(moName.second.get_value<std::string>());
+          const auto mo = moName.second.get_value<std::string>();
+          if (!mo.empty()) {
+            dss.subInputs.push_back(std::move(mo));
+          } else {
+            ILOG(Warning, Ops) << "Data source of type Task with name: " << dss.name << " contains empty mo, ignoring, but configuration should be fixed." << ENDM;
+          }
         }
       }
       break;
@@ -245,7 +250,12 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(detectorName, true), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
-          dss.subInputs.push_back(moName.second.get_value<std::string>());
+          const auto mo = moName.second.get_value<std::string>();
+          if (!mo.empty()) {
+            dss.subInputs.push_back(std::move(mo));
+          } else {
+            ILOG(Warning, Ops) << "Data source of type TaskMovingWindow with name: " << dss.name << " contains empty mo, ignoring, but configuration should be fixed." << ENDM;
+          }
         }
       }
       break;
@@ -270,7 +280,12 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.inputs = { { dss.name, Check::createCheckDataOrigin(detectorName), Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
-          dss.subInputs.push_back(moName.second.get_value<std::string>());
+          const auto qo = moName.second.get_value<std::string>();
+          if (!qo.empty()) {
+            dss.subInputs.push_back(std::move(qo));
+          } else {
+            ILOG(Warning, Ops) << "Data source of type Check with name: " << dss.name << " contains empty qo, ignoring, but configuration should be fixed." << ENDM;
+          }
         }
       }
       break;
@@ -282,7 +297,12 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.inputs = { { dss.name, Check::createCheckDataOrigin(detectorName), AggregatorRunner::createAggregatorRunnerDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
-          dss.subInputs.push_back(moName.second.get_value<std::string>());
+          const auto qo = moName.second.get_value<std::string>();
+          if (!qo.empty()) {
+            dss.subInputs.push_back(std::move(qo));
+          } else {
+            ILOG(Warning, Ops) << "Data source of type Aggregator with name: " << dss.name << " contains empty qo, ignoring, but configuration should be fixed." << ENDM;
+          }
         }
       }
       break;
