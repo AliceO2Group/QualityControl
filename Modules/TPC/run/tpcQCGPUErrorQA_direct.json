@@ -1,0 +1,38 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {},
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "GPUErrorQA": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::GPUErrorQA",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "10",
+        "dataSource": {
+          "type": "direct",
+          "query": "error-qa:GPU/ERRORQA/0"
+        },
+        "location": "remote"
+      }
+    }
+  },
+  "dataSamplingPolicies": []
+}
