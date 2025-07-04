@@ -77,7 +77,7 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
   if (mHistoOrbitsInTFEfficiency) {
     mHistoOrbitsInTFEfficiency->Reset();
   }
-  if (mHistoLuminometer){
+  if (mHistoLuminometer) {
     mHistoLuminometer->Reset();
   }
 
@@ -122,13 +122,13 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
       for (int j = 1; j <= moHActiveChannels->GetNbinsY(); j++) {
         counterAll++;
 
-        if (moHActiveChannels->GetBinContent(i,j)>mActiveThr){
+        if (moHActiveChannels->GetBinContent(i, j) > mActiveThr) {
           counterActive++;
         }
       }
     }
 
-    activeCh = (float)counterActive/counterAll;
+    activeCh = (float)counterActive / counterAll;
   } else {
     ILOG(Warning) << "Did not find MO " << mMOActiveChannels << " in path " << mCCDBPath << ENDM;
   }
@@ -142,7 +142,7 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
     ILOG(Warning) << "Did not find MO " << mMOMultiplicity << " in path " << mCCDBPath << ENDM;
   }
 
-  mHistoLuminometer->Fill(hitMult/(activeCh*ROeff));
+  mHistoLuminometer->Fill(hitMult / (activeCh * ROeff));
 }
 
 void PostProcessingLuminometer::finalize(Trigger, framework::ServiceRegistryRef)
