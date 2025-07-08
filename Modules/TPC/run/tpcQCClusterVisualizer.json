@@ -61,7 +61,7 @@
           { "Sigma_Time" : [ "200",  "0", "2"      ] },
           { "Sigma_Pad" :  [ "200",  "0", "2"      ] },
           { "Time_Bin" :   [ "1000", "0", "100000" ] },
-          { "Occupancy" :  [ "100", "0", "0.001"    ] }
+          { "Occupancy" :  [ "1000", "0", "1"      ] }
         ],
         "path_comment": "This is the path of the ClustersData object that shall be visualized.",
         "path": "qc/TPC/MO/Clusters/ClusterData",
