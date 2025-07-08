@@ -193,7 +193,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     4096, -0.5, 4095.5);
   for (std::size_t ch = 0; ch < sNCHANNELS_FV0_PLUSREF; ++ch) {
   mHistAmpPerCh[ch] = std::make_unique<TH1F>(
-      Form("AmpDistCh%zu", ch),
+      Form("ChannelDetails/AmpDistribution/AmpDistCh%zu", ch),
       Form("Amplitude distribution channel %zu;QTC amp;Counts", ch),
       4096, -0.5, 4095.5);
       getObjectsManager()->startPublishing(mHistAmpPerCh[ch].get());
@@ -319,7 +319,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (const auto& chID : mSetAllowedChIDsAmpVsTime) {
-    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
+    auto pairHistAmpVsTime = mMapHistAmpVsTime.insert({ chID, new TH2F(Form("ChannelDetails/AmpVsTime/Amp_vs_time_channel%i", chID), Form("Amplitude vs time, channel %i;Amp;Time", chID), 420, -100, 4100, 410, -2050, 2050) });
     if (pairHistAmpVsTime.second) {
       mListHistGarbage->Add(pairHistAmpVsTime.first->second);
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
