@@ -75,72 +75,10 @@ void ReferenceComparatorCheck::endOfActivity(const Activity& activity)
 {
 }
 
-//_________________________________________________________________________________________
-//
-// Get the current and reference histograms from the canvas.
-// The two histograms are returned as a std::pair
-static std::pair<TH1*, TH1*> getPlotsFromCanvas(TCanvas* canvas, std::string& message)
-{
-  // Get the pad containing the current histogram, as well as the reference one in the case of 1-D plots
-  TPad* padHist = (TPad*)canvas->GetPrimitive(TString::Format("%s_PadHist", canvas->GetName()));
-  if (!padHist) {
-    message = "missing PadHist";
-    return { nullptr, nullptr };
-  }
-  // Get the pad containing the reference histogram.
-  // This pad is only present for 2-D histograms.
-  // 1-D histograms are drawn superimposed in the same pad
-  TPad* padHistRef = (TPad*)canvas->GetPrimitive(TString::Format("%s_PadHistRef", canvas->GetName()));
-
-  // Get the current histogram
-  TH1* hist = dynamic_cast<TH1*>(padHist->GetPrimitive(TString::Format("%s_hist", canvas->GetName())));
-  if (!hist) {
-    message = "missing histogram";
-    return { nullptr, nullptr };
-  }
-
-  // Get the reference histogram, trying both pads
-  TH1* histRef = nullptr;
-  if (padHistRef) {
-    histRef = dynamic_cast<TH1*>(padHistRef->GetPrimitive(TString::Format("%s_hist_ref", canvas->GetName())));
-  } else {
-    histRef = dynamic_cast<TH1*>(padHist->GetPrimitive(TString::Format("%s_hist_ref", canvas->GetName())));
-  }
-
-  if (!histRef) {
-    message = "missing reference histogram";
-    return { nullptr, nullptr };
-  }
-
-  // return a pair with the two histograms
-  return { hist, histRef };
-}
-
 static std::pair<TH1*, TH1*> getPlotsFromCanvas(TCanvas* canvas)
 {
   std::string dummyMessage;
-  return getPlotsFromCanvas(canvas, dummyMessage);
-}
-
-//_________________________________________________________________________________________
-//
-// Get the ratio histograms from the canvas
-static TH1* getRatioPlotFromCanvas(TCanvas* canvas)
-{
-  // Get the pad containing the current histogram, as well as the reference one in the case of 1-D plots
-  TPad* padHistRatio = (TPad*)canvas->GetPrimitive(TString::Format("%s_PadHistRatio", canvas->GetName()));
-  if (!padHistRatio) {
-    return nullptr;
-  }
-
-  // Get the current histogram
-  TH1* histRatio = dynamic_cast<TH1*>(padHistRatio->GetPrimitive(TString::Format("%s_hist_ratio", canvas->GetName())));
-  if (!histRatio) {
-    return nullptr;
-  }
-
-  // return a pair with the two histograms
-  return histRatio;
+  return o2::quality_control::checker::getPlotsFromCanvas(canvas, dummyMessage);
 }
 
 // Get the current and reference histograms from the canvas, and compare them using the comparator object passed as parameter
@@ -156,7 +94,7 @@ static Quality compare(TCanvas* canvas, ObjectComparatorInterface* comparator, s
   }
 
   // extract the histograms from the canvas
-  auto plots = getPlotsFromCanvas(canvas, message);
+  auto plots = o2::quality_control::checker::getPlotsFromCanvas(canvas, message);
   if (!plots.first || !plots.second) {
     return Quality::Null;
   }
@@ -389,7 +327,7 @@ void ReferenceComparatorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quali
     setQualityLabel(canvas, quality);
 
     // draw a double-arrow indicating the horizontal range for the check, if it is set
-    beautifyRatioPlot(moName, getRatioPlotFromCanvas(canvas), quality);
+    beautifyRatioPlot(moName, o2::quality_control::checker::getRatioPlotFromCanvas(canvas), quality);
   } else {
     // draw the quality label directly on the plot if the MO is an histogram
     auto* th1 = dynamic_cast<TH1*>(mo->getObject());

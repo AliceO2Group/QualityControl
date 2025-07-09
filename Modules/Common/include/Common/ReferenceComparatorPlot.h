@@ -48,7 +48,7 @@ class ReferenceComparatorPlot
   virtual ~ReferenceComparatorPlot() = default;
 
   TObject* getMainCanvas();
-  void update(TH1* histogram, TH1* referenceHistogram);
+  void update(TH1* histogram);
 
  private:
   std::shared_ptr<ReferenceComparatorPlotImpl> mImplementation;
