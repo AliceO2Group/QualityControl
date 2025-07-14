@@ -13,6 +13,8 @@
 
 #include <memory>
 #include <algorithm>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <ranges>
 // O2
@@ -24,6 +26,7 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
@@ -163,7 +166,20 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       }));
     ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     std::vector<std::string> monitorObjectsNames;
-    std::ranges::copy(moMapToCheck | std::views::keys, std::back_inserter(monitorObjectsNames));
+    unsigned long maxCycle{};
+    for (const auto& [moName, mo] : moMapToCheck) {
+      monitorObjectsNames.emplace_back(moName);
+      if (const auto cycle = mo->getMetadata(repository::metadata_keys::cycle)) {
+        const auto& cycleStr = cycle.value();
+        unsigned long cycleVal{};
+        if (const auto fromCharsRed = std::from_chars(cycleStr.c_str(), cycleStr.c_str() + cycleStr.size(), cycleVal); fromCharsRed.ec == std::errc()) {
+          maxCycle = std::max(cycleVal, maxCycle);
+        } else {
+          ILOG(Warning, Support) << "metadata " << repository::metadata_keys::cycle << " with value " << cycleStr << " couldn't be parsed for a reason: "
+                                 << std::make_error_code(fromCharsRed.ec).message() << ENDM;
+        }
+      }
+    }
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
@@ -172,7 +188,11 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType),
       stringifyInput(mCheckConfig.inputSpecs),
       monitorObjectsNames));
+
     qualityObjects.back()->setActivity(commonActivity);
+    if (maxCycle > 0) {
+      qualityObjects.back()->addMetadata(repository::metadata_keys::cycle, std::to_string(maxCycle));
+    }
     beautify(moMapToCheck, quality);
   }
 

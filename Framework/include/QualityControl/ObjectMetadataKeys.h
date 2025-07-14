@@ -28,6 +28,7 @@ constexpr auto created = "Created";
 constexpr auto md5sum = "Content-MD5";
 constexpr auto objectType = "ObjectType";
 constexpr auto lastModified = "lastModified";
+
 // General QC framework
 constexpr auto qcVersion = "qc_version";
 constexpr auto qcDetectorCode = "qc_detector_name";
@@ -36,6 +37,8 @@ constexpr auto qcTaskClass = "qc_task_class";
 constexpr auto qcQuality = "qc_quality";
 constexpr auto qcCheckName = "qc_check_name";
 constexpr auto qcAdjustableEOV = "adjustableEOV"; // this is a keyword for the CCDB
+constexpr auto cycle = "CycleNumber";
+
 // QC Activity
 constexpr auto runType = "RunType";
 constexpr auto runNumber = "RunNumber";

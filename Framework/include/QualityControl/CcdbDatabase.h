@@ -76,9 +76,14 @@ class CcdbDatabase : public DatabaseInterface
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
   // retrieval - MO - deprecated
-  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName, long timestamp = Timestamp::Current, const core::Activity& activity = {}) override;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName,
+                                                                       long timestamp = Timestamp::Current,
+                                                                       const core::Activity& activity = {},
+                                                                       const std::map<std::string, std::string>& metadata = {}) override;
   // retrieval - QO - deprecated
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current, const core::Activity& activity = {}) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current,
+                                                                       const core::Activity& activity = {},
+                                                                       const std::map<std::string, std::string>& metadata = {}) override;
 
   // retrieval - general
   std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;
@@ -91,10 +96,10 @@ class CcdbDatabase : public DatabaseInterface
   static long getCurrentTimestamp();
   static long getFutureTimestamp(int secondsInFuture);
   /**
-  * Return the listing of folder and/or objects in the subpath.
-  * @param subpath The folder we want to list the children of.
-  * @return The listing of folder and/or objects at the subpath.
-  */
+   * Return the listing of folder and/or objects in the subpath.
+   * @param subpath The folder we want to list the children of.
+   * @return The listing of folder and/or objects at the subpath.
+   */
   std::vector<std::string> getListing(const std::string& subpath = "");
 
   /**

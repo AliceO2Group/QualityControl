@@ -34,7 +34,7 @@ bool updateReductorImpl(Reductor* r, const Trigger& t, const std::string& path, 
   }
 
   if (type == "repository") {
-    auto mo = qcdb.retrieveMO(path, name, t.timestamp, t.activity);
+    auto mo = qcdb.retrieveMO(path, name, t.timestamp, t.activity, t.metadata);
     TObject* obj = mo ? mo->getObject() : nullptr;
     auto reductorTObject = dynamic_cast<ReductorTObject*>(r);
     if (obj && reductorTObject) {
@@ -42,7 +42,7 @@ bool updateReductorImpl(Reductor* r, const Trigger& t, const std::string& path, 
       return true;
     }
   } else if (type == "repository-quality") {
-    auto qo = qcdb.retrieveQO(path + "/" + name, t.timestamp, t.activity);
+    auto qo = qcdb.retrieveQO(path + "/" + name, t.timestamp, t.activity, t.metadata);
     auto reductorTObject = dynamic_cast<ReductorTObject*>(r);
     if (qo && reductorTObject) {
       reductorTObject->update(qo.get());

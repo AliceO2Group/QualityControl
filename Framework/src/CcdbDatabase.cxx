@@ -283,6 +283,10 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
   auto* object = ccdbApi->retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
     ILOG(Warning, Support) << "We could NOT retrieve the object " << path << " with timestamp " << timestamp << "." << ENDM;
+    ILOG(Debug, Support) << "and with metadata:" << ENDM;
+    for (auto [metaKey, metaVal] : metadata) {
+      ILOG(Debug, Support) << metaKey << ", " << metaVal << ENDM;
+    }
     return nullptr;
   }
   ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
@@ -307,11 +311,14 @@ void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, cons
   return object;
 }
 
-std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName, long timestamp, const core::Activity& activity)
+std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName,
+                                                                                   long timestamp, const core::Activity& activity,
+                                                                                   const std::map<std::string, std::string>& metadataToRetrieve)
 {
   string fullPath = activity.mProvenance + "/" + objectPath + "/" + objectName;
   map<string, string> headers;
   map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
+  metadata.insert(metadataToRetrieve.begin(), metadataToRetrieve.end());
   TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
 
   // no object found
@@ -348,10 +355,13 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieve
   return mo;
 }
 
-std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp, const core::Activity& activity)
+std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp,
+                                                                                   const core::Activity& activity,
+                                                                                   const std::map<std::string, std::string>& metadataToRetrieve)
 {
   map<string, string> headers;
   map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
+  metadata.insert(metadataToRetrieve.begin(), metadataToRetrieve.end());
   auto fullPath = activity.mProvenance + "/" + qoPath;
   TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
   if (obj == nullptr) {

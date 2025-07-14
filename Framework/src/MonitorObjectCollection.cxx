@@ -16,15 +16,55 @@
 
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Mergers/MergerAlgorithm.h>
 #include <TNamed.h>
+#include <optional>
+#include <string>
+#include <charconv>
 
 using namespace o2::mergers;
 
 namespace o2::quality_control::core
 {
+
+std::optional<unsigned long> parseCycle(const std::string& cycleStr)
+{
+  unsigned long cycleVal{};
+  if (auto parse_res = std::from_chars(cycleStr.c_str(), cycleStr.c_str() + cycleStr.size(), cycleVal); parse_res.ec != std::errc{}) {
+    ILOG(Warning, Support) << "failed to decypher " << repository::metadata_keys::cycle << " metadata with value " << cycleStr
+                           << ", with std::errc " << std::make_error_code(parse_res.ec).message() << ENDM;
+    return std::nullopt;
+  }
+  return cycleVal;
+}
+
+void mergeCycles(MonitorObject* targetMO, MonitorObject* otherMO)
+{
+  const auto otherCycle = otherMO->getMetadata(repository::metadata_keys::cycle);
+  const auto targetCycle = targetMO->getMetadata(repository::metadata_keys::cycle);
+  if (otherCycle.has_value() && targetCycle.has_value()) {
+    const auto targetCycleParsed = parseCycle(targetCycle.value());
+    const auto otherCycleParsed = parseCycle(otherCycle.value());
+
+    if (targetCycleParsed && otherCycleParsed) {
+      targetMO->addOrUpdateMetadata(repository::metadata_keys::cycle, std::to_string(std::max(targetCycleParsed.value(), otherCycleParsed.value())));
+      return;
+    }
+
+    if (targetCycleParsed.value()) {
+      targetMO->addOrUpdateMetadata(repository::metadata_keys::cycle, std::to_string(targetCycleParsed.value()));
+      return;
+    }
+
+    if (otherCycleParsed.value()) {
+      otherMO->addOrUpdateMetadata(repository::metadata_keys::cycle, std::to_string(otherCycleParsed.value()));
+      return;
+    }
+  }
+}
 
 void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
 {
@@ -59,6 +99,8 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
         otherMO->Copy(*targetMO);
         continue;
       }
+
+      mergeCycles(targetMO, otherMO);
 
       if (!reportedMismatchingRunNumbers && otherMO->getActivity().mId < targetMO->getActivity().mId) {
         ILOG(Error, Ops) << "The run number of the input object '" << otherMO->GetName() << "' ("
@@ -135,6 +177,15 @@ void MonitorObjectCollection::setTaskName(const std::string& taskName)
 const std::string& MonitorObjectCollection::getTaskName() const
 {
   return mTaskName;
+}
+
+void MonitorObjectCollection::addOrUpdateMetadata(std::string key, std::string value)
+{
+  for (auto obj : *this) {
+    if (auto mo = dynamic_cast<MonitorObject*>(obj)) {
+      mo->addOrUpdateMetadata(key, value);
+    }
+  }
 }
 
 std::string formatDuration(uint64_t durationMs)
