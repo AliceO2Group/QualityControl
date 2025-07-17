@@ -524,8 +524,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
   // owning them. The array is created by new and must be cleaned up by the caller
   std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
-  // TODO: this will send object with cycle == 0. should I send here cycle + 1? (same for QOs)
-  array->addOrUpdateMetadata(repository::metadata_keys::cycle, std::to_string(mCycleNumber));
+  array->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, std::to_string(mCycleNumber));
   int objectsPublished = array->GetEntries();
 
   outputs.snapshot(

@@ -16,6 +16,7 @@
 
 #include "QualityControl/ReductorHelpers.h"
 
+#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
 #include "QualityControl/ReductorTObject.h"
 #include "QualityControl/ReductorConditionAny.h"

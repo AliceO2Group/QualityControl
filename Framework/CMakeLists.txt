@@ -5,7 +5,7 @@ configure_file("include/QualityControl/Version.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
                @ONLY)
 
- # ---- Library for IL ----
+# ---- Library for IL ----
 add_library(O2QualityControlInfoLogger STATIC
   src/QcInfoLogger.cxx
 )
@@ -135,7 +135,8 @@ add_library(O2QualityControl
   src/RootFileStorage.cxx
   src/ReductorHelpers.cxx
   src/KafkaPoller.cxx
-  src/FlagHelpers.cxx)
+  src/FlagHelpers.cxx
+  src/ObjectMetadataHelpers.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -263,7 +264,7 @@ endforeach()
 
 # ---- Tests ----
 
-add_executable(o2-qc-test-core 
+add_executable(o2-qc-test-core
                test/testActivity.cxx
                test/testActivityHelpers.cxx
                test/testAggregatorInterface.cxx
@@ -353,7 +354,7 @@ foreach(i RANGE ${count})
   get_filename_component(test_name ${test} NAME)
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
   string(REPLACE " " ";" arg "${arg}") # make list of string (arguments) out of
-                                       # one string
+  # one string
 
   add_executable(${test_name} ${test})
   set_property(TARGET ${test_name}

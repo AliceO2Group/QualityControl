@@ -40,7 +40,7 @@ class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
   void setTaskName(const std::string&);
   const std::string& getTaskName() const;
 
-  void addOrUpdateMetadata(std::string key, std::string value);
+  void addOrUpdateMetadata(const std::string& key, const std::string& value);
 
   MergeInterface* cloneMovingWindow() const override;
 

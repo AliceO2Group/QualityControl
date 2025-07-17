@@ -19,7 +19,6 @@
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <iostream>
 #include <iterator>
 #include <optional>
 

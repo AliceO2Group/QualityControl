@@ -13,7 +13,6 @@
 
 #include <memory>
 #include <algorithm>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <ranges>
@@ -31,7 +30,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/HashDataDescription.h"
-#include "QualityControl/runnerUtils.h"
+#include "QualityControl/ObjectMetadataHelpers.h"
 
 #include <QualityControl/AggregatorRunner.h>
 
@@ -166,17 +165,13 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       }));
     ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     std::vector<std::string> monitorObjectsNames;
-    unsigned long maxCycle{};
+    std::optional<unsigned long> maxCycle{};
     for (const auto& [moName, mo] : moMapToCheck) {
       monitorObjectsNames.emplace_back(moName);
-      if (const auto cycle = mo->getMetadata(repository::metadata_keys::cycle)) {
+      if (const auto cycle = mo->getMetadata(repository::metadata_keys::cycleNumber)) {
         const auto& cycleStr = cycle.value();
-        unsigned long cycleVal{};
-        if (const auto fromCharsRed = std::from_chars(cycleStr.c_str(), cycleStr.c_str() + cycleStr.size(), cycleVal); fromCharsRed.ec == std::errc()) {
-          maxCycle = std::max(cycleVal, maxCycle);
-        } else {
-          ILOG(Warning, Support) << "metadata " << repository::metadata_keys::cycle << " with value " << cycleStr << " couldn't be parsed for a reason: "
-                                 << std::make_error_code(fromCharsRed.ec).message() << ENDM;
+        if (const auto cycleVal = repository::parseCycle(cycleStr); cycleVal.has_value()) {
+          maxCycle = std::max(cycleVal.value(), maxCycle.value_or(0));
         }
       }
     }
@@ -190,8 +185,8 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       monitorObjectsNames));
 
     qualityObjects.back()->setActivity(commonActivity);
-    if (maxCycle > 0) {
-      qualityObjects.back()->addMetadata(repository::metadata_keys::cycle, std::to_string(maxCycle));
+    if (maxCycle.has_value()) {
+      qualityObjects.back()->addMetadata(repository::metadata_keys::cycleNumber, std::to_string(maxCycle.value()));
     }
     beautify(moMapToCheck, quality);
   }

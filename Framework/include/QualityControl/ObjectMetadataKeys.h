@@ -37,7 +37,7 @@ constexpr auto qcTaskClass = "qc_task_class";
 constexpr auto qcQuality = "qc_quality";
 constexpr auto qcCheckName = "qc_check_name";
 constexpr auto qcAdjustableEOV = "adjustableEOV"; // this is a keyword for the CCDB
-constexpr auto cycle = "CycleNumber";
+constexpr auto cycleNumber = "CycleNumber";
 
 // QC Activity
 constexpr auto runType = "RunType";

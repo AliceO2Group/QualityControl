@@ -20,7 +20,7 @@
 #include "QualityControl/AggregatorRunnerConfig.h"
 #include "QualityControl/AggregatorConfig.h"
 #include "QualityControl/Aggregator.h"
-#include "QualityControl/MonitorObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/InitContext.h>
@@ -203,4 +203,27 @@ TEST_CASE("test_aggregator_activity_propagation")
   REQUIRE(result.size() == 2);
   CHECK(result[0]->getActivity() == Activity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
   CHECK(result[1]->getActivity() == Activity{ 123, "PHYSICS", "LHC34b", "apass4", "qc", { 125, 175 }, "proton - mouton" });
+}
+
+TEST_CASE("test_aggregator_cycle")
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
+  auto MyAggregatorBConfig = std::find_if(aggregatorConfigs.begin(), aggregatorConfigs.end(), [](const auto& cfg) { return cfg.name == "MyAggregatorB"; });
+  REQUIRE(MyAggregatorBConfig != aggregatorConfigs.end());
+  auto aggregator = make_shared<Aggregator>(*MyAggregatorBConfig);
+  aggregator->init();
+
+  QualityObjectsMapType qoMap;
+  auto qo1 = make_shared<QualityObject>(Quality::Good, "checkAll");
+  qoMap["checkAll"] = qo1;
+  qo1->addMetadata(o2::quality_control::repository::metadata_keys::cycleNumber, "1");
+  auto qo2 = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/skeletonTask/example");
+  qo2->addMetadata(o2::quality_control::repository::metadata_keys::cycleNumber, "2");
+  qoMap["dataSizeCheck2/skeletonTask/example"] = qo2;
+  auto results = aggregator->aggregate(qoMap);
+  for (auto r : results) {
+    REQUIRE_NOTHROW(r->getMetadata(o2::quality_control::repository::metadata_keys::cycleNumber));
+    CHECK(r->getMetadata(o2::quality_control::repository::metadata_keys::cycleNumber) == "2");
+  }
 }

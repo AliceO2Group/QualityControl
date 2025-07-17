@@ -133,13 +133,13 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h5 = new TH1F("cycle", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo5 = make_shared<MonitorObject>(h5, f.taskName, "TestClass", "TST");
-  mo5->addMetadata(metadata_keys::cycle, "1");
+  mo5->addMetadata(metadata_keys::cycleNumber, "1");
   mo5->setValidity({ 10000, 20000 });
   mo5->updateActivity(1234, "LHC66", "passName1", "qc");
 
   TH1F* h6 = new TH1F("cycle", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo6 = make_shared<MonitorObject>(h6, f.taskName, "TestClass", "TST");
-  mo6->addMetadata(metadata_keys::cycle, "2");
+  mo6->addMetadata(metadata_keys::cycleNumber, "2");
   mo6->setValidity({ 10000, 20000 });
   mo6->updateActivity(1234, "LHC66", "passName1", "qc");
 
@@ -232,16 +232,16 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_with_cycle, *utf::depends_on("ccdb_store")
   test_fixture f;
   std::shared_ptr<MonitorObject> mo{};
   mo = f.backend->retrieveMO(f.getMoFolder("cycle"), "cycle",
-                             15000, Activity{}, { { metadata_keys::cycle, "1" } });
+                             15000, Activity{}, { { metadata_keys::cycleNumber, "1" } });
   BOOST_REQUIRE(mo.get() != nullptr);
-  BOOST_REQUIRE_NO_THROW(mo->getMetadata(metadata_keys::cycle));
-  BOOST_REQUIRE(mo->getMetadata(metadata_keys::cycle) == "1");
+  BOOST_REQUIRE_NO_THROW(mo->getMetadata(metadata_keys::cycleNumber));
+  BOOST_REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "1");
 
   mo = f.backend->retrieveMO(f.getMoFolder("cycle"), "cycle",
-                             15000, Activity{}, { { metadata_keys::cycle, "2" } });
+                             15000, Activity{}, { { metadata_keys::cycleNumber, "2" } });
   BOOST_REQUIRE(mo.get() != nullptr);
-  BOOST_REQUIRE_NO_THROW(mo->getMetadata(metadata_keys::cycle));
-  BOOST_REQUIRE(mo->getMetadata(metadata_keys::cycle) == "2");
+  BOOST_REQUIRE_NO_THROW(mo->getMetadata(metadata_keys::cycleNumber));
+  BOOST_REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "2");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
