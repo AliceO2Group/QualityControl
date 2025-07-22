@@ -14,6 +14,7 @@
 
 // std
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 // ROOT
@@ -107,6 +108,9 @@ class QualityObject : public TObject
   /// \brief Get a metadata
   /// \return the value corresponding to the key if it was found, default value otherwise
   std::string getMetadata(std::string key, std::string defaultValue) const;
+  /// \brief Get a metadata
+  /// \return the value corresponding to the key if it was found, nullopt otherwise
+  std::optional<std::string> getMetadataOpt(const std::string& key) const;
 
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
@@ -145,7 +149,7 @@ class QualityObject : public TObject
   std::vector<std::string> mMonitorObjectsNames;
   Activity mActivity;
 
-  ClassDefOverride(QualityObject, 6);
+  ClassDefOverride(QualityObject, 7);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

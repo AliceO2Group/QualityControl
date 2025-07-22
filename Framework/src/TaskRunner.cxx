@@ -37,6 +37,7 @@
 #include <CommonUtils/ConfigurableParam.h>
 #include <DetectorsBase/GRPGeomHelper.h>
 
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/runnerUtils.h"
@@ -523,6 +524,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
   // owning them. The array is created by new and must be cleaned up by the caller
   std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
+  array->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, std::to_string(mCycleNumber));
   int objectsPublished = array->GetEntries();
 
   outputs.snapshot(

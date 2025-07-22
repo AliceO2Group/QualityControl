@@ -15,8 +15,9 @@
 ///
 
 #include "QualityControl/Quality.h"
-#include <ostream>
 #include <iostream>
+#include <optional>
+#include <ostream>
 #include <utility>
 #include <Common/Exceptions.h>
 #include <boost/algorithm/string.hpp>
@@ -91,6 +92,14 @@ std::string Quality::getMetadata(const std::string& key) const
 std::string Quality::getMetadata(const std::string& key, const std::string& defaultValue) const
 {
   return mUserMetadata.count(key) > 0 ? mUserMetadata.at(key) : defaultValue;
+}
+
+std::optional<std::string> Quality::getMetadataOpt(const std::string& key) const
+{
+  if (auto found = mUserMetadata.find(key); found != mUserMetadata.end()) {
+    return found->second;
+  }
+  return std::nullopt;
 }
 
 Quality& Quality::addFlag(const FlagType& flag, std::string comment)

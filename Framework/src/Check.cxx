@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <ranges>
 // O2
@@ -24,11 +25,12 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/HashDataDescription.h"
-#include "QualityControl/runnerUtils.h"
+#include "QualityControl/ObjectMetadataHelpers.h"
 
 #include <QualityControl/AggregatorRunner.h>
 
@@ -163,7 +165,16 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       }));
     ILOG(Debug, Devel) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     std::vector<std::string> monitorObjectsNames;
-    std::ranges::copy(moMapToCheck | std::views::keys, std::back_inserter(monitorObjectsNames));
+    std::optional<unsigned long> maxCycle{};
+    for (const auto& [moName, mo] : moMapToCheck) {
+      monitorObjectsNames.emplace_back(moName);
+      if (const auto cycle = mo->getMetadata(repository::metadata_keys::cycleNumber)) {
+        const auto& cycleStr = cycle.value();
+        if (const auto cycleVal = repository::parseCycle(cycleStr); cycleVal.has_value()) {
+          maxCycle = std::max(cycleVal.value(), maxCycle.value_or(0));
+        }
+      }
+    }
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
@@ -172,7 +183,11 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType),
       stringifyInput(mCheckConfig.inputSpecs),
       monitorObjectsNames));
+
     qualityObjects.back()->setActivity(commonActivity);
+    if (maxCycle.has_value()) {
+      qualityObjects.back()->addMetadata(repository::metadata_keys::cycleNumber, std::to_string(maxCycle.value()));
+    }
     beautify(moMapToCheck, quality);
   }
 

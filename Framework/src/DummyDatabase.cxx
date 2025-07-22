@@ -38,7 +38,7 @@ void DummyDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Mon
 {
 }
 
-std::shared_ptr<o2::quality_control::core::MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long, const core::Activity& activity)
+std::shared_ptr<o2::quality_control::core::MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long, const core::Activity& activity, const std::map<std::string, std::string>&)
 {
   return {};
 }
@@ -47,7 +47,7 @@ void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qua
 {
 }
 
-std::shared_ptr<o2::quality_control::core::QualityObject> DummyDatabase::retrieveQO(std::string, long, const core::Activity& activity)
+std::shared_ptr<o2::quality_control::core::QualityObject> DummyDatabase::retrieveQO(std::string, long, const core::Activity& activity, const std::map<std::string, std::string>& metadata)
 {
   return {};
 }

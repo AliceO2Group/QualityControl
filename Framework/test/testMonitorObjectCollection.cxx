@@ -14,6 +14,7 @@
 /// \author Piotr Konopka
 ///
 
+#include "Framework/include/QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
 
@@ -240,6 +241,37 @@ TEST_CASE("monitor_object_collection_clone_mw")
   delete moc;
   delete mwMOC;
   delete mwMOC2;
+}
+
+TEST_CASE("monitor_object_collection_merge_cycle")
+{
+  MonitorObjectCollection target;
+  MonitorObjectCollection other;
+  constexpr size_t bins = 10;
+  constexpr size_t min = 0;
+  constexpr size_t max = 10;
+
+  target.SetOwner(true);
+
+  TH1I* targetTH1I = new TH1I("histo 1d", "histo 1d", bins, min, max);
+  MonitorObject* targetMoTH1I = new MonitorObject(targetTH1I, "histo 1d", "class", "DET");
+  targetMoTH1I->setIsOwner(true);
+  target.Add(targetMoTH1I);
+  targetMoTH1I->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, "1");
+
+  other.SetOwner(true);
+
+  TH1I* otherTH1I = new TH1I("histo 1d", "histo 1d", bins, min, max);
+  MonitorObject* otherMoTH1I = new MonitorObject(otherTH1I, "histo 1d", "class", "DET");
+  otherMoTH1I->setIsOwner(true);
+  other.Add(otherMoTH1I);
+  otherMoTH1I->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, "2");
+
+  algorithm::merge(&target, &other);
+
+  const auto mergedCycle = targetMoTH1I->getMetadata(repository::metadata_keys::cycleNumber);
+  REQUIRE(mergedCycle.has_value());
+  REQUIRE(mergedCycle.value() == "2");
 }
 
 } // namespace o2::quality_control::core

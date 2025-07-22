@@ -154,7 +154,7 @@ Each of the three methods can be invoked by one or more triggers. Below are list
 * `"eof"` or `"endoffill"` - End Of Fill (not implemented yet)
 * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
 * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated (applicable for synchronous processing). For example: `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
-* `"foreachobject:[qcdb/ccdb]:<path>"` - For Each Object - triggers for each object in QCDB or CCDB which matches the activity indicated in the QC config file (applicable for asynchronous processing).
+* `"foreachobject:[qcdb/ccdb]:<path>"` - For Each Object - triggers for each object in QCDB or CCDB which matches the activity indicated in the QC config file (applicable for both synchronous and asynchronous processing). This trigger contains monitor cycle of required object in its metadata since v1.178.0
 * `"foreachlatest:[qcdb/ccdb]:<path>"` - For Each Latest - triggers for the latest object version in QCDB or CCDB
    for each matching activity (applicable for asynchronous processing). It sorts objects in ascending order by period,
    pass and run.
@@ -1054,7 +1054,7 @@ For TrendingTask, it would be:
     ]
 ```
 
-### I want to run postprocessing on all already existing objects for a run
+### I want to run postprocessing on all already existing objects for a run (usable in sync AND async)
 
 Use ForEachObject as the update trigger:
 
@@ -1063,7 +1063,7 @@ Use ForEachObject as the update trigger:
 ```
 
 Since objects are usually published in collections at the same time, you can use a path for one object to be triggered
- for a collection of them (all objects produced by a QC Task).
+ for a collection of them (all objects produced by a QC Task). 
 
 Use the Activity which matches the run, and (optionally) period and pass name:
 

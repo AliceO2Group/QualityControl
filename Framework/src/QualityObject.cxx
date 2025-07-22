@@ -69,7 +69,7 @@ std::string QualityObject::getName() const
 
 void QualityObject::updateQuality(Quality quality)
 {
-  //TODO: Update timestamp
+  // TODO: Update timestamp
   mQuality = std::move(quality);
 }
 Quality QualityObject::getQuality() const
@@ -105,6 +105,11 @@ std::string QualityObject::getMetadata(std::string key) const
 std::string QualityObject::getMetadata(std::string key, std::string defaultValue) const
 {
   return mQuality.getMetadata(std::move(key), std::move(defaultValue));
+}
+
+std::optional<std::string> QualityObject::getMetadataOpt(const std::string& key) const
+{
+  return mQuality.getMetadataOpt(key);
 }
 
 std::string QualityObject::getPath() const

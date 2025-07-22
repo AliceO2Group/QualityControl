@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/TriggerHelpers.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <boost/algorithm/string.hpp>

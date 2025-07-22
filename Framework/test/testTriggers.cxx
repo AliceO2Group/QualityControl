@@ -14,6 +14,7 @@
 /// \author  Piotr Konopka
 ///
 
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/Triggers.h"
 
 #define BOOST_TEST_MODULE Triggers test
@@ -161,14 +162,21 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   mo->setActivity({ 101, "TECHNICAL", "FCC42x", "tpass1", "qc", { currentTimestamp + 1000, gInvalidValidityInterval.getMax() } });
   repository->storeMO(mo);
   mo->setActivity({ 100, "TECHNICAL", "FCC42x", "tpass2", "qc", { currentTimestamp + 2000, gInvalidValidityInterval.getMax() } });
+  mo->addOrUpdateMetadata(metadata_keys::cycleNumber, "42");
   repository->storeMO(mo);
 
   {
     const Activity activityAllRunsPass1{ 0, "TECHNICAL", "FCC42x", "tpass1", "qc" };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    auto trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+
+    trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
   }
 
@@ -176,8 +184,15 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
     const Activity activityRun100AllPasses{ 100, "TECHNICAL", "FCC42x", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    auto trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+
+    trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 1);
+    BOOST_CHECK_EQUAL(trigger.metadata.at(metadata_keys::cycleNumber), "42");
+
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
   }
 
@@ -185,9 +200,19 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
     const Activity activityAll{ 0, "NONE", "", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
+    auto trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+
+    trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+
+    trigger = forEachObjectTrigger();
+    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
+    BOOST_CHECK_EQUAL(trigger.metadata.size(), 1);
+    BOOST_CHECK_EQUAL(trigger.metadata.at(metadata_keys::cycleNumber), "42");
+
     BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
   }
 

@@ -18,6 +18,7 @@
 #define QC_CORE_MONITOROBJECT_H
 
 // std
+#include <optional>
 #include <string>
 #include <map>
 // ROOT
@@ -113,6 +114,8 @@ class MonitorObject : public TObject
   const std::map<std::string, std::string>& getMetadataMap() const;
   /// \brief Update the value of metadata or add it if it does not exist yet.
   void addOrUpdateMetadata(std::string key, std::string value);
+  /// \brief Get metadata value of given key, returns std::nullopt if none exists;
+  std::optional<std::string> getMetadata(const std::string& key);
 
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
@@ -146,7 +149,7 @@ class MonitorObject : public TObject
   void releaseObject();
   void cloneAndSetObject(const MonitorObject&);
 
-  ClassDefOverride(MonitorObject, 13);
+  ClassDefOverride(MonitorObject, 14);
 };
 
 } // namespace o2::quality_control::core

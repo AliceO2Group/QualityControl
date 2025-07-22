@@ -18,6 +18,7 @@
 #define QC_CORE_QUALITY_H
 
 #include <Rtypes.h>
+#include <optional>
 #include <string>
 #include <map>
 #include <vector>
@@ -105,6 +106,9 @@ class Quality
   /// \brief Get metadata
   /// \return the value corresponding to the key if it was found, default value otherwise
   std::string getMetadata(const std::string& key, const std::string& defaultValue) const;
+  /// \brief Get metadata
+  /// \return the value corresponding to the key if it was found, nulopt otherwise
+  std::optional<std::string> getMetadataOpt(const std::string&) const;
 
   /// \brief Associate the Quality with a new flag and an optional comment
   /// \return reference to *this
@@ -121,7 +125,7 @@ class Quality
   std::map<std::string, std::string> mUserMetadata;
   std::vector<std::pair<FlagType, std::string>> mFlags;
 
-  ClassDef(Quality, 2);
+  ClassDef(Quality, 3);
 };
 
 } // namespace o2::quality_control::core

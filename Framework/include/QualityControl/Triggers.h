@@ -21,6 +21,7 @@
 #include <functional>
 #include <iosfwd>
 #include <utility>
+#include <map>
 #include "QualityControl/Activity.h"
 
 namespace o2::quality_control::postprocessing
@@ -69,6 +70,7 @@ struct Trigger {
   core::Activity activity; // if tracking an object, it contains also its validity start and end
   uint64_t timestamp;      // if tracking an object, it is the validity start (validFrom)
   std::string config{};
+  std::map<std::string, std::string> metadata{}; // metadata to search in database
 };
 
 using TriggerFcn = std::function<Trigger()>;

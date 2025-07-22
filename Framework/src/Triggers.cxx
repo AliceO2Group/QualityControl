@@ -293,7 +293,11 @@ TriggerFcn ForEachObject(const std::string& databaseUrl, const std::string& data
       auto currentActivity = activity_helpers::asActivity(*currentObject, activity.mProvenance);
       bool last = currentObject + 1 == filteredObjects->end();
       Trigger trigger(TriggerType::ForEachObject, last, currentActivity, currentObject->get<int64_t>(timestampSortKey));
+      if (auto cycle = currentObject->get_optional<std::string>(metadata_keys::cycleNumber); cycle.has_value()) {
+        trigger.metadata.emplace(metadata_keys::cycleNumber, cycle.value());
+      }
       ++currentObject;
+
       return trigger;
     } else {
       return { TriggerType::No, true, activity, Trigger::msSinceEpoch(), config };

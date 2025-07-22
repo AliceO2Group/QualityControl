@@ -19,7 +19,8 @@
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <iostream>
+#include <iterator>
+#include <optional>
 
 using namespace std;
 
@@ -151,6 +152,14 @@ void MonitorObject::addOrUpdateMetadata(std::string key, std::string value)
   } else {
     mUserMetadata.insert({ key, value });
   }
+}
+
+std::optional<std::string> MonitorObject::getMetadata(const std::string& key)
+{
+  if (const auto foundIt = mUserMetadata.find(key); foundIt != std::end(mUserMetadata)) {
+    return foundIt->second;
+  }
+  return std::nullopt;
 }
 
 std::string MonitorObject::getPath() const

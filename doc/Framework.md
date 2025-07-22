@@ -458,6 +458,7 @@ export O2_DPL_DEPLOYMENT_MODE=Grid && o2-qc --local-batch QC.root ...
 ## Monitor cycles
 
 The QC tasks monitor and process data continuously during a so-called "monitor cycle". At the end of such a cycle they publish the QC objects that will then continue their way in the QC data flow.
+Since v1.178.0 cycles are stored in the metadata of QOs and MOs under the key `CycleNumber` inside the QCDB.
 
 A monitor cycle lasts typically between **1 and 5 minutes**, some reaching 10 minutes but never less than 1 minute for performance reasons.
 It is defined in the config file this way:

@@ -16,15 +16,44 @@
 
 #include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ObjectMetadataHelpers.h"
 
 #include <Mergers/MergerAlgorithm.h>
 #include <TNamed.h>
+#include <optional>
+#include <string>
 
 using namespace o2::mergers;
 
 namespace o2::quality_control::core
 {
+
+void mergeCycles(MonitorObject* targetMO, MonitorObject* otherMO)
+{
+  const auto otherCycle = otherMO->getMetadata(repository::metadata_keys::cycleNumber);
+  const auto targetCycle = targetMO->getMetadata(repository::metadata_keys::cycleNumber);
+  if (otherCycle.has_value() && targetCycle.has_value()) {
+    const auto targetCycleParsed = repository::parseCycle(targetCycle.value());
+    const auto otherCycleParsed = repository::parseCycle(otherCycle.value());
+
+    if (targetCycleParsed && otherCycleParsed) {
+      targetMO->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, std::to_string(std::max(targetCycleParsed.value(), otherCycleParsed.value())));
+      return;
+    }
+
+    if (targetCycleParsed.value()) {
+      targetMO->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, std::to_string(targetCycleParsed.value()));
+      return;
+    }
+
+    if (otherCycleParsed.value()) {
+      otherMO->addOrUpdateMetadata(repository::metadata_keys::cycleNumber, std::to_string(otherCycleParsed.value()));
+      return;
+    }
+  }
+}
 
 void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
 {
@@ -59,6 +88,8 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
         otherMO->Copy(*targetMO);
         continue;
       }
+
+      mergeCycles(targetMO, otherMO);
 
       if (!reportedMismatchingRunNumbers && otherMO->getActivity().mId < targetMO->getActivity().mId) {
         ILOG(Error, Ops) << "The run number of the input object '" << otherMO->GetName() << "' ("
@@ -135,6 +166,15 @@ void MonitorObjectCollection::setTaskName(const std::string& taskName)
 const std::string& MonitorObjectCollection::getTaskName() const
 {
   return mTaskName;
+}
+
+void MonitorObjectCollection::addOrUpdateMetadata(const std::string& key, const std::string& value)
+{
+  for (auto obj : *this) {
+    if (auto mo = dynamic_cast<MonitorObject*>(obj)) {
+      mo->addOrUpdateMetadata(key, value);
+    }
+  }
 }
 
 std::string formatDuration(uint64_t durationMs)
