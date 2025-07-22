@@ -86,7 +86,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
 }
 ```
 
-An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runAdvanced.cxx).
+QC framework takes care of creating the necessary Data Sampling infrastructure when it finds it in the configuration file.
 
 #### Custom Data Sampling Condition
 
@@ -512,16 +512,21 @@ The way we compute the run number is done in this order:
 
 ## A more advanced example
 
-A more complete example is available. The config file is called [advanced.json](../Framework/advanced.json). The workflow is made of 3 sources, intermediate processing steps, 3 sinks and a Dispatcher connecting two QC tasks to a number of these steps and 2 checks. The topology doesn't mean to represent any particular physics processing, it is just an example with multiple data processors.
+A more complete example is available. The config file is called [advanced.json](../Framework/advanced.json).
+The workflow is made of 3 sources, intermediate processing steps, 3 sinks and a Dispatcher connecting two QC tasks to selected data outputs.
+It also includes a few Checks, Aggregators and PostProcessing tasks.
+The topology is not intended to represent any particular physics processing, it is just an example with multiple data processors.
 
 ![alt text](images/advanced.png)
 
 To run it do either
 ```
+# runs a fake processing workflow and associated QC
 o2-qc-run-advanced
 ```
 or 
 ```
+# o2-qc-run-advanced creates a fake processing workflow, while the QC is spawned by o2-qc
 o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced.json
 ```
 
