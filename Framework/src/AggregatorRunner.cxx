@@ -174,7 +174,7 @@ AggregatorRunner::QualityObjectsWithAggregatorNameVector AggregatorRunner::aggre
     ILOG(Info, Devel) << "Processing aggregator: " << aggregatorName << ENDM;
 
     if (mUpdatePolicyManager.isReady(aggregatorName)) {
-      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are  ready, aggregating" << ENDM;
+      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are ready, aggregating" << ENDM;
       auto newQOs = aggregator->aggregate(mQualityObjects, *mActivity); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;

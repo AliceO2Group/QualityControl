@@ -41,11 +41,11 @@ std::map<std::string, Quality> WorstOfAllAggregator::aggregate(QualityObjectsMap
   Quality current = Quality::Good;
   for (const auto& [qoName, qo] : qoMap) {
     (void)qoName;
-    for (const auto& flag : qo->getFlags()) {
-      current.addFlag(flag.first, flag.second);
-    }
     if (qo->getQuality().isWorseThan(current)) {
       current.set(qo->getQuality());
+    }
+    for (const auto& flag : qo->getFlags()) {
+      current.addFlag(flag.first, flag.second);
     }
   }
   ILOG(Info, Devel) << "Aggregated Quality: " << current << ENDM;
