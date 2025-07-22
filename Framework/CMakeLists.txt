@@ -135,7 +135,10 @@ add_library(O2QualityControl
   src/RootFileStorage.cxx
   src/ReductorHelpers.cxx
   src/KafkaPoller.cxx
-  src/FlagHelpers.cxx)
+  src/FlagHelpers.cxx
+  src/LateTaskRunner.cxx
+  src/LateTaskRunnerFactory.cxx
+  src/LateTaskInterface.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -178,6 +181,7 @@ add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
   include/QualityControl/TaskInterface.h
+  include/QualityControl/LateTaskInterface.h
   include/QualityControl/UserCodeInterface.h
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h
