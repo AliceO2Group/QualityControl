@@ -436,6 +436,9 @@ void TrendCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
 
     auto graphName = moName + "_" + std::to_string(graphIndex);
 
+    if (!mQualities.contains(graphName)) {
+      continue;
+    }
     Quality quality = mQualities[graphName];
 
     if (mThresholdsTrendMedium.count(graphName) > 0) {
