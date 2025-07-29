@@ -97,7 +97,6 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           qual = Quality::Null;
         } else if (mean > mMeanMultThreshold || mean < mMinMultThreshold) {
           qual = Quality::Bad;
-          result = qual;
           ++nBad;
         } else if (mean > mMeanMultThreshold / 2.) {
           qual = Quality::Medium;
@@ -153,22 +152,44 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
             }
           }
         }
-        auto qual = Quality::Good;
+
+        auto qualBadLB = Quality::Good;
+        auto qualEmptyLB = Quality::Good;
         if (nBadLB > 0) {
-          qual = Quality::Medium;
+          qualBadLB = Quality::Medium;
           if (nBadLB > mNbBadLocalBoard) {
-            qual = Quality::Bad;
+            qualBadLB = Quality::Bad;
           }
           auto flag = o2::quality_control::FlagType();
-          qual.addFlag(flag, fmt::format("{} boards > {} kHz", nBadLB, mLocalBoardThreshold));
-        } else if (nEmptyLB > 0) {
-          qual = Quality::Medium;
-          if (nEmptyLB > mNbEmptyLocalBoard) {
-            qual = Quality::Bad;
-          }
-          auto flag = o2::quality_control::FlagType();
-          qual.addFlag(flag, fmt::format("{} boards empty", nEmptyLB));
+          qualBadLB.addFlag(flag, fmt::format("{} boards > {} kHz", nBadLB, mLocalBoardThreshold));
         }
+        if (nEmptyLB > 0) {
+          qualEmptyLB = Quality::Medium;
+          if (nEmptyLB > mNbEmptyLocalBoard) {
+            qualEmptyLB = Quality::Bad;
+          }
+          auto flag = o2::quality_control::FlagType();
+          qualEmptyLB.addFlag(flag, fmt::format("{} boards empty", nEmptyLB));
+        }
+
+        auto qual = Quality::Good;
+        if (qualBadLB.isWorseThan(qual)) {
+          qual.set(qualBadLB);
+        }
+        if (qualEmptyLB.isWorseThan(qual)) {
+          qual.set(qualEmptyLB);
+        }
+        // copy flags to aggregated quality
+        for (const auto& flag : qualBadLB.getFlags()) {
+          qual.addFlag(flag.first, flag.second);
+        }
+        for (const auto& flag : qualEmptyLB.getFlags()) {
+          qual.addFlag(flag.first, flag.second);
+        }
+        // copy metadata to aggregated quality
+        qual.addMetadata(qualBadLB.getMetadataMap());
+        qual.addMetadata(qualEmptyLB.getMetadataMap());
+
         mQualityMap[item.second->getName()] = qual;
         result = qual;
       } // if mNTFInSeconds > 0.
@@ -251,8 +272,11 @@ void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       if (histo) {
         if (mo->getName() == lbHistoName) {
           // This is LocalBoardsMap and it was already scaled in the checker
-          if (!checkResult.getFlags().empty()) {
-            mHistoHelper.addLatex(histo, 0.12, 0.72, color, checkResult.getFlags().front().second.c_str());
+          float xFlagText = 0.12;
+          float yFlagText = 0.72;
+          for (const auto& flag : checkResult.getFlags()) {
+            mHistoHelper.addLatex(histo, xFlagText, yFlagText, color, flag.second.c_str());
+            yFlagText -= 0.1;
           }
           mHistoHelper.addLatex(histo, 0.3, 0.32, color, fmt::format("Quality::{}", checkResult.getName()));
           histo->SetMaximum(zcontoursLoc4.back());
