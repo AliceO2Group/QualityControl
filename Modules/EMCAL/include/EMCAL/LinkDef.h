@@ -29,6 +29,7 @@
 #pragma link C++ class o2::quality_control_modules::emcal::TriggerTask + ;
 #pragma link C++ class o2::quality_control_modules::emcal::NumPatchesPerFastORCheck + ;
 #pragma link C++ class o2::quality_control_modules::emcal::PedestalChannelCheck + ;
+#pragma link C++ class o2::quality_control_modules::emcal::NumPhysTriggCheck + ;
 
 #pragma link C++ class o2::quality_control_modules::emcal::PayloadPerEventDDLCheck + ;
 
