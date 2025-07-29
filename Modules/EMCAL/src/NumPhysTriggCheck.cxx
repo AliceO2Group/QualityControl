@@ -103,7 +103,7 @@ void NumPhysTriggCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       msg->Draw("same");
       Can->Update();
     } else if (checkResult == Quality::Bad) {
-      ILOG(Debug, Devel) << "Quality::Bad";
+      ILOG(Debug, Devel) << "Quality::Bad << ENDM";
       msg->Clear();
       msg->AddText("Data quality: BAD");
       msg->SetFillColor(kRed);
