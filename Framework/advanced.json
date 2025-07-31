@@ -27,7 +27,7 @@
       }
     },
     "tasks": {
-      "dataSizeTask": {
+      "AdvTaskA": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -35,23 +35,23 @@
         "cycleDurationSeconds": "10",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tst2"
+          "name": "tst"
         }
       },
-      "someNumbersTask": {
+      "AdvTaskB": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "25",
         "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tst1"
+          "type": "direct",
+          "query": "data:TST/SUM"
         }
       }
     },
     "checks": {
-      "dataSizeCheck": {
+      "AdvCheckA1": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -59,52 +59,241 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "dataSizeTask",
+          "name": "AdvTaskA",
           "MOs": ["example"]
         }]
       },
-      "someNumbersCheck": {
+      "AdvCheckA2": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
-        "policy": "OnAny",
+        "policy": "OnAll",
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "someNumbersTask",
-          "MOs": ["example"]
+          "name": "AdvTaskA",
+          "MOs": ["example", "example2"]
         }]
+      },
+      "AdvCheckB": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::TrendCheck",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "policy": "OnAll",
+        "extendedCheckParameters": {
+          "default": {
+            "default": {
+              "trendCheckMode": "DeviationFromMean",
+               "nPointsForAverage": "3",
+               "thresholdsBad": "-0.02,0.02",
+               "thresholdsMedium": "-0.005,0.005"
+            }
+          }
+        },
+        "dataSource": [
+          {
+            "type": "PostProcessing",
+            "name": "AdvTrendB",
+            "MOs" : [
+              "mean_of_histogram"
+            ]
+          }
+        ]
+      }
+    },
+    "aggregators": {
+      "AdvAggregatorA": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check",
+          "name": "AdvCheckA1"
+        }, {
+          "type": "Check",
+          "name": "AdvCheckA2"
+        }]
+      },
+      "AdvAggregatorB": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check",
+          "name": "AdvCheckB"
+        }]
+      },
+      "AdvAggregatorC": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::WorstOfAllAggregator",
+        "moduleName": "QcCommon",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Aggregator",
+          "name": "AdvAggregatorA",
+          "QOs": []
+        }, {
+          "type": "Aggregator",
+          "name": "AdvAggregatorB",
+          "QOs": []
+        }]
+      }
+
+    },
+    "postprocessing": {
+      "AdvTrendB": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "TST/MO/AdvTaskB",
+            "names": [ "example" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_histogram",
+            "title": "Mean trend of the example histogram",
+            "graphAxisLabel": "Mean X:time",
+            "graphYRange": "0:10000",
+            "graphs" : [
+              {
+                "name": "mean_trend",
+                "title": "mean trend",
+                "varexp": "example.mean:time",
+                "selection": "",
+                "option": "*L PLC PMC"
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:TST/MO/AdvTaskB/example"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "AdvTrendA": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "dataSources": [
+          {
+            "type": "repository-quality",
+            "path": "TST/QO",
+            "names": [ "AdvCheckA1" ],
+            "reductorName": "o2::quality_control_modules::common::QualityReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "example_quality",
+            "title": "Trend of the example histogram's quality",
+            "graphs" : [{
+              "varexp": "AdvCheckA1.name:time",
+              "selection": "",
+              "option": "*"
+            }]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:TST/QO/AdvCheckA1"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "AdvQualityTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::QualityTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "qualityGroups": [
+          {
+            "name" : "global",
+            "title" : "Advanced example: Aggregators",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "AdvAggregatorC/AdvAggregatorC",
+                "title" : "Adv. Aggregator C (total)"
+              },
+              {
+                "name" : "AdvAggregatorA/AdvAggregatorA",
+                "title" : "Adv. Aggregator A"
+              },
+              {
+                "name" : "AdvAggregatorB/AdvAggregatorB",
+                "title" : "Adv. Aggregator B"
+              }
+            ]
+          },
+          {
+            "name" : "details",
+            "title" : "Advanced example: Checks",
+            "path": "TST/QO",
+            "ignoreQualitiesDetails" : [],
+            "inputObjects": [
+              {
+                "name" : "AdvCheckA1",
+                "title" : ""
+              },
+              {
+                "name" : "AdvCheckA2",
+                "title" : ""
+              },
+              {
+                "name" : "AdvCheckB",
+                "title" : ""
+              }
+            ]
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "newobject:qcdb:TST/QO/AdvAggregatorC/AdvAggregatorC"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
       }
     }
   },
   "dataSamplingPolicies": [
     {
-      "id": "tst1",
+      "id": "tst",
       "active": "true",
-      "machines": [],
-      "query" : "data:TST/SUM/2;param:TST/PARAM/2",
+      "query" : "data:TST/DATA/1",
       "samplingConditions": [
         {
           "condition": "random",
           "fraction": "0.1",
-          "seed": "32112332123"
+          "seed": "0"
         }
-      ],
-      "blocking": "false"
-    },
-    {
-      "id": "tst2",
-      "active": "true",
-      "machines": [],
-      "query" : "data:TST/DATA",
-      "samplingConditions": [
-        {
-          "condition": "payloadSize",
-          "lowerLimit": "8000",
-          "upperLimit": "10000"
-        }
-      ],
-      "blocking": "false"
+      ]
     }
   ]
 }
