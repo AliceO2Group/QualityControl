@@ -32,6 +32,7 @@
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Framework/DefaultsHelpers.h>
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -108,7 +109,7 @@ bool validateArguments(const ConfigContext& config)
     ILOG(Warning, Support) << "No configuration path specified, returning an empty workflow." << ENDM;
     return false;
   } else if (!std::regex_match(qcConfigurationSource, configBackend)) {
-    ILOG(Error, Support) << "The --config option expects a backend name (e.g. json:// or consul-json://) preceding the path. User specified: " << qcConfigurationSource << ENDM;
+    ILOG(Error, Ops) << "The --config option expects a backend name (e.g. json:// or consul-json://) preceding the path. User specified: " << qcConfigurationSource << ENDM;
     return false;
   }
 
@@ -119,11 +120,38 @@ bool validateArguments(const ConfigContext& config)
   exclusiveOptions += !config.options().get<std::string>("local-batch").empty();
   exclusiveOptions += !config.options().get<std::string>("remote-batch").empty();
   if (exclusiveOptions > 1) {
-    ILOG(Error, Support) << "More than one of the following options was specified: --local, --remote, --local-batch, --remote--batch. This is not allowed, returning an empty workflow." << ENDM;
+    ILOG(Error, Ops) << "More than one of the following options was specified: --local, --remote, --local-batch, --remote-batch, --full-chain. This is not allowed, returning an empty workflow." << ENDM;
     return false;
   }
 
   return true;
+}
+
+void setupInfologger(const ConfigContext& config, boost::property_tree::ptree configTree)
+{
+  if (config.options().get<bool>("no-infologger")) {
+    quality_control::core::QcInfoLogger::disable();
+  } else {
+    auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", true);
+    auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
+    ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
+    ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+  }
+  auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
+  auto rotateMaxBytes = configTree.get<u_long>("qc.config.infologger.filterRotateMaxBytes", 0);
+  auto rotateMaxFiles = configTree.get<u_int>("qc.config.infologger.filterRotateMaxFiles", 0);
+  std::string debugInDiscardFile = configTree.get<std::string>("qc.config.infologger.debugInDiscardFile", "false");
+  auto debugInDiscardFileBool = debugInDiscardFile == "true";
+  ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), rotateMaxBytes, rotateMaxFiles, 0, !debugInDiscardFileBool /*Do not store Debug messages in file*/);
+
+  std::string id = "runQC";
+  for (size_t i = 0; i < config.argc(); i++) {
+    if (std::strcmp(config.argv()[i], "--id") == 0 && i + 1 < config.argc()) {
+      id = config.argv()[i + 1];
+      break;
+    }
+  }
+  o2::quality_control::core::QcInfoLogger::setFacility(id);
 }
 
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
@@ -155,29 +183,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     // we set the infologger levels as soon as possible to avoid spamming
     auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
 
-    if (config.options().get<bool>("no-infologger")) {
-      quality_control::core::QcInfoLogger::disable();
-    } else {
-      auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", true);
-      auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel", 21);
-      ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
-      ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
-    }
-    auto infologgerDiscardFile = configTree.get<std::string>("qc.config.infologger.filterDiscardFile", "");
-    auto rotateMaxBytes = configTree.get<u_long>("qc.config.infologger.filterRotateMaxBytes", 0);
-    auto rotateMaxFiles = configTree.get<u_int>("qc.config.infologger.filterRotateMaxFiles", 0);
-    std::string debugInDiscardFile = configTree.get<std::string>("qc.config.infologger.debugInDiscardFile", "false");
-    auto debugInDiscardFileBool = debugInDiscardFile == "true";
-    ILOG_INST.filterDiscardSetFile(infologgerDiscardFile.c_str(), rotateMaxBytes, rotateMaxFiles, 0, !debugInDiscardFileBool /*Do not store Debug messages in file*/);
-
-    std::string id = "runQC";
-    for (size_t i = 0; i < config.argc(); i++) {
-      if (std::strcmp(config.argv()[i], "--id") == 0 && i + 1 < config.argc()) {
-        id = config.argv()[i + 1];
-        break;
-      }
-    }
-    o2::quality_control::core::QcInfoLogger::setFacility(id);
+    setupInfologger(config, configTree);
 
     ILOG(Info, Devel) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
     auto keyValuesToOverride = quality_control::core::parseOverrideValues(config.options().get<std::string>("override-values"));

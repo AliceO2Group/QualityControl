@@ -214,7 +214,7 @@ void AggregatorRunner::store(QualityObjectsWithAggregatorNameVector& qualityObje
 
     if (!qualityObjectsWithAggregatorNames.empty() && !qualityObjectsWithAggregatorNames.front().second.empty()) {
       const auto& qo = qualityObjectsWithAggregatorNames.front().second.front();
-      ILOG(Info, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Debug, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
 
   } catch (boost::exception& e) {

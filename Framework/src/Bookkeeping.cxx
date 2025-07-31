@@ -52,7 +52,7 @@ std::string readClientToken()
     if (token.empty()) {
       throw std::runtime_error("BKP token file '" + tokenFileName + "' was provided but it is empty, please provide a valid token");
     }
-    ILOG(Debug, Devel) << "Using token from file qc_bkp_client_token" << ENDM;
+    ILOG(Debug, Devel) << "Using token from file qc_bkp_client_token.txt" << ENDM;
     return token;
   }
 

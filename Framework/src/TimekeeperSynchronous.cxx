@@ -37,7 +37,7 @@ void TimekeeperSynchronous::updateByTimeFrameID(uint32_t tfid)
 {
   if (tfid == 0) {
     if (!mWarnedAboutTfIdZero) {
-      ILOG(Warning, Devel) << "Seen TFID equal to 0, which is not expected. Will not update TF-based validity, will not warn further." << ENDM;
+      ILOG(Debug, Devel) << "Seen TFID equal to 0, which is unexpected in production, but normal in test QC setups. Will not update TF-based validity, will not warn further." << ENDM;
       mWarnedAboutTfIdZero = true;
     }
     return;
