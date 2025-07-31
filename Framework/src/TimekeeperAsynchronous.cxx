@@ -111,8 +111,8 @@ validity_time_t
   } else {
     // an exception could be thrown here once the values above are set correctly in production
   }
-  ILOG(Info, Devel) << "Received the following activity boundary propositions: " << ccdbTimestamp << ", " << ecsTimestamp
-                    << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;
+  ILOG(Debug, Devel) << "Received the following activity boundary propositions: " << ccdbTimestamp << ", " << ecsTimestamp
+                     << ", " << configTimestamp << ", " << currentTimestamp << ". Selected: " << selected << ENDM;
   return selected;
 }
 
@@ -131,7 +131,7 @@ ValidityInterval TimekeeperAsynchronous::computeTimestampFromTimeframeID(uint32_
   if (mOrbitsPerTF == 0) {
     if (auto accessor = getCCDBOrbitsPerTFAccessor()) {
       mOrbitsPerTF = accessor();
-      ILOG(Info, Support) << "Got nOrbitsPerTF " << mOrbitsPerTF << " for TF " << tfid << ENDM;
+      ILOG(Debug, Support) << "Got nOrbitsPerTF " << mOrbitsPerTF << " for TF " << tfid << ENDM;
     } else {
       ILOG(Error, Ops) << "CCDB OrbitsPerTF accessor is not available" << ENDM;
     }

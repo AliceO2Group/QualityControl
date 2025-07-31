@@ -337,7 +337,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects, long validFrom)
     }
     if (!qualityObjects.empty()) {
       auto& qo = qualityObjects.at(0);
-      ILOG(Info, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Debug, Devel) << "Validity of QO '" << qo->GetName() << "' is (" << qo->getValidity().getMin() << ", " << qo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -356,7 +356,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
     }
     if (!monitorObjects.empty()) {
       auto& mo = monitorObjects.at(0);
-      ILOG(Info, Devel) << "Validity of MO '" << mo->GetName() << "' is (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
+      ILOG(Debug, Devel) << "Validity of MO '" << mo->GetName() << "' is (" << mo->getValidity().getMin() << ", " << mo->getValidity().getMax() << ")" << ENDM;
     }
   } catch (boost::exception& e) {
     ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
