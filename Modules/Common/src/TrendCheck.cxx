@@ -345,11 +345,11 @@ Quality TrendCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   Quality result = mQualities.empty() ? Quality::Null : Quality::Good;
   for (auto& [key, quality] : mQualities) {
     (void)key;
-    for (const auto& flag : quality.getFlags()) {
-      result.addFlag(flag.first, flag.second);
-    }
     if (quality.isWorseThan(result)) {
       result.set(quality);
+    }
+    for (const auto& flag : quality.getFlags()) {
+      result.addFlag(flag.first, flag.second);
     }
   }
 
