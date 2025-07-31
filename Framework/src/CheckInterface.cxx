@@ -17,12 +17,38 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/Data.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {
+
+core::Quality CheckInterface::check(std::map<std::string, std::shared_ptr<core::MonitorObject>>* moMap)
+{
+  Data data(*moMap);
+  return check(data);
+};
+
+core::Quality CheckInterface::check(const core::Data& data)
+{
+  return core::Quality{};
+};
+
+std::string CheckInterface::getAcceptedType() { return "TObject"; }
+
+bool CheckInterface::isObjectCheckable(const std::shared_ptr<MonitorObject> mo)
+{
+  return isObjectCheckable(mo.get());
+}
+
+bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
+{
+  TObject* encapsulated = mo->getObject();
+
+  return encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str());
+}
 
 void CheckInterface::configure()
 {

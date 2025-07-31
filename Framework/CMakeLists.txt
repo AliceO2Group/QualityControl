@@ -136,7 +136,9 @@ add_library(O2QualityControl
   src/ReductorHelpers.cxx
   src/KafkaPoller.cxx
   src/FlagHelpers.cxx
-  src/ObjectMetadataHelpers.cxx)
+  src/ObjectMetadataHelpers.cxx
+  src/Data.cxx
+)
 
 target_include_directories(
   O2QualityControl
@@ -289,6 +291,7 @@ add_executable(o2-qc-test-core
                test/testKafkaTests.cxx
                test/testFlagHelpers.cxx
                test/testQualitiesToFlagCollectionConverter.cxx
+               test/testData.cxx
 )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

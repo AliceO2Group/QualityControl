@@ -18,11 +18,14 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Skeleton/SkeletonTask.h"
+#include "QualityControl/Data.h"
 // ROOT
 #include <TH1.h>
 
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
+#include <memory>
 
 using namespace std;
 using namespace o2::quality_control;
@@ -41,6 +44,12 @@ void SkeletonCheck::configure()
 
 Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  Data data{ *moMap };
+  return check(data);
+}
+
+Quality SkeletonCheck::check(const quality_control::core::Data& data)
+{
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   Quality result = Quality::Null;
 
@@ -49,35 +58,35 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
 
-  // This is an example of accessing the histogram 'example' created by SkeletonTask
-  for (auto& [moName, mo] : *moMap) {
-    if (mo->getName() == "example") {
-      auto* h = dynamic_cast<TH1*>(mo->getObject());
-      if (h == nullptr) {
-        ILOG(Error, Support) << "Could not cast `example` to TH1*, skipping" << ENDM;
-        continue;
-      }
-      // unless we find issues, we assume the quality is good
-      result = Quality::Good;
+  auto MOs = data.getAllOfTypeIf<std::shared_ptr<MonitorObject>>([](const auto& mo) { return mo->getName() == "example"; });
 
-      // an example of a naive quality check: we want bins 1-7 to be non-empty and bins 0 and >7 to be empty.
-      for (int i = 0; i < h->GetNbinsX(); i++) {
-        if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
-          result = Quality::Bad;
-          // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
-          result.addFlag(FlagTypeFactory::BadPID(), "It is bad because there is nothing in bin " + std::to_string(i));
-          break;
-        } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
-          result = Quality::Medium;
-          // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
-          result.addFlag(FlagTypeFactory::Unknown(), "It is medium because bin " + std::to_string(i) + " is not empty");
-          result.addFlag(FlagTypeFactory::BadTracking(), "We can assign more than one Flag to a Quality");
-        }
-      }
-      // optionally, we can associate some custom metadata to a Quality
-      result.addMetadata("mykey", "myvalue");
+  for (const auto& mo : MOs) {
+    auto* h = dynamic_cast<TH1*>(mo->getObject());
+    if (h == nullptr) {
+      ILOG(Error, Support) << "Could not cast `example` to TH1*, skipping" << ENDM;
+      continue;
     }
+    // unless we find issues, we assume the quality is good
+    result = Quality::Good;
+
+    // an example of a naive quality check: we want bins 1-7 to be non-empty and bins 0 and >7 to be empty.
+    for (int i = 0; i < h->GetNbinsX(); i++) {
+      if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
+        result = Quality::Bad;
+        // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
+        result.addFlag(FlagTypeFactory::BadPID(), "It is bad because there is nothing in bin " + std::to_string(i));
+        break;
+      } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
+        result = Quality::Medium;
+        // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
+        result.addFlag(FlagTypeFactory::Unknown(), "It is medium because bin " + std::to_string(i) + " is not empty");
+        result.addFlag(FlagTypeFactory::BadTracking(), "We can assign more than one Flag to a Quality");
+      }
+    }
+    // optionally, we can associate some custom metadata to a Quality
+    result.addMetadata("mykey", "myvalue");
   }
+
   return result;
 }
 
