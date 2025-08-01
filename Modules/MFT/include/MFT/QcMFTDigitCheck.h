@@ -52,7 +52,7 @@ class QcMFTDigitCheck : public o2::quality_control::checker::CheckInterface
   // masked chips part
   bool mFirstCall;
   std::vector<int> mMaskedChips;
-  std::vector<string> mChipMapName;
+  std::vector<std::string> mChipMapName;
 
   void readMaskedChips(std::shared_ptr<MonitorObject> mo);
   void createMaskedChipsNames();

@@ -228,7 +228,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
-    obj->SetTitle((string("FT0 ") + obj->GetTitle()).c_str());
+    obj->SetTitle((std::string("FT0 ") + obj->GetTitle()).c_str());
   }
   //
   mGoodPMbits_ChID = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "goodPMbits_ChID", 1 << o2::ft0::ChannelData::kIsCFDinADCgate);

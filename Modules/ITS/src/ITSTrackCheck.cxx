@@ -38,7 +38,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
 
-    if (((string)iter->second->getName()).find("NClusters") != std::string::npos) {
+    if (((std::string)iter->second->getName()).find("NClusters") != std::string::npos) {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h == nullptr) {
         ILOG(Error, Support) << "could not cast NClusters to TH1D*" << ENDM;
@@ -84,7 +84,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       }
     }
 
-    if (((string)iter->second->getName()).find("AngularDistribution") != std::string::npos) {
+    if (((std::string)iter->second->getName()).find("AngularDistribution") != std::string::npos) {
       auto* hAngular = dynamic_cast<TH2D*>(iter->second->getObject());
       if (hAngular == nullptr) {
         ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;
@@ -200,9 +200,9 @@ std::string ITSTrackCheck::getAcceptedType() { return "TH1D"; }
 
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
-  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
-  std::map<string, string> ShifterInfoText;
+  std::vector<std::string> vPlotWithTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<std::string> vTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "textMessage", ""));
+  std::map<std::string, std::string> ShifterInfoText;
 
   if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
     for (int i = 0; i < (int)vTextMessage.size(); i++) {
@@ -220,7 +220,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   TString status;
   int textColor;
 
-  if (((string)mo->getName()).find("NClusters") != std::string::npos) {
+  if (((std::string)mo->getName()).find("NClusters") != std::string::npos) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast NClusters to TH1D*" << ENDM;
@@ -300,7 +300,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       h->GetListOfFunctions()->Add(tShifterInfo->Clone());
   }
 
-  if (((string)mo->getName()).find("AngularDistribution") != std::string::npos) {
+  if (((std::string)mo->getName()).find("AngularDistribution") != std::string::npos) {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast AngularDistribution to TH2D*" << ENDM;

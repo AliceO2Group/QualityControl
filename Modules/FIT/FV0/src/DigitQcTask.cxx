@@ -372,7 +372,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
-    obj->SetTitle((string("FV0 ") + obj->GetTitle()).c_str());
+    obj->SetTitle((std::string("FV0 ") + obj->GetTitle()).c_str());
   }
   // Timestamp
   mMetaAnchorOutput = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "metaAnchorOutput", "CycleDurationNTF");

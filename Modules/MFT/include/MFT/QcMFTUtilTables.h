@@ -353,7 +353,7 @@ class QcMFTUtilTables
   };
 
   // names for occupancy maps (for outside acceptance and ladder checker)
-  string mDigitChipMapNames[20] = {
+  std::string mDigitChipMapNames[20] = {
     "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mDigitChipOccupancyMap",
     "ChipOccupancyMaps/Half_0/Disk_0/Face_1/mDigitChipOccupancyMap",
     "ChipOccupancyMaps/Half_0/Disk_1/Face_0/mDigitChipOccupancyMap",
@@ -376,7 +376,7 @@ class QcMFTUtilTables
     "ChipOccupancyMaps/Half_1/Disk_4/Face_1/mDigitChipOccupancyMap"
   };
 
-  string mClusterChipMapNames[20] = {
+  std::string mClusterChipMapNames[20] = {
     "ChipOccupancyMaps/Half_0/Disk_0/Face_0/mClusterChipOccupancyMap",
     "ChipOccupancyMaps/Half_0/Disk_0/Face_1/mClusterChipOccupancyMap",
     "ChipOccupancyMaps/Half_0/Disk_1/Face_0/mClusterChipOccupancyMap",

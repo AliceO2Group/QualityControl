@@ -60,7 +60,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       result.addMetadata("Gen_Occu_OB", "good");
       result.addMetadata("Gen_Occu_empty", "good");
       result.set(Quality::Good);
-      std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "skipbins", ""));
+      std::vector<int> skipbins = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "skipbins", ""));
 
       TIter next(h->GetBins());
       int ibin = 1;
@@ -173,9 +173,9 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
-  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
-  std::map<string, string> ShifterInfoText;
+  std::vector<std::string> vPlotWithTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<std::string> vTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "textMessage", ""));
+  std::map<std::string, std::string> ShifterInfoText;
 
   if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
     for (int i = 0; i < (int)vTextMessage.size(); i++) {

@@ -45,7 +45,7 @@ void CalibQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNbDeadROF = std::make_unique<TH1F>("NbDeadROF", "NbDeadROF", 1, 0, 1.);
   getObjectsManager()->startPublishing(mNbDeadROF.get());
 
-  std::array<string, 4> chId{ "11", "12", "21", "22" };
+  std::array<std::string, 4> chId{ "11", "12", "21", "22" };
 
   // Noise strips Histograms ::
   for (int ich = 0; ich < 4; ++ich) {

@@ -66,7 +66,7 @@ void CTFSize::initialize(o2::framework::InitContext& /*ctx*/)
   mDefaultBinning[DetID::CTP] = "100, 1, 100";
   mDefaultBinning[DetID::TST] = "1, 0, 1";
 
-  std::string detList = getFromConfig<string>(mCustomParameters, "detectors", "all");
+  std::string detList = getFromConfig<std::string>(mCustomParameters, "detectors", "all");
   auto detMask = DetID::getMask(detList);
 
   constexpr int nLogBins = 100;
