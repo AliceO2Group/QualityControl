@@ -77,3 +77,28 @@ TEST_CASE("Data getAllOfTypeIf", "[Data]")
   auto filtered = data.getAllOfTypeIf<named<int>>([](const auto& val) { return val.name == "1"; });
   REQUIRE(filtered.size() == 1);
 }
+
+TEST_CASE("Data iterator", "[Data]")
+{
+  Data data;
+  data.insert("testint1", 1);
+  data.insert("teststr1", std::string{ "1" });
+  data.insert("testint2", 2);
+  data.insert("teststr2", std::string{ "2" });
+
+  auto intIt = data.begin<int>();
+  REQUIRE(intIt != data.end<int>());
+  REQUIRE(intIt->first.get() == "testint1");
+  REQUIRE(intIt->second.get() == 1);
+  intIt++;
+  REQUIRE(intIt->first.get() == "testint2");
+  REQUIRE(intIt->second.get() == 2);
+
+  auto strIt = data.begin<std::string>();
+  REQUIRE(strIt != data.end<std::string>());
+  REQUIRE(strIt->first.get() == "teststr1");
+  REQUIRE(strIt->second.get() == "1");
+  ++strIt;
+  REQUIRE(strIt->first.get() == "teststr2");
+  REQUIRE(strIt->second.get() == "2");
+}
