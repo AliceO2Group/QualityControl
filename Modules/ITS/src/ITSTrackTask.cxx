@@ -71,10 +71,10 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mAlignmentMonitor = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "doAlignmentMonitor", mAlignmentMonitor);
   mDefaultMomResPar = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "UseDefaultMomResPar", mDefaultMomResPar);
   if (mAlignmentMonitor == 1 && mDefaultMomResPar == 0) {
-    std::vector<int> vMomResParMEAS1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMEAS1", ""));
-    std::vector<int> vMomResParMEAS2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMEAS2", ""));
-    std::vector<int> vMomResParMSC1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMSC1", ""));
-    std::vector<int> vMomResParMSC2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "MomResParMSC2", ""));
+    std::vector<int> vMomResParMEAS1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "MomResParMEAS1", ""));
+    std::vector<int> vMomResParMEAS2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "MomResParMEAS2", ""));
+    std::vector<int> vMomResParMSC1 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "MomResParMSC1", ""));
+    std::vector<int> vMomResParMSC2 = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "MomResParMSC2", ""));
 
     for (int l = 0; l < NLayer; l++) {
       mSigmaMeas[0][l] = (double)vMomResParMEAS1[l];
@@ -114,7 +114,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
 
   if (mTimestamp == -1) { // get dict from ccdb
-    mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
+    mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
     ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
 

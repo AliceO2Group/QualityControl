@@ -103,7 +103,7 @@ class ITSNoisyPixelTask : public TaskInterface
   long int mTimestamp;
 
   int mLocalGeometryFile = 0;
-  string mGeoTimestamp = "1640991600000";
+  std::string mGeoTimestamp = "1640991600000";
 };
 } //  namespace o2::quality_control_modules::its
 

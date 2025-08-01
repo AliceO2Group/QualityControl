@@ -31,10 +31,10 @@ Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorO
 {
 
   // limits to be used as "X,Y" --> BAD if at least X FFEIDs have at least Y chips each into error
-  std::vector<float> feeidlimitsIB = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "feeidlimitsIB", ""));
-  std::vector<float> feeidlimitsML = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "feeidlimitsML", ""));
-  std::vector<float> feeidlimitsOL = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "feeidlimitsOL", ""));
-  std::vector<int> excludedfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "excludedfeeid", ""));
+  std::vector<float> feeidlimitsIB = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsIB", ""));
+  std::vector<float> feeidlimitsML = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsML", ""));
+  std::vector<float> feeidlimitsOL = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsOL", ""));
+  std::vector<int> excludedfeeid = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "excludedfeeid", ""));
 
   if (feeidlimitsIB.size() != 2) {
     ILOG(Error, Support) << "Incorrect setting for feeidlimitsIB, check .json. Using default 1,1" << ENDM;
@@ -117,7 +117,7 @@ void ITSChipStatusCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
   TString status;
   int textColor;
 
-  if ((string)mo->GetName() == "FEEIDOverview") {
+  if ((std::string)mo->GetName() == "FEEIDOverview") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast FEEIDOverview to TH1D*" << ENDM;
@@ -140,7 +140,7 @@ void ITSChipStatusCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     h->GetListOfFunctions()->Add(tInfo->Clone());
   }
 
-  if ((string)mo->getName() == "StaveStatusOverview") {
+  if ((std::string)mo->getName() == "StaveStatusOverview") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast StaveStatusOverview to TH2Poly*" << ENDM;

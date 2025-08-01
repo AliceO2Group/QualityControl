@@ -80,12 +80,12 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
 
-  std::string readCTPConfig = getFromExtendedConfig<string>(activity, mCustomParameters, "readCTPconfigInMonitorData", "false");
+  std::string readCTPConfig = getFromExtendedConfig<std::string>(activity, mCustomParameters, "readCTPconfigInMonitorData", "false");
   if (readCTPConfig == "true") {
     mReadCTPconfigInMonitorData = true;
   }
 
-  mMBclassName = getFromExtendedConfig<string>(activity, mCustomParameters, "MBclassName", "CMTVX-B-NOPF");
+  mMBclassName = getFromExtendedConfig<std::string>(activity, mCustomParameters, "MBclassName", "CMTVX-B-NOPF");
 
   std::string run = std::to_string(mRunNumber);
   std::string ccdbName = mCustomParameters["ccdbName"];
@@ -98,7 +98,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     bool ok;
     auto& mgr = o2::ccdb::BasicCCDBManager::instance();
     mgr.setURL(ccdbName);
-    map<string, string> metadata; // can be empty
+    std::map<std::string, std::string> metadata; // can be empty
     metadata["runNumber"] = run;
     auto ctpconfigdb = mgr.getSpecific<o2::ctp::CTPConfiguration>(o2::ctp::CCDBPathCTPConfig, mTimestamp, metadata);
     if (ctpconfigdb == nullptr) {
@@ -130,8 +130,8 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     mHistoClassRatios->SetTitle(Form("Class Ratio to %s", mMBclassName.c_str()));
   }
 
-  std::string nameInput1 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB1inputName", "MTVX");
-  std::string nameInput2 = getFromExtendedConfig<string>(activity, mCustomParameters, "MB2inputName", "MT0A");
+  std::string nameInput1 = getFromExtendedConfig<std::string>(activity, mCustomParameters, "MB1inputName", "MTVX");
+  std::string nameInput2 = getFromExtendedConfig<std::string>(activity, mCustomParameters, "MB2inputName", "MT0A");
 
   auto input1Tokens = o2::utils::Str::tokenize(nameInput1, ':', false, true);
   if (input1Tokens.size() > 0) {
@@ -206,7 +206,7 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoBCMinBias2->SetTitle(Form("%s; %s; %s", title2.Data(), titleX2.Data(), titley2.Data()));
   mHistoInputRatios->SetTitle(Form("Input Ratio to %s", nameInput1.c_str()));
 
-  std::string performConsistencyCheck = getFromExtendedConfig<string>(activity, mCustomParameters, "consistencyCheck", "true");
+  std::string performConsistencyCheck = getFromExtendedConfig<std::string>(activity, mCustomParameters, "consistencyCheck", "true");
   if (performConsistencyCheck == "true") {
     mDecoder.setCheckConsistency(1);
     mDecoder.setDecodeInps(1);

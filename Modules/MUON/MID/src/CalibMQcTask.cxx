@@ -36,7 +36,7 @@ void CalibMQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   gStyle->SetPalette(kRainBow);
 
-  std::array<string, 4> chId{ "11", "12", "21", "22" };
+  std::array<std::string, 4> chId{ "11", "12", "21", "22" };
 
   mNbBadChannelTF = std::make_unique<TH1F>("NbBadChannelTF", "Anaylyzed timeframes", 1, 0, 1.);
   getObjectsManager()->startPublishing(mNbBadChannelTF.get());

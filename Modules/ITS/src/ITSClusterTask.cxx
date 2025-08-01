@@ -123,7 +123,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   if (mTimestamp == -1) { // get dict from ccdb
-    mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
+    mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "dicttimestamp", "0"));
     long int ts = mTimestamp ? mTimestamp : ctx.services().get<o2::framework::TimingInfo>().creation;
     ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
     std::map<std::string, std::string> metadata;

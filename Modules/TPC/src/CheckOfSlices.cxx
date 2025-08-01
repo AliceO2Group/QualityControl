@@ -101,7 +101,7 @@ void CheckOfSlices::configure()
     mExpectedPhysicsValue = common::getFromConfig<double>(mCustomParameters, "expectedPhysicsValue", 1);
   }
 
-  std::string maskingValues = common::getFromConfig<string>(mCustomParameters, "maskedPoints", "");
+  std::string maskingValues = common::getFromConfig<std::string>(mCustomParameters, "maskedPoints", "");
   mMaskedPoints.clear();
   if (maskingValues != "") {
     mMaskedPoints = RangeTokenizer::tokenize<int>(maskingValues);

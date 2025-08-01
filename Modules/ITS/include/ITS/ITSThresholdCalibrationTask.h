@@ -93,11 +93,11 @@ class ITSThresholdCalibrationTask : public TaskInterface
   Int_t getBarrel(Int_t iLayer);
   int getCurrentChip(int barrel, int chipid, int hic, int hs);
 
-  void doAnalysisTHR(string inString, int iScan);
-  void doAnalysisPixel(string inString);
+  void doAnalysisTHR(std::string inString, int iScan);
+  void doAnalysisPixel(std::string inString);
 
-  CalibrationResStructTHR CalibrationParserTHR(string input);
-  CalibrationResStructPixel CalibrationParserPixel(string input);
+  CalibrationResStructTHR CalibrationParserTHR(std::string input);
+  CalibrationResStructPixel CalibrationParserPixel(std::string input);
 
   std::vector<TObject*> mPublishedObjects;
 
