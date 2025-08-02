@@ -32,6 +32,18 @@ struct TrendingTaskConfig : PostProcessingConfig {
   TrendingTaskConfig(std::string name, const boost::property_tree::ptree& config);
   ~TrendingTaskConfig() = default;
 
+  // graph style configuration
+  struct GraphStyle {
+    int   lineColor   = -1;
+    int   lineStyle   = -1;
+    int   lineWidth   = -1;
+    int   markerColor = -1;
+    int   markerStyle = -1;
+    float markerSize  = -1.f;
+    int   fillColor   = -1;
+    int   fillStyle   = -1;
+  };
+
   // this corresponds to one TTree::Draw() call, i.e. one graph or histogram drawing
   struct Graph {
     std::string name;
@@ -40,6 +52,14 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string selection;
     std::string option; // the list of possible options are documented in TGraphPainter and THistPainter
     std::string errors;
+    GraphStyle style;
+  };
+
+  // legend configuration
+  struct LegendConfig {
+    bool  enabled{false};
+    int   nColumns{1};
+    float x1{0.30f}, y1{0.20f}, x2{0.55f}, y2{0.35f}; // NDC coords
   };
 
   // this corresponds to one canvas which can include multiple graphs
@@ -49,6 +69,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string graphAxisLabel;
     std::string graphYRange;
     int colorPalette = 0;
+    LegendConfig legend;
     std::vector<Graph> graphs;
   };
 

@@ -36,14 +36,34 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
       for (const auto& [_, graphConfig] : graphsConfig.value()) {
         // first we use name of the graph, if absent, we use graph title, if absent, we use plot (object) name.
         const auto& name = graphConfig.get<std::string>("name", graphConfig.get<std::string>("title", plotConfig.get<std::string>("name")));
+        GraphStyle style;
+        style.lineColor    = graphConfig.get<int>("style.lineColor",   -1);
+        style.lineStyle    = graphConfig.get<int>("style.lineStyle",   -1);
+        style.lineWidth    = graphConfig.get<int>("style.lineWidth",   -1);
+        style.markerColor  = graphConfig.get<int>("style.markerColor", -1);
+        style.markerStyle  = graphConfig.get<int>("style.markerStyle", -1);
+        style.markerSize   = graphConfig.get<float>("style.markerSize", -1.f);
+        style.fillColor    = graphConfig.get<int>("style.fillColor",   -1);
+        style.fillStyle    = graphConfig.get<int>("style.fillStyle",   -1);
+
         graphs.push_back({ name,
                            graphConfig.get<std::string>("title", ""),
                            graphConfig.get<std::string>("varexp"),
                            graphConfig.get<std::string>("selection", ""),
                            graphConfig.get<std::string>("option", ""),
-                           graphConfig.get<std::string>("graphErrors", "") });
+                           graphConfig.get<std::string>("graphErrors", ""),
+                           style });
       }
     } else {
+      GraphStyle style;
+      style.lineColor    = plotConfig.get<int>("style.lineColor",   -1);
+      style.lineStyle    = plotConfig.get<int>("style.lineStyle",   -1);
+      style.lineWidth    = plotConfig.get<int>("style.lineWidth",   -1);
+      style.markerColor  = plotConfig.get<int>("style.markerColor", -1);
+      style.markerStyle  = plotConfig.get<int>("style.markerStyle", -1);
+      style.markerSize   = plotConfig.get<float>("style.markerSize", -1.f);
+      style.fillColor    = plotConfig.get<int>("style.fillColor",   -1);
+      style.fillStyle    = plotConfig.get<int>("style.fillStyle",   -1);
       graphs.push_back({ plotConfig.get<std::string>("name", ""),
                          plotConfig.get<std::string>("title", ""),
                          plotConfig.get<std::string>("varexp"),
@@ -51,11 +71,21 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
                          plotConfig.get<std::string>("option", ""),
                          plotConfig.get<std::string>("graphErrors", "") });
     }
+
+    LegendConfig leg;
+    leg.enabled  = plotConfig.get<bool>("legend.enabled", false);
+    leg.nColumns = plotConfig.get<int>("legend.nColumns", 1);
+    leg.x1       = plotConfig.get<float>("legend.x1", 0.30f);
+    leg.y1       = plotConfig.get<float>("legend.y1", 0.20f);
+    leg.x2       = plotConfig.get<float>("legend.x2", 0.55f);
+    leg.y2       = plotConfig.get<float>("legend.y2", 0.35f);
+
     plots.push_back({ plotConfig.get<std::string>("name"),
                       plotConfig.get<std::string>("title", ""),
                       plotConfig.get<std::string>("graphAxisLabel", ""),
                       plotConfig.get<std::string>("graphYRange", ""),
                       plotConfig.get<int>("colorPalette", 0),
+                      leg,
                       graphs });
   }
 
