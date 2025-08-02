@@ -187,6 +187,18 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTime2Ch->SetOption("colz");
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF, 4200, -100, 4100);
   mHistAmp2Ch->SetOption("colz");
+  mHistAmpAll = std::make_unique<TH1F>(
+    "AmpDistributionAll",
+    "Amplitude distribution;QTC amp;Counts",
+    4096, -0.5, 4095.5);
+  for (std::size_t ch = 0; ch < sNCHANNELS_FV0_PLUSREF; ++ch) {
+  mHistAmpPerCh[ch] = std::make_unique<TH1F>(
+      Form("AmpDistCh%zu", ch),
+      Form("Amplitude distribution channel %zu;QTC amp;Counts", ch),
+      4096, -0.5, 4095.5);
+      getObjectsManager()->startPublishing(mHistAmpPerCh[ch].get());
+  }
+  getObjectsManager()->startPublishing(mHistAmpAll.get());
   mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF, mMapPMbits.size(), 0, mMapPMbits.size());
   mHistChDataBits->SetOption("colz");
@@ -384,6 +396,10 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
+   mHistAmpAll->Reset();
+  for (auto& h : mHistAmpPerCh) {
+    if (h) h->Reset();
+  }
   mHistBC->Reset();
   mHistChDataBits->Reset();
   mHistGateTimeRatio2Ch->Reset();
@@ -483,6 +499,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
       mHistAmp2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.QTCAmpl));
+      mHistAmpAll->Fill(static_cast<Double_t>(chData.QTCAmpl));
+      mHistAmpPerCh[chData.ChId]->Fill(static_cast<Double_t>(chData.QTCAmpl));
       mHistEventDensity2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(digit.mIntRecord.differenceInBC(mStateLastIR2Ch[chData.ChId])));
       mStateLastIR2Ch[chData.ChId] = digit.mIntRecord;
       mHistChannelID->Fill(chData.ChId);
@@ -674,6 +692,10 @@ void DigitQcTask::reset()
   mHistGateTimeRatio2Ch->Reset();
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
+  mHistAmpAll->Reset();
+  for (auto& h : mHistAmpPerCh) {
+    if (h) h->Reset();
+  }
   mHistBC->Reset();
   mHistChDataBits->Reset();
   mHistCFDEff->Reset();

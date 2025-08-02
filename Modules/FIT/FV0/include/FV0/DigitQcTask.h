@@ -157,6 +157,8 @@ class DigitQcTask final : public TaskInterface
 
   // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
+  std::unique_ptr<TH1F> mHistAmpAll;
+  std::array<std::unique_ptr<TH1F>, sNCHANNELS_FV0_PLUSREF> mHistAmpPerCh;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH2F> mHistEventDensity2Ch;
   std::unique_ptr<TH2F> mHistChDataBits;
