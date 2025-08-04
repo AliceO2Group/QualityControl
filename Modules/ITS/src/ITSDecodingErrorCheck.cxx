@@ -109,8 +109,8 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
           result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD: ID = %d, %s", ierr, std::string(statistics.ErrNames[ierr]).c_str()));
 
         } // end of y axis loop
-      }   // end of x axis loop
-    }     // end of check on General/LinkErrorVsFeeid
+      } // end of x axis loop
+    } // end of check on General/LinkErrorVsFeeid
 
     if (((std::string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) {
       result = Quality::Good;
