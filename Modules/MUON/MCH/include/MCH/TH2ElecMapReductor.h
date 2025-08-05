@@ -41,6 +41,14 @@ class TH2ElecMapReductor : public quality_control::postprocessing::ReductorTObje
   float getChamberValue(int chid);
   float getDeValue(int deid, int cathode = 2);
   float getOrbits() { return meanOrbits; }
+
+  // SOLAR related accessors
+  float getSolarValue(int solarId);
+  int getSolarNumPads(int solarId);
+  int getSolarNumPadsBad(int solarId);
+  int getSolarNumPadsNoStat(int solarId);
+
+  // DE related accessors
   int getNumPads(int deid, int cathode);
   int getNumPads(int deid)
   {
@@ -57,8 +65,10 @@ class TH2ElecMapReductor : public quality_control::postprocessing::ReductorTObje
     return getNumPadsNoStat(deid, 0) + getNumPadsNoStat(deid, 1);
   }
 
+
  private:
   static constexpr int sDeNum{ 156 };
+  static constexpr uint32_t sSolarIndexMax{ 32 * 24 };
 
   int checkPadMapping(uint16_t feeId, uint8_t linkId, uint8_t eLinkId, o2::mch::raw::DualSampaChannelId channel, int& cid);
 
@@ -70,10 +80,19 @@ class TH2ElecMapReductor : public quality_control::postprocessing::ReductorTObje
   float mMin;
   float mMax;
 
+  // SOLAR related values
+  int solarNumPads[sSolarIndexMax];
+  int solarNumPadsBad[sSolarIndexMax];
+  int solarNumPadsNoStat[sSolarIndexMax];
+  float solarValues[sSolarIndexMax];
+
+  // DE related values
   int deNumPads[2][sDeNum];
   int deNumPadsBad[2][sDeNum];
   int deNumPadsNoStat[2][sDeNum];
   float deValues[3][sDeNum];
+
+  // chamber related values
   float chValues[10];
   float meanOrbits;
   float entries;

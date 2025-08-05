@@ -107,6 +107,38 @@ int TH2ElecMapReductor::getNumPadsNoStat(int deid, int cathode)
   return deNumPadsNoStat[cathode][deid];
 }
 
+float TH2ElecMapReductor::getSolarValue(int solarId)
+{
+  if (solarId < 0 || solarId >= getNumSolar()) {
+    return 0;
+  }
+  return solarValues[solarId];
+}
+
+int TH2ElecMapReductor::getSolarNumPads(int solarId)
+{
+  if (solarId < 0 || solarId >= getNumSolar()) {
+    return 0;
+  }
+  return solarNumPads[solarId];
+}
+
+int TH2ElecMapReductor::getSolarNumPadsBad(int solarId)
+{
+  if (solarId < 0 || solarId >= getNumSolar()) {
+    return 0;
+  }
+  return solarNumPadsBad[solarId];
+}
+
+int TH2ElecMapReductor::getSolarNumPadsNoStat(int solarId)
+{
+  if (solarId < 0 || solarId >= getNumSolar()) {
+    return 0;
+  }
+  return solarNumPadsNoStat[solarId];
+}
+
 void TH2ElecMapReductor::update(TObject* obj)
 {
   if (sDeNum != getNumDE()) {
@@ -124,6 +156,19 @@ void TH2ElecMapReductor::update(TObject* obj)
   if (!hr) {
     ILOG(Warning) << "cannot cast to TH2FRatio" << ENDM;
     return;
+  }
+
+  // cumulative numerators and denominators for the computation of
+  // the average value over SOLAR boards
+  std::vector<double> solarValueNum(getNumSolar());
+  std::vector<double> solarValueDen(getNumSolar());
+  std::fill(solarValueNum.begin(), solarValueNum.end(), 0);
+  std::fill(solarValueDen.begin(), solarValueDen.end(), 0);
+
+  for (int solar = 0; solar < sSolarIndexMax; solar++) {
+    solarNumPads[solar] = 0;
+    solarNumPadsBad[solar] = 0;
+    solarNumPadsNoStat[solar] = 0;
   }
 
   // cumulative numerators and denominators for the computation of
@@ -174,6 +219,17 @@ void TH2ElecMapReductor::update(TObject* obj)
       continue;
     }
 
+    auto dsElecId = mDet2ElecMapper(dsDetId);
+    if (!dsElecId) {
+      continue;
+    }
+    auto solarId = dsElecId->solarId();
+
+    int solarIndex = getSolarIndex(solarId);
+    if (solarIndex < 0) {
+      continue;
+    }
+
     for (int j = 1; j <= nbinsy; j++) {
       int channel = j - 1;
 
@@ -185,23 +241,29 @@ void TH2ElecMapReductor::update(TObject* obj)
       }
       int cathode = segment.isBendingPad(padId) ? 0 : 1;
 
+      solarNumPads[solarIndex] += 1;
       deNumPads[cathode][deIndex] += 1;
 
       // here we assume that if the number of bins differs between numerator and denominator,
       // the denominator contains a single common scaling factor in the first bin (uniform scaling)
       Float_t stat = (hr->getNum()->GetNcells() == hr->getDen()->GetNcells()) ? hr->getDen()->GetBinContent(i, j) : hr->getDen()->GetBinContent(1, 1);
       if (stat == 0) {
+        solarNumPadsNoStat[solarIndex] += 1;
         deNumPadsNoStat[cathode][deIndex] += 1;
         continue;
       }
 
       Float_t value = h->GetBinContent(i, j);
       if (value <= mMin || value >= mMax) {
+        solarNumPadsBad[solarIndex] += 1;
         deNumPadsBad[cathode][deIndex] += 1;
       }
 
       nOrbits += stat;
       nPads += 1;
+
+      solarValueNum[solarIndex] += value;
+      solarValueDen[solarIndex] += 1;
 
       deValueNum[deIndex] += value;
       deValueDen[deIndex] += 1;
@@ -222,6 +284,14 @@ void TH2ElecMapReductor::update(TObject* obj)
   }
 
   // update the average values
+  for (size_t solar = 0; solar < solarValueDen.size(); solar++) {
+    // integrated values
+    if (solarValueDen[solar] > 0) {
+      solarValues[solar] = solarValueNum[solar] / solarValueDen[solar];
+    } else {
+      solarValues[solar] = 0;
+    }
+  }
   for (size_t de = 0; de < deValueDenB.size(); de++) {
     // integrated values
     if (deValueDenB[de] > 0) {
