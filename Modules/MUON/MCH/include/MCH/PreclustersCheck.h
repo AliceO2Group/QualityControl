@@ -48,21 +48,33 @@ class PreclustersCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  std::array<Quality, getNumDE()> checkMeanEfficiencies(TH1F* h);
-  std::array<Quality, getNumDE()> checkMeanEfficienciesRatio(TH1F* h);
+  std::array<Quality, getNumDE()> checkMeanEfficiencies(TH1* h);
+  std::array<Quality, getNumDE()> checkMeanEfficiencyRatios(TH1* h);
+  void checkSolarMeanEfficiencies(TH1* h);
+  void checkSolarMeanEfficiencyRatios(TH1* h);
 
-  std::string mMeanEffHistNameB{ "Efficiency/LastCycle/MeanEfficiencyB" };
-  std::string mMeanEffHistNameNB{ "Efficiency/LastCycle/MeanEfficiencyNB" };
+  std::string mMeanEffHistNameB{ "Efficiency/MeanEfficiencyB" };
+  std::string mMeanEffHistNameNB{ "Efficiency/MeanEfficiencyNB" };
+  std::string mMeanEffPerSolarHistName{ "Efficiency/MeanEfficiencyPerSolar" };
+  std::string mMeanEffRefCompHistNameB{ "Efficiency/RefComp/MeanEfficiencyB" };
+  std::string mMeanEffRefCompHistNameNB{ "Efficiency/RefComp/MeanEfficiencyNB" };
+  std::string mMeanEffPerSolarRefCompHistName{ "Efficiency/RefComp/MeanEfficiencyPerSolar" };
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
   double mMinEfficiency{ 0.8 };
   std::array<std::optional<double>, 5> mMinEfficiencyPerStation;
+  double mMinEfficiencyPerSolar{ 0.5 };
+  double mMinEfficiencyRatio{ 0.9 };
+  double mMinEfficiencyRatioPerSolar{ 0.9 };
   double mPseudoeffPlotScaleMin{ 0.0 };
-  double mPseudoeffPlotScaleMax{ 1.0 };
+  double mPseudoeffPlotScaleMax{ 1.05 };
+  double mEfficiencyRatioScaleRange{ 0.2 };
+  double mEfficiencyRatioPerSolarScaleRange{ 0.2 };
 
   QualityChecker mQualityChecker;
+  std::array<Quality, getNumSolar()> mSolarQuality;
 
-  ClassDefOverride(PreclustersCheck, 2);
+  ClassDefOverride(PreclustersCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

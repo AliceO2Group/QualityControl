@@ -50,27 +50,58 @@ class DigitsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  std::array<Quality, getNumDE()> checkMeanRates(TH1F* h);
-  std::array<Quality, getNumDE()> checkMeanRatesRatio(TH1F* h);
-  std::array<Quality, getNumDE()> checkBadChannels(TH1F* h);
-  std::array<Quality, getNumDE()> checkBadChannelsRatio(TH1F* h);
+  std::array<Quality, getNumDE()> checkMeanRates(TH1* h);
+  std::array<Quality, getNumDE()> checkBadChannels(TH1* h);
+  std::array<Quality, getNumDE()> checkMeanRateRatios(TH1* h);
+  std::array<Quality, getNumDE()> checkBadChannelRatios(TH1* h);
+  void checkSolarMeanRates(TH1* h);
+  void checkSolarBadChannels(TH1* h);
+  void checkSolarMeanRateRatios(TH1* h);
+  void checkSolarBadChannelRatios(TH1* h);
 
-  std::string mMeanRateHistName{ "RatesSignal/LastCycle/MeanRate" };
-  std::string mGoodChanFracHistName{ "RatesSignal/LastCycle/GoodChannelsFraction" };
+  std::string mMeanRateHistName{ "RatesSignal/MeanRate" };
+  std::string mGoodChanFracHistName{ "RatesSignal/GoodChannelsFraction" };
+  std::string mMeanRatePerSolarHistName{ "RatesSignal/MeanRatePerSolar" };
+  std::string mGoodChanFracPerSolarHistName{ "RatesSignal/GoodChannelsFractionPerSolar" };
+  std::string mMeanRateRefCompHistName{ "RatesSignal/RefComp/MeanRate" };
+  std::string mGoodChanFracRefCompHistName{ "RatesSignal/RefComp/GoodChannelsFraction" };
+  std::string mMeanRatePerSolarRefCompHistName{ "RatesSignal/RefComp/MeanRatePerSolar" };
+  std::string mGoodChanFracPerSolarRefCompHistName{ "RatesSignal/RefComp/GoodChannelsFractionPerSolar" };
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
+
+  // Rate lower threshold
   double mMinRate{ 0.001 };
   std::array<std::optional<double>, 5> mMinRatePerStation;
+  double mMinRatePerSolar{ 0.001 };
+  // Rate upper threshold
   double mMaxRate{ 10 };
   std::array<std::optional<double>, 5> mMaxRatePerStation;
+  double mMaxRatePerSolar{ 10 };
+  // Rate ratio threshold
+  double mMinRateRatio{ 0.9 };
+  double mMinRateRatioPerSolar{ 0.9 };
+
+  // Good channels fraction threshold
   double mMinGoodFraction{ 0.9 };
   std::array<std::optional<double>, 5> mMinGoodFractionPerStation;
+  double mMinGoodFractionPerSolar{ 0.5 };
+  // Good channels ratio threshold
+  double mMinGoodFractionRatio{ 0.9 };
+  double mMinGoodFractionRatioPerSolar{ 0.9 };
+
+  // Vertical plot ranges
   double mRatePlotScaleMin{ 0 };
   double mRatePlotScaleMax{ 10 };
+  double mRateRatioPlotScaleRange{ 0.2 };
+  double mRateRatioPerSolarPlotScaleRange{ 0.2 };
+  double mGoodFractionRatioPlotScaleRange{ 0.2 };
+  double mGoodFractionRatioPerSolarPlotScaleRange{ 0.2 };
 
   QualityChecker mQualityChecker;
+  std::array<Quality, getNumSolar()> mSolarQuality;
 
-  ClassDefOverride(DigitsCheck, 2);
+  ClassDefOverride(DigitsCheck, 3);
 };
 
 } // namespace o2::quality_control_modules::muonchambers
