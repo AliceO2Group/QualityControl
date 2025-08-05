@@ -69,6 +69,7 @@ class EfficiencyPlotter : public HistPlotter
   std::unique_ptr<TH2ElecMapReductor> mElecMapReductor;
 
   std::array<std::unique_ptr<TH1F>, 2> mHistogramMeanEfficiencyPerDE;
+  std::unique_ptr<TH1F> mHistogramMeanEfficiencyPerSolar;
 
   std::array<std::map<int, std::shared_ptr<DetectorHistogram>>, 2> mHistogramEfficiencyDE; // 2D hit rate map for each DE
   std::array<std::unique_ptr<GlobalHistogram>, 2> mHistogramEfficiencyGlobal;              // Efficiency histogram (global XY view)

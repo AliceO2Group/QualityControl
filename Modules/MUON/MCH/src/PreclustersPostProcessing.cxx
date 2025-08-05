@@ -18,6 +18,8 @@
 
 #include "MCH/PreclustersPostProcessing.h"
 #include "MUONCommon/Helpers.h"
+#include "Common/ReferenceComparatorPlot.h"
+#include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace o2::quality_control_modules::muonchambers;
@@ -25,6 +27,8 @@ using namespace o2::quality_control_modules::muon;
 
 void PreclustersPostProcessing::configure(const boost::property_tree::ptree& config)
 {
+  ReferenceComparatorTask::configure(config);
+
   mConfig = PostProcessingConfigMCH(getID(), config);
 }
 
@@ -40,6 +44,13 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
   mEfficiencyPlotter = std::make_unique<EfficiencyPlotter>("Efficiency/", mFullHistos);
   mEfficiencyPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  for (auto& hinfo : mEfficiencyPlotter->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
+
   if (mEnableLastCycleHistos) {
     // Helpers to extract plots from last cycle
     auto obj = mCcdbObjects.find(effSourceName());
@@ -50,6 +61,13 @@ void PreclustersPostProcessing::createEfficiencyHistos(Trigger t, repository::Da
     mEfficiencyPlotterOnCycle.reset();
     mEfficiencyPlotterOnCycle = std::make_unique<EfficiencyPlotter>("Efficiency/LastCycle/", mFullHistos);
     mEfficiencyPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    for (auto& hinfo : mEfficiencyPlotterOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
   }
 
   //----------------------------------
@@ -139,6 +157,8 @@ void PreclustersPostProcessing::createClusterSizeHistos(Trigger t, repository::D
 
 void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
+  ReferenceComparatorTask::initialize(t, services);
+
   auto& qcdb = services.get<repository::DatabaseInterface>();
   const auto& activity = t.activity;
 
@@ -172,11 +192,14 @@ void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistry
   createClusterSizeHistos(t, &qcdb);
 
   //--------------------------------------------------
-  // Detector quality histogram
+  // Quality histogram
   //--------------------------------------------------
 
   mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
+  addDEBinLabels(mHistogramQualityPerDE.get());
+  addChamberDelimiters(mHistogramQualityPerDE.get());
+  addChamberLabelsForDE(mHistogramQualityPerDE.get());
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
@@ -185,6 +208,20 @@ void PreclustersPostProcessing::initialize(Trigger t, framework::ServiceRegistry
   getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
+
+  mHistogramQualityPerSolar.reset();
+  mHistogramQualityPerSolar = std::make_unique<TH2F>("QualityFlagPerSolar", "Quality Flag vs Solar", getNumSolar(), 0, getNumSolar(), 3, 0, 3);
+  addSolarBinLabels(mHistogramQualityPerSolar.get());
+  addChamberDelimitersToSolarHistogram(mHistogramQualityPerSolar.get());
+  addChamberLabelsForSolar(mHistogramQualityPerSolar.get());
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(1, "Bad");
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(2, "Medium");
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(3, "Good");
+  mHistogramQualityPerSolar->SetOption("col");
+  mHistogramQualityPerSolar->SetStats(0);
+  getObjectsManager()->startPublishing(mHistogramQualityPerSolar.get(), core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerSolar.get(), "col");
+  getObjectsManager()->setDisplayHint(mHistogramQualityPerSolar.get(), "gridy");
 }
 
 //_________________________________________________________________________________________
@@ -270,6 +307,18 @@ void PreclustersPostProcessing::updateClusterSizeHistos(Trigger t, repository::D
 
 //_________________________________________________________________________________________
 
+TH1* PreclustersPostProcessing::getHistogram(std::string plotName)
+{
+  TH1* result{ nullptr };
+  for (auto hist : mHistogramsAll) {
+    if (plotName == hist->GetName()) {
+      result = hist;
+      break;
+    }
+  }
+  return result;
+}
+
 void PreclustersPostProcessing::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -277,10 +326,21 @@ void PreclustersPostProcessing::update(Trigger t, framework::ServiceRegistryRef 
   updateEfficiencyHistos(t, &qcdb);
   updateClusterChargeHistos(t, &qcdb);
   updateClusterSizeHistos(t, &qcdb);
+
+  auto& comparatorPlots = getComparatorPlots();
+  for (auto& [plotName, plot] : comparatorPlots) {
+    TH1* hist = getHistogram(plotName);
+    if (!hist) {
+      continue;
+    }
+
+    plot->update(hist);
+  }
 }
 
 //_________________________________________________________________________________________
 
-void PreclustersPostProcessing::finalize(Trigger t, framework::ServiceRegistryRef)
+void PreclustersPostProcessing::finalize(Trigger t, framework::ServiceRegistryRef services)
 {
+  ReferenceComparatorTask::finalize(t, services);
 }

@@ -19,6 +19,7 @@
 #include "MCH/DecodingPostProcessing.h"
 #include "MCH/PostProcessingConfigMCH.h"
 #include "MUONCommon/Helpers.h"
+#include "Common/ReferenceComparatorPlot.h"
 #include <MCHMappingInterface/Segmentation.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -33,6 +34,8 @@ using namespace o2::mch::raw;
 
 void DecodingPostProcessing::configure(const boost::property_tree::ptree& config)
 {
+  ReferenceComparatorTask::configure(config);
+
   mConfig = PostProcessingConfigMCH(getID(), config);
 }
 
@@ -48,6 +51,13 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
   mErrorsPlotter = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/");
   mErrorsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  for (auto& hinfo : mErrorsPlotter->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
+
   if (mEnableLastCycleHistos) {
     // Helpers to extract plots from last cycle
     auto obj = mCcdbObjects.find(errorsSourceName());
@@ -59,6 +69,13 @@ void DecodingPostProcessing::createDecodingErrorsHistos(Trigger t, repository::D
     mErrorsPlotterOnCycle.reset();
     mErrorsPlotterOnCycle = std::make_unique<DecodingErrorsPlotter>("DecodingErrors/LastCycle/");
     mErrorsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    for (auto& hinfo : mErrorsPlotterOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
   }
 }
 
@@ -74,6 +91,13 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
   mHBPacketsPlotter = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/", mFullHistos);
   mHBPacketsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  for (auto& hinfo : mHBPacketsPlotter->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
+
   if (mEnableLastCycleHistos) {
     // Helpers to extract plots from last cycle
     auto obj = mCcdbObjects.find(hbPacketsSourceName());
@@ -85,6 +109,13 @@ void DecodingPostProcessing::createHeartBeatPacketsHistos(Trigger t, repository:
     mHBPacketsPlotterOnCycle.reset();
     mHBPacketsPlotterOnCycle = std::make_unique<HeartBeatPacketsPlotter>("HeartBeatPackets/LastCycle/", mFullHistos);
     mHBPacketsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    for (auto& hinfo : mHBPacketsPlotterOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
   }
 }
 
@@ -100,6 +131,13 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
   mSyncStatusPlotter = std::make_unique<FECSyncStatusPlotter>("SyncErrors/");
   mSyncStatusPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  for (auto& hinfo : mSyncStatusPlotter->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
+
   if (mEnableLastCycleHistos) {
     // Helpers to extract plots from last cycle
     auto obj = mCcdbObjects.find(syncStatusSourceName());
@@ -111,6 +149,13 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
     mSyncStatusPlotterOnCycle.reset();
     mSyncStatusPlotterOnCycle = std::make_unique<FECSyncStatusPlotter>("SyncErrors/LastCycle/");
     mSyncStatusPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    for (auto& hinfo : mSyncStatusPlotterOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
   }
 }
 
@@ -118,6 +163,8 @@ void DecodingPostProcessing::createSyncStatusHistos(Trigger t, repository::Datab
 
 void DecodingPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
+  ReferenceComparatorTask::initialize(t, services);
+
   auto& qcdb = services.get<repository::DatabaseInterface>();
   const auto& activity = t.activity;
 
@@ -156,6 +203,9 @@ void DecodingPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef
 
   mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
+  addDEBinLabels(mHistogramQualityPerDE.get());
+  addChamberDelimiters(mHistogramQualityPerDE.get());
+  addChamberLabelsForDE(mHistogramQualityPerDE.get());
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
@@ -164,6 +214,20 @@ void DecodingPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef
   getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
   getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
+
+  mHistogramQualityPerSolar.reset();
+  mHistogramQualityPerSolar = std::make_unique<TH2F>("QualityFlagPerSolar", "Quality Flag vs Solar", getNumSolar(), 0, getNumSolar(), 3, 0, 3);
+  addSolarBinLabels(mHistogramQualityPerSolar.get());
+  addChamberDelimitersToSolarHistogram(mHistogramQualityPerSolar.get());
+  addChamberLabelsForSolar(mHistogramQualityPerSolar.get());
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(1, "Bad");
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(2, "Medium");
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(3, "Good");
+  mHistogramQualityPerSolar->SetOption("col");
+  mHistogramQualityPerSolar->SetStats(0);
+  getObjectsManager()->startPublishing(mHistogramQualityPerSolar.get(), core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerSolar.get(), "col");
+  getObjectsManager()->setDisplayHint(mHistogramQualityPerSolar.get(), "gridy");
 }
 
 //_________________________________________________________________________________________
@@ -222,6 +286,18 @@ void DecodingPostProcessing::updateSyncStatusHistos(Trigger t, repository::Datab
 
 //_________________________________________________________________________________________
 
+TH1* DecodingPostProcessing::getHistogram(std::string plotName)
+{
+  TH1* result{ nullptr };
+  for (auto hist : mHistogramsAll) {
+    if (plotName == hist->GetName()) {
+      result = hist;
+      break;
+    }
+  }
+  return result;
+}
+
 void DecodingPostProcessing::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
@@ -229,6 +305,16 @@ void DecodingPostProcessing::update(Trigger t, framework::ServiceRegistryRef ser
   updateDecodingErrorsHistos(t, &qcdb);
   updateHeartBeatPacketsHistos(t, &qcdb);
   updateSyncStatusHistos(t, &qcdb);
+
+  auto& comparatorPlots = getComparatorPlots();
+  for (auto& [plotName, plot] : comparatorPlots) {
+    TH1* hist = getHistogram(plotName);
+    if (!hist) {
+      continue;
+    }
+
+    plot->update(hist);
+  }
 }
 
 //_________________________________________________________________________________________

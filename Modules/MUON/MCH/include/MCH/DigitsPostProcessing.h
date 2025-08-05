@@ -24,6 +24,7 @@
 #include "MCH/RatesPlotter.h"
 #include "MCH/RatesTrendsPlotter.h"
 #include "MCH/OrbitsPlotter.h"
+#include "Common/ReferenceComparatorTask.h"
 #include "Common/TH2Ratio.h"
 #include "QualityControl/PostProcessingInterface.h"
 
@@ -40,7 +41,7 @@ namespace o2::quality_control_modules::muonchambers
 {
 
 /// \brief  A post-processing task which processes and trends MCH digits and produces plots.
-class DigitsPostProcessing : public PostProcessingInterface
+class DigitsPostProcessing : public ReferenceComparatorTask
 {
  public:
   DigitsPostProcessing() = default;
@@ -61,6 +62,8 @@ class DigitsPostProcessing : public PostProcessingInterface
   static std::string rateSignalSourceName() { return "rate_signal"; }
   static std::string orbitsSourceName() { return "orbits"; }
   static std::string orbitsSignalSourceName() { return "orbits_signal"; }
+
+  TH1* getHistogram(std::string plotName);
 
   bool mFullHistos{ false };
   bool mEnableLastCycleHistos{ false };
@@ -99,7 +102,10 @@ class DigitsPostProcessing : public PostProcessingInterface
   std::unique_ptr<OrbitsPlotter> mOrbitsPlotterSignal;
   std::unique_ptr<OrbitsPlotter> mOrbitsPlotterSignalOnCycle;
 
-  std::unique_ptr<TH2F> mHistogramQualityPerDE; ///< quality flags for each DE, to be filled by checker task
+  std::unique_ptr<TH2F> mHistogramQualityPerDE;    ///< quality flags for each DE, to be filled by checker task
+  std::unique_ptr<TH2F> mHistogramQualityPerSolar; ///< quality flags for each SOLAR, to be filled by checker task
+
+  std::vector<TH1*> mHistogramsAll;
 };
 
 } // namespace o2::quality_control_modules::muonchambers

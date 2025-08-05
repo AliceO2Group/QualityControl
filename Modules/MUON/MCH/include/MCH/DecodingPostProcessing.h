@@ -21,12 +21,12 @@
 
 #include "MCH/PostProcessingConfigMCH.h"
 #include "MCH/Helpers.h"
-#include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/DecodingErrorsPlotter.h"
 #include "MCH/HeartBeatPacketsPlotter.h"
 #include "MCH/FECSyncStatusPlotter.h"
-#include "QualityControl/PostProcessingInterface.h"
+#include "Common/ReferenceComparatorTask.h"
+#include "Common/TH2Ratio.h"
 
 #include <memory>
 
@@ -43,7 +43,7 @@ namespace o2::quality_control_modules::muonchambers
 {
 
 /// \brief  A post-processing task which trends MCH hits and stores them in a TTree and produces plots.
-class DecodingPostProcessing : public PostProcessingInterface
+class DecodingPostProcessing : public ReferenceComparatorTask
 {
  public:
   DecodingPostProcessing() = default;
@@ -73,6 +73,8 @@ class DecodingPostProcessing : public PostProcessingInterface
   static std::string hbPacketsSourceName() { return "hbpackets"; }
   static std::string syncStatusSourceName() { return "syncstatus"; }
 
+  TH1* getHistogram(std::string plotName);
+
   bool mFullHistos{ false };
   bool mEnableLastCycleHistos{ false };
   bool mEnableTrending{ false };
@@ -96,7 +98,10 @@ class DecodingPostProcessing : public PostProcessingInterface
   std::unique_ptr<FECSyncStatusPlotter> mSyncStatusPlotter;
   std::unique_ptr<FECSyncStatusPlotter> mSyncStatusPlotterOnCycle;
 
-  std::unique_ptr<TH2F> mHistogramQualityPerDE; ///< quality flags for each DE, to be filled by checker task
+  std::unique_ptr<TH2F> mHistogramQualityPerDE;    ///< quality flags for each DE, to be filled by checker task
+  std::unique_ptr<TH2F> mHistogramQualityPerSolar; ///< quality flags for each SOLAR, to be filled by checker task
+
+  std::vector<TH1*> mHistogramsAll;
 };
 
 template <typename T>

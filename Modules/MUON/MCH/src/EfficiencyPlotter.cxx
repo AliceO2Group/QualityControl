@@ -47,8 +47,14 @@ EfficiencyPlotter::EfficiencyPlotter(std::string path, bool fullPlots)
     mHistogramMeanEfficiencyPerDE[ci] = std::make_unique<TH1F>(TString::Format("%sMeanEfficiency%s", path.c_str(), sc[ci].c_str()),
                                                                TString::Format("Mean Efficiency vs DE (%s)", sc[ci].c_str()),
                                                                getNumDE(), 0, getNumDE());
+    addDEBinLabels(mHistogramMeanEfficiencyPerDE[ci].get());
     addHisto(mHistogramMeanEfficiencyPerDE[ci].get(), false, "histo", "histo");
   }
+
+  mHistogramMeanEfficiencyPerSolar = std::make_unique<TH1F>(TString::Format("%sMeanEfficiencyPerSolar", path.c_str()), "Mean Efficiency per SOLAR board",
+                                                            getNumSolar(), 0, getNumSolar());
+  addSolarBinLabels(mHistogramMeanEfficiencyPerSolar.get());
+  addHisto(mHistogramMeanEfficiencyPerSolar.get(), false, "histo", "histo");
 
   //--------------------------------------------------
   // Efficiency histograms in global detector coordinates
@@ -92,6 +98,11 @@ void EfficiencyPlotter::fillAverageHistograms()
       mHistogramMeanEfficiencyPerDE[ci]->SetBinContent(de + 1, mElecMapReductor->getDeValue(de, ci));
       mHistogramMeanEfficiencyPerDE[ci]->SetBinError(de + 1, 0.1);
     }
+  }
+
+  for (size_t solar = 0; solar < mHistogramMeanEfficiencyPerSolar->GetXaxis()->GetNbins(); solar++) {
+    mHistogramMeanEfficiencyPerSolar->SetBinContent(solar + 1, mElecMapReductor->getSolarValue(solar));
+    mHistogramMeanEfficiencyPerSolar->SetBinError(solar + 1, 0.1);
   }
 }
 
