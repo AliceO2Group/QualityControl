@@ -202,7 +202,6 @@ int getDEFromIndex(int index)
   return deId;
 }
 
-
 //_________________________________________________________________________________________
 
 std::map<uint32_t, uint32_t> buildSolarIdToSolarIndexMap()
@@ -225,7 +224,6 @@ std::map<uint32_t, uint32_t> buildSolarIdToSolarIndexMap()
     }
   }
   return m;
-
 }
 
 std::vector<uint32_t> buildSolarIndexToSolarIdMap()
@@ -287,7 +285,6 @@ int getNumSolarPerChamber(int chamberId)
   }
   return -1;
 }
-
 
 //_________________________________________________________________________________________
 
@@ -570,7 +567,7 @@ void addChamberDelimitersToSolarHistogram(TH1* h, float xmin, float xmax)
     h->GetListOfFunctions()->Add(delimiter);
   }
 
-  //addChamberLabelsForSolar(h);
+  // addChamberLabelsForSolar(h);
 
   // draw x-axis labels
   /*float xMin{ 0 };

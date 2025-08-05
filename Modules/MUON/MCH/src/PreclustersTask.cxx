@@ -344,7 +344,7 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
     getFecChannel(deId, padIdNB, fecIdNB, channelNB);
   } else {
     ILOG(Info, Devel) << "[PreclustersTask::plotPrecluster()] could not find pad in DE" << deId
-        << " for pre-cluster at (" << Xcog << "," << Ycog << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+                      << " for pre-cluster at (" << Xcog << "," << Ycog << ")" << AliceO2::InfoLogger::InfoLogger::endm;
     return;
   }
 

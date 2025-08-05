@@ -65,7 +65,6 @@ class TH2ElecMapReductor : public quality_control::postprocessing::ReductorTObje
     return getNumPadsNoStat(deid, 0) + getNumPadsNoStat(deid, 1);
   }
 
-
  private:
   static constexpr int sDeNum{ 156 };
   static constexpr uint32_t sSolarIndexMax{ 32 * 24 };

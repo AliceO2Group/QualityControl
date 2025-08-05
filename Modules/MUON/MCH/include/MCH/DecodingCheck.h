@@ -77,7 +77,6 @@ class DecodingCheck : public o2::quality_control::checker::CheckInterface
   double mSyncFracRatioPlotRange{ 0.2 };
   double mSyncFracRatioPerSolarPlotRange{ 0.2 };
 
-
   QualityChecker mQualityChecker;
   std::array<Quality, getNumSolar()> mSolarQuality;
 

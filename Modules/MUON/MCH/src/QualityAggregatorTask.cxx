@@ -268,7 +268,6 @@ void QualityAggregatorTask::update(Trigger trigger, framework::ServiceRegistryRe
 
     int res = mAPI.storeAsBinaryFile(image->data(), image->size(), info.getFileName(), info.getObjectType(), info.getPath(), info.getMetaData(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp());
     if (res) {
-      //LOGP(error, "uploading to {} / {} failed for [{}:{}]", mAPI.getURL(), info.getPath(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp());
       ILOG(Error, Ops) << fmt::format("uploading to {} / {} failed for [{}:{}]", mAPI.getURL(), info.getPath(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp()) << ENDM;
     } else {
       ILOG(Info, Devel) << fmt::format("uploading to {} / {} succeeded for [{}:{}]", mAPI.getURL(), info.getPath(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp()) << ENDM;
@@ -381,7 +380,6 @@ void QualityAggregatorTask::update(Trigger trigger, framework::ServiceRegistryRe
 
     int res = mAPI.storeAsBinaryFile(image->data(), image->size(), info.getFileName(), info.getObjectType(), info.getPath(), info.getMetaData(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp());
     if (res) {
-      //LOGP(error, "uploading to {} / {} failed for [{}:{}]", mAPI.getURL(), info.getPath(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp());
       ILOG(Error, Ops) << fmt::format("uploading to {} / {} failed for [{}:{}]", mAPI.getURL(), info.getPath(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp()) << ENDM;
     } else {
       ILOG(Info, Devel) << fmt::format("uploading to {} / {} succeeded for [{}:{}]", mAPI.getURL(), info.getPath(), info.getStartValidityTimestamp(), info.getEndValidityTimestamp()) << ENDM;
