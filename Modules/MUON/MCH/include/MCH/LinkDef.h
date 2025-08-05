@@ -17,6 +17,7 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::DecodingPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::DigitsPostProcessing + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PreclustersPostProcessing + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::QualityAggregatorTask + ;
 // Trending
 #pragma link C++ class o2::quality_control_modules::muonchambers::TrendingTracks + ;
 // Checks

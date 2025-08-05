@@ -35,6 +35,7 @@ set(SRCS
   src/DecodingPostProcessing.cxx
   src/DigitsPostProcessing.cxx
   src/PreclustersPostProcessing.cxx
+  src/QualityAggregatorTask.cxx
   src/PostProcessingConfigMCH.cxx
   src/TrendingTracks.cxx
   src/ClustersTask.cxx
@@ -76,6 +77,7 @@ set(HEADERS
   include/MCH/DedodingPostProcessing.h
   include/MCH/DigitsPostProcessing.h
   include/MCH/PreclustersPostProcessing.h
+  include/MCH/QualityAggregatorTask.h
   include/MCH/PostProcessingConfigMCH.h
   include/MCH/TrendingTracks.h
   include/MCH/ClustersTask.h
@@ -161,6 +163,7 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/DecodingPostProcessing.h
                             include/MCH/DigitsPostProcessing.h
                             include/MCH/PreclustersPostProcessing.h
+                            include/MCH/QualityAggregatorTask.h
                             include/MCH/PostProcessingConfigMCH.h
                             include/MCH/TrendingTracks.h
                             include/MCH/ClustersTask.h
