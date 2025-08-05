@@ -21,6 +21,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Utils.h"
 #include "MCHRawElecMap/Mapper.h"
+#include "MCHMappingInterface/CathodeSegmentation.h"
 #include <TLine.h>
 #include <TLine.h>
 #include <TText.h>
@@ -148,6 +149,145 @@ int getDEindex(int deId)
 
   return idx.first + offset;
 }
+
+int getDEFromIndex(int index)
+{
+  int deId = 0;
+  for (int chamber = 9; chamber >= 0; chamber--) {
+    int offset = getChamberOffset(chamber);
+    if (offset > index) {
+      continue;
+    }
+
+    int indexInChamber = index - offset;
+
+    int nDE = getNumDEinChamber(chamber);
+    if (nDE == 0) {
+      return 0;
+    }
+    // number of detectors in one half chamber
+    int nDEhc = nDE / 2;
+
+    // minimum and maximum detector indexes for the L side
+    int lMin = (nDEhc + 1) / 2;
+    int lMax = lMin + nDEhc - 1;
+    if (indexInChamber < nDEhc) {
+      // detector on the L side, simply add lMin
+      // std::cout << "DE on L side, indexInChamber=" << indexInChamber << " nDEhc=" << nDEhc << std::endl;
+      deId = lMin + indexInChamber;
+    } else {
+      // number of detectors in one quarter of chamber
+      // std::cout << "DE on R side, indexInChamber=" << indexInChamber << " nDEhc=" << nDEhc << std::endl;
+      // detector on the R side, compute deId separately above and below middle horizontal axis
+      int indexInHalfChamber = indexInChamber - nDEhc;
+      deId = lMin - indexInHalfChamber - 1;
+      if (deId < 0) {
+        deId = lMax + (nDEhc - indexInHalfChamber);
+      }
+      /*if (indexInHalfChamber > nDEqc) {
+        // the DE is in the lower half of the chamber
+        std::cout << "DE on lower R side, indexInHalfChamber=" << indexInHalfChamber << " nDEqc=" << nDEqc << std::endl;
+        deId = lMax + (nDEhc - indexInHalfChamber);
+      } else {
+        // the DE is in the upper half of the chamber
+        std::cout << "DE on upper R side, indexInHalfChamber=" << indexInHalfChamber << " nDEqc=" << nDEqc << std::endl;
+        deId = lMin - indexInHalfChamber - 1;
+      }*/
+    }
+
+    deId += (chamber + 1) * 100;
+    break;
+  }
+
+  return deId;
+}
+
+
+//_________________________________________________________________________________________
+
+std::map<uint32_t, uint32_t> buildSolarIdToSolarIndexMap()
+{
+  static std::map<uint32_t, uint32_t> m;
+  if (m.empty()) {
+    uint32_t solarIndex{ 0 };
+    // fill a sorted list of DetectionElement IDs
+    std::set<uint16_t> deIds;
+    o2::mch::mapping::forEachDetectionElement([&](int deId) {
+      deIds.insert(deId);
+    });
+    // loop over DE IDs, and add all the corresponding SOLAR IDs to the output vector
+    for (auto deId : deIds) {
+      auto solarIds = o2::mch::raw::getSolarUIDs<o2::mch::raw::ElectronicMapperGenerated>(deId);
+      for (uint32_t solarId : solarIds) {
+        m.emplace(std::make_pair(solarId, solarIndex));
+        solarIndex++;
+      }
+    }
+  }
+  return m;
+
+}
+
+std::vector<uint32_t> buildSolarIndexToSolarIdMap()
+{
+  static std::vector<uint32_t> v;
+  if (v.empty()) {
+    auto m = buildSolarIdToSolarIndexMap();
+    v.resize(m.size());
+    for (auto [solarId, solarIndex] : m) {
+      v[solarIndex] = solarId;
+    }
+  }
+  return v;
+}
+
+int getSolarIndex(int solarId)
+{
+  static std::map<uint32_t, uint32_t> m = buildSolarIdToSolarIndexMap();
+  try {
+    return m.at(solarId);
+  } catch (const std::exception&) {
+    ILOG(Error, Support) << "Invalid Solar Id: " << solarId;
+  }
+  return -1;
+}
+
+int getSolarIdFromIndex(int index)
+{
+  static std::vector<uint32_t> v = buildSolarIndexToSolarIdMap();
+  try {
+    return v.at(index);
+  } catch (const std::exception&) {
+    ILOG(Error, Support) << "Invalid Solar Index: " << index;
+  }
+  return -1;
+}
+/*
+constexpr int getNumSolar()
+{
+  //static std::vector<uint32_t> v = buildSolarIndexToSolarIdMap();
+  //return v.size();
+  return 624;
+}
+*/
+int getNumSolarPerChamber(int chamberId)
+{
+  static std::array<uint32_t, 10> v{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  if (v[0] == 0) {
+    o2::mch::mapping::forEachDetectionElement([&](int deId) {
+      int chId = deId / 100;
+      if (chId > 0 && chId <= 10) {
+        auto solarIds = o2::mch::raw::getSolarUIDs<o2::mch::raw::ElectronicMapperGenerated>(deId);
+        v[chId - 1] += solarIds.size();
+      }
+    });
+  }
+  if (chamberId > 0 && chamberId <= 10) {
+    return v[chamberId - 1];
+  }
+  return -1;
+}
+
 
 //_________________________________________________________________________________________
 
@@ -310,7 +450,7 @@ Quality QualityChecker::getQuality()
 
 //_________________________________________________________________________________________
 
-void addChamberDelimiters(TH1F* h, float xmin, float xmax)
+void addChamberLabelsForDE(TH1* h)
 {
   if (!h) {
     return;
@@ -326,22 +466,6 @@ void addChamberDelimiters(TH1F* h, float xmin, float xmax)
   xtitle->SetTextSize(10);
   xtitle->SetTextFont(42);
   h->GetListOfFunctions()->Add(xtitle);
-
-  float scaleMin = xmin;
-  float scaleMax = xmax;
-  if (xmin == xmax) {
-    scaleMin = h->GetMinimum() * 0.95;
-    scaleMax = h->GetMaximum() * 1.05;
-  }
-
-  // draw chamber delimiters
-  for (int ch = 1; ch <= 9; ch++) {
-    float xpos = static_cast<float>(getChamberOffset(ch));
-    TLine* delimiter = new TLine(xpos, scaleMin, xpos, scaleMax);
-    delimiter->SetLineColor(kBlack);
-    delimiter->SetLineStyle(kDashed);
-    h->GetListOfFunctions()->Add(delimiter);
-  }
 
   // draw x-axis labels
   for (int ch = 0; ch <= 9; ch += 1) {
@@ -361,7 +485,114 @@ void addChamberDelimiters(TH1F* h, float xmin, float xmax)
 
 //_________________________________________________________________________________________
 
-void addChamberDelimiters(TH2F* h)
+void addChamberDelimiters(TH1* h, float xmin, float xmax)
+{
+  if (!h) {
+    return;
+  }
+
+  float scaleMin = xmin;
+  float scaleMax = xmax;
+  if (xmin == xmax) {
+    scaleMin = h->GetMinimum();
+    scaleMax = h->GetMaximum();
+  }
+
+  // draw chamber delimiters
+  for (int ch = 1; ch <= 9; ch++) {
+    float xpos = static_cast<float>(getChamberOffset(ch));
+    TLine* delimiter = new TLine(xpos, scaleMin, xpos, scaleMax);
+    delimiter->SetLineColor(kBlack);
+    delimiter->SetLineStyle(kDashed);
+    h->GetListOfFunctions()->Add(delimiter);
+  }
+}
+
+//_________________________________________________________________________________________
+
+void addChamberLabelsForSolar(TH1* h)
+{
+  if (!h) {
+    return;
+  }
+  // disable ticks on horizontal axis
+  h->GetXaxis()->SetTickLength(0.0);
+  h->GetXaxis()->SetLabelSize(0.0);
+  h->GetYaxis()->SetTickLength(0);
+
+  TText* xtitle = new TText();
+  xtitle->SetNDC();
+  xtitle->SetText(0.87, 0.03, "chamber");
+  xtitle->SetTextSize(10);
+  xtitle->SetTextFont(42);
+  h->GetListOfFunctions()->Add(xtitle);
+
+  // draw x-axis labels
+  float xMin{ 0 };
+  float xMax{ 0 };
+  for (int ch = 1; ch <= 10; ch += 1) {
+    xMin = xMax;
+    xMax += static_cast<float>(getNumSolarPerChamber(ch));
+    float x0 = 0.8 * (xMax + xMin) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
+    float y0 = 0.05;
+    TText* label = new TText();
+    label->SetNDC();
+    label->SetText(x0, y0, TString::Format("%d", ch));
+    label->SetTextSize(10);
+    label->SetTextFont(42);
+    label->SetTextAlign(22);
+    h->GetListOfFunctions()->Add(label);
+  }
+}
+
+//_________________________________________________________________________________________
+
+void addChamberDelimitersToSolarHistogram(TH1* h, float xmin, float xmax)
+{
+  if (!h) {
+    return;
+  }
+
+  float scaleMin = xmin;
+  float scaleMax = xmax;
+  if (xmin == xmax) {
+    scaleMin = h->GetMinimum();
+    scaleMax = h->GetMaximum();
+  }
+
+  // draw chamber delimiters
+  float xpos{ 0 };
+  for (int ch = 1; ch <= 9; ch++) {
+    xpos += static_cast<float>(getNumSolarPerChamber(ch));
+    TLine* delimiter = new TLine(xpos, scaleMin, xpos, scaleMax);
+    delimiter->SetLineColor(kBlack);
+    delimiter->SetLineStyle(kDashed);
+    h->GetListOfFunctions()->Add(delimiter);
+  }
+
+  //addChamberLabelsForSolar(h);
+
+  // draw x-axis labels
+  /*float xMin{ 0 };
+  float xMax{ 0 };
+  for (int ch = 1; ch <= 10; ch += 1) {
+    xMin = xMax;
+    xMax += static_cast<float>(getNumSolarPerChamber(ch));
+    float x0 = 0.8 * (xMax + xMin) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
+    float y0 = 0.05;
+    TText* label = new TText();
+    label->SetNDC();
+    label->SetText(x0, y0, TString::Format("%d", ch));
+    label->SetTextSize(10);
+    label->SetTextFont(42);
+    label->SetTextAlign(22);
+    h->GetListOfFunctions()->Add(label);
+  }*/
+}
+
+//_________________________________________________________________________________________
+
+void addChamberDelimiters(TH2* h)
 {
   if (!h) {
     return;
@@ -408,6 +639,66 @@ void addChamberDelimiters(TH2F* h)
 
 //_________________________________________________________________________________________
 
+void addChamberDelimitersToSolarHistogram(TH2* h)
+{
+  if (!h) {
+    return;
+  }
+  // disable ticks on horizontal axis
+  h->GetXaxis()->SetTickLength(0.0);
+  h->GetXaxis()->SetLabelSize(0.0);
+  h->GetYaxis()->SetTickLength(0);
+
+  TText* xtitle = new TText();
+  xtitle->SetNDC();
+  xtitle->SetText(0.87, 0.03, "chamber");
+  xtitle->SetTextSize(10);
+  xtitle->SetTextFont(42);
+  h->GetListOfFunctions()->Add(xtitle);
+
+  float scaleMin = h->GetYaxis()->GetXmin();
+  float scaleMax = h->GetYaxis()->GetXmax();
+
+  // draw chamber delimiters
+  float xpos{ 0 };
+  for (int ch = 1; ch <= 9; ch++) {
+    xpos += static_cast<float>(getNumSolarPerChamber(ch));
+    TLine* delimiter = new TLine(xpos, scaleMin, xpos, scaleMax);
+    delimiter->SetLineColor(kBlack);
+    delimiter->SetLineStyle(kDashed);
+    h->GetListOfFunctions()->Add(delimiter);
+  }
+
+  // draw x-axis labels
+  float xMin{ 0 };
+  float xMax{ 0 };
+  for (int ch = 1; ch <= 10; ch += 1) {
+    xMin = xMax;
+    xMax += static_cast<float>(getNumSolarPerChamber(ch));
+    float x0 = 0.8 * (xMax + xMin) / (2 * h->GetXaxis()->GetXmax()) + 0.1;
+    float y0 = 0.05;
+    TText* label = new TText();
+    label->SetNDC();
+    label->SetText(x0, y0, TString::Format("%d", ch));
+    label->SetTextSize(10);
+    label->SetTextFont(42);
+    label->SetTextAlign(22);
+    h->GetListOfFunctions()->Add(label);
+  }
+}
+
+//_________________________________________________________________________________________
+
+void drawThreshold(TH1* histogram, double threshold)
+{
+  TLine* l = new TLine(histogram->GetXaxis()->GetXmin(), threshold, histogram->GetXaxis()->GetXmax(), threshold);
+  l->SetLineColor(kBlue);
+  l->SetLineStyle(kDashed);
+  histogram->GetListOfFunctions()->Add(l);
+}
+
+//_________________________________________________________________________________________
+
 void drawThresholdsPerStation(TH1* histogram, const std::array<std::optional<double>, 5>& thresholdsPerStation, double defaultThreshold)
 {
   double xmin = 0;
@@ -436,6 +727,18 @@ void addDEBinLabels(TH1* histogram)
   for (auto de : o2::mch::constants::deIdsForAllMCH) {
     int bin = getDEindex(de) + 1;
     auto binLabel = std::string("DE") + std::to_string(de);
+    histogram->GetXaxis()->SetBinLabel(bin, binLabel.c_str());
+  }
+}
+
+//_________________________________________________________________________________________
+
+void addSolarBinLabels(TH1* histogram)
+{
+  auto solarIds = o2::mch::raw::getSolarUIDs<o2::mch::raw::ElectronicMapperGenerated>();
+  for (auto solar : solarIds) {
+    int bin = getSolarIndex(solar) + 1;
+    auto binLabel = std::string("S") + std::to_string(solar);
     histogram->GetXaxis()->SetBinLabel(bin, binLabel.c_str());
   }
 }
