@@ -24,4 +24,10 @@ Data::Data(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
     insert(key, mo);
   }
 }
+
+size_t Data::size()
+{
+  return mObjects.size();
+}
+
 } // namespace o2::quality_control::core

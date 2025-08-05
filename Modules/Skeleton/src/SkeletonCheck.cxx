@@ -58,10 +58,8 @@ Quality SkeletonCheck::check(const quality_control::core::Data& data)
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
 
-  auto MOs = data.getAllOfTypeIf<std::shared_ptr<MonitorObject>>([](const auto& mo) { return mo->getName() == "example"; });
-
-  for (const auto& mo : MOs) {
-    auto* h = dynamic_cast<TH1*>(mo->getObject());
+  for (const auto& [n, mo] : data.iterateAndFilter<std::shared_ptr<MonitorObject>>([](const auto& mo) { return mo->getName() == "example"; })) {
+    auto* h = dynamic_cast<TH1*>(mo.get()->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "Could not cast `example` to TH1*, skipping" << ENDM;
       continue;

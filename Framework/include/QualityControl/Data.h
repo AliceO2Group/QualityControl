@@ -20,14 +20,12 @@
 #include <any>
 #include <concepts>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-#include <typeinfo>
 
 namespace o2::quality_control::core
 {
@@ -40,8 +38,38 @@ class Data
   using InternalContainer = std::map<std::string, std::any, std::less<>>;
   using InternalContainerConstIterator = InternalContainer::const_iterator;
 
- public:
   template <typename T>
+  using value_type = std::pair<std::reference_wrapper<const std::string>, std::reference_wrapper<const T>>;
+
+  template <typename T>
+  struct NoPredicateIncrementPolicy {
+    bool increment(const InternalContainerConstIterator& it, std::optional<value_type<T>>& val)
+    {
+      if (auto* casted = std::any_cast<T>(&it->second); casted != nullptr) {
+        val.emplace(it->first, *casted);
+        return true;
+      }
+      return false;
+    }
+  };
+
+  template <typename T, std::predicate<const T&> Pred>
+  struct PredicateIncrementPolicy {
+    Pred filter;
+    bool increment(const InternalContainerConstIterator& it, std::optional<value_type<T>>& val)
+    {
+      if (auto* casted = std::any_cast<T>(&it->second); casted != nullptr) {
+        if (filter(*casted)) {
+          val.emplace(it->first, *casted);
+          return true;
+        }
+      }
+      return false;
+    }
+  };
+
+ public:
+  template <typename T, typename IncrementalPolicy = NoPredicateIncrementPolicy<T>>
   class Iterator
   {
    public:
@@ -51,26 +79,28 @@ class Data
     using reference = const value_type&;
     using pointer = const value_type*;
 
+   private:
+   public:
     Iterator() = default;
-    Iterator(InternalContainerConstIterator it, InternalContainerConstIterator end)
-      : mIt{ it }, mEnd{ end }, val{ std::nullopt }
+    Iterator(const InternalContainerConstIterator& it, const InternalContainerConstIterator& end, const IncrementalPolicy& policy = {})
+      : mIt{ it }, mEnd{ end }, mVal{ std::nullopt }
     {
       seek_next_valid(mIt);
     }
 
     reference operator*() const
     {
-      return val.value();
+      return mVal.value();
     }
 
     pointer operator->() const
     {
-      return &val.value();
+      return &mVal.value();
     }
 
     Iterator& operator++()
     {
-      // can this be optimised out?
+      // TODO: can this check be optimised out?
       if (mIt != mEnd) {
         seek_next_valid(++mIt);
       }
@@ -92,18 +122,21 @@ class Data
    private:
     InternalContainerConstIterator mIt;
     InternalContainerConstIterator mEnd;
-    std::optional<value_type> val;
+    IncrementalPolicy mPolicy;
+    std::optional<value_type> mVal;
 
-    void seek_next_valid(InternalContainerConstIterator startingIt)
+    void seek_next_valid(InternalContainerConstIterator& startingIt)
     {
-      for (auto it = startingIt; it != mEnd; ++it) {
-        if (auto* casted = std::any_cast<T>(&it->second); casted != nullptr) {
-          val.emplace(it->first, *casted);
+      for (; startingIt != mEnd; ++startingIt) {
+        if (mPolicy.increment(startingIt, mVal)) {
           break;
         }
       }
     }
   };
+
+  template <typename T, std::predicate<const T&> P>
+  using FilteringIterator = Iterator<T, PredicateIncrementPolicy<T, P>>;
 
   static_assert(std::forward_iterator<Iterator<int>>);
 
@@ -127,42 +160,73 @@ class Data
     mObjects.insert({ std::string{ key }, value });
   }
 
-  template <typename Type>
-  std::vector<Type> getAllOfType() const
-  {
-    std::vector<Type> result;
-    for (const auto& [_, object] : mObjects) {
-      if (auto* casted = std::any_cast<Type>(&object); casted != nullptr) {
-        result.push_back(*casted);
-      }
-    }
-    return result;
-  }
-
-  template <typename Type, std::predicate<Type> Pred>
-  std::vector<Type> getAllOfTypeIf(Pred filter) const
-  {
-    std::vector<Type> result;
-    for (const auto& [_, object] : mObjects) {
-      if (auto* casted = std::any_cast<Type>(&object); casted != nullptr) {
-        if (filter(*casted)) {
-          result.push_back(*casted);
-        }
-      }
-    }
-    return result;
-  }
+  template <typename T>
+  struct Range {
+    Iterator<T> begin_it;
+    Iterator<T> end_it;
+    Iterator<T> begin() { return begin_it; }
+    Iterator<T> end() { return end_it; }
+  };
 
   template <typename T>
-  Iterator<T> begin()
+  Range<T> iterate() const noexcept
+  {
+    return {
+      .begin_it = begin<T>(),
+      .end_it = end<T>()
+    };
+  }
+
+  template <typename T, std::predicate<const T&> P>
+  struct FilteredRange {
+    FilteringIterator<T, P> begin_it;
+    FilteringIterator<T, P> end_it;
+    FilteringIterator<T, P> begin() { return begin_it; }
+    FilteringIterator<T, P> end() { return end_it; }
+  };
+
+  template <typename Type, std::predicate<const Type&> Pred>
+  FilteredRange<Type, Pred> iterateAndFilter(Pred&& filter) const noexcept
+  {
+    return FilteredRange<Type, Pred>{
+      .begin_it = begin<Type, Pred>(std::forward<Pred>(filter)),
+      .end_it = end<Type, Pred>(std::forward<Pred>(filter))
+    };
+  }
+
+  size_t size();
+
+  template <typename T>
+  Iterator<T> begin() const noexcept
   {
     return { mObjects.begin(), mObjects.end() };
   }
 
+  template <typename T, std::predicate<const T&> P>
+  FilteringIterator<T, P> begin(P&& filter) const noexcept
+  {
+    return { mObjects.begin(), mObjects.end(), PredicateIncrementPolicy<T, P>(filter) };
+  }
+
   template <typename T>
-  Iterator<T> end()
+  Iterator<T> end() const noexcept
   {
     return { mObjects.end(), mObjects.end() };
+  }
+
+  template <typename T, std::predicate<const T&> P>
+  FilteringIterator<T, P> end(P&& filter) const noexcept
+  {
+    return { mObjects.end(), mObjects.end(), PredicateIncrementPolicy<T, P>(filter) };
+  }
+
+  template <typename Base, typename Derived>
+  static std::optional<Derived*> downcast(const Base* base)
+  {
+    if (const auto* casted = dynamic_cast<Derived*>(base); casted != nullptr) {
+      return { casted };
+    }
+    return std::nullopt;
   }
 
  private:

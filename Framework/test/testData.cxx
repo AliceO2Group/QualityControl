@@ -19,6 +19,9 @@
 
 using namespace o2::quality_control::core;
 
+struct nonexistent {
+};
+
 TEST_CASE("Data constructor", "[Data]")
 {
   REQUIRE_NOTHROW([]() { Data data{}; });
@@ -35,50 +38,31 @@ TEST_CASE("Data insert and get", "[Data]")
   REQUIRE(valueInt.value() == 1);
 }
 
-TEST_CASE("Data getAllOfType", "[Data]")
+TEST_CASE("Data iterator - constructing", "[Data]")
 {
   Data data;
-  data.insert("int1", 1);
-  data.insert("string", std::string{ "1" });
-  data.insert("int2", 1);
-  data.insert("long", 1l);
+  data.insert("testint1", 1);
+  data.insert("teststr1", std::string{ "1" });
 
-  const auto ints = data.getAllOfType<int>();
-  REQUIRE(ints.size() == 2);
-  REQUIRE(ints[0] == 1);
-  REQUIRE(ints[1] == 1);
+  REQUIRE(data.size() == 2);
 
-  const auto strings = data.getAllOfType<std::string>();
-  REQUIRE(strings.size() == 1);
-  REQUIRE(strings[0] == "1");
+  SECTION("int iterator has some value")
+  {
+    REQUIRE(data.begin<int>() != data.end<int>());
+  }
 
-  const auto longs = data.getAllOfType<long>();
-  REQUIRE(longs.size() == 1);
-  REQUIRE(longs[0] == 1u);
+  SECTION("string iterator has some value")
+  {
+    REQUIRE(data.begin<std::string>() != data.end<std::string>());
+  }
 
-  struct nonexistent {
-  };
-
-  const auto nonexistens = data.getAllOfType<nonexistent>();
-  REQUIRE(nonexistens.empty());
+  SECTION("nonexistent value return end iterator")
+  {
+    REQUIRE(data.begin<nonexistent>() == data.end<nonexistent>());
+  }
 }
 
-template <typename T>
-struct named {
-  std::string name;
-  T val;
-};
-
-TEST_CASE("Data getAllOfTypeIf", "[Data]")
-{
-  Data data;
-  data.insert("1", named{ "1", 4 });
-  data.insert("1", named{ "1", 4l });
-  auto filtered = data.getAllOfTypeIf<named<int>>([](const auto& val) { return val.name == "1"; });
-  REQUIRE(filtered.size() == 1);
-}
-
-TEST_CASE("Data iterator", "[Data]")
+TEST_CASE("Data iterator - incrementing", "[Data]")
 {
   Data data;
   data.insert("testint1", 1);
@@ -86,19 +70,105 @@ TEST_CASE("Data iterator", "[Data]")
   data.insert("testint2", 2);
   data.insert("teststr2", std::string{ "2" });
 
-  auto intIt = data.begin<int>();
-  REQUIRE(intIt != data.end<int>());
-  REQUIRE(intIt->first.get() == "testint1");
-  REQUIRE(intIt->second.get() == 1);
-  intIt++;
-  REQUIRE(intIt->first.get() == "testint2");
-  REQUIRE(intIt->second.get() == 2);
+  REQUIRE(data.size() == 4);
 
-  auto strIt = data.begin<std::string>();
-  REQUIRE(strIt != data.end<std::string>());
-  REQUIRE(strIt->first.get() == "teststr1");
-  REQUIRE(strIt->second.get() == "1");
-  ++strIt;
-  REQUIRE(strIt->first.get() == "teststr2");
-  REQUIRE(strIt->second.get() == "2");
+  SECTION("postfix int iterator")
+  {
+    auto intIt = data.begin<int>();
+    REQUIRE(intIt != data.end<int>());
+    REQUIRE(intIt->first.get() == "testint1");
+    REQUIRE(intIt->second.get() == 1);
+    intIt++;
+    REQUIRE(intIt != data.end<int>());
+    REQUIRE(intIt->first.get() == "testint2");
+    REQUIRE(intIt->second.get() == 2);
+  }
+
+  SECTION("prefix int iterator")
+  {
+    auto intIt = data.begin<int>();
+    REQUIRE(intIt != data.end<int>());
+    REQUIRE(intIt->first.get() == "testint1");
+    REQUIRE(intIt->second.get() == 1);
+    ++intIt;
+    REQUIRE(intIt != data.end<int>());
+    REQUIRE(intIt->first.get() == "testint2");
+    REQUIRE(intIt->second.get() == 2);
+  }
+
+  SECTION("postfix str iterator")
+  {
+    auto strIt = data.begin<std::string>();
+    REQUIRE(strIt != data.end<std::string>());
+    REQUIRE(strIt->first.get() == "teststr1");
+    REQUIRE(strIt->second.get() == "1");
+    strIt++;
+    REQUIRE(strIt != data.end<std::string>());
+    REQUIRE(strIt->first.get() == "teststr2");
+    REQUIRE(strIt->second.get() == "2");
+  }
+
+  SECTION("prefix str iterator")
+  {
+    auto strIt = data.begin<std::string>();
+    REQUIRE(strIt != data.end<std::string>());
+    REQUIRE(strIt->first.get() == "teststr1");
+    REQUIRE(strIt->second.get() == "1");
+    ++strIt;
+    REQUIRE(strIt != data.end<std::string>());
+    REQUIRE(strIt->first.get() == "teststr2");
+    REQUIRE(strIt->second.get() == "2");
+  }
+}
+
+TEST_CASE("Data iterator - for loop no filtering", "[Data]")
+{
+  Data data;
+  data.insert("testint1", 1);
+  data.insert("teststr1", std::string{ "1" });
+  data.insert("testint2", 2);
+  data.insert("teststr2", std::string{ "2" });
+
+  REQUIRE(data.size() == 4);
+
+  SECTION("int loop")
+  {
+    for (const auto& [key, value] : data.iterate<int>()) {
+      REQUIRE((key.get() == "testint1" || key.get() == "testint2"));
+      REQUIRE((value.get() == 1 || value.get() == 2));
+    }
+  }
+
+  SECTION("string loop")
+  {
+    for (const auto& [key, value] : data.iterate<std::string>()) {
+      REQUIRE((key.get() == "teststr1" || key.get() == "teststr2"));
+      REQUIRE((value.get() == "1" || value.get() == "2"));
+    }
+  }
+
+  SECTION("empty loop")
+  {
+    auto filteredRange = data.iterate<nonexistent>();
+    REQUIRE(filteredRange.begin() == filteredRange.end());
+  }
+}
+
+TEST_CASE("Data iterator - for loop filter", "[Data]")
+{
+  Data data;
+  data.insert("testint1", 1);
+  data.insert("teststr1", std::string{ "1" });
+  data.insert("testint2", 2);
+  data.insert("teststr2", std::string{ "2" });
+
+  REQUIRE(data.size() == 4);
+
+  SECTION("int loop")
+  {
+    for (const auto& [key, value] : data.iterateAndFilter<int>([](const int& val) { return val == 1; })) {
+      REQUIRE((key.get() == "testint1"));
+      REQUIRE((value.get() == 1));
+    }
+  }
 }
