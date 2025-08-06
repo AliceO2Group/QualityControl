@@ -154,7 +154,7 @@ std::tuple<uint64_t, uint64_t, uint64_t, int> CcdbInspectorTask::getObjectInfo(c
 
 void* CcdbInspectorTask::getObject(const std::string& path, std::type_info const& tinfo, uint64_t timestamp, const std::map<std::string, std::string>& metadata)
 {
-  map<string, string> headers;
+  std::map<std::string, std::string> headers;
   void* obj = mDatabase->retrieveAny(tinfo, path, metadata, timestamp, &headers);
   ILOG(Debug, Devel) << "Retrieved '" << path << "' from db '" << mDatabaseUrl << "' for timestamp " << timestamp << ENDM;
 

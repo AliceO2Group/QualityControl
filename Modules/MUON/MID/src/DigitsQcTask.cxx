@@ -66,7 +66,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mEPRate = std::make_unique<TH1F>("EPRate", "EPRate", 4, 0, 4.);
   getObjectsManager()->startPublishing(mEPRate.get());
 
-  std::array<string, 4> chId{ "11", "12", "21", "22" };
+  std::array<std::string, 4> chId{ "11", "12", "21", "22" };
 
   for (size_t ich = 0; ich < 5; ++ich) {
     std::string chName = "";

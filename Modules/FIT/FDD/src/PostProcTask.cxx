@@ -276,7 +276,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
   for (int i = 0; i < getObjectsManager()->getNumberPublishedObjects(); i++) {
     TH1* obj = dynamic_cast<TH1*>(getObjectsManager()->getMonitorObject(i)->getObject());
     if (obj != nullptr) {
-      obj->SetTitle((string("FDD ") + obj->GetTitle()).c_str());
+      obj->SetTitle((std::string("FDD ") + obj->GetTitle()).c_str());
     }
   }
 

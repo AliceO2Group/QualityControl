@@ -40,7 +40,7 @@ void TrackingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mPtMin = getFromConfig<float>(mCustomParameters, "pTminvalue", 0.f);
   mDetailedTrackQC = getFromConfig<bool>(mCustomParameters, "detailedQC");
-  std::string trackSources = getFromConfig<string>(mCustomParameters, "trackSources", "all");
+  std::string trackSources = getFromConfig<std::string>(mCustomParameters, "trackSources", "all");
   GID::mask_t allowedSources = GID::getSourcesMask("ITS-TPC,TPC-TRD,ITS-TPC-TRD");
   mSrcSelected = allowedSources & GID::getSourcesMask(trackSources);
   mDataRequest = std::make_shared<o2::globaltracking::DataRequest>();

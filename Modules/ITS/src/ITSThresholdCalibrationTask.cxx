@@ -85,7 +85,7 @@ void ITSThresholdCalibrationTask::initialize(o2::framework::InitContext& /*ctx*/
 
   ILOG(Debug, Devel) << "initialize ITSThresholdCalibrationTask" << ENDM;
 
-  string mCalibrationType = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "CalibrationType", "THR"); // THR, ITHR, VCASN, TOT, pixel_noise, pixel_dead, pixel_ineff
+  std::string mCalibrationType = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "CalibrationType", "THR"); // THR, ITHR, VCASN, TOT, pixel_noise, pixel_dead, pixel_ineff
 
   if (mCalibrationType == "THR")
     CalibType = THR;
@@ -118,7 +118,7 @@ void ITSThresholdCalibrationTask::startOfCycle()
 
 void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  string inStringChipDone, inString, inPixel;
+  std::string inStringChipDone, inString, inPixel;
   char scanType;
   for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     if (input.header != nullptr && input.payload != nullptr) {
@@ -179,7 +179,7 @@ void ITSThresholdCalibrationTask::monitorData(o2::framework::ProcessingContext& 
   }
 }
 
-void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
+void ITSThresholdCalibrationTask::doAnalysisTHR(std::string inString, int iScan)
 {
 
   auto splitRes = splitString(inString, "O2");
@@ -223,7 +223,7 @@ void ITSThresholdCalibrationTask::doAnalysisTHR(string inString, int iScan)
   }
 }
 
-void ITSThresholdCalibrationTask::doAnalysisPixel(string inString)
+void ITSThresholdCalibrationTask::doAnalysisPixel(std::string inString)
 {
 
   auto splitRes = splitString(inString, "O2");
@@ -264,17 +264,17 @@ int ITSThresholdCalibrationTask::getCurrentChip(int barrel, int chipid, int hic,
   return currentChip;
 }
 
-ITSThresholdCalibrationTask::CalibrationResStructPixel ITSThresholdCalibrationTask::CalibrationParserPixel(string input)
+ITSThresholdCalibrationTask::CalibrationResStructPixel ITSThresholdCalibrationTask::CalibrationParserPixel(std::string input)
 {
   CalibrationResStructPixel result;
   auto StaveINFO = splitString(input, ",");
 
-  for (string info : StaveINFO) {
+  for (std::string info : StaveINFO) {
     if (info.size() == 0)
       continue;
 
     std::string name = splitString(info, ":")[0];
-    string data = splitString(info, ":")[1];
+    std::string data = splitString(info, ":")[1];
 
     if (name == "ChipID") {
       int o2chipid = std::stod(data);
@@ -301,11 +301,11 @@ ITSThresholdCalibrationTask::CalibrationResStructPixel ITSThresholdCalibrationTa
   return result;
 }
 
-ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask::CalibrationParserTHR(string input)
+ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask::CalibrationParserTHR(std::string input)
 {
   CalibrationResStructTHR result;
   auto StaveINFO = splitString(input, ",");
-  for (string info : StaveINFO) {
+  for (std::string info : StaveINFO) {
     if (info.size() == 0)
       continue;
 
@@ -315,7 +315,7 @@ ITSThresholdCalibrationTask::CalibrationResStructTHR ITSThresholdCalibrationTask
     } else {
 
       std::string name = splitString(info, ":")[0];
-      string data = splitString(info, ":")[1];
+      std::string data = splitString(info, ":")[1];
       if (name == "ChipID") {
         int o2chipid = std::stod(data);
         int Hs, HIC, ChipID, Layer, Stave;
@@ -682,7 +682,7 @@ std::vector<std::string> ITSThresholdCalibrationTask::splitString(std::string s,
   std::string token;
   std::vector<std::string> res;
 
-  while ((pos_end = s.find(delimiter, pos_start)) != string::npos) {
+  while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
     token = s.substr(pos_start, pos_end - pos_start);
     pos_start = pos_end + delim_len;
     res.push_back(token);

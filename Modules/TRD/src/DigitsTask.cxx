@@ -51,7 +51,7 @@ void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPulseHeightPeakRegion.first = getFromConfig<float>(mCustomParameters, "peakRegionStart", 0.f);
   mPulseHeightPeakRegion.second = getFromConfig<float>(mCustomParameters, "peakRegionEnd", 5.f);
   mPulseHeightThreshold = getFromConfig<unsigned int>(mCustomParameters, "phThreshold", 400u);
-  mChambersToIgnore = getFromConfig<string>(mCustomParameters, "ignoreChambers", "16_3_0");
+  mChambersToIgnore = getFromConfig<std::string>(mCustomParameters, "ignoreChambers", "16_3_0");
   mClsCutoff = getFromConfig<int>(mCustomParameters, "clsCutoff", 1000);
   mAdcBaseline = getFromConfig<int>(mCustomParameters, "adcBaseline", 10);
 

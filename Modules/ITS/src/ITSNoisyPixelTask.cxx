@@ -97,7 +97,7 @@ void ITSNoisyPixelTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishHistos();
 
   // get dict from ccdb
-  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "dicttimestamp", "0"));
+  mTimestamp = std::stol(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "dicttimestamp", "0"));
   long int ts = mTimestamp ? mTimestamp : o2::ccdb::getCurrentTimestamp();
   ILOG(Debug, Devel) << "Getting dictionary from ccdb - timestamp: " << ts << ENDM;
   auto& mgr = o2::ccdb::BasicCCDBManager::instance();
@@ -447,8 +447,8 @@ void ITSNoisyPixelTask::createAllHistos()
 void ITSNoisyPixelTask::getJsonParameters()
 {
   mLocalGeometryFile = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "isLocalGeometry", mLocalGeometryFile);
-  mGeoTimestamp = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomstamp", mGeoTimestamp);
-  mGeomPath = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "geomPath", mGeomPath);
+  mGeoTimestamp = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "geomstamp", mGeoTimestamp);
+  mGeomPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "geomPath", mGeomPath);
 
   std::string LayerConfig = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "layer", "0000000");
 
@@ -461,7 +461,7 @@ void ITSNoisyPixelTask::getJsonParameters()
     }
   }
 
-  std::string queryOption = o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "queryOption", "from-digit");
+  std::string queryOption = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "queryOption", "from-digit");
   if (queryOption.find("digit") != std::string::npos)
     mQueryOption = kDigit;
   else if (queryOption.find("cluster") != std::string::npos)

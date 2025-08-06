@@ -37,17 +37,17 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
     end = std::chrono::high_resolution_clock::now();
     TIME = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
   }
-  std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimits", ""));
+  std::vector<int> vDecErrorLimits = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "DecLinkErrorLimits", ""));
   if (vDecErrorLimits.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
     ILOG(Error, Support) << "Incorrect vector with DecodingError limits, check .json" << ENDM;
     doFlatCheck = true;
   }
-  std::vector<float> vDecErrorLimitsRatio = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorLimitsRatio", ""));
+  std::vector<float> vDecErrorLimitsRatio = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "DecLinkErrorLimitsRatio", ""));
   if (vDecErrorLimitsRatio.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
     ILOG(Error, Support) << "Incorrect vector with DecodingError limits Ratio, check .json" << ENDM;
     doFlatCheck = true;
   }
-  std::vector<int> vDecErrorType = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "DecLinkErrorType", ""));
+  std::vector<int> vDecErrorType = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "DecLinkErrorType", ""));
   if (vDecErrorType.size() != o2::itsmft::GBTLinkDecodingStat::NErrorsDefined) {
     ILOG(Error, Support) << "Incorrect vector with DecodingError Type, check .json" << ENDM;
     doFlatCheck = true;
@@ -59,7 +59,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
 
-    if ((string)mo->getName() == "General/ChipErrorPlots") {
+    if ((std::string)mo->getName() == "General/ChipErrorPlots") {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h == nullptr) {
@@ -70,7 +70,7 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
         result.set(Quality::Bad);
     }
 
-    if ((string)mo->GetName() == "General/LinkErrorVsFeeid") {
+    if ((std::string)mo->GetName() == "General/LinkErrorVsFeeid") {
 
       result = Quality::Good;
       auto* h = dynamic_cast<TH2D*>(mo->getObject());
@@ -109,10 +109,10 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
           result.addFlag(o2::quality_control::FlagTypeFactory::Unknown(), Form("BAD: ID = %d, %s", ierr, std::string(statistics.ErrNames[ierr]).c_str()));
 
         } // end of y axis loop
-      }   // end of x axis loop
-    }     // end of check on General/LinkErrorVsFeeid
+      } // end of x axis loop
+    } // end of check on General/LinkErrorVsFeeid
 
-    if (((string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) {
+    if (((std::string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) {
       result = Quality::Good;
       auto* h = dynamic_cast<TH1D*>(mo->getObject());
       if (h == nullptr) {
@@ -164,9 +164,9 @@ Quality ITSDecodingErrorCheck::check(std::map<std::string, std::shared_ptr<Monit
 
 void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  std::vector<string> vPlotWithTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "plotWithTextMessage", ""));
-  std::vector<string> vTextMessage = convertToArray<string>(o2::quality_control_modules::common::getFromConfig<string>(mCustomParameters, "textMessage", ""));
-  std::map<string, string> ShifterInfoText;
+  std::vector<std::string> vPlotWithTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "plotWithTextMessage", ""));
+  std::vector<std::string> vTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "textMessage", ""));
+  std::map<std::string, std::string> ShifterInfoText;
 
   if ((int)vTextMessage.size() == (int)vPlotWithTextMessage.size()) {
     for (int i = 0; i < (int)vTextMessage.size(); i++) {
@@ -183,7 +183,7 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
   TString status;
   int textColor;
 
-  if (((string)mo->GetName()).find("General/LinkErrorVsFeeid") != std::string::npos) {
+  if (((std::string)mo->GetName()).find("General/LinkErrorVsFeeid") != std::string::npos) {
 
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     if (h == nullptr) {
@@ -207,7 +207,7 @@ void ITSDecodingErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality 
 
   } // end of beautify LinkErrorVsFeeid
 
-  if ((((string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) || (mo->getName() == "General/ChipErrorPlots")) {
+  if ((((std::string)mo->getName()).find("General/LinkErrorPlots") != std::string::npos) || (mo->getName() == "General/ChipErrorPlots")) {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (h == nullptr) {
       ILOG(Error, Support) << "could not cast LinkErrorPlots to TH1D*" << ENDM;
