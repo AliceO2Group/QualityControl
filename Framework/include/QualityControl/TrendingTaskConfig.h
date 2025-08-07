@@ -63,7 +63,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
 
   // legend configuration
   struct LegendConfig {
-    bool  enabled{false};
+    bool  enabled{true};
     int   nColumns{1};
     float x1{0.30f}, y1{0.20f}, x2{0.55f}, y2{0.35f}; // NDC coords
   };
