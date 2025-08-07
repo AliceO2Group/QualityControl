@@ -142,6 +142,30 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
   }
 }
 
+Color_t TrendingTask::resolveColor(int idx) {
+  if (idx >= 0) {
+    return static_cast<Color_t>(idx);
+  }
+  return static_cast<Color_t>(-1);
+}
+
+void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style) {
+  if (!graph) { return; }
+  const Color_t lineColor = resolveColor(style.lineColor);
+  const Color_t markerColor = resolveColor(style.markerColor);
+  const Color_t fillColor = resolveColor(style.fillColor);
+
+  if (lineColor >= 0) { graph->SetLineColor(lineColor); }
+  if (style.lineStyle >= 0) { graph->SetLineStyle(style.lineStyle); }
+  if (style.lineWidth >= 0) { graph->SetLineWidth(style.lineWidth); }
+
+  if (markerColor >= 0) { graph->SetMarkerColor(markerColor); }
+  if (style.markerStyle >= 0) { graph->SetMarkerStyle(style.markerStyle); }
+  if (style.markerSize >= 0.f) { graph->SetMarkerSize(style.markerSize); }
+
+  if (fillColor >= 0) { graph->SetFillColor(fillColor); }
+  if (style.fillStyle >= 0) { graph->SetFillStyle(style.fillStyle); }
+}
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
@@ -337,44 +361,6 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
   } else {
     gStyle->SetPalette(); // default
   }
-
-  // Helpers
-  auto resolveColor = [](int idx) -> Color_t {
-    if (idx >= 0) {
-      return static_cast<Color_t>(idx);
-    }
-    return static_cast<Color_t>(-1);
-  };
-
-  auto getLastDrawnGraph = []() -> TGraph* {
-    if (!gPad) { return nullptr; }
-    TGraph* last = nullptr;
-    TIter it(gPad->GetListOfPrimitives());
-    while (TObject* obj = it()) {
-      if (obj->InheritsFrom(TGraph::Class())) {
-        last = static_cast<TGraph*>(obj);
-      }
-    }
-    return last;
-  };
-
-  auto applyStyleToGraph = [&](TGraph* graph, const TrendingTaskConfig::GraphStyle& style) {
-    if (!graph) { return; }
-    const Color_t lineColor = resolveColor(style.lineColor);
-    const Color_t markerColor = resolveColor(style.markerColor);
-    const Color_t fillColor = resolveColor(style.fillColor);
-
-    if (lineColor >= 0) { graph->SetLineColor(lineColor); }
-    if (style.lineStyle >= 0) { graph->SetLineStyle(style.lineStyle); }
-    if (style.lineWidth >= 0) { graph->SetLineWidth(style.lineWidth); }
-
-    if (markerColor >= 0) { graph->SetMarkerColor(markerColor); }
-    if (style.markerStyle >= 0) { graph->SetMarkerStyle(style.markerStyle); }
-    if (style.markerSize >= 0.f) { graph->SetMarkerSize(style.markerSize); }
-
-    if (fillColor >= 0) { graph->SetFillColor(fillColor); }
-    if (style.fillStyle >= 0) { graph->SetFillStyle(style.fillStyle); }
-  };
 
   // regardless whether we draw a graph or a histogram, a histogram is always used by TTree::Draw to draw axes and title
   // we attempt to keep it to do some modifications later
