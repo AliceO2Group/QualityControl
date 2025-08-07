@@ -33,6 +33,12 @@ struct TrendingTaskConfig : PostProcessingConfig {
   ~TrendingTaskConfig() = default;
 
   // graph style configuration
+  // colors as defined by ROOT TColor class:
+  // https://root.cern/doc/master/classTColor.html
+  // marker colors and styles are as defined by ROOT TAttMarker class
+  // https://root.cern/doc/master/classTAttMarker.html
+  // line styles are as defined by ROOT TAttLine class
+  // https://root.cern/doc/master/classTAttLine.html
   struct GraphStyle {
     int   lineColor   = -1;
     int   lineStyle   = -1;
