@@ -393,37 +393,23 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 
     // For graphs, we allow to draw errors if they are specified.
     TGraphErrors* graphErrors = nullptr;
-    if (plotOrder != 2) {
-      ILOG(Error, Support) << "Non empty graphErrors seen for the plotConfig '" << plotConfig.name << "', which is not a graphConfig, ignoring." << ENDM;
-    } else {
-      // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
-        std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
-        mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
-        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
-                                       mTrend->GetVal(2), mTrend->GetVal(3));
-        graphErrors->SetName((graphConfig.name + "_errors").c_str());
-        graphErrors->SetTitle((graphConfig.title + " errors").c_str());
-        graphErrors->Draw("SAME E");
-    }
-
-    // Handle axes/title carrier histogram
-    if (auto* htemp = dynamic_cast<TH1*>(c->FindObject("htemp"))) {
-      if (plotOrder == 1) {
-        htemp->SetName(graphConfig.name.c_str());
-        htemp->SetTitle(graphConfig.title.c_str());
-        legend->AddEntry(htemp, graphConfig.title.c_str(), "lpf");
+    if (!graphConfig.errors.empty()) {
+      if (plotOrder != 2) {
+        ILOG(Error, Support) << "Non empty graphErrors seen for the plotConfig '" << plotConfig.name << "', which is not a graphConfig, ignoring." << ENDM;
       } else {
-        htemp->SetName("background");
-        htemp->SetTitle("background");
+        // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
+          std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
+          mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
+          graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
+                                        mTrend->GetVal(2), mTrend->GetVal(3));
+          graphErrors->SetName((graphConfig.name + "_errors").c_str());
+          graphErrors->SetTitle((graphConfig.title + " errors").c_str());
+          graphErrors->Draw("SAME E");
       }
-      // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
-      // so we have to do it here.
-      htemp->BufferEmpty();
-      if (!background) { background = htemp; }
     }
 
     // Legend entry and styling for graphs
-    if (auto* graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
+    if (auto graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
       if (plotOrder >= 2) {
         // Style objects after Draw so we override palette/auto styling when requested
         applyStyleToGraph(graph, graphConfig.style);
@@ -438,6 +424,22 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
                        deduceGraphLegendOptions(graphConfig).c_str());
     }
 
+    // Legend entry and styling for histograms
+    if (auto htemp = dynamic_cast<TH1*>(c->FindObject("htemp"))) {
+      if (plotOrder == 1) {
+        htemp->SetName(graphConfig.name.c_str());
+        htemp->SetTitle(graphConfig.title.c_str());
+        legend->AddEntry(htemp, graphConfig.title.c_str(), "lpf");
+      } else {
+        htemp->SetName("background");
+        htemp->SetTitle("background");
+      }
+      // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
+      // so we have to do it here.
+      htemp->BufferEmpty();
+      if (!background) { background = htemp; }
+    }
+
     firstGraphInPlot = false;
   }
 
@@ -446,15 +448,18 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 
   // Post-process: title, axes labels, time axis formatting, y-range
   if (background) {
+    // The title of background histogram is printed, not the title of canvas => we set it as well.
     background->SetTitle(plotConfig.title.c_str());
+    // We have to update the canvas to make the title appear and access it in the next step.
     c->Update();
 
-    if (auto* title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
+    // After the update, the title has a different size and it is not in the center anymore. We have to fix that.
+    if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
       title->SetBBoxCenterX(c->GetBBoxCenter().fX);
       c->Modified();
       c->Update();
     } else {
-      ILOG(Error, Devel) << "Could not get TPaveText for title of '" << plotConfig.name << "'." << ENDM;
+      ILOG(Error, Devel) << "Could not get the title TPaveText of the plotConfig '" << plotConfig.name << "'." << ENDM;
     }
 
     if (!plotConfig.graphAxisLabel.empty()) {
@@ -470,13 +475,14 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       }
     }
 
+    // Set the user-defined range on the y axis if needed.
     if (!plotConfig.graphYRange.empty()) {
       setUserYAxisRange(background, plotConfig.graphYRange);
       c->Modified();
       c->Update();
     }
   } else {
-    ILOG(Error, Devel) << "Could not get 'htemp' for plot '" << plotConfig.name << "'." << ENDM;
+    ILOG(Error, Devel) << "Could not get the htemp histogram of the plotConfig '" << plotConfig.name << "'." << ENDM;
   }
 
   if (plotConfig.graphs.size() > 1 || plotConfig.legend.enabled) {
@@ -487,5 +493,6 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 
   c->Modified();
   c->Update();
+
   return c;
 }
