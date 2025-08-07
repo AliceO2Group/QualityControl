@@ -192,11 +192,11 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     "Amplitude distribution;QTC amp;Counts",
     4096, -0.5, 4095.5);
   for (std::size_t ch = 0; ch < sNCHANNELS_FV0_PLUSREF; ++ch) {
-  mHistAmpPerCh[ch] = std::make_unique<TH1F>(
+    mHistAmpPerCh[ch] = std::make_unique<TH1F>(
       Form("AmpDistCh%zu", ch),
       Form("Amplitude distribution channel %zu;QTC amp;Counts", ch),
       4096, -0.5, 4095.5);
-      getObjectsManager()->startPublishing(mHistAmpPerCh[ch].get());
+    getObjectsManager()->startPublishing(mHistAmpPerCh[ch].get());
   }
   getObjectsManager()->startPublishing(mHistAmpAll.get());
   mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
@@ -396,9 +396,10 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   ILOG(Debug, Devel) << "startOfActivity" << activity.mId << ENDM;
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
-   mHistAmpAll->Reset();
+  mHistAmpAll->Reset();
   for (auto& h : mHistAmpPerCh) {
-    if (h) h->Reset();
+    if (h)
+      h->Reset();
   }
   mHistBC->Reset();
   mHistChDataBits->Reset();
@@ -694,7 +695,8 @@ void DigitQcTask::reset()
   mHistAmp2Ch->Reset();
   mHistAmpAll->Reset();
   for (auto& h : mHistAmpPerCh) {
-    if (h) h->Reset();
+    if (h)
+      h->Reset();
   }
   mHistBC->Reset();
   mHistChDataBits->Reset();

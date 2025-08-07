@@ -142,22 +142,41 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
   }
 }
 
-void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style) {
-  if (!graph) { return; }
+void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style)
+{
+  if (!graph) {
+    return;
+  }
   const Color_t lineColor = style.lineColor;
   const Color_t markerColor = style.markerColor;
   const Color_t fillColor = style.fillColor;
 
-  if (lineColor >= 0) { graph->SetLineColor(lineColor); }
-  if (style.lineStyle >= 0) { graph->SetLineStyle(style.lineStyle); }
-  if (style.lineWidth >= 0) { graph->SetLineWidth(style.lineWidth); }
+  if (lineColor >= 0) {
+    graph->SetLineColor(lineColor);
+  }
+  if (style.lineStyle >= 0) {
+    graph->SetLineStyle(style.lineStyle);
+  }
+  if (style.lineWidth >= 0) {
+    graph->SetLineWidth(style.lineWidth);
+  }
 
-  if (markerColor >= 0) { graph->SetMarkerColor(markerColor); }
-  if (style.markerStyle >= 0) { graph->SetMarkerStyle(style.markerStyle); }
-  if (style.markerSize >= 0.f) { graph->SetMarkerSize(style.markerSize); }
+  if (markerColor >= 0) {
+    graph->SetMarkerColor(markerColor);
+  }
+  if (style.markerStyle >= 0) {
+    graph->SetMarkerStyle(style.markerStyle);
+  }
+  if (style.markerSize >= 0.f) {
+    graph->SetMarkerSize(style.markerSize);
+  }
 
-  if (fillColor >= 0) { graph->SetFillColor(fillColor); }
-  if (style.fillStyle >= 0) { graph->SetFillStyle(style.fillStyle); }
+  if (fillColor >= 0) {
+    graph->SetFillColor(fillColor);
+  }
+  if (style.fillStyle >= 0) {
+    graph->SetFillStyle(style.fillStyle);
+  }
 }
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -203,7 +222,7 @@ bool TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
   }
   mMetaData.runNumber = t.activity.mId;
   std::snprintf(mMetaData.runNumberStr, MaxRunNumberStringLength + 1, "%d", t.activity.mId);
-  
+
   bool wereAllSourcesInvoked = true;
   for (auto& dataSource : mConfig.dataSources) {
     if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
@@ -329,7 +348,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 {
   auto* c = new TCanvas();
 
-  // Legend (NDC coordinates if enabled in config)
+  // Legend
   TLegend* legend = nullptr;
   if (plotConfig.legend.x1 && plotConfig.legend.y1 && plotConfig.legend.x2 && plotConfig.legend.y2) {
     legend = new TLegend(plotConfig.legend.x1, plotConfig.legend.y1,
@@ -377,13 +396,14 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
         ILOG(Error, Support) << "Non empty graphErrors seen for the plotConfig '" << plotConfig.name << "', which is not a graphConfig, ignoring." << ENDM;
       } else {
         // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
-          std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
-          mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
-          graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
-                                        mTrend->GetVal(2), mTrend->GetVal(3));
-          graphErrors->SetName((graphConfig.name + "_errors").c_str());
-          graphErrors->SetTitle((graphConfig.title + " errors").c_str());
-          graphErrors->Draw("SAME E");
+        std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
+        mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
+        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
+                                       mTrend->GetVal(2), mTrend->GetVal(3));
+        graphErrors->SetName((graphConfig.name + "_errors").c_str());
+        graphErrors->SetTitle((graphConfig.title + " errors").c_str());
+        // We draw on the same plotConfig as the main graphConfig, but only error bars
+        graphErrors->Draw("SAME E");
       }
     }
 
@@ -417,7 +437,9 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
       // so we have to do it here.
       htemp->BufferEmpty();
-      if (!background) { background = htemp; }
+      if (!background) {
+        background = htemp;
+      }
     }
 
     firstGraphInPlot = false;
