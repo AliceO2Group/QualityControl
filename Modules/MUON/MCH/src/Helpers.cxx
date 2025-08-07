@@ -184,15 +184,6 @@ int getDEFromIndex(int index)
       if (deId < 0) {
         deId = lMax + (nDEhc - indexInHalfChamber);
       }
-      /*if (indexInHalfChamber > nDEqc) {
-        // the DE is in the lower half of the chamber
-        std::cout << "DE on lower R side, indexInHalfChamber=" << indexInHalfChamber << " nDEqc=" << nDEqc << std::endl;
-        deId = lMax + (nDEhc - indexInHalfChamber);
-      } else {
-        // the DE is in the upper half of the chamber
-        std::cout << "DE on upper R side, indexInHalfChamber=" << indexInHalfChamber << " nDEqc=" << nDEqc << std::endl;
-        deId = lMin - indexInHalfChamber - 1;
-      }*/
     }
 
     deId += (chamber + 1) * 100;
@@ -245,7 +236,7 @@ int getSolarIndex(int solarId)
   try {
     return m.at(solarId);
   } catch (const std::exception&) {
-    ILOG(Error, Support) << "Invalid Solar Id: " << solarId;
+    ILOG(Error, Support) << "Invalid Solar Id: " << solarId << ENDM;
   }
   return -1;
 }
@@ -256,18 +247,11 @@ int getSolarIdFromIndex(int index)
   try {
     return v.at(index);
   } catch (const std::exception&) {
-    ILOG(Error, Support) << "Invalid Solar Index: " << index;
+    ILOG(Error, Support) << "Invalid Solar Index: " << index << ENDM;
   }
   return -1;
 }
-/*
-constexpr int getNumSolar()
-{
-  //static std::vector<uint32_t> v = buildSolarIndexToSolarIdMap();
-  //return v.size();
-  return 624;
-}
-*/
+
 int getNumSolarPerChamber(int chamberId)
 {
   static std::array<uint32_t, 10> v{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -566,8 +550,6 @@ void addChamberDelimitersToSolarHistogram(TH1* h, float xmin, float xmax)
     delimiter->SetLineStyle(kDashed);
     h->GetListOfFunctions()->Add(delimiter);
   }
-
-  // addChamberLabelsForSolar(h);
 
   // draw x-axis labels
   /*float xMin{ 0 };

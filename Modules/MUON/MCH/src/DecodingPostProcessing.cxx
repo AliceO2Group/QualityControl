@@ -286,7 +286,7 @@ void DecodingPostProcessing::updateSyncStatusHistos(Trigger t, repository::Datab
 
 //_________________________________________________________________________________________
 
-TH1* DecodingPostProcessing::getHistogram(std::string plotName)
+TH1* DecodingPostProcessing::getHistogram(std::string_view plotName)
 {
   TH1* result{ nullptr };
   for (auto hist : mHistogramsAll) {

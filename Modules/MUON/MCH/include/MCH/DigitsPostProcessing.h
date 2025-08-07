@@ -63,7 +63,7 @@ class DigitsPostProcessing : public ReferenceComparatorTask
   static std::string orbitsSourceName() { return "orbits"; }
   static std::string orbitsSignalSourceName() { return "orbits_signal"; }
 
-  TH1* getHistogram(std::string plotName);
+  TH1* getHistogram(std::string_view plotName);
 
   bool mFullHistos{ false };
   bool mEnableLastCycleHistos{ false };

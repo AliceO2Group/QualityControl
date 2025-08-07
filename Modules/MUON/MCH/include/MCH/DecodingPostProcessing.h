@@ -73,7 +73,7 @@ class DecodingPostProcessing : public ReferenceComparatorTask
   static std::string hbPacketsSourceName() { return "hbpackets"; }
   static std::string syncStatusSourceName() { return "syncstatus"; }
 
-  TH1* getHistogram(std::string plotName);
+  TH1* getHistogram(std::string_view plotName);
 
   bool mFullHistos{ false };
   bool mEnableLastCycleHistos{ false };

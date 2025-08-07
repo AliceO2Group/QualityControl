@@ -348,7 +348,7 @@ void DigitsPostProcessing::updateOrbitHistos(Trigger t, repository::DatabaseInte
 
 //_________________________________________________________________________________________
 
-TH1* DigitsPostProcessing::getHistogram(std::string plotName)
+TH1* DigitsPostProcessing::getHistogram(std::string_view plotName)
 {
   TH1* result{ nullptr };
   for (auto hist : mHistogramsAll) {

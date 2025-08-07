@@ -72,7 +72,7 @@ class PreclustersPostProcessing : public ReferenceComparatorTask
   static std::string clusterChargeSourceName() { return "clcharge"; }
   static std::string clusterSizeSourceName() { return "clsize"; }
 
-  TH1* getHistogram(std::string plotName);
+  TH1* getHistogram(std::string_view plotName);
 
   bool mFullHistos{ false };
   bool mEnableLastCycleHistos{ false };

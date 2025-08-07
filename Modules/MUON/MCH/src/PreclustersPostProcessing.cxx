@@ -307,7 +307,7 @@ void PreclustersPostProcessing::updateClusterSizeHistos(Trigger t, repository::D
 
 //_________________________________________________________________________________________
 
-TH1* PreclustersPostProcessing::getHistogram(std::string plotName)
+TH1* PreclustersPostProcessing::getHistogram(std::string_view plotName)
 {
   TH1* result{ nullptr };
   for (auto hist : mHistogramsAll) {

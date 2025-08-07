@@ -12,7 +12,7 @@
 ///
 /// \file    QualityAggregatorTask.cxx
 /// \author  Andrea Ferrero andrea.ferrero@cern.ch
-/// \brief   Post-processing of the MCH pre-clusters
+/// \brief   Post-processing of the MCH summary qualities
 /// \since   21/06/2022
 ///
 
