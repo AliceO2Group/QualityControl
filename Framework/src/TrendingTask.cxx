@@ -142,28 +142,6 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
   }
 }
 
-static inline bool hasAnyStyle(const TrendingTaskConfig::GraphStyle& s) {
-  return s.lineColor >= 0 || s.lineStyle >= 0 || s.lineWidth >= 0 ||
-         s.markerColor >= 0 || s.markerStyle >= 0 || s.markerSize > 0.f ||
-         s.fillColor >= 0 || s.fillStyle >= 0;
-}
-
-template<class T> // TGraph*, TH1*, etc. (anything with TAttLine/TAttMarker/TAttFill)
-static inline void applyStyleIfAny(T* obj, const TrendingTaskConfig::GraphStyle& s) {
-  if (!hasAnyStyle(s) || !obj) return;
-
-  // Colors
-  if (s.lineColor >= 0)     obj->SetLineColor(s.lineColor);
-  if (s.markerColor >= 0)   obj->SetMarkerColor(s.markerColor);
-
-  if (s.lineStyle >= 0)   obj->SetLineStyle(s.lineStyle);   // TAttLine
-  if (s.lineWidth >= 0)   obj->SetLineWidth(s.lineWidth);   // TAttLine
-  if (s.markerStyle >= 0) obj->SetMarkerStyle(s.markerStyle); // TAttMarker
-  if (s.markerSize > 0.f) obj->SetMarkerSize(s.markerSize);   // TAttMarker
-  if (s.fillColor >= 0)   obj->SetFillColor(s.fillColor);     // TAttFill
-  if (s.fillStyle >= 0)   obj->SetFillStyle(s.fillStyle);     // TAttFill
-}
-
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
@@ -208,8 +186,8 @@ bool TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& 
   }
   mMetaData.runNumber = t.activity.mId;
   std::snprintf(mMetaData.runNumberStr, MaxRunNumberStringLength + 1, "%d", t.activity.mId);
+  
   bool wereAllSourcesInvoked = true;
-
   for (auto& dataSource : mConfig.dataSources) {
     if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
       wereAllSourcesInvoked = false;
@@ -344,7 +322,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       legend->SetNColumns(plotConfig.legend.nColumns);
     }
   } else {
-    legend = new TLegend(0.30, 0.20, 0.55, 0.35, nullptr, "NDC");
+    legend = new TLegend(0.3, 0.2);
   }
   legend->SetBorderSize(0);
   legend->SetFillStyle(0);
@@ -354,6 +332,8 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
   // Keep palette behavior unless user forces explicit colors via per-graph style
   if (plotConfig.colorPalette != 0) {
     gStyle->SetPalette(plotConfig.colorPalette);
+    // This makes ROOT store the selected palette for each generated plot.
+    // TColor::DefinedColors(1); // TODO enable when available
   } else {
     gStyle->SetPalette(); // default
   }
@@ -367,7 +347,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
   };
 
   auto getLastDrawnGraph = []() -> TGraph* {
-    if (!gPad) return nullptr;
+    if (!gPad) { return nullptr; }
     TGraph* last = nullptr;
     TIter it(gPad->GetListOfPrimitives());
     while (TObject* obj = it()) {
@@ -378,65 +358,52 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
     return last;
   };
 
-  auto applyStyleToGraph = [&](TGraph* gr, const TrendingTaskConfig::GraphStyle& st) {
-    if (!gr) return;
-    const Color_t ln = resolveColor(st.lineColor);
-    const Color_t mk = resolveColor(st.markerColor);
-    const Color_t fl = resolveColor(st.fillColor);
+  auto applyStyleToGraph = [&](TGraph* graph, const TrendingTaskConfig::GraphStyle& style) {
+    if (!graph) { return; }
+    const Color_t lineColor = resolveColor(style.lineColor);
+    const Color_t markerColor = resolveColor(style.markerColor);
+    const Color_t fillColor = resolveColor(style.fillColor);
 
-    if (ln >= 0) gr->SetLineColor(ln);
-    if (st.lineStyle >= 0) gr->SetLineStyle(st.lineStyle);
-    if (st.lineWidth >= 0) gr->SetLineWidth(st.lineWidth);
+    if (lineColor >= 0) { graph->SetLineColor(lineColor); }
+    if (style.lineStyle >= 0) { graph->SetLineStyle(style.lineStyle); }
+    if (style.lineWidth >= 0) { graph->SetLineWidth(style.lineWidth); }
 
-    if (mk >= 0) gr->SetMarkerColor(mk);
-    if (st.markerStyle >= 0) gr->SetMarkerStyle(st.markerStyle);
-    if (st.markerSize >= 0.f) gr->SetMarkerSize(st.markerSize);
+    if (markerColor >= 0) { graph->SetMarkerColor(markerColor); }
+    if (style.markerStyle >= 0) { graph->SetMarkerStyle(style.markerStyle); }
+    if (style.markerSize >= 0.f) { graph->SetMarkerSize(style.markerSize); }
 
-    if (fl >= 0) gr->SetFillColor(fl);
-    if (st.fillStyle >= 0) gr->SetFillStyle(st.fillStyle);
+    if (fillColor >= 0) { graph->SetFillColor(fillColor); }
+    if (style.fillStyle >= 0) { graph->SetFillStyle(style.fillStyle); }
   };
 
-  // Regardless of drawing kind, TTree::Draw produces a TH1 "htemp" used for axes/title
+  // regardless whether we draw a graph or a histogram, a histogram is always used by TTree::Draw to draw axes and title
+  // we attempt to keep it to do some modifications later
   TH1* background = nullptr;
   bool firstGraphInPlot = true;
-
+  // by "graph" we consider anything we can draw, not necessarily TGraph, and we draw all on the same canvas
   for (const auto& graphConfig : plotConfig.graphs) {
-    // plotOrder: 1 -> histogram; 2 -> graph; >=3 -> multi-dim
+    // we determine the order of the plotConfig, i.e. if it is a histogram (1), graphConfig (2), or any higher dimension.
     const size_t plotOrder = std::count(graphConfig.varexp.begin(), graphConfig.varexp.end(), ':') + 1;
 
-    // Add "SAME" from the second draw on this canvas
+    // having "SAME" at the first TTree::Draw() call will not work, we have to add it only in subsequent Draw calls
     std::string option = firstGraphInPlot ? graphConfig.option : "SAME " + graphConfig.option;
 
     // Draw main series
     mTrend->Draw(graphConfig.varexp.c_str(), graphConfig.selection.c_str(), option.c_str());
 
-    // Optionally draw errors (xerr, yerr) as TGraphErrors on top
+    // For graphs, we allow to draw errors if they are specified.
     TGraphErrors* graphErrors = nullptr;
-    if (!graphConfig.errors.empty()) {
-      if (plotOrder == 2) {
+    if (plotOrder != 2) {
+      ILOG(Error, Support) << "Non empty graphErrors seen for the plotConfig '" << plotConfig.name << "', which is not a graphConfig, ignoring." << ENDM;
+    } else {
+      // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
         std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
         mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
-        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(),
-                                       mTrend->GetVal(1), mTrend->GetVal(0),
+        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
                                        mTrend->GetVal(2), mTrend->GetVal(3));
         graphErrors->SetName((graphConfig.name + "_errors").c_str());
         graphErrors->SetTitle((graphConfig.title + " errors").c_str());
         graphErrors->Draw("SAME E");
-      } else {
-        ILOG(Error, Support) << "Non-empty 'errors' for plot '" << plotConfig.name
-                             << "' but varexp is not a 2D graph; ignoring errors." << ENDM;
-      }
-    }
-
-    // Style objects after Draw so we override palette/auto styling when requested
-    if (plotOrder >= 2) {
-      if (auto* gr = getLastDrawnGraph()) {
-        applyStyleToGraph(gr, graphConfig.style);
-        // Keep errors visually consistent with the main series
-        if (graphErrors) {
-          applyStyleToGraph(graphErrors, graphConfig.style);
-        }
-      }
     }
 
     // Handle axes/title carrier histogram
@@ -449,15 +416,25 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
         htemp->SetName("background");
         htemp->SetTitle("background");
       }
+      // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
+      // so we have to do it here.
       htemp->BufferEmpty();
-      if (!background) background = htemp;
+      if (!background) { background = htemp; }
     }
 
-    // Legend entry for graphs
-    if (auto* gr = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
-      gr->SetName(graphConfig.name.c_str());
-      gr->SetTitle(graphConfig.title.c_str());
-      legend->AddEntry(gr, graphConfig.title.c_str(),
+    // Legend entry and styling for graphs
+    if (auto* graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
+      if (plotOrder >= 2) {
+        // Style objects after Draw so we override palette/auto styling when requested
+        applyStyleToGraph(graph, graphConfig.style);
+        // Keep errors visually consistent with the main series
+        if (graphErrors) {
+          applyStyleToGraph(graphErrors, graphConfig.style);
+        }
+      }
+      graph->SetName(graphConfig.name.c_str());
+      graph->SetTitle(graphConfig.title.c_str());
+      legend->AddEntry(graph, graphConfig.title.c_str(),
                        deduceGraphLegendOptions(graphConfig).c_str());
     }
 
