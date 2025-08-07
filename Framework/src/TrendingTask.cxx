@@ -485,7 +485,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
     ILOG(Error, Devel) << "Could not get the htemp histogram of the plotConfig '" << plotConfig.name << "'." << ENDM;
   }
 
-  if (plotConfig.graphs.size() > 1 || plotConfig.legend.enabled) {
+  if (plotConfig.graphs.size() > 1 && plotConfig.legend.enabled) {
     legend->Draw();
   } else {
     delete legend;
