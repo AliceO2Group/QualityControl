@@ -20,128 +20,23 @@
 #include <any>
 #include <concepts>
 #include <functional>
-#include <iterator>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
+#include <ranges>
+#include <type_traits>
 
 namespace o2::quality_control::core
 {
 
-class MonitorObject;
+template <typename Function, typename Result, typename... Args>
+concept invocable_r = std::invocable<Function, Args...> && std::same_as<std::invoke_result_t<Function, Args...>, Result>;
 
 class Data
 {
-  // change this for boost::flat_map? or do a magic and split by different keys?
-  using InternalContainer = std::map<std::string, std::any, std::less<>>;
-  using InternalContainerConstIterator = InternalContainer::const_iterator;
-
-  template <typename T>
-  using value_type = std::pair<std::reference_wrapper<const std::string>, std::reference_wrapper<const T>>;
-
-  template <typename T>
-  struct NoPredicateIncrementPolicy {
-    bool increment(const InternalContainerConstIterator& it, std::optional<value_type<T>>& val)
-    {
-      if (auto* casted = std::any_cast<T>(&it->second); casted != nullptr) {
-        val.emplace(it->first, *casted);
-        return true;
-      }
-      return false;
-    }
-  };
-
-  template <typename T, std::predicate<const T&> Pred>
-  struct PredicateIncrementPolicy {
-    Pred filter;
-    bool increment(const InternalContainerConstIterator& it, std::optional<value_type<T>>& val)
-    {
-      if (auto* casted = std::any_cast<T>(&it->second); casted != nullptr) {
-        if (filter(*casted)) {
-          val.emplace(it->first, *casted);
-          return true;
-        }
-      }
-      return false;
-    }
-  };
-
  public:
-  template <typename T, typename IncrementalPolicy = NoPredicateIncrementPolicy<T>>
-  class Iterator
-  {
-   public:
-    using value_type = std::pair<std::reference_wrapper<const std::string>, std::reference_wrapper<const T>>;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category = std::forward_iterator_tag;
-    using reference = const value_type&;
-    using pointer = const value_type*;
-
-   private:
-   public:
-    Iterator() = default;
-    Iterator(const InternalContainerConstIterator& it, const InternalContainerConstIterator& end, const IncrementalPolicy& policy = {})
-      : mIt{ it }, mEnd{ end }, mVal{ std::nullopt }
-    {
-      seek_next_valid(mIt);
-    }
-
-    reference operator*() const
-    {
-      return mVal.value();
-    }
-
-    pointer operator->() const
-    {
-      return &mVal.value();
-    }
-
-    Iterator& operator++()
-    {
-      // TODO: can this check be optimised out?
-      if (mIt != mEnd) {
-        seek_next_valid(++mIt);
-      }
-      return *this;
-    }
-
-    Iterator operator++(int)
-    {
-      auto tmp = *this;
-      ++*this;
-      return tmp;
-    }
-
-    bool operator==(const Iterator& other) const
-    {
-      return mIt == other.mIt;
-    }
-
-   private:
-    InternalContainerConstIterator mIt;
-    InternalContainerConstIterator mEnd;
-    IncrementalPolicy mPolicy;
-    std::optional<value_type> mVal;
-
-    void seek_next_valid(InternalContainerConstIterator& startingIt)
-    {
-      for (; startingIt != mEnd; ++startingIt) {
-        if (mPolicy.increment(startingIt, mVal)) {
-          break;
-        }
-      }
-    }
-  };
-
-  template <typename T, std::predicate<const T&> P>
-  using FilteringIterator = Iterator<T, PredicateIncrementPolicy<T, P>>;
-
-  static_assert(std::forward_iterator<Iterator<int>>);
-
   Data() = default;
-  Data(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 
   template <typename Result>
   std::optional<Result> get(std::string_view key)
@@ -154,83 +49,73 @@ class Data
     return std::nullopt;
   }
 
-  template <typename StoreType>
-  void insert(std::string_view key, const StoreType& value)
+  template <typename T, typename... Args>
+  void emplace(std::string_view key, Args&&... args)
+  {
+    mObjects.emplace(key, std::any{ std::in_place_type<T>, std::forward<Args>(args)... });
+  }
+
+  template <typename T>
+  void insert(std::string_view key, const T& value)
   {
     mObjects.insert({ std::string{ key }, value });
   }
 
   template <typename T>
-  struct Range {
-    Iterator<T> begin_it;
-    Iterator<T> end_it;
-    Iterator<T> begin() { return begin_it; }
-    Iterator<T> end() { return end_it; }
-  };
-
-  template <typename T>
-  Range<T> iterate() const noexcept
+  static const T* any_cast_try_shared_ptr(const std::any& value)
   {
-    return {
-      .begin_it = begin<T>(),
-      .end_it = end<T>()
-    };
-  }
-
-  template <typename T, std::predicate<const T&> P>
-  struct FilteredRange {
-    FilteringIterator<T, P> begin_it;
-    FilteringIterator<T, P> end_it;
-    FilteringIterator<T, P> begin() { return begin_it; }
-    FilteringIterator<T, P> end() { return end_it; }
-  };
-
-  template <typename Type, std::predicate<const Type&> Pred>
-  FilteredRange<Type, Pred> iterateAndFilter(Pred&& filter) const noexcept
-  {
-    return FilteredRange<Type, Pred>{
-      .begin_it = begin<Type, Pred>(std::forward<Pred>(filter)),
-      .end_it = end<Type, Pred>(std::forward<Pred>(filter))
-    };
-  }
-
-  size_t size();
-
-  template <typename T>
-  Iterator<T> begin() const noexcept
-  {
-    return { mObjects.begin(), mObjects.end() };
-  }
-
-  template <typename T, std::predicate<const T&> P>
-  FilteringIterator<T, P> begin(P&& filter) const noexcept
-  {
-    return { mObjects.begin(), mObjects.end(), PredicateIncrementPolicy<T, P>(filter) };
-  }
-
-  template <typename T>
-  Iterator<T> end() const noexcept
-  {
-    return { mObjects.end(), mObjects.end() };
-  }
-
-  template <typename T, std::predicate<const T&> P>
-  FilteringIterator<T, P> end(P&& filter) const noexcept
-  {
-    return { mObjects.end(), mObjects.end(), PredicateIncrementPolicy<T, P>(filter) };
-  }
-
-  template <typename Base, typename Derived>
-  static std::optional<Derived*> downcast(const Base* base)
-  {
-    if (const auto* casted = dynamic_cast<Derived*>(base); casted != nullptr) {
-      return { casted };
+    if (auto* casted = std::any_cast<std::shared_ptr<T>>(&value); casted != nullptr) {
+      return casted->get();
+    } else {
+      return std::any_cast<T>(&value);
     }
-    return std::nullopt;
+  }
+
+  template <typename T>
+  static constexpr auto any_to_specific = std::views::transform([](const auto& pair) -> std::pair<std::string_view, const T*> { return { pair.first, any_cast_try_shared_ptr<T>(pair.second) }; });
+
+  static constexpr auto filter_nullptr_in_pair = std::views::filter([](const auto& pair) { return pair.second != nullptr; });
+
+  static constexpr auto filter_nullptr = std::views::filter([](const auto* ptr) -> bool { return ptr != nullptr; });
+
+  static constexpr auto pair_to_reference = std::views::transform([](const auto& pair) -> const auto& { return *pair.second; });
+
+  static constexpr auto pair_to_value = std::views::transform([](const auto& pair) { return pair.second; });
+
+  static constexpr auto pointer_to_reference = std::views::transform([](const auto* ptr) -> auto& { return *ptr; });
+
+  template <typename T>
+  auto iterateByType() const
+  {
+    return mObjects | any_to_specific<T> | filter_nullptr_in_pair | pair_to_reference;
+  }
+
+  template <typename T, std::predicate<const std::pair<std::string_view, const T*>&> Pred>
+  auto iterateByTypeAndFilter(Pred&& filter) const
+  {
+    return mObjects | any_to_specific<T> | filter_nullptr_in_pair | std::views::filter(filter) | pair_to_reference;
+  }
+
+  template <typename StoredType, typename ResultingType, std::predicate<const std::pair<std::string_view, const StoredType*>&> Pred, invocable_r<const ResultingType*, const StoredType*> Transform>
+  auto iterateByTypeFilterAndTransform(Pred&& filter, Transform&& transform) const
+  {
+    return mObjects |
+           any_to_specific<StoredType> |
+           filter_nullptr_in_pair |
+           std::views::filter(filter) |
+           pair_to_value |
+           std::views::transform(transform) |
+           filter_nullptr |
+           pointer_to_reference;
+  }
+
+  size_t size() const noexcept
+  {
+    return mObjects.size();
   }
 
  private:
-  InternalContainer mObjects;
+  std::map<std::string, std::any, std::less<>> mObjects;
 };
 
 } // namespace o2::quality_control::core
