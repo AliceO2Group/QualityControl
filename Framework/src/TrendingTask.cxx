@@ -142,18 +142,11 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
   }
 }
 
-Color_t TrendingTask::resolveColor(int idx) {
-  if (idx >= 0) {
-    return static_cast<Color_t>(idx);
-  }
-  return static_cast<Color_t>(-1);
-}
-
 void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style) {
   if (!graph) { return; }
-  const Color_t lineColor = resolveColor(style.lineColor);
-  const Color_t markerColor = resolveColor(style.markerColor);
-  const Color_t fillColor = resolveColor(style.fillColor);
+  const Color_t lineColor = style.lineColor;
+  const Color_t markerColor = style.markerColor;
+  const Color_t fillColor = style.fillColor;
 
   if (lineColor >= 0) { graph->SetLineColor(lineColor); }
   if (style.lineStyle >= 0) { graph->SetLineStyle(style.lineStyle); }
@@ -338,7 +331,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 
   // Legend (NDC coordinates if enabled in config)
   TLegend* legend = nullptr;
-  if (plotConfig.legend.enabled) {
+  if (plotConfig.legend.x1 && plotConfig.legend.y1 && plotConfig.legend.x2 && plotConfig.legend.y2) {
     legend = new TLegend(plotConfig.legend.x1, plotConfig.legend.y1,
                          plotConfig.legend.x2, plotConfig.legend.y2,
                          /*header=*/nullptr, /*option=*/"NDC");
@@ -419,6 +412,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       } else {
         htemp->SetName("background");
         htemp->SetTitle("background");
+        // htemp was used by TTree::Draw only to draw axes and title, not to plot data, no need to add it to legend
       }
       // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
       // so we have to do it here.
@@ -432,7 +426,8 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
   c->SetName(plotConfig.name.c_str());
   c->SetTitle(plotConfig.title.c_str());
 
-  // Post-process: title, axes labels, time axis formatting, y-range
+  // Postprocessing the plotConfig - adding specified titles, configuring time-based plots, flushing buffers.
+  // Notice that axes and title are drawn using a histogram, even in the case of graphs.
   if (background) {
     // The title of background histogram is printed, not the title of canvas => we set it as well.
     background->SetTitle(plotConfig.title.c_str());
@@ -452,13 +447,11 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       setUserAxesLabels(background->GetXaxis(), background->GetYaxis(), plotConfig.graphAxisLabel);
     }
 
-    if (!plotConfig.graphs.empty()) {
-      const auto& lastVar = plotConfig.graphs.back().varexp;
-      if (lastVar.find(":time") != std::string::npos) {
-        formatTimeXAxis(background);
-      } else if (lastVar.find(":meta.runNumber") != std::string::npos) {
-        formatRunNumberXAxis(background);
-      }
+    if (plotConfig.graphs.back().varexp.find(":time") != std::string::npos) {
+      // We have to explicitly configure showing time on x axis.
+      formatTimeXAxis(background);
+    } else if (plotConfig.graphs.back().varexp.find(":meta.runNumber") != std::string::npos) {
+      formatRunNumberXAxis(background);
     }
 
     // Set the user-defined range on the y axis if needed.
@@ -471,7 +464,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
     ILOG(Error, Devel) << "Could not get the htemp histogram of the plotConfig '" << plotConfig.name << "'." << ENDM;
   }
 
-  if (plotConfig.graphs.size() > 1 && plotConfig.legend.enabled) {
+  if (plotConfig.graphs.size() > 1) {
     legend->Draw();
   } else {
     delete legend;
