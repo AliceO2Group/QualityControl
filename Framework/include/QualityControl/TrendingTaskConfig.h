@@ -39,6 +39,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
   // https://root.cern/doc/master/classTAttMarker.html
   // line styles are as defined by ROOT TAttLine class
   // https://root.cern/doc/master/classTAttLine.html
+  // WARNING: Any parameters in this struct will override colliding parameters in option
   struct GraphStyle {
     int   lineColor   = -1;
     int   lineStyle   = -1;

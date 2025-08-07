@@ -478,7 +478,8 @@ The specific options are:
   * `markerSize` ~ size of the marker, float as defined by ROOT [TAttMarker class](https://root.cern/doc/master/classTAttMarker.html)
   * `fillColor` ~ color of the fill, an integer as defined by ROOT [TColor class](https://root.cern/doc/master/classTColor.html)
   * `fillStyle` ~ style of the fill, integer as defined by ROOT [TAttFill class](https://root.cern/doc/master/classTAttFill.html)
-  
+
+WARNING: Any style parameters specified will override colliding parameters in option.
 
 To decide whether plots should be generated during each update or just during finalization,
 use the boolean flag `"producePlotsOnUpdate"`.
@@ -628,8 +629,8 @@ The following example specifies a threshold value common to all the plots, and t
 
 ```json
         "extendedCheckParameters": {
-          "default": {    
-            "default": {    
+          "default": {  
+            "default": {  
               "moduleName" : "QualityControl",
               "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
               "threshold" : "0.5",
@@ -716,8 +717,8 @@ In the example configuration below, the relationship between the input and outpu
         "detectorName": "MCH",
         "policy": "OnAny",
         "extendedCheckParameters": {
-          "default": {    
-            "default": {    
+          "default": {  
+            "default": {  
               "moduleName" : "QualityControl",
               "comparatorName" : "o2::quality_control_modules::common::ObjectComparatorChi2",
               "threshold" : "0.5",
@@ -974,8 +975,8 @@ The task is configured as follows:
         "moduleName": "QualityControl",
         "detectorName": "GLO",
         "extendedTaskParameters": {
-          "default": {    
-            "default": {    
+          "default": {  
+            "default": {  
               "nRows": "4",
               "nCols": "5",
               "borderWidth": "1",
