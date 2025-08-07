@@ -18,6 +18,7 @@
 #include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Data.h"
+#include "QualityControl/DataAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -27,7 +28,7 @@ namespace o2::quality_control::checker
 
 core::Quality CheckInterface::check(std::map<std::string, std::shared_ptr<core::MonitorObject>>* moMap)
 {
-  Data data(*moMap);
+  auto data = createData(*moMap);
   return check(data);
 };
 

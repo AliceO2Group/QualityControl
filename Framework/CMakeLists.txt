@@ -137,7 +137,7 @@ add_library(O2QualityControl
   src/KafkaPoller.cxx
   src/FlagHelpers.cxx
   src/ObjectMetadataHelpers.cxx
-  src/Data.cxx
+  src/DataAdapters.cxx
 )
 
 target_include_directories(

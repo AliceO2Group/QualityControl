@@ -10,24 +10,22 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Data.h
+/// \file   DataAdapters.cxx
 /// \author Michal Tichak
 ///
 
-#include "QualityControl/Data.h"
+#include "QualityControl/DataAdapters.h"
 
 namespace o2::quality_control::core
 {
-Data::Data(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
-{
-  for (const auto& [key, mo] : moMap) {
-    insert(key, mo);
-  }
-}
 
-size_t Data::size()
+Data createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
-  return mObjects.size();
+  Data data;
+  for (const auto& [key, mo] : moMap) {
+    data.insert(key, mo);
+  }
+  return data;
 }
 
 } // namespace o2::quality_control::core
