@@ -466,8 +466,7 @@ There is also a possibility to explicitly change the legend, and line, fill and 
 The specific options are:
 
 * `legend` ~ allows to specify precise location and shape of legend, as well as disable it completely
-  * `enabled` ~ needs to be *true* to enable the manual changes to the legend
-  * `x1`, `y1`, `x2`, `y2` ~ manual coordinates of the legend box
+  * `x1`, `y1`, `x2`, `y2` ~ manual coordinates of the legend box, all need to be present for custom legend placement to take account
   * `nColumns` ~ number of columns in the legend
 * `style` ~ allows to change the style of the line and marker
   * `lineWidth` ~ width of the line, integer as defined by ROOT [TAttLine class](https://root.cern/doc/master/classTAttLine.html)
@@ -477,12 +476,12 @@ The specific options are:
   * `markerStyle` ~ style of the marker, integer as defined by ROOT [TAttMarker class](https://root.cern/doc/master/classTAttMarker.html)
   * `markerSize` ~ size of the marker, float as defined by ROOT [TAttMarker class](https://root.cern/doc/master/classTAttMarker.html)
   * `fillColor` ~ color of the fill, an integer as defined by ROOT [TColor class](https://root.cern/doc/master/classTColor.html)
-  * `fillStyle` ~ style of the fill, integer as defined by ROOT [TAttFill class](https://root.cern/doc/master/classTAttFill.html)
+  * `fillStyle` e~ style of the fill, integer as defined by ROOT [TAttFill class](https://root.cern/doc/master/classTAttFill.html)
 
 WARNING: Any style parameters specified will override colliding parameters in option.
 
 To decide whether plots should be generated during each update or just during finalization,
-use the boolean flag `"producePlotsOnUpdate"`.
+use the boolean flag `"producePlotnd placsOnUpdate"`.
 
 To pick up the last existing trend which matches the specified Activity, set `"resumeTrend"` to `"true"`.
 
