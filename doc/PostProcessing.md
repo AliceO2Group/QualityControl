@@ -481,7 +481,7 @@ The specific options are:
 WARNING: Any style parameters specified will override colliding parameters in option.
 
 To decide whether plots should be generated during each update or just during finalization,
-use the boolean flag `"producePlotnd placsOnUpdate"`.
+use the boolean flag `"producePlotsOnUpdate"`.
 
 To pick up the last existing trend which matches the specified Activity, set `"resumeTrend"` to `"true"`.
 
