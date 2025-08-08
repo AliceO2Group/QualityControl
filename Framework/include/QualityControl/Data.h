@@ -64,11 +64,21 @@ class Data
   template <typename T>
   static const T* any_cast_try_shared_ptr(const std::any& value)
   {
+    // sadly it is necessary to check for any of these types if we want to test for
+    // shared_ptr, raw ptr and a value
     if (auto* casted = std::any_cast<std::shared_ptr<T>>(&value); casted != nullptr) {
       return casted->get();
-    } else {
-      return std::any_cast<T>(&value);
     }
+    if (auto* casted = std::any_cast<std::shared_ptr<const T>>(&value); casted != nullptr) {
+      return casted->get();
+    }
+    if (auto* casted = std::any_cast<T*>(&value); casted != nullptr) {
+      return *casted;
+    }
+    if (auto* casted = std::any_cast<const T*>(&value); casted != nullptr) {
+      return *casted;
+    }
+    return std::any_cast<T>(&value);
   }
 
   template <typename T>
