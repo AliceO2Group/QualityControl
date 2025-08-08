@@ -49,11 +49,11 @@ class FECSyncStatusPlotter : public HistPlotter
     histograms().emplace_back(HistInfo{ h, drawOptions, displayHints });
   }
 
-  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
-  o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
+  o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
 
   std::unique_ptr<TH1F> mGoodBoardsFractionPerDE; ///< fraction of out-of-sync DS boards per detection element
-  std::unique_ptr<TH1F> mGoodTFFractionPerDE;     ///< fraction of out-of-sync DS boards per chamber
+  std::unique_ptr<TH1F> mGoodTFFractionPerDE;     ///< fraction of in-sync TFs per DS boards, averaged on detection elements
+  std::unique_ptr<TH1F> mGoodTFFractionPerSolar;  ///< fraction of in-sync TFs per DS boards, averaged on SOLAR boards
 };
 
 } // namespace muonchambers

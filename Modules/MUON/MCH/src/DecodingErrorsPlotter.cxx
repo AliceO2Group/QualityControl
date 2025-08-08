@@ -60,7 +60,13 @@ DecodingErrorsPlotter::DecodingErrorsPlotter(std::string path) : mPath(path)
   // Number of decoding errors, grouped by FEE ID and normalized to the number of processed TF
   mHistogramGoodBoardsPerDE = std::make_unique<TH1F>(TString::Format("%sGoodBoardsFractionPerDE", path.c_str()),
                                                      "Fraction of boards not in error", getNumDE(), 0, getNumDE());
+  addDEBinLabels(mHistogramGoodBoardsPerDE.get());
   addHisto(mHistogramGoodBoardsPerDE.get(), false, "", "");
+
+  mHistogramGoodBoardsPerSolar = std::make_unique<TH1F>(TString::Format("%sGoodBoardsFractionPerSolar", path.c_str()),
+                                                        "Fraction of boards not in error per SOLAR board", getNumSolar(), 0, getNumSolar());
+  addSolarBinLabels(mHistogramGoodBoardsPerSolar.get());
+  addHisto(mHistogramGoodBoardsPerSolar.get(), false, "", "");
 
   //--------------------------------------------
   // Decoding errors per chamber, DE and FEEID
@@ -122,7 +128,8 @@ void DecodingErrorsPlotter::update(TH2F* h)
   mHistogramErrorsPerDE->Reset("ICES");
   mHistogramErrorsPerChamber->Reset("ICES");
 
-  std::array<std::pair<float, float>, getNumDE()> goodBoardsFraction;
+  std::array<std::pair<float, float>, getNumDE()> goodBoardsFractionPerDE;
+  std::array<std::pair<float, float>, getNumSolar()> goodBoardsFractionPerSolar;
 
   // loop over bins in electronics coordinates, and map the channels to the corresponding cathode pads
   int nbinsx = h->GetXaxis()->GetNbins();
@@ -144,15 +151,20 @@ void DecodingErrorsPlotter::update(TH2F* h)
     // where one bin is one physical pad
     // get the unique solar ID and the DS address associated to this digit
     int feeId = -1;
+    int solarId = -1;
     std::optional<DsElecId> dsElecId = mDet2ElecMapper(dsDetId);
     if (dsElecId) {
-      uint32_t solarId = dsElecId->solarId();
+      solarId = dsElecId->solarId();
       uint32_t dsAddr = dsElecId->elinkId();
 
       std::optional<FeeLinkId> feeLinkId = mSolar2FeeLinkMapper(solarId);
       if (feeLinkId) {
         feeId = feeLinkId->feeId();
       }
+    }
+    int solarIndex = (solarId >= 0) ? getSolarIndex(solarId) : -1;
+    if (solarIndex < 0) {
+      continue;
     }
 
     bool hasError = false;
@@ -171,19 +183,31 @@ void DecodingErrorsPlotter::update(TH2F* h)
       incrementBin(mHistogramErrorsPerChamber.get(), chamber, j, count);
     }
 
-    goodBoardsFraction[deIndex].first += 1;
+    goodBoardsFractionPerDE[deIndex].first += 1;
+    goodBoardsFractionPerSolar[solarIndex].first += 1;
     if (!hasError) {
-      goodBoardsFraction[deIndex].second += 1;
+      goodBoardsFractionPerDE[deIndex].second += 1;
+      goodBoardsFractionPerSolar[solarIndex].second += 1;
     }
   }
 
   // update fraction of good boards per DE
   for (int i = 0; i < getNumDE(); i++) {
-    if (goodBoardsFraction[i].first > 0) {
-      float frac = goodBoardsFraction[i].second / goodBoardsFraction[i].first;
+    if (goodBoardsFractionPerDE[i].first > 0) {
+      float frac = goodBoardsFractionPerDE[i].second / goodBoardsFractionPerDE[i].first;
       mHistogramGoodBoardsPerDE->SetBinContent(i + 1, frac);
     } else {
       mHistogramGoodBoardsPerDE->SetBinContent(i + 1, 0);
+    }
+  }
+
+  // update fraction of good boards per Solar
+  for (int i = 0; i < getNumSolar(); i++) {
+    if (goodBoardsFractionPerSolar[i].first > 0) {
+      float frac = goodBoardsFractionPerSolar[i].second / goodBoardsFractionPerSolar[i].first;
+      mHistogramGoodBoardsPerSolar->SetBinContent(i + 1, frac);
+    } else {
+      mHistogramGoodBoardsPerSolar->SetBinContent(i + 1, 0);
     }
   }
 }

@@ -19,11 +19,8 @@
 #ifndef QC_MODULE_MCH_PP_PRECLUSTERS_H
 #define QC_MODULE_MCH_PP_PRECLUSTERS_H
 
-#include "QualityControl/PostProcessingInterface.h"
-
 #include "MCH/PostProcessingConfigMCH.h"
 #include "MCH/Helpers.h"
-#include "Common/TH2Ratio.h"
 #include "MCH/HistoOnCycle.h"
 #include "MCH/EfficiencyPlotter.h"
 #include "MCH/EfficiencyTrendsPlotter.h"
@@ -31,6 +28,8 @@
 #include "MCH/ClusterSizeTrendsPlotter.h"
 #include "MCH/ClusterChargePlotter.h"
 #include "MCH/ClusterChargeTrendsPlotter.h"
+#include "Common/ReferenceComparatorTask.h"
+#include "Common/TH2Ratio.h"
 
 namespace o2::quality_control::repository
 {
@@ -45,7 +44,7 @@ namespace o2::quality_control_modules::muonchambers
 {
 
 /// \brief  A post-processing task which processes and trends MCH pre-clusters and produces plots.
-class PreclustersPostProcessing : public PostProcessingInterface
+class PreclustersPostProcessing : public ReferenceComparatorTask
 {
  public:
   PreclustersPostProcessing() = default;
@@ -72,6 +71,8 @@ class PreclustersPostProcessing : public PostProcessingInterface
   static std::string effSourceName() { return "eff"; }
   static std::string clusterChargeSourceName() { return "clcharge"; }
   static std::string clusterSizeSourceName() { return "clsize"; }
+
+  TH1* getHistogram(std::string_view plotName);
 
   bool mFullHistos{ false };
   bool mEnableLastCycleHistos{ false };
@@ -102,7 +103,10 @@ class PreclustersPostProcessing : public PostProcessingInterface
   std::unique_ptr<ClusterChargeTrendsPlotter> mClusterChargeTrendsPlotter;
   std::unique_ptr<ClusterSizeTrendsPlotter> mClusterSizeTrendsPlotter;
 
-  std::unique_ptr<TH2F> mHistogramQualityPerDE; ///< quality flags for each DE, to be filled by checker task
+  std::unique_ptr<TH2F> mHistogramQualityPerDE;    ///< quality flags for each DE, to be filled by checker task
+  std::unique_ptr<TH2F> mHistogramQualityPerSolar; ///< quality flags for each SOLAR, to be filled by checker task
+
+  std::vector<TH1*> mHistogramsAll;
 };
 
 template <typename T>
