@@ -118,7 +118,7 @@ TEST_CASE("Data - iterateByTypeFilterAndTransform", "[Data]")
   REQUIRE(count == 1);
 }
 
-TEST_CASE("Data - Monitor adaptors", "[Data]")
+TEST_CASE("Data - Monitor adaptors MOs", "[Data]")
 {
   auto* h1 = new TH1F("th11", "th11", 100, 0, 99);
   std::shared_ptr<MonitorObject> mo1 = std::make_shared<MonitorObject>(h1, "taskname", "class1", "TST");
@@ -135,12 +135,51 @@ TEST_CASE("Data - Monitor adaptors", "[Data]")
   REQUIRE(data.size() == 2);
 
   auto filteredHistos = iterateMOsFilterByNameAndTransform<TH1F>(data, "th11");
-  std::vector result(filteredHistos.begin(), filteredHistos.end());
-  // REQUIRE(!filteredHistos.empty());
+  REQUIRE(!filteredHistos.empty());
   size_t count{};
-  for (const auto& histo1d : result) {
+  for (const auto& histo1d : filteredHistos) {
     REQUIRE(std::string_view{ histo1d.GetName() } == "th11");
     ++count;
   }
   REQUIRE(count == 1);
+}
+
+TEST_CASE("Data - Monitor adaptors QOs", "[Data]")
+{
+  QualityObjectsMapType qoMap;
+  qoMap["1"] = std::make_shared<QualityObject>(Quality::Good, "1");
+  qoMap["2"] = std::make_shared<QualityObject>(Quality::Good, "2");
+
+  auto data = createData(qoMap);
+
+  REQUIRE(data.size() == 2);
+
+  auto filteredObjects = data.iterateByType<QualityObject>();
+  REQUIRE(!filteredObjects.empty());
+  size_t count{};
+  for (const auto& qo : filteredObjects) {
+    const auto& name = qo.getName();
+    REQUIRE((name == "1" || name == "2"));
+    ++count;
+  }
+  REQUIRE(count == 2);
+}
+
+TEST_CASE("Data - raw pointers", "[Data]")
+{
+  Data data;
+  int a = 1;
+  int b = 2;
+  data.insert("1", &a);
+  data.insert("2", &b);
+
+  auto ints = data.iterateByType<int>();
+  REQUIRE(!ints.empty());
+
+  size_t count{};
+  for (const auto& v : ints) {
+    REQUIRE((v == 1 || v == 2));
+    ++count;
+  }
+  REQUIRE(count == 2);
 }

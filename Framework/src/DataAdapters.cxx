@@ -28,4 +28,13 @@ Data createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moM
   return data;
 }
 
+Data createData(const QualityObjectsMapType& qoMap)
+{
+  Data data;
+  for (const auto& [key, qo] : qoMap) {
+    data.insert(key, qo);
+  }
+  return data;
+}
+
 } // namespace o2::quality_control::core
