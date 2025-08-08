@@ -73,7 +73,6 @@ class TrendingTask : public PostProcessingInterface
   static void formatTimeXAxis(TH1* background);
   static void formatRunNumberXAxis(TH1* background);
   static std::string deduceGraphLegendOptions(const TrendingTaskConfig::Graph& graphConfig);
-  static Color_t resolveColor(int idx);
   static void applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style);
 
   /// returns true only if all datasources were available to update reductor

@@ -147,12 +147,9 @@ void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::Gr
   if (!graph) {
     return;
   }
-  const Color_t lineColor = style.lineColor;
-  const Color_t markerColor = style.markerColor;
-  const Color_t fillColor = style.fillColor;
 
-  if (lineColor >= 0) {
-    graph->SetLineColor(lineColor);
+  if (style.lineColor >= 0) {
+    graph->SetLineColor(style.lineColor);
   }
   if (style.lineStyle >= 0) {
     graph->SetLineStyle(style.lineStyle);
@@ -161,8 +158,8 @@ void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::Gr
     graph->SetLineWidth(style.lineWidth);
   }
 
-  if (markerColor >= 0) {
-    graph->SetMarkerColor(markerColor);
+  if (style.markerColor >= 0) {
+    graph->SetMarkerColor(style.markerColor);
   }
   if (style.markerStyle >= 0) {
     graph->SetMarkerStyle(style.markerStyle);
@@ -171,8 +168,8 @@ void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::Gr
     graph->SetMarkerSize(style.markerSize);
   }
 
-  if (fillColor >= 0) {
-    graph->SetFillColor(fillColor);
+  if (style.fillColor >= 0) {
+    graph->SetFillColor(style.fillColor);
   }
   if (style.fillStyle >= 0) {
     graph->SetFillStyle(style.fillStyle);
