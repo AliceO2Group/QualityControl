@@ -91,17 +91,17 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishObject(mHistogramClusterCharge.get(), "colz", false);
 
   mHistogramClusterChargePerStation[0] = std::make_unique<TH2F>("ClusterCharge/ClusterChargeDistributionB",
-                                                                "Cluster charge distribution (B)",
+                                                                "Pre-cluster charge distribution (B)",
                                                                 256, 0, 256 * 50, 5, 1, 6);
   publishObject(mHistogramClusterChargePerStation[0].get(), "colz", false);
 
   mHistogramClusterChargePerStation[1] = std::make_unique<TH2F>("ClusterCharge/ClusterChargeDistributionNB",
-                                                                "Cluster charge distribution (NB)",
+                                                                "Pre-cluster charge distribution (NB)",
                                                                 256, 0, 256 * 50, 5, 1, 6);
   publishObject(mHistogramClusterChargePerStation[1].get(), "colz", false);
 
   mHistogramClusterChargePerStation[2] = std::make_unique<TH2F>("ClusterCharge/ClusterChargeDistribution",
-                                                                "Cluster charge distribution",
+                                                                "Pre-cluster charge distribution",
                                                                 256, 0, 256 * 50, 5, 1, 6);
   publishObject(mHistogramClusterChargePerStation[2].get(), "colz", false);
 
@@ -115,17 +115,17 @@ void PreclustersTask::initialize(o2::framework::InitContext& /*ctx*/)
   publishObject(mHistogramClusterSize.get(), "colz", false);
 
   mHistogramClusterSizePerStation[0] = std::make_unique<TH2F>("ClusterSize/ClusterSizeDistributionB",
-                                                              "Cluster size distribution (B)",
+                                                              "Pre-cluster size distribution (B)",
                                                               50, 0, 50, 5, 1, 6);
   publishObject(mHistogramClusterSizePerStation[0].get(), "colz", false);
 
   mHistogramClusterSizePerStation[1] = std::make_unique<TH2F>("ClusterSize/ClusterSizeDistributionNB",
-                                                              "Cluster size distribution (NB)",
+                                                              "Pre-cluster size distribution (NB)",
                                                               50, 0, 50, 5, 1, 6);
   publishObject(mHistogramClusterSizePerStation[1].get(), "colz", false);
 
   mHistogramClusterSizePerStation[2] = std::make_unique<TH2F>("ClusterSize/ClusterSizeDistribution",
-                                                              "Cluster size distribution",
+                                                              "Pre-cluster size distribution",
                                                               50, 0, 50, 5, 1, 6);
   publishObject(mHistogramClusterSizePerStation[2].get(), "colz", false);
 
@@ -299,6 +299,7 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
   auto stationId = ((chamberId - 1) / 2) + 1;
 
   if (stationId < 1 || stationId > 5) {
+    ILOG(Info, Devel) << "[PreclustersTask::plotPrecluster()] wrong station ID for DE" << deId << AliceO2::InfoLogger::InfoLogger::endm;
     return;
   }
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(deId);
@@ -341,6 +342,10 @@ void PreclustersTask::plotPrecluster(const o2::mch::PreCluster& preCluster, gsl:
   if (segment.findPadPairByPosition(Xcog, Ycog, padIdB, padIdNB)) {
     getFecChannel(deId, padIdB, fecIdB, channelB);
     getFecChannel(deId, padIdNB, fecIdNB, channelNB);
+  } else {
+    ILOG(Info, Devel) << "[PreclustersTask::plotPrecluster()] could not find pad in DE" << deId
+                      << " for pre-cluster at (" << Xcog << "," << Ycog << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+    return;
   }
 
   // criteria to define a "good" charge cluster in one cathode:

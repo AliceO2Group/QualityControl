@@ -47,20 +47,40 @@ class DecodingCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  std::string mGoodFracHistName{ "DecodingErrors/LastCycle/GoodBoardsFractionPerDE" };
-  std::string mSyncFracHistName{ "SyncErrors/LastCycle/SyncedBoardsFractionPerDE" };
+  std::string mGoodFracHistName{ "DecodingErrors/GoodBoardsFractionPerDE" };
+  std::string mGoodFracPerSolarHistName{ "DecodingErrors/GoodBoardsFractionPerSolar" };
+  std::string mSyncFracHistName{ "SyncErrors/SyncedBoardsFractionPerDE" };
+  std::string mSyncFracPerSolarHistName{ "SyncErrors/SyncedBoardsFractionPerSolar" };
+  std::string mGoodFracRefCompHistName{ "DecodingErrors/RefComp/GoodBoardsFractionPerDE" };
+  std::string mGoodFracPerSolarRefCompHistName{ "DecodingErrors/RefComp/GoodBoardsFractionPerSolar" };
+  std::string mSyncFracRefCompHistName{ "SyncErrors/RefComp/SyncedBoardsFractionPerDE" };
+  std::string mSyncFracPerSolarRefCompHistName{ "SyncErrors/RefComp/SyncedBoardsFractionPerSolar" };
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
   double mMinGoodErrorFrac{ 0.9 };
   std::array<std::optional<double>, 5> mMinGoodErrorFracPerStation;
+  double mMinGoodErrorFracPerSolar{ 0.5 };
+  double mMinGoodErrorFracRatio{ 0.9 };
+  double mMinGoodErrorFracRatioPerSolar{ 0.9 };
+
   double mMinGoodSyncFrac{ 0.9 };
   std::array<std::optional<double>, 5> mMinGoodSyncFracPerStation;
+  double mMinGoodSyncFracPerSolar{ 0.5 };
+  double mMinGoodSyncFracRatio{ 0.9 };
+  double mMinGoodSyncFracRatioPerSolar{ 0.9 };
+
   double mMinHeartBeatRate{ 0 };
   double mMaxHeartBeatRate{ 2 };
 
-  QualityChecker mQualityChecker;
+  double mGoodFracRatioPlotRange{ 0.2 };
+  double mGoodFracRatioPerSolarPlotRange{ 0.2 };
+  double mSyncFracRatioPlotRange{ 0.2 };
+  double mSyncFracRatioPerSolarPlotRange{ 0.2 };
 
-  ClassDefOverride(DecodingCheck, 1);
+  QualityChecker mQualityChecker;
+  std::array<Quality, getNumSolar()> mSolarQuality;
+
+  ClassDefOverride(DecodingCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers

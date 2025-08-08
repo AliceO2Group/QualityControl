@@ -45,7 +45,9 @@ RatesPlotter::RatesPlotter(std::string path, float rateMin, float rateMax, bool 
   //----------------------------------
 
   int nbins = 100;
-  auto xbins = makeLogBinning(rateMin / 10, rateMax * 10, nbins);
+  double xMax = rateMax * 10;
+  double xMin = (rateMin > 0) ? rateMin / 10 : xMax / 1000000;
+  auto xbins = makeLogBinning(xMin, xMax, nbins);
   std::vector<double> ybins{ 1, 2, 3, 4, 5, 6 };
   mHistogramRatePerStation = std::make_unique<TH2F>(TString::Format("%sRatesDistribution", path.c_str()),
                                                     "Rates distribution",
@@ -65,7 +67,13 @@ RatesPlotter::RatesPlotter(std::string path, float rateMin, float rateMax, bool 
 
   mHistogramMeanRatePerDE = std::make_unique<TH1F>(TString::Format("%sMeanRate", path.c_str()), "Mean Rate",
                                                    getNumDE(), 0, getNumDE());
+  addDEBinLabels(mHistogramMeanRatePerDE.get());
   addHisto(mHistogramMeanRatePerDE.get(), false, "histo", "logy");
+
+  mHistogramMeanRatePerSolar = std::make_unique<TH1F>(TString::Format("%sMeanRatePerSolar", path.c_str()), "Mean Rate per SOLAR board",
+                                                      getNumSolar(), 0, getNumSolar());
+  addSolarBinLabels(mHistogramMeanRatePerSolar.get());
+  addHisto(mHistogramMeanRatePerSolar.get(), false, "histo", "logy");
 
   //----------------------------------
   // "Good" channels fraction histograms
@@ -73,7 +81,13 @@ RatesPlotter::RatesPlotter(std::string path, float rateMin, float rateMax, bool 
 
   mHistogramGoodChannelsFractionPerDE = std::make_unique<TH1F>(TString::Format("%sGoodChannelsFraction", path.c_str()),
                                                                "Good channels fraction", getNumDE(), 0, getNumDE());
+  addDEBinLabels(mHistogramGoodChannelsFractionPerDE.get());
   addHisto(mHistogramGoodChannelsFractionPerDE.get(), false, "histo", "");
+
+  mHistogramGoodChannelsFractionPerSolar = std::make_unique<TH1F>(TString::Format("%sGoodChannelsFractionPerSolar", path.c_str()),
+                                                                  "Good channels fraction per SOLAR board", getNumSolar(), 0, getNumSolar());
+  addSolarBinLabels(mHistogramGoodChannelsFractionPerSolar.get());
+  addHisto(mHistogramGoodChannelsFractionPerSolar.get(), false, "histo", "");
 
   //--------------------------------------------------
   // Rates histograms in global detector coordinates
@@ -129,6 +143,24 @@ void RatesPlotter::fillAverageHistos(TH2F* hRates)
     } else {
       mHistogramGoodChannelsFractionPerDE->SetBinContent(de + 1, 0);
       mHistogramGoodChannelsFractionPerDE->SetBinError(de + 1, 1);
+    }
+  }
+
+  for (size_t solar = 0; solar < mHistogramMeanRatePerSolar->GetXaxis()->GetNbins(); solar++) {
+    mHistogramMeanRatePerSolar->SetBinContent(solar + 1, mElecMapReductor->getSolarValue(solar));
+    mHistogramMeanRatePerSolar->SetBinError(solar + 1, 0.1);
+  }
+
+  for (size_t solar = 0; solar < mHistogramGoodChannelsFractionPerSolar->GetXaxis()->GetNbins(); solar++) {
+    float nPads = mElecMapReductor->getSolarNumPads(solar);
+    float nPadsBad = mElecMapReductor->getSolarNumPadsBad(solar) + mElecMapReductor->getSolarNumPadsNoStat(solar);
+    float nPadsGood = nPads - nPadsBad;
+    if (nPads > 0) {
+      mHistogramGoodChannelsFractionPerSolar->SetBinContent(solar + 1, nPadsGood / nPads);
+      mHistogramGoodChannelsFractionPerSolar->SetBinError(solar + 1, 0.1);
+    } else {
+      mHistogramGoodChannelsFractionPerSolar->SetBinContent(solar + 1, 0);
+      mHistogramGoodChannelsFractionPerSolar->SetBinError(solar + 1, 1);
     }
   }
 }

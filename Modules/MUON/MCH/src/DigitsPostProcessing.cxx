@@ -18,6 +18,8 @@
 
 #include "MCH/DigitsPostProcessing.h"
 #include "MUONCommon/Helpers.h"
+#include "Common/ReferenceComparatorPlot.h"
+#include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include <TDatime.h>
@@ -27,6 +29,8 @@ using namespace o2::quality_control_modules::muon;
 
 void DigitsPostProcessing::configure(const boost::property_tree::ptree& config)
 {
+  ReferenceComparatorTask::configure(config);
+
   mConfig = PostProcessingConfigMCH(getID(), config);
 }
 
@@ -42,9 +46,23 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
   mRatesPlotter = std::make_unique<RatesPlotter>("Rates/", mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  for (auto& hinfo : mRatesPlotter->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
+
   mRatesPlotterSignal.reset();
   mRatesPlotterSignal = std::make_unique<RatesPlotter>("RatesSignal/", mChannelRateMin, mChannelRateMax, true, mFullHistos);
   mRatesPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  for (auto& hinfo : mRatesPlotterSignal->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
 
   //----------------------------------
   // Rate plotters for last cycle
@@ -68,9 +86,23 @@ void DigitsPostProcessing::createRatesHistos(Trigger t, repository::DatabaseInte
     mRatesPlotterOnCycle = std::make_unique<RatesPlotter>("Rates/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
     mRatesPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+    for (auto& hinfo : mRatesPlotterOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
+
     mRatesPlotterSignalOnCycle.reset();
     mRatesPlotterSignalOnCycle = std::make_unique<RatesPlotter>("RatesSignal/LastCycle/", mChannelRateMin, mChannelRateMax, false, mFullHistos);
     mRatesPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    for (auto& hinfo : mRatesPlotterSignalOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
   }
 
   //----------------------------------
@@ -100,9 +132,23 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
   mOrbitsPlotter = std::make_unique<OrbitsPlotter>("Orbits/");
   mOrbitsPlotter->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+  for (auto& hinfo : mOrbitsPlotter->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
+
   mOrbitsPlotterSignal.reset();
   mOrbitsPlotterSignal = std::make_unique<OrbitsPlotter>("OrbitsSignal/");
   mOrbitsPlotterSignal->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+  for (auto& hinfo : mOrbitsPlotterSignal->histograms()) {
+    TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+    if (hist) {
+      mHistogramsAll.push_back(hist);
+    }
+  }
 
   //----------------------------------
   // Orbit plotters for last cycle
@@ -126,9 +172,23 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
     mOrbitsPlotterOnCycle = std::make_unique<OrbitsPlotter>("Orbits/LastCycle/");
     mOrbitsPlotterOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
 
+    for (auto& hinfo : mOrbitsPlotterOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
+
     mOrbitsPlotterSignalOnCycle.reset();
     mOrbitsPlotterSignalOnCycle = std::make_unique<OrbitsPlotter>("OrbitsSignal/LastCycle/");
     mOrbitsPlotterSignalOnCycle->publish(getObjectsManager(), core::PublicationPolicy::ThroughStop);
+
+    for (auto& hinfo : mOrbitsPlotterSignalOnCycle->histograms()) {
+      TH1* hist = dynamic_cast<TH1*>(hinfo.object);
+      if (hist) {
+        mHistogramsAll.push_back(hist);
+      }
+    }
   }
 }
 
@@ -136,6 +196,8 @@ void DigitsPostProcessing::createOrbitHistos(Trigger t, repository::DatabaseInte
 
 void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef services)
 {
+  ReferenceComparatorTask::initialize(t, services);
+
   auto& qcdb = services.get<repository::DatabaseInterface>();
   const auto& activity = t.activity;
 
@@ -177,14 +239,31 @@ void DigitsPostProcessing::initialize(Trigger t, framework::ServiceRegistryRef s
 
   mHistogramQualityPerDE.reset();
   mHistogramQualityPerDE = std::make_unique<TH2F>("QualityFlagPerDE", "Quality Flag vs DE", getNumDE(), 0, getNumDE(), 3, 0, 3);
+  addDEBinLabels(mHistogramQualityPerDE.get());
+  addChamberDelimiters(mHistogramQualityPerDE.get());
+  addChamberLabelsForDE(mHistogramQualityPerDE.get());
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(1, "Bad");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(2, "Medium");
   mHistogramQualityPerDE->GetYaxis()->SetBinLabel(3, "Good");
-  mHistogramQualityPerDE->SetOption("colz");
+  mHistogramQualityPerDE->SetOption("col");
   mHistogramQualityPerDE->SetStats(0);
   getObjectsManager()->startPublishing(mHistogramQualityPerDE.get(), core::PublicationPolicy::ThroughStop);
-  getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "colz");
+  getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerDE.get(), "col");
   getObjectsManager()->setDisplayHint(mHistogramQualityPerDE.get(), "gridy");
+
+  mHistogramQualityPerSolar.reset();
+  mHistogramQualityPerSolar = std::make_unique<TH2F>("QualityFlagPerSolar", "Quality Flag vs Solar", getNumSolar(), 0, getNumSolar(), 3, 0, 3);
+  addSolarBinLabels(mHistogramQualityPerSolar.get());
+  addChamberDelimitersToSolarHistogram(mHistogramQualityPerSolar.get());
+  addChamberLabelsForSolar(mHistogramQualityPerSolar.get());
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(1, "Bad");
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(2, "Medium");
+  mHistogramQualityPerSolar->GetYaxis()->SetBinLabel(3, "Good");
+  mHistogramQualityPerSolar->SetOption("col");
+  mHistogramQualityPerSolar->SetStats(0);
+  getObjectsManager()->startPublishing(mHistogramQualityPerSolar.get(), core::PublicationPolicy::ThroughStop);
+  getObjectsManager()->setDefaultDrawOptions(mHistogramQualityPerSolar.get(), "col");
+  getObjectsManager()->setDisplayHint(mHistogramQualityPerSolar.get(), "gridy");
 }
 
 //_________________________________________________________________________________________
@@ -269,12 +348,34 @@ void DigitsPostProcessing::updateOrbitHistos(Trigger t, repository::DatabaseInte
 
 //_________________________________________________________________________________________
 
+TH1* DigitsPostProcessing::getHistogram(std::string_view plotName)
+{
+  TH1* result{ nullptr };
+  for (auto hist : mHistogramsAll) {
+    if (plotName == hist->GetName()) {
+      result = hist;
+      break;
+    }
+  }
+  return result;
+}
+
 void DigitsPostProcessing::update(Trigger t, framework::ServiceRegistryRef services)
 {
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
   updateRateHistos(t, &qcdb);
   updateOrbitHistos(t, &qcdb);
+
+  auto& comparatorPlots = getComparatorPlots();
+  for (auto& [plotName, plot] : comparatorPlots) {
+    TH1* hist = getHistogram(plotName);
+    if (!hist) {
+      continue;
+    }
+
+    plot->update(hist);
+  }
 }
 
 //_________________________________________________________________________________________

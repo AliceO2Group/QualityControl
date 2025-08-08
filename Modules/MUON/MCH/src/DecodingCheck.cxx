@@ -18,12 +18,15 @@
 #include "MCH/DecodingCheck.h"
 #include "MCH/Helpers.h"
 #include "MUONCommon/Helpers.h"
+#include "QualityControl/ReferenceUtils.h"
+#include "QualityControl/QcInfoLogger.h"
 
 // ROOT
 #include <TH1.h>
 #include <TH2.h>
 #include <TList.h>
 #include <TLine.h>
+#include <TPaveLabel.h>
 #include <fstream>
 #include <string>
 
@@ -42,8 +45,14 @@ void DecodingCheck::startOfActivity(const Activity& activity)
   mGoodFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracHistName", mGoodFracHistName, activity);
   mSyncFracHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracHistName", mSyncFracHistName, activity);
 
+  mGoodFracPerSolarHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracPerSolarHistName", mGoodFracPerSolarHistName, activity);
+  mSyncFracPerSolarHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracPerSolarHistName", mSyncFracPerSolarHistName, activity);
+
   getThresholdsPerStation(mCustomParameters, activity, "MinGoodErrorFrac", mMinGoodErrorFracPerStation, mMinGoodErrorFrac);
   getThresholdsPerStation(mCustomParameters, activity, "MinGoodSyncFrac", mMinGoodSyncFracPerStation, mMinGoodSyncFrac);
+
+  mMinGoodErrorFracPerSolar = getConfigurationParameter<double>(mCustomParameters, "MinGoodErrorFracPerSolar", mMinGoodErrorFracPerSolar, activity);
+  mMinGoodSyncFracPerSolar = getConfigurationParameter<double>(mCustomParameters, "MinGoodSyncFracPerSolar", mMinGoodSyncFracPerSolar, activity);
 
   mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
   mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
@@ -63,6 +72,7 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   std::fill(syncQuality.begin(), syncQuality.end(), Quality::Null);
 
   mQualityChecker.reset();
+  std::fill(mSolarQuality.begin(), mSolarQuality.end(), Quality::Good);
 
   for (auto& [moName, mo] : *moMap) {
 
@@ -98,6 +108,22 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       mQualityChecker.addCheckResult(errorsQuality);
     }
 
+    if (matchHistName(mo->getName(), mGoodFracPerSolarHistName)) {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        return result;
+      }
+
+      for (int solar = 0; solar < h->GetXaxis()->GetNbins(); solar++) {
+        int bin = solar + 1;
+        double value = h->GetBinContent(bin);
+        if (value >= mMinGoodErrorFracPerSolar) {
+          continue;
+        }
+        mSolarQuality[solar] = Quality::Bad;
+      }
+    }
+
     if (matchHistName(mo->getName(), mSyncFracHistName)) {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       if (!h) {
@@ -129,6 +155,22 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
       }
       mQualityChecker.addCheckResult(syncQuality);
     }
+
+    if (matchHistName(mo->getName(), mSyncFracPerSolarHistName)) {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+      if (!h) {
+        return result;
+      }
+
+      for (int solar = 0; solar < h->GetXaxis()->GetNbins(); solar++) {
+        int bin = solar + 1;
+        double value = h->GetBinContent(bin);
+        if (value >= mMinGoodSyncFracPerSolar) {
+          continue;
+        }
+        mSolarQuality[solar] = Quality::Bad;
+      }
+    }
   }
   return mQualityChecker.getQuality();
 }
@@ -137,6 +179,93 @@ std::string DecodingCheck::getAcceptedType() { return "TH1"; }
 
 void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
+  if ((mo->getName().find("RefComp/") != std::string::npos)) {
+    TCanvas* canvas = dynamic_cast<TCanvas*>(mo->getObject());
+    if (!canvas) {
+      return;
+    }
+
+    auto ratioPlot = o2::quality_control::checker::getRatioPlotFromCanvas(canvas);
+    if (!ratioPlot) {
+      return;
+    }
+
+    std::string messages;
+    auto refCompPlots = o2::quality_control::checker::getPlotsFromCanvas(canvas, messages);
+
+    double ratioPlotRange{ -1 };
+    double ratioThreshold{ -1 };
+    bool isSolar{ false };
+
+    if (matchHistName(mo->getName(), mGoodFracRefCompHistName)) {
+      ratioPlotRange = mGoodFracRatioPlotRange;
+      ratioThreshold = mMinGoodErrorFracRatio;
+      isSolar = false;
+    } else if (matchHistName(mo->getName(), mGoodFracPerSolarRefCompHistName)) {
+      ratioPlotRange = mGoodFracRatioPerSolarPlotRange;
+      ratioThreshold = mMinGoodErrorFracRatioPerSolar;
+      isSolar = true;
+    } else if (matchHistName(mo->getName(), mSyncFracRefCompHistName)) {
+      ratioPlotRange = mSyncFracRatioPlotRange;
+      ratioThreshold = mMinGoodSyncFracRatio;
+      isSolar = false;
+    } else if (matchHistName(mo->getName(), mSyncFracPerSolarRefCompHistName)) {
+      ratioPlotRange = mSyncFracRatioPerSolarPlotRange;
+      ratioThreshold = mMinGoodSyncFracRatioPerSolar;
+      isSolar = true;
+    }
+
+    if (ratioPlotRange < 0) {
+      return;
+    }
+
+    ratioPlot->SetMinimum(1.0 - ratioPlotRange);
+    ratioPlot->SetMaximum(1.0 + ratioPlotRange);
+    ratioPlot->GetXaxis()->SetTickLength(0);
+
+    if (isSolar) {
+      addChamberDelimitersToSolarHistogram(ratioPlot);
+      addSolarBinLabels(ratioPlot);
+    } else {
+      addChamberDelimiters(ratioPlot);
+      addDEBinLabels(ratioPlot);
+    }
+    drawThreshold(ratioPlot, ratioThreshold);
+
+    if (refCompPlots.first) {
+      refCompPlots.first->SetMinimum(0);
+      refCompPlots.first->SetMaximum(1.05);
+      if (isSolar) {
+        addChamberDelimitersToSolarHistogram(refCompPlots.first);
+        addChamberLabelsForSolar(refCompPlots.first);
+        addSolarBinLabels(refCompPlots.first);
+        if (refCompPlots.second) {
+          addSolarBinLabels(refCompPlots.second);
+        }
+      } else {
+        addChamberDelimiters(refCompPlots.first);
+        addChamberLabelsForDE(refCompPlots.first);
+        addDEBinLabels(refCompPlots.first);
+        if (refCompPlots.second) {
+          addDEBinLabels(refCompPlots.second);
+        }
+      }
+    }
+
+    if (refCompPlots.second) {
+      if (checkResult == Quality::Good) {
+        refCompPlots.second->SetLineColor(kGreen + 2);
+      } else if (checkResult == Quality::Bad) {
+        refCompPlots.second->SetLineColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        refCompPlots.second->SetLineColor(kOrange - 3);
+      } else if (checkResult == Quality::Null) {
+        refCompPlots.second->SetLineColor(kViolet - 6);
+      }
+    }
+    return;
+  }
+
   if (mo->getName().find("DecodingErrorsPerDE") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (!h) {
@@ -196,7 +325,7 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->GetYaxis()->SetTitle("good boards fraction");
 
     addChamberDelimiters(h, scaleMin, scaleMax);
-    addDEBinLabels(h);
+    addChamberLabelsForDE(h);
 
     // only the plot used for the check is beautified by changing the color
     // and adding the horizontal lines corresponding to the thresholds
@@ -214,6 +343,37 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     }
   }
 
+  if (mo->getName().find("GoodBoardsFractionPerSolar") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    if (!h) {
+      return;
+    }
+
+    float scaleMin{ 0 };
+    float scaleMax{ 1.05 };
+    h->SetMinimum(scaleMin);
+    h->SetMaximum(scaleMax);
+    h->GetYaxis()->SetTitle("good boards fraction");
+
+    addChamberDelimitersToSolarHistogram(h, scaleMin, scaleMax);
+    addChamberLabelsForSolar(h);
+
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mGoodFracPerSolarHistName)) {
+      if (checkResult == Quality::Good) {
+        h->SetFillColor(kGreen);
+      } else if (checkResult == Quality::Bad) {
+        h->SetFillColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        h->SetFillColor(kOrange);
+      }
+      h->SetLineColor(kBlack);
+
+      drawThreshold(h, mMinGoodErrorFracPerSolar);
+    }
+  }
+
   if (mo->getName().find("SyncedBoardsFractionPerDE") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     if (!h) {
@@ -226,7 +386,7 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     h->SetMaximum(scaleMax);
 
     addChamberDelimiters(h, scaleMin, scaleMax);
-    addDEBinLabels(h);
+    addChamberLabelsForDE(h);
 
     // only the plot used for the check is beautified by changing the color
     // and adding the horizontal lines corresponding to the thresholds
@@ -244,26 +404,33 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     }
   }
 
-  // update quality flags for each DE
-  if (mo->getName().find("QualityFlagPerDE") != std::string::npos) {
-    TH2F* h = dynamic_cast<TH2F*>(mo->getObject());
+  if (mo->getName().find("SyncedBoardsFractionPerSolar") != std::string::npos) {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
     if (!h) {
       return;
     }
 
-    for (int deId = 0; deId < mQualityChecker.mQuality.size(); deId++) {
-      float ybin = 0;
-      if (mQualityChecker.mQuality[deId] == Quality::Good) {
-        ybin = 3;
-      }
-      if (mQualityChecker.mQuality[deId] == Quality::Medium) {
-        ybin = 2;
-      }
-      if (mQualityChecker.mQuality[deId] == Quality::Bad) {
-        ybin = 1;
-      }
+    float scaleMin{ 0 };
+    float scaleMax{ 1.05 };
+    h->SetMinimum(scaleMin);
+    h->SetMaximum(scaleMax);
 
-      h->SetBinContent(deId + 1, ybin, 1);
+    addChamberDelimitersToSolarHistogram(h, scaleMin, scaleMax);
+    addChamberLabelsForSolar(h);
+
+    // only the plot used for the check is beautified by changing the color
+    // and adding the horizontal lines corresponding to the thresholds
+    if (matchHistName(mo->getName(), mSyncFracPerSolarHistName)) {
+      if (checkResult == Quality::Good) {
+        h->SetFillColor(kGreen);
+      } else if (checkResult == Quality::Bad) {
+        h->SetFillColor(kRed);
+      } else if (checkResult == Quality::Medium) {
+        h->SetFillColor(kOrange);
+      }
+      h->SetLineColor(kBlack);
+
+      drawThreshold(h, mMinGoodSyncFracPerSolar);
     }
   }
 
@@ -275,6 +442,84 @@ void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     }
     h->SetMinimum(mMinHeartBeatRate);
     h->SetMaximum(mMaxHeartBeatRate);
+  }
+
+  // update quality flags for each DE
+  if (mo->getName().find("QualityFlagPerDE") != std::string::npos) {
+    TH2F* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (!h) {
+      return;
+    }
+
+    std::string badDEs;
+    for (int deIndex = 0; deIndex < mQualityChecker.mQuality.size(); deIndex++) {
+      float ybin = 0;
+      if (mQualityChecker.mQuality[deIndex] == Quality::Good) {
+        ybin = 3;
+      }
+      if (mQualityChecker.mQuality[deIndex] == Quality::Medium) {
+        ybin = 2;
+      }
+      if (mQualityChecker.mQuality[deIndex] == Quality::Bad) {
+        ybin = 1;
+        std::string deIdStr = std::to_string(getDEFromIndex(deIndex));
+        if (badDEs.empty()) {
+          badDEs = deIdStr;
+        } else {
+          badDEs += std::string(" ") + deIdStr;
+        }
+      }
+
+      h->SetBinContent(deIndex + 1, ybin, 1);
+
+      if (!badDEs.empty()) {
+        std::string text = std::string("Bad DEs: ") + badDEs;
+        TPaveLabel* label = new TPaveLabel(0.2, 0.8, 0.8, 0.88, text.c_str(), "blNDC");
+        label->SetBorderSize(1);
+        h->GetListOfFunctions()->Add(label);
+
+        ILOG(Warning, Support) << "[DecodingCheck] " << text << ENDM;
+      }
+    }
+  }
+
+  // update quality flags for each SOLAR
+  if (mo->getName().find("QualityFlagPerSolar") != std::string::npos) {
+    TH2F* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (!h) {
+      return;
+    }
+
+    std::string badSolarBoards;
+    for (int solar = 0; solar < mSolarQuality.size(); solar++) {
+      float ybin = 0;
+      if (mSolarQuality[solar] == Quality::Good) {
+        ybin = 3;
+      }
+      if (mSolarQuality[solar] == Quality::Medium) {
+        ybin = 2;
+      }
+      if (mSolarQuality[solar] == Quality::Bad) {
+        ybin = 1;
+        std::string solarId = std::to_string(getSolarIdFromIndex(solar));
+        if (badSolarBoards.empty()) {
+          badSolarBoards = solarId;
+        } else {
+          badSolarBoards += std::string(" ") + solarId;
+        }
+      }
+
+      h->SetBinContent(solar + 1, ybin, 1);
+    }
+
+    if (!badSolarBoards.empty()) {
+      std::string badSolarList = std::string("Bad SOLAR boards: ") + badSolarBoards;
+      TPaveLabel* label = new TPaveLabel(0.2, 0.8, 0.8, 0.88, badSolarList.c_str(), "blNDC");
+      label->SetBorderSize(1);
+      h->GetListOfFunctions()->Add(label);
+
+      ILOG(Warning, Support) << "[DecodingCheck] " << badSolarList << ENDM;
+    }
   }
 }
 

@@ -53,10 +53,12 @@ class DecodingErrorsPlotter : public HistPlotter
 
   std::string mPath;
 
-  std::unique_ptr<TH1F> mHistogramGoodBoardsPerDE;  ///< fraction of boards with errors per DE
   std::unique_ptr<TH2F> mHistogramErrorsPerDE;      ///< error codes per DE
   std::unique_ptr<TH2F> mHistogramErrorsPerChamber; ///< error codes per chamber
   std::unique_ptr<TH2F> mHistogramErrorsPerFeeId;   ///< error codes per FEE ID
+
+  std::unique_ptr<TH1F> mHistogramGoodBoardsPerDE;    ///< fraction of boards without errors per DE
+  std::unique_ptr<TH1F> mHistogramGoodBoardsPerSolar; ///< fraction of boards with errors per DE
 };
 
 } // namespace muonchambers
