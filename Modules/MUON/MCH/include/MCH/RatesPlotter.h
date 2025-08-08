@@ -69,8 +69,10 @@ class RatesPlotter : public HistPlotter
   std::unique_ptr<TH2F> mHistogramRatePerStation;
 
   std::unique_ptr<TH1F> mHistogramMeanRatePerDE;
+  std::unique_ptr<TH1F> mHistogramMeanRatePerSolar;
 
   std::unique_ptr<TH1F> mHistogramGoodChannelsFractionPerDE;
+  std::unique_ptr<TH1F> mHistogramGoodChannelsFractionPerSolar;
 
   std::map<int, std::shared_ptr<DetectorHistogram>> mHistogramRateDE[2]; // 2D hit rate map for each DE
   std::shared_ptr<GlobalHistogram> mHistogramRateGlobal[2];              // Rate histogram (global XY view)

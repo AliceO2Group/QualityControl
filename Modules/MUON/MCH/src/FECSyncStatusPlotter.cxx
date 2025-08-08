@@ -42,15 +42,19 @@ static void setYAxisLabels(TH2F* hErrors)
 
 FECSyncStatusPlotter::FECSyncStatusPlotter(std::string path)
 {
-  mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
-  mFeeLink2SolarMapper = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
+  mDet2ElecMapper = o2::mch::raw::createDet2ElecMapper<o2::mch::raw::ElectronicMapperGenerated>();
 
   //--------------------------------------------
   // Fraction of synchronized boards per DE
   //--------------------------------------------
 
-  mGoodTFFractionPerDE = std::make_unique<TH1F>(TString::Format("%sSyncedBoardsFractionPerDE", path.c_str()), "Synchronized boards fraction", getNumDE(), 0, getNumDE());
+  mGoodTFFractionPerDE = std::make_unique<TH1F>(TString::Format("%sSyncedBoardsFractionPerDE", path.c_str()), "Synchronized boards fraction per DE", getNumDE(), 0, getNumDE());
+  addDEBinLabels(mGoodTFFractionPerDE.get());
   addHisto(mGoodTFFractionPerDE.get(), false, "hist", "");
+
+  mGoodTFFractionPerSolar = std::make_unique<TH1F>(TString::Format("%sSyncedBoardsFractionPerSolar", path.c_str()), "Synchronized boards fraction per SOLAR", getNumSolar(), 0, getNumSolar());
+  addSolarBinLabels(mGoodTFFractionPerSolar.get());
+  addHisto(mGoodTFFractionPerSolar.get(), false, "hist", "");
 
   mGoodBoardsFractionPerDE = std::make_unique<TH1F>(TString::Format("%sSyncedBoardsFractionPerDEalt", path.c_str()), "Synchronized boards fraction (v.2)", getNumDE(), 0, getNumDE());
   addHisto(mGoodBoardsFractionPerDE.get(), false, "hist", "");
@@ -72,6 +76,12 @@ void FECSyncStatusPlotter::update(TH2F* h)
   std::fill(deGoodBoards.begin(), deGoodBoards.end(), 0);
   std::fill(deGoodFrac.begin(), deGoodFrac.end(), 0);
 
+  std::vector<double> solarNumBoards(static_cast<size_t>(getNumSolar()));
+  std::vector<double> solarGoodFrac(static_cast<size_t>(getNumSolar()));
+
+  std::fill(solarNumBoards.begin(), solarNumBoards.end(), 0);
+  std::fill(solarGoodFrac.begin(), solarGoodFrac.end(), 0);
+
   int nbinsx = h->GetXaxis()->GetNbins();
   for (int i = 1; i <= nbinsx; i++) {
     // address of the DS board in detector representation
@@ -80,6 +90,17 @@ void FECSyncStatusPlotter::update(TH2F* h)
 
     int deIndex = getDEindex(deId);
     if (deIndex < 0) {
+      continue;
+    }
+
+    auto dsElecId = mDet2ElecMapper(dsDetId);
+    if (!dsElecId) {
+      continue;
+    }
+    auto solarId = dsElecId->solarId();
+
+    int solarIndex = getSolarIndex(solarId);
+    if (solarIndex < 0) {
       continue;
     }
 
@@ -94,6 +115,9 @@ void FECSyncStatusPlotter::update(TH2F* h)
       deGoodBoards[deIndex] += 1;
     }
     deGoodFrac[deIndex] += goodFrac;
+
+    solarNumBoards[solarIndex] += 1;
+    solarGoodFrac[solarIndex] += goodFrac;
   }
 
   // update the average number of out-of-sync boards
@@ -104,6 +128,14 @@ void FECSyncStatusPlotter::update(TH2F* h)
     } else {
       mGoodBoardsFractionPerDE->SetBinContent(i + 1, 0);
       mGoodTFFractionPerDE->SetBinContent(i + 1, 0);
+    }
+  }
+
+  for (size_t i = 0; i < solarNumBoards.size(); i++) {
+    if (solarNumBoards[i] > 0) {
+      mGoodTFFractionPerSolar->SetBinContent(i + 1, solarGoodFrac[i] / solarNumBoards[i]);
+    } else {
+      mGoodTFFractionPerSolar->SetBinContent(i + 1, 0);
     }
   }
 }

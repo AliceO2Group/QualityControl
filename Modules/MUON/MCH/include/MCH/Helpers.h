@@ -53,6 +53,12 @@ int getDEindex(int de);
 constexpr int getNumDE() { return (4 * 4 + 18 * 2 + 26 * 4); }
 int getNumDEinChamber(int chIndex);
 std::pair<int, int> getDEindexInChamber(int deId);
+int getDEFromIndex(int index);
+
+int getSolarIndex(int solarId);
+int getSolarIdFromIndex(int index);
+constexpr int getNumSolar() { return 624; }
+int getNumSolarPerChamber(int chamberId);
 
 void getThresholdsPerStation(o2::quality_control::core::CustomParameters customParameters,
                              const o2::quality_control::core::Activity& activity,
@@ -62,10 +68,16 @@ void getThresholdsPerStation(o2::quality_control::core::CustomParameters customP
 
 o2::quality_control::core::Quality checkDetectorQuality(gsl::span<o2::quality_control::core::Quality>& deQuality);
 
-void addChamberDelimiters(TH1F* h, float xmin = 0, float xmax = 0);
-void addChamberDelimiters(TH2F* h);
+void addChamberLabelsForDE(TH1* h);
+void addChamberDelimiters(TH1* h, float xmin = 0, float xmax = 0);
+void addChamberDelimiters(TH2* h);
+void addChamberLabelsForSolar(TH1* h);
+void addChamberDelimitersToSolarHistogram(TH1* h, float xmin = 0, float xmax = 0);
+void addChamberDelimitersToSolarHistogram(TH2* h);
+void drawThreshold(TH1* histogram, double threshold);
 void drawThresholdsPerStation(TH1* histogram, const std::array<std::optional<double>, 5>& thresholdsPerStation, double defaultThreshold);
 void addDEBinLabels(TH1* histogram);
+void addSolarBinLabels(TH1* histogram);
 
 std::string getHistoPath(int deId);
 bool matchHistName(std::string hist, std::string name);
