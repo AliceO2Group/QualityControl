@@ -145,7 +145,7 @@
           "newobject:qcdb:TST/MO/QcTask/example"
         ],
         "stopTrigger": [
-          "userorcontrol", "10 minutes"
+          "userorcontrol"
         ]
       },
       "ExampleTrendExtended": {
@@ -153,7 +153,7 @@
         "className": "o2::quality_control::postprocessing::SliceTrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
-        "resumeTrend": "true",
+        "resumeTrend": "false",
         "dataSources": [
           {
             "type": "repository",
@@ -204,7 +204,7 @@
             "title": "Mean Y trend of the example histogram",
             "varexp": "example.meanY:multigraphtime",
             "selection": "",
-            "option": "*L",
+            "option": "A*L PMC PLC",
             "graphErrors": "errMeanY:0.5",
             "graphYRange": "",
             "graphXRange": "",
@@ -230,7 +230,7 @@
           "newobject:qcdb:TST/MO/QcTask/example"
         ],
         "stopTrigger": [
-          "userorcontrol", "10 minutes"
+          "userorcontrol"
         ]
       },
       "ExampleQualityTask": {
