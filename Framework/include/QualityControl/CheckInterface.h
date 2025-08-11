@@ -22,11 +22,12 @@
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Activity.h"
 
+#include "QualityControl/Data.h"
+
 namespace o2::quality_control::core
 {
 class Activity;
 class MonitorObject;
-class Data;
 
 } // namespace o2::quality_control::core
 

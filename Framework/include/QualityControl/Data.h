@@ -33,13 +33,14 @@ namespace o2::quality_control::core
 template <typename Function, typename Result, typename... Args>
 concept invocable_r = std::invocable<Function, Args...> && std::same_as<std::invoke_result_t<Function, Args...>, Result>;
 
-class Data
+template <typename ContainerMap>
+class DataGeneric
 {
  public:
-  Data() = default;
+  DataGeneric() = default;
 
   template <typename Result>
-  std::optional<Result> get(std::string_view key)
+  std::optional<std::reference_wrapper<const Result>> get(std::string_view key)
   {
     if (const auto foundIt = mObjects.find(key); foundIt != mObjects.end()) {
       if (auto* casted = std::any_cast<Result>(&foundIt->second); casted != nullptr) {
@@ -125,8 +126,28 @@ class Data
   }
 
  private:
-  std::map<std::string, std::any, std::less<>> mObjects;
+  ContainerMap mObjects;
 };
+
+struct StringHash {
+  using is_transparent = void; // Required for heterogeneous lookup
+
+  std::size_t operator()(const std::string& str) const
+  {
+    return std::hash<std::string>{}(str);
+  }
+
+  std::size_t operator()(std::string_view sv) const
+  {
+    return std::hash<std::string_view>{}(sv);
+  }
+};
+
+using transparent_unordered_map = std::unordered_map<std::string, std::any, StringHash, std::equal_to<>>;
+
+using Data = DataGeneric<transparent_unordered_map>;
+
+// using Data = DataGeneric<std::map<std::string, std::any, std::less<>>>;
 
 } // namespace o2::quality_control::core
 
