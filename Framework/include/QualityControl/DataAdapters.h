@@ -27,18 +27,10 @@ namespace o2::quality_control::core
 Data createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 Data createData(const QualityObjectsMapType& moMap);
 
-template <typename Result>
-auto iterateMOsFilterByNameAndTransform(const Data& data, std::string_view moName)
+template <typename Result, typename DataContainer>
+auto iterateMOsFilterByNameAndTransform(const DataGeneric<DataContainer>& data, std::string_view moName)
 {
-  return data.iterateByTypeFilterAndTransform<MonitorObject, Result>(
-    [name = std::string{ moName }](const std::pair<std::string_view, const MonitorObject*>& pair) -> bool { return std::string_view{ pair.second->GetName() } == name; },
-    [](const MonitorObject* ptr) -> const Result* { return dynamic_cast<const Result*>(ptr->getObject()); });
-}
-
-template <typename Result>
-auto iterateQOsFilterByNameAndTransform(const Data& data, std::string_view moName)
-{
-  return data.iterateByTypeFilterAndTransform<MonitorObject, Result>(
+  return data.template iterateByTypeFilterAndTransform<MonitorObject, Result>(
     [name = std::string{ moName }](const std::pair<std::string_view, const MonitorObject*>& pair) -> bool { return std::string_view{ pair.second->GetName() } == name; },
     [](const MonitorObject* ptr) -> const Result* { return dynamic_cast<const Result*>(ptr->getObject()); });
 }

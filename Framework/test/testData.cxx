@@ -15,13 +15,14 @@
 ///
 
 #include <TH1.h>
+#include <boost/container/flat_map.hpp>
 #include <catch_amalgamated.hpp>
 #include "Framework/include/QualityControl/MonitorObject.h"
 #include "QualityControl/Data.h"
 #include "QualityControl/DataAdapters.h"
 #include <cstring>
-#include <iostream>
 #include <memory>
+#include <string>
 
 using namespace o2::quality_control::core;
 
@@ -41,7 +42,7 @@ TEST_CASE("Data insert and get", "[Data]")
   REQUIRE(!valueStr.has_value());
   auto valueInt = data.get<int>("test");
   REQUIRE(valueInt.has_value());
-  REQUIRE(valueInt.value() == 1);
+  REQUIRE(valueInt == 1);
 }
 
 TEST_CASE("Data - iterateByType", "[Data]")
@@ -182,4 +183,102 @@ TEST_CASE("Data - raw pointers", "[Data]")
     ++count;
   }
   REQUIRE(count == 2);
+}
+
+using stdmap = std::map<std::string, std::any, std::less<>>;
+using boostflatmap = boost::container::flat_map<std::string, std::any, std::less<>>;
+
+TEMPLATE_TEST_CASE("Data - inserting fundamental types", "[.Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
+{
+  constexpr size_t iterations = 20'000;
+
+  BENCHMARK("insert size_t")
+  {
+    DataGeneric<TestType> data;
+    // for (size_t i = 0; i != iterations; ++i) {
+    for (size_t i = iterations; i != 0; --i) {
+      data.insert(std::to_string(i), i);
+    }
+  };
+}
+
+TEMPLATE_TEST_CASE("Data - iterating fundamental types", "[Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
+{
+  constexpr size_t iterations = 20000;
+  DataGeneric<TestType> data;
+  for (size_t i = 0; i != iterations; ++i) {
+    data.insert(std::to_string(i), i);
+  }
+
+  REQUIRE(data.size() == iterations);
+  BENCHMARK("iterate size_t")
+  {
+    REQUIRE(data.size() == iterations);
+    size_t r{};
+    size_t count{};
+    for (const auto& v : data.template iterateByType<size_t>()) {
+      r += v;
+      count++;
+    }
+    REQUIRE(count == iterations);
+  };
+}
+
+TEMPLATE_TEST_CASE("Data - get fundamental types", "[.Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
+{
+  constexpr size_t iterations = 20000;
+  DataGeneric<TestType> data;
+  for (size_t i = 0; i != iterations; ++i) {
+    data.insert(std::to_string(i), i);
+  }
+
+  REQUIRE(data.size() == iterations);
+  BENCHMARK("iterate size_t")
+  {
+    size_t r{};
+    size_t count{};
+    for (size_t i = 0; i != iterations; ++i) {
+      auto opt = data.template get<size_t>(std::to_string(i));
+      r += opt.value();
+      count++;
+    }
+    REQUIRE(count == iterations);
+  };
+}
+
+std::string generateRandomString(size_t length)
+{
+  static constexpr std::string_view CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  thread_local std::mt19937 generator(std::random_device{}());
+  std::uniform_int_distribution<size_t> distribution(0, CHARACTERS.length() - 1);
+
+  std::string random_string;
+  random_string.reserve(length);
+  for (size_t i = 0; i < length; ++i) {
+    random_string += CHARACTERS[distribution(generator)];
+  }
+  return random_string;
+}
+
+TEMPLATE_TEST_CASE("Data - inserting and iterating MOs", "[.Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
+{
+  constexpr size_t iterations = 1000;
+  std::vector<std::shared_ptr<MonitorObject>> MOs;
+
+  for (size_t i = 0; i != iterations; ++i) {
+    const auto name = generateRandomString(20);
+    auto* h = new TH1F(name.c_str(), name.c_str(), 100, 0, 99);
+    std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(h, "taskname", "class1", "TST");
+    MOs.push_back(mo);
+  }
+
+  BENCHMARK("insert - iterate MOs")
+  {
+    DataGeneric<TestType> data;
+    for (const auto& mo : MOs) {
+      data.insert(mo->getFullName(), mo);
+    }
+
+    REQUIRE(iterateMOsFilterByNameAndTransform<TH1F>(data, "notimportantname").empty());
+  };
 }
