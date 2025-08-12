@@ -65,7 +65,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
   // legend configuration
   struct LegendConfig {
     int nColumns{ 1 };
-    float x1{ 0.30f }, y1{ 0.20f }, x2{ 0.55f }, y2{ 0.35f }; // NDC coords
+    float x1{ -1.f }, y1{ -1.f }, x2{ -1.f }, y2{ -1.f }; // NDC coords
   };
 
   // this corresponds to one canvas which can include multiple graphs

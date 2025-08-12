@@ -347,10 +347,10 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 
   // Legend
   TLegend* legend = nullptr;
-  if (plotConfig.legend.x1 && plotConfig.legend.y1 && plotConfig.legend.x2 && plotConfig.legend.y2) {
+  if (plotConfig.legend.x1 >= 0 && plotConfig.legend.y1 >= 0 && plotConfig.legend.x2 >= 0 && plotConfig.legend.y2 >= 0) {
     legend = new TLegend(plotConfig.legend.x1, plotConfig.legend.y1,
                          plotConfig.legend.x2, plotConfig.legend.y2,
-                         /*header=*/nullptr, /*option=*/"NDC");
+                         nullptr, "NDC");
     if (plotConfig.legend.nColumns > 0) {
       legend->SetNColumns(plotConfig.legend.nColumns);
     }

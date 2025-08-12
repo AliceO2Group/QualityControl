@@ -74,10 +74,10 @@ TrendingTaskConfig::TrendingTaskConfig(std::string id, const boost::property_tre
 
     LegendConfig leg;
     leg.nColumns = plotConfig.get<int>("legend.nColumns", 1);
-    leg.x1 = plotConfig.get<float>("legend.x1", 0.30f);
-    leg.y1 = plotConfig.get<float>("legend.y1", 0.20f);
-    leg.x2 = plotConfig.get<float>("legend.x2", 0.55f);
-    leg.y2 = plotConfig.get<float>("legend.y2", 0.35f);
+    leg.x1 = plotConfig.get<float>("legend.x1", -1.f);
+    leg.y1 = plotConfig.get<float>("legend.y1", -1.f);
+    leg.x2 = plotConfig.get<float>("legend.x2", -1.f);
+    leg.y2 = plotConfig.get<float>("legend.y2", -1.f);
 
     plots.push_back({ plotConfig.get<std::string>("name"),
                       plotConfig.get<std::string>("title", ""),
