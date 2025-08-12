@@ -434,6 +434,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
       // so we have to do it here.
       htemp->BufferEmpty();
+      // we keep the pointer to bg histogram for later postprocessing
       if (!background) {
         background = htemp;
       }
