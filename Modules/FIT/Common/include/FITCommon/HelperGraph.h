@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::fit::helper
 {
 
 /// \brief Factory that forwards ctor arguments to the chosen GraphType.
-/// Example:
+/// \example
 ///   auto g = makeGraph<TGraphErrors>("name","title",n,x,y,ex,ey);
 /// \author Jakub Muszyński jakub.milosz.muszynski@cern.ch
 template <typename GraphType, typename... CtorArgs>
