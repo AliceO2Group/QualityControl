@@ -402,7 +402,7 @@ void SliceTrendingTask::drawCanvasMO(TCanvas* thisCanvas, const std::string& var
     } // for (int p = 0; p < nuPa; p++)
 
     thisCanvas->cd(1);
-    std::string drawOpt = opt.empty() ? "APL" : opt;
+    std::string drawOpt = opt.empty() ? "A*L PMC PLC" : opt;
     multigraph->Draw(drawOpt.c_str());
 
     auto legend = new TLegend(0., 0.1, 0.95, 0.9);
