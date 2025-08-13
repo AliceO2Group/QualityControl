@@ -28,13 +28,24 @@ Data createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moM
 Data createData(const QualityObjectsMapType& moMap);
 
 template <typename Result, typename DataContainer>
-auto iterateMOsFilterByNameAndTransform(const DataGeneric<DataContainer>& data, std::string_view moName)
-{
-  return data.template iterateByTypeFilterAndTransform<MonitorObject, Result>(
-    [name = std::string{ moName }](const std::pair<std::string_view, const MonitorObject*>& pair) -> bool { return std::string_view{ pair.second->GetName() } == name; },
-    [](const MonitorObject* ptr) -> const Result* { return dynamic_cast<const Result*>(ptr->getObject()); });
-}
+auto iterateMonitorObjects(const DataGeneric<DataContainer>& data, std::string_view moName);
+inline auto iterateMonitorObjects(const Data& data);
+inline auto iterateMonitorObjects(const Data& data, std::string_view taskName);
+
+template <typename StoredType = MonitorObject>
+std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Data& data, std::string_view objectName, std::string_view taskName);
+
+// returns first occurence of MO with given name (possible name clash)
+template <typename StoredType = MonitorObject>
+std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Data& data, std::string_view objectName);
+
+inline auto iterateQualityObjects(const Data& data);
+
+std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const Data& data, std::string_view checkName);
 
 } // namespace o2::quality_control::core
+
+// Templates definitions
+#include "QualityControl/DataAdapters.inl"
 
 #endif

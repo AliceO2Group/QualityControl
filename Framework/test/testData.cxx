@@ -17,6 +17,7 @@
 #include <TH1.h>
 #include <boost/container/flat_map.hpp>
 #include <catch_amalgamated.hpp>
+#include "Framework/include/QualityControl/DataAdapters.inl"
 #include "Framework/include/QualityControl/MonitorObject.h"
 #include "QualityControl/Data.h"
 #include "QualityControl/DataAdapters.h"
@@ -85,13 +86,6 @@ TEST_CASE("Data - iterateByTypeAndFilter", "[Data]")
   REQUIRE(count == 1);
 }
 
-struct Base {
-  int v;
-};
-
-struct Derived : public Base {
-};
-
 TEST_CASE("Data - iterateByTypeFilterAndTransform", "[Data]")
 {
 
@@ -117,53 +111,6 @@ TEST_CASE("Data - iterateByTypeFilterAndTransform", "[Data]")
     ++count;
   }
   REQUIRE(count == 1);
-}
-
-TEST_CASE("Data - Monitor adaptors MOs", "[Data]")
-{
-  auto* h1 = new TH1F("th11", "th11", 100, 0, 99);
-  std::shared_ptr<MonitorObject> mo1 = std::make_shared<MonitorObject>(h1, "taskname", "class1", "TST");
-
-  auto* h2 = new TH1F("th12", "th12", 100, 0, 99);
-  std::shared_ptr<MonitorObject> mo2 = std::make_shared<MonitorObject>(h2, "taskname", "class2", "TST");
-
-  std::map<std::string, std::shared_ptr<MonitorObject>> map;
-  map.emplace(mo1->getFullName(), mo1);
-  map.emplace(mo2->getFullName(), mo2);
-
-  auto data = createData(map);
-
-  REQUIRE(data.size() == 2);
-
-  auto filteredHistos = iterateMOsFilterByNameAndTransform<TH1F>(data, "th11");
-  REQUIRE(!filteredHistos.empty());
-  size_t count{};
-  for (const auto& histo1d : filteredHistos) {
-    REQUIRE(std::string_view{ histo1d.GetName() } == "th11");
-    ++count;
-  }
-  REQUIRE(count == 1);
-}
-
-TEST_CASE("Data - Monitor adaptors QOs", "[Data]")
-{
-  QualityObjectsMapType qoMap;
-  qoMap["1"] = std::make_shared<QualityObject>(Quality::Good, "1");
-  qoMap["2"] = std::make_shared<QualityObject>(Quality::Good, "2");
-
-  auto data = createData(qoMap);
-
-  REQUIRE(data.size() == 2);
-
-  auto filteredObjects = data.iterateByType<QualityObject>();
-  REQUIRE(!filteredObjects.empty());
-  size_t count{};
-  for (const auto& qo : filteredObjects) {
-    const auto& name = qo.getName();
-    REQUIRE((name == "1" || name == "2"));
-    ++count;
-  }
-  REQUIRE(count == 2);
 }
 
 TEST_CASE("Data - raw pointers", "[Data]")
@@ -279,6 +226,79 @@ TEMPLATE_TEST_CASE("Data - inserting and iterating MOs", "[.Data-benchmark]", st
       data.insert(mo->getFullName(), mo);
     }
 
-    REQUIRE(iterateMOsFilterByNameAndTransform<TH1F>(data, "notimportantname").empty());
+    REQUIRE(iterateMonitorObjects<TH1F>(data, "notimportantname").empty());
   };
+}
+
+TEST_CASE("Data adapters - helper functions")
+{
+
+  Data data;
+  {
+    for (size_t i{}; i != 10; ++i) {
+      const auto iStr = std::to_string(i);
+      const auto thName = std::string("TH1F_") + iStr;
+      const auto moName = "testMO_" + iStr;
+      auto* h = new TH1F(thName.c_str(), thName.c_str(), 100, 0, 99);
+      data.insert(moName, std::make_shared<MonitorObject>(h, "taskname_" + iStr, "class1", "TST"));
+    }
+
+    auto* h = new TH1F("TH1F_duplicate", "TH1F_duplicate", 100, 0, 99);
+    data.insert("testMO_duplicate", std::make_shared<MonitorObject>(h, "taskname_8", "class1", "TST"));
+
+    data.insert("testQO_1", std::make_shared<QualityObject>(Quality::Good, "QO_1"));
+    data.insert("testQO_2", std::make_shared<QualityObject>(Quality::Good, "QO_2"));
+  }
+
+  REQUIRE(data.size() == 13);
+
+  SECTION("getMonitorObject")
+  {
+    const auto moOpt = getMonitorObject(data, "TH1F_1");
+    REQUIRE(moOpt.has_value());
+    REQUIRE(std::string_view(moOpt.value().get().GetName()) == "TH1F_1");
+    const auto th1Opt = getMonitorObject<TH1F>(data, "TH1F_8");
+    REQUIRE(th1Opt.has_value());
+    REQUIRE(std::string_view(th1Opt.value().get().GetName()) == "TH1F_8");
+
+    const auto moSpecificOpt = getMonitorObject(data, "TH1F_duplicate", "taskname_8");
+    REQUIRE(moSpecificOpt.has_value());
+    REQUIRE(moSpecificOpt.value().get().GetName() == std::string_view{ "TH1F_duplicate" });
+    REQUIRE(moSpecificOpt.value().get().getTaskName() == std::string_view{ "taskname_8" });
+    const auto th1SpecificOpt = getMonitorObject<TH1F>(data, "TH1F_duplicate", "taskname_8");
+    REQUIRE(th1SpecificOpt.has_value());
+    REQUIRE(th1SpecificOpt.value().get().GetName() == std::string_view{ "TH1F_duplicate" });
+    REQUIRE(!getMonitorObject<nonexistent>(data, "TH1F_duplicate", "taskname_8").has_value());
+  }
+
+  SECTION("iterateMonitorObjects")
+  {
+    size_t count{};
+    for (auto& mo : iterateMonitorObjects(data)) {
+      ++count;
+    }
+    REQUIRE(count == 11);
+
+    count = 0;
+    for (auto& mo : iterateMonitorObjects(data, "taskname_8")) {
+      ++count;
+    }
+    REQUIRE(count == 2);
+  }
+
+  SECTION("getQualityObject")
+  {
+    const auto qoOpt = getQualityObject(data, "QO_1");
+    REQUIRE(qoOpt.has_value());
+    REQUIRE(std::string_view{ qoOpt.value().get().GetName() } == "QO_1");
+  }
+
+  SECTION("iterateQualityObjects")
+  {
+    size_t count{};
+    for (const auto& qo : iterateQualityObjects(data)) {
+      ++count;
+    }
+    REQUIRE(count == 2);
+  }
 }

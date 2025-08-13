@@ -37,4 +37,15 @@ Data createData(const QualityObjectsMapType& qoMap)
   return data;
 }
 
+std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const Data& data, std::string_view objectName)
+{
+  const auto filterQOByName = [objectName](const auto& pair) {
+    return std::string_view(pair.second->GetName()) == objectName;
+  };
+  for (const auto& qo : data.iterateByTypeAndFilter<QualityObject>(filterQOByName)) {
+    return { qo };
+  }
+  return std::nullopt;
+}
+
 } // namespace o2::quality_control::core
