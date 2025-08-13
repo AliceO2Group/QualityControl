@@ -16,6 +16,7 @@
 
 #include "Skeleton/SkeletonAggregator.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DataAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -42,7 +43,7 @@ std::map<std::string, Quality> SkeletonAggregator::aggregate(const o2::quality_c
 
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
-  for (const auto& qo : data.iterateByType<QualityObject>()) {
+  for (const auto& qo : iterateQualityObjects(data)) {
     ILOG(Info, Devel) << "Object: " << qo << ENDM;
     if (qo.getQuality().isWorseThan(current)) {
       current = qo.getQuality();

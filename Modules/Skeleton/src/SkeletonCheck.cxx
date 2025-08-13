@@ -58,27 +58,34 @@ Quality SkeletonCheck::check(const quality_control::core::Data& data)
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
 
-  for (const auto& h : iterateMOsFilterByNameAndTransform<TH1>(data, "example")) {
-    // unless we find issues, we assume the quality is good
-    result = Quality::Good;
-
-    // an example of a naive quality check: we want bins 1-7 to be non-empty and bins 0 and >7 to be empty.
-    for (int i = 0; i < h.GetNbinsX(); i++) {
-      if (i > 0 && i < 8 && h.GetBinContent(i) == 0) {
-        result = Quality::Bad;
-        // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
-        result.addFlag(FlagTypeFactory::BadPID(), "It is bad because there is nothing in bin " + std::to_string(i));
-        break;
-      } else if ((i == 0 || i > 7) && h.GetBinContent(i) > 0) {
-        result = Quality::Medium;
-        // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
-        result.addFlag(FlagTypeFactory::Unknown(), "It is medium because bin " + std::to_string(i) + " is not empty");
-        result.addFlag(FlagTypeFactory::BadTracking(), "We can assign more than one Flag to a Quality");
-      }
-    }
-    // optionally, we can associate some custom metadata to a Quality
-    result.addMetadata("mykey", "myvalue");
+  constexpr static auto name = "example";
+  // get MonitorObject with a given name from generic data object and converts it into requested type (TH1 here)
+  const auto histOpt = getMonitorObject<TH1>(data, name);
+  if (!histOpt.has_value()) {
+    ILOG(Warning, Support) << "Data object does not contain any MonitorObject with a name: " << name << ", or it couldn't be transformed into TH1" << ENDM;
+    return result;
   }
+
+  const TH1& histogram = histOpt.value().get();
+  // unless we find issues, we assume the quality is good
+  result = Quality::Good;
+
+  // an example of a naive quality check: we want bins 1-7 to be non-empty and bins 0 and >7 to be empty.
+  for (int i = 0; i < histogram.GetNbinsX(); i++) {
+    if (i > 0 && i < 8 && histogram.GetBinContent(i) == 0) {
+      result = Quality::Bad;
+      // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
+      result.addFlag(FlagTypeFactory::BadPID(), "It is bad because there is nothing in bin " + std::to_string(i));
+      break;
+    } else if ((i == 0 || i > 7) && histogram.GetBinContent(i) > 0) {
+      result = Quality::Medium;
+      // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
+      result.addFlag(FlagTypeFactory::Unknown(), "It is medium because bin " + std::to_string(i) + " is not empty");
+      result.addFlag(FlagTypeFactory::BadTracking(), "We can assign more than one Flag to a Quality");
+    }
+  }
+  // optionally, we can associate some custom metadata to a Quality
+  result.addMetadata("mykey", "myvalue");
 
   return result;
 }
