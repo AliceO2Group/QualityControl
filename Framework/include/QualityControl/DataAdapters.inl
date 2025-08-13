@@ -30,19 +30,6 @@
 namespace o2::quality_control::core
 {
 
-namespace helpers
-{
-
-}
-
-template <typename Result, typename DataContainer>
-auto iterateMonitorObjects(const DataGeneric<DataContainer>& data, std::string_view moName)
-{
-  return data.template iterateByTypeFilterAndTransform<MonitorObject, Result>(
-    [name = std::string{ moName }](const std::pair<std::string_view, const MonitorObject*>& pair) -> bool { return std::string_view{ pair.second->GetName() } == name; },
-    [](const MonitorObject* ptr) -> const Result* { return dynamic_cast<const Result*>(ptr->getObject()); });
-}
-
 inline auto iterateMonitorObjects(const o2::quality_control::core::Data& data)
 {
   return data.iterateByType<o2::quality_control::core::MonitorObject>();
@@ -71,19 +58,18 @@ std::optional<std::reference_wrapper<const StoredType>> getMonitorObjectCommon(c
     const auto getInternalObject = [](const MonitorObject* ptr) -> const auto* {
       return dynamic_cast<const StoredType*>(ptr->getObject());
     };
-    for (const auto& v : data.template iterateByTypeFilterAndTransform<MonitorObject, StoredType>(filter, getInternalObject)) {
+    for (const auto& v : data.iterateByTypeFilterAndTransform<MonitorObject, StoredType>(filter, getInternalObject)) {
       return { v };
     }
   }
   return std::nullopt;
 }
 
-}; // namespace helpers
+} // namespace helpers
 
 template <typename StoredType>
 std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Data& data, std::string_view objectName, std::string_view taskName)
 {
-
   const auto filterMOByNameAndTaskName = [objectName, taskName](const auto& pair) {
     return std::tuple{ std::string_view{ pair.second->GetName() }, pair.second->getTaskName() } == std::tuple{ objectName, taskName };
   };

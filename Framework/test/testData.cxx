@@ -149,7 +149,7 @@ TEMPLATE_TEST_CASE("Data - inserting fundamental types", "[.Data-benchmark]", st
   };
 }
 
-TEMPLATE_TEST_CASE("Data - iterating fundamental types", "[Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
+TEMPLATE_TEST_CASE("Data - iterating fundamental types", "[.Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
 {
   constexpr size_t iterations = 20000;
   DataGeneric<TestType> data;
@@ -226,11 +226,18 @@ TEMPLATE_TEST_CASE("Data - inserting and iterating MOs", "[.Data-benchmark]", st
       data.insert(mo->getFullName(), mo);
     }
 
-    REQUIRE(iterateMonitorObjects<TH1F>(data, "notimportantname").empty());
+    const auto filterMOByName = [](const auto& pair) {
+      return std::string_view(pair.second->GetName()) == "nonexistent";
+    };
+
+    const auto getInternalObject = [](const MonitorObject* ptr) -> const auto* {
+      return dynamic_cast<const TH1F*>(ptr->getObject());
+    };
+    REQUIRE(data.template iterateByTypeFilterAndTransform<MonitorObject, TH1F>(filterMOByName, getInternalObject).empty());
   };
 }
 
-TEST_CASE("Data adapters - helper functions")
+TEST_CASE("Data adapters - helper functions", "[Data]")
 {
 
   Data data;
