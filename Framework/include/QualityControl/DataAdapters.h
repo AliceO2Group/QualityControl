@@ -27,8 +27,6 @@ namespace o2::quality_control::core
 Data createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 Data createData(const QualityObjectsMapType& moMap);
 
-template <typename Result, typename DataContainer>
-auto iterateMonitorObjects(const DataGeneric<DataContainer>& data, std::string_view moName);
 inline auto iterateMonitorObjects(const Data& data);
 inline auto iterateMonitorObjects(const Data& data, std::string_view taskName);
 
