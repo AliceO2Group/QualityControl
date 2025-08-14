@@ -146,7 +146,7 @@ Quality CFDEffCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return result;
 }
 
-std::string CFDEffCheck::getAcceptedType() { return "TH1"; }
+
 
 void CFDEffCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

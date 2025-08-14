@@ -238,7 +238,7 @@ Quality GenericHistogramCheck::check(std::map<std::string, std::shared_ptr<Monit
   return result;
 }
 
-std::string GenericHistogramCheck::getAcceptedType() { return "TCanvas"; }
+
 
 void GenericHistogramCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

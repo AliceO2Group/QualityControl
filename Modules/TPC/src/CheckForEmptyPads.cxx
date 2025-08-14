@@ -220,10 +220,7 @@ std::string CheckForEmptyPads::summarizeMetaData(Quality quality)
 }
 
 //______________________________________________________________________________
-std::string CheckForEmptyPads::getAcceptedType()
-{
-  return "TCanvas";
-}
+
 
 //______________________________________________________________________________
 void CheckForEmptyPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)

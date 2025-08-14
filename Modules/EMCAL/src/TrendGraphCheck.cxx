@@ -117,7 +117,7 @@ Quality TrendGraphCheck::check(
   return result;
 }
 
-std::string TrendGraphCheck::getAcceptedType() { return "TGraph"; }
+
 
 void TrendGraphCheck::beautify(std::shared_ptr<MonitorObject> mo,
                                Quality checkResult)

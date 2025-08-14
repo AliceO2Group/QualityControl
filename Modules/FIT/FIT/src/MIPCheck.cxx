@@ -242,11 +242,7 @@ Quality MIPCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   return result;
 }
 
-std::string MIPCheck::getAcceptedType()
-{
-  // This method is a remnant of early interface prototype and will be removed in the scope of ticket QC-373
-  return "TH1";
-}
+
 
 void MIPCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

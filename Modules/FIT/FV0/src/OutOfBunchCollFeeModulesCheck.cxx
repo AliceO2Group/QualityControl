@@ -125,7 +125,7 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
   return result;
 }
 
-std::string OutOfBunchCollFeeModulesCheck::getAcceptedType() { return "TH2"; }
+
 
 void OutOfBunchCollFeeModulesCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

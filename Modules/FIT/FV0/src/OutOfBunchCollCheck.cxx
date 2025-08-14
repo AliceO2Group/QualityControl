@@ -130,7 +130,7 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   return result;
 }
 
-std::string OutOfBunchCollCheck::getAcceptedType() { return "TH2"; }
+
 
 void OutOfBunchCollCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

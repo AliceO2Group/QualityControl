@@ -117,7 +117,7 @@ Quality FractionCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string FractionCheck::getAcceptedType() { return "TH1"; }
+
 
 void FractionCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

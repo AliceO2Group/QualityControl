@@ -220,7 +220,7 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string DigitsQcCheck::getAcceptedType() { return "TH1"; }
+
 
 void DigitsQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

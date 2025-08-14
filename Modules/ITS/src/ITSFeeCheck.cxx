@@ -272,7 +272,7 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return result;
 } // end check
 
-std::string ITSFeeCheck::getAcceptedType() { return "TH2I, TH2Poly"; }
+
 
 void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

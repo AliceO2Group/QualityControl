@@ -41,10 +41,7 @@ class RawCheck final : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
- private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
   Quality runPedestalCheck1D(TH1* adcdist, double minentries, double signalfraction) const;
   std::vector<Quality> runPedestalCheck2D(TH2* adchist, double minentries, double signalfraction) const;
   std::array<std::vector<int>, 20> reduceBadFECs(std::vector<int> fecids) const;

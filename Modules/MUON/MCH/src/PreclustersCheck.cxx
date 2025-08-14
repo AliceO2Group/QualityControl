@@ -234,7 +234,7 @@ Quality PreclustersCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
   return mQualityChecker.getQuality();
 }
 
-std::string PreclustersCheck::getAcceptedType() { return "TH1"; }
+
 
 void PreclustersCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

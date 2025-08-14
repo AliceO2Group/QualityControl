@@ -77,7 +77,7 @@ Quality CellAmpCheck::check(
   return result;
 }
 
-std::string CellAmpCheck::getAcceptedType() { return "TH1"; }
+
 
 void CellAmpCheck::beautify(std::shared_ptr<MonitorObject> mo,
                             Quality checkResult)

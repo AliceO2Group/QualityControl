@@ -166,7 +166,7 @@ Quality MeanVertexCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string MeanVertexCheck::getAcceptedType() { return "TObject"; }
+
 
 void MeanVertexCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

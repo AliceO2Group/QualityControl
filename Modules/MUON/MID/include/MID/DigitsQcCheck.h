@@ -39,10 +39,7 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
- private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
   double mMeanMultThreshold = 10.;   ///! Upper threshold on mean multiplicity
   double mMinMultThreshold = 0.001;  ///! Lower threshold on mean multiplicity
   double mLocalBoardScale = 100.;    ///! Local board scale in kHz

@@ -130,10 +130,7 @@ void RawDataCheckStats::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   }
 }
 
-std::string RawDataCheckStats::getAcceptedType()
-{
-  return "TH1";
-}
+
 
 void RawDataCheckStats::reset()
 {
@@ -209,10 +206,7 @@ void RawDataCheckSizes::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   }
 }
 
-std::string RawDataCheckSizes::getAcceptedType()
-{
-  return "TH2";
-}
+
 
 void RawDataCheckSizes::reset()
 {

@@ -122,7 +122,7 @@ Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<Monitor
 }
 
 //______________________________________________________________________________
-std::string PadCalibrationCheck::getAcceptedType() { return "TCanvas"; }
+
 
 //______________________________________________________________________________
 void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)

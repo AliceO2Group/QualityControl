@@ -305,7 +305,7 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string ZDCRecDataCheck::getAcceptedType() { return "TH1"; }
+
 
 void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

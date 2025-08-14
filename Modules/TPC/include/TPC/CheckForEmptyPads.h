@@ -36,10 +36,7 @@ class CheckForEmptyPads : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
- private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
   ClassDefOverride(CheckForEmptyPads, 1);
   std::string summarizeMetaData(Quality quality);
   std::vector<std::string> mSectorsName;

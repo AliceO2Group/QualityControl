@@ -97,7 +97,7 @@ Quality CellCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* 
   return result;
 }
 
-std::string CellCheck::getAcceptedType() { return "TH1"; }
+
 
 void CellCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

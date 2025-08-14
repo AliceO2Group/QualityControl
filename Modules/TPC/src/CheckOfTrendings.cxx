@@ -379,7 +379,7 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   return totalQuality;
 }
 
-std::string CheckOfTrendings::getAcceptedType() { return "TCanvas"; }
+
 
 void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

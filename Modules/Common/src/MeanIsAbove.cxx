@@ -38,7 +38,7 @@ void MeanIsAbove::configure()
   mThreshold = stof(mCustomParameters.at("meanThreshold"));
 }
 
-std::string MeanIsAbove::getAcceptedType() { return "TH1"; }
+
 
 Quality MeanIsAbove::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -57,14 +57,7 @@ Quality MeanIsAbove::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 void MeanIsAbove::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // A line is drawn at the level of the threshold.
-  // Its colour depends on the quality.
-
-  if (!this->isObjectCheckable(mo)) {
-    ILOG(Error, Support) << "object not checkable" << ENDM;
-    return;
-  }
-
-  auto* th1 = dynamic_cast<TH1*>(mo->getObject());
+  // Its colour depends on the quality.auto* th1 = dynamic_cast<TH1*>(mo->getObject());
 
   Double_t xMin = th1->GetXaxis()->GetXmin();
   Double_t xMax = th1->GetXaxis()->GetXmax();

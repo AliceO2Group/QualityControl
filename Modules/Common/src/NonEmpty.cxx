@@ -46,7 +46,7 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
     return result;
   }
 
-  std::string NonEmpty::getAcceptedType() { return "TH1"; }
+  
 
   void NonEmpty::beautify(std::shared_ptr<MonitorObject> /*mo*/, Quality /*checkResult*/)
   {

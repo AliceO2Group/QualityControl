@@ -145,7 +145,7 @@ Quality PulseHeightCheck::check(std::map<std::string, std::shared_ptr<MonitorObj
   return result;
 }
 
-std::string PulseHeightCheck::getAcceptedType() { return "TH1"; }
+
 
 void PulseHeightCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

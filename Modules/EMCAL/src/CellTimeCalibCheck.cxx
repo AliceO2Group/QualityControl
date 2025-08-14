@@ -76,7 +76,7 @@ Quality CellTimeCalibCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   return result;
 }
 
-std::string CellTimeCalibCheck::getAcceptedType() { return "TH1"; }
+
 
 void CellTimeCalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

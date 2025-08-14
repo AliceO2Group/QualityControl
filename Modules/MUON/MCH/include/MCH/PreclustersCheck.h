@@ -44,10 +44,7 @@ class PreclustersCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   void startOfActivity(const Activity& activity) override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
- private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
   std::array<Quality, getNumDE()> checkMeanEfficiencies(TH1* h);
   std::array<Quality, getNumDE()> checkMeanEfficiencyRatios(TH1* h);
   void checkSolarMeanEfficiencies(TH1* h);

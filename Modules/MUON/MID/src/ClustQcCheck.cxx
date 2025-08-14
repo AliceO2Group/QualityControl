@@ -79,7 +79,7 @@ Quality ClustQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   return result;
 }
 
-std::string ClustQcCheck::getAcceptedType() { return "TH1"; }
+
 
 static void updateTitle(TH1* hist, std::string suffix)
 {

@@ -196,7 +196,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string ITSTrackCheck::getAcceptedType() { return "TH1D"; }
+
 
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

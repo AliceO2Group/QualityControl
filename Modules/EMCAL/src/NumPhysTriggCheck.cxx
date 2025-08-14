@@ -81,7 +81,7 @@ Quality NumPhysTriggCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
   return result;
 }
 
-std::string NumPhysTriggCheck::getAcceptedType() { return "TCanvas"; }
+
 
 void NumPhysTriggCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

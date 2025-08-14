@@ -35,10 +35,7 @@ class ZDCRawDataCheck : public o2::quality_control::checker::CheckInterface
   ~ZDCRawDataCheck() override = default;
 
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
-  ClassDefOverride(ZDCRawDataCheck, 2);
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;  ClassDefOverride(ZDCRawDataCheck, 2);
   struct sCheck {
     std::string ch;
     float minW;

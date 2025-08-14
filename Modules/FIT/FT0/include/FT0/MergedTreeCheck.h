@@ -33,10 +33,7 @@ class MergedTreeCheck : public o2::quality_control::checker::CheckInterface
 
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
-  ClassDefOverride(MergedTreeCheck, 2);
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;  ClassDefOverride(MergedTreeCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::ft0

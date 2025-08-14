@@ -270,7 +270,7 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   }
   return result;
 }
-std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
+
 
 void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
 {

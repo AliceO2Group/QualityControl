@@ -169,7 +169,7 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return result;
 }
 
-std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
+
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

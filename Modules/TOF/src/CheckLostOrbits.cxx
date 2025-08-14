@@ -55,7 +55,7 @@ Quality CheckLostOrbits::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string CheckLostOrbits::getAcceptedType() { return "TH2F"; }
+
 
 void CheckLostOrbits::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

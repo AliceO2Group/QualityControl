@@ -151,7 +151,7 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   return mFinalResult;
 }
 
-std::string TrackletCountCheck::getAcceptedType() { return "TH1"; }
+
 
 void TrackletCountCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

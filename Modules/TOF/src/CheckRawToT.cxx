@@ -50,12 +50,7 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   /// Number of events with ToT > 0 (excluding orphans)
   float ToTIntegral = 0.f;
 
-  for (auto& [moName, mo] : *moMap) {
-    if (!isObjectCheckable(mo)) {
-      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
-      continue;
-    }
-    ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
+  for (auto& [moName, mo] : *moMap) {ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
 
     if (mo->getName().find("ToT/") != std::string::npos) {
       auto* h = static_cast<TH1F*>(mo->getObject());
@@ -95,12 +90,7 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
 void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
-  if (!isObjectCheckable(mo)) {
-    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
-    return;
-  }
-  if (mo->getName().find("ToT/") != std::string::npos) {
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;if (mo->getName().find("ToT/") != std::string::npos) {
     auto* h = static_cast<TH1F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (!msg) {

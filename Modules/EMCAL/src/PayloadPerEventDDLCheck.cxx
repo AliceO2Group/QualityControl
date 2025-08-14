@@ -77,7 +77,7 @@ Quality PayloadPerEventDDLCheck::check(std::map<std::string, std::shared_ptr<Mon
   return result;
 }
 
-std::string PayloadPerEventDDLCheck::getAcceptedType() { return "TH2"; }
+
 
 void PayloadPerEventDDLCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

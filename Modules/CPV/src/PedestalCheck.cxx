@@ -279,8 +279,8 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-// std::string PedestalCheck::getAcceptedType() { return "TObject"; }
-std::string PedestalCheck::getAcceptedType() { return "TH1"; }
+// 
+
 
 void PedestalCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {

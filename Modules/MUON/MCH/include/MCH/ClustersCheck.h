@@ -44,10 +44,7 @@ class ClustersCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   void startOfActivity(const Activity& activity) override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
- private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
   /// quality flag associated to each input plot
   std::unordered_map<std::string, Quality> mQualities;
   /// acceptable limits for the average number of clusters associated tracks

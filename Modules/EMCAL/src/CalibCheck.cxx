@@ -372,7 +372,7 @@ Quality CalibCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   return result;
 }
 
-std::string CalibCheck::getAcceptedType() { return "TH1"; }
+
 
 void CalibCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
