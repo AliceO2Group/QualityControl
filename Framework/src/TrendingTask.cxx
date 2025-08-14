@@ -142,6 +142,40 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
   }
 }
 
+void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style)
+{
+  if (!graph) {
+    return;
+  }
+
+  if (style.lineColor >= 0) {
+    graph->SetLineColor(style.lineColor);
+  }
+  if (style.lineStyle >= 0) {
+    graph->SetLineStyle(style.lineStyle);
+  }
+  if (style.lineWidth >= 0) {
+    graph->SetLineWidth(style.lineWidth);
+  }
+
+  if (style.markerColor >= 0) {
+    graph->SetMarkerColor(style.markerColor);
+  }
+  if (style.markerStyle >= 0) {
+    graph->SetMarkerStyle(style.markerStyle);
+  }
+  if (style.markerSize >= 0.f) {
+    graph->SetMarkerSize(style.markerSize);
+  }
+
+  if (style.fillColor >= 0) {
+    graph->SetFillColor(style.fillColor);
+  }
+  if (style.fillStyle >= 0) {
+    graph->SetFillStyle(style.fillStyle);
+  }
+}
+
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
 {
   // removing leftovers from any previous runs
@@ -310,19 +344,31 @@ std::string TrendingTask::deduceGraphLegendOptions(const TrendingTaskConfig::Gra
 TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
 {
   auto* c = new TCanvas();
-  auto* legend = new TLegend(0.3, 0.2);
 
+  // Legend
+  TLegend* legend = nullptr;
+  if (plotConfig.legend.x1 >= 0 && plotConfig.legend.y1 >= 0 && plotConfig.legend.x2 >= 0 && plotConfig.legend.y2 >= 0) {
+    legend = new TLegend(plotConfig.legend.x1, plotConfig.legend.y1,
+                         plotConfig.legend.x2, plotConfig.legend.y2,
+                         nullptr, "NDC");
+    if (plotConfig.legend.nColumns > 0) {
+      legend->SetNColumns(plotConfig.legend.nColumns);
+    }
+  } else {
+    legend = new TLegend(0.3, 0.2);
+  }
+  legend->SetBorderSize(0);
+  legend->SetFillStyle(0);
+  legend->SetTextSize(0.03);
+  legend->SetMargin(0.15);
+
+  // Keep palette behavior unless user forces explicit colors via per-graph style
   if (plotConfig.colorPalette != 0) {
-    // this will work just once until we bump ROOT to a version which contains this commit:
-    // https://github.com/root-project/root/commit/0acdbd5be80494cec98ff60ba9a73cfe70a9a57a
-    // and enable the commented out line
-    // perhaps JSROOT >7.7.1 will allow us to retain the palette as well.
     gStyle->SetPalette(plotConfig.colorPalette);
     // This makes ROOT store the selected palette for each generated plot.
     // TColor::DefinedColors(1); // TODO enable when available
   } else {
-    // we set the default palette
-    gStyle->SetPalette();
+    gStyle->SetPalette(); // default
   }
 
   // regardless whether we draw a graph or a histogram, a histogram is always used by TTree::Draw to draw axes and title
@@ -337,6 +383,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
     // having "SAME" at the first TTree::Draw() call will not work, we have to add it only in subsequent Draw calls
     std::string option = firstGraphInPlot ? graphConfig.option : "SAME " + graphConfig.option;
 
+    // Draw main series
     mTrend->Draw(graphConfig.varexp.c_str(), graphConfig.selection.c_str(), option.c_str());
 
     // For graphs, we allow to draw errors if they are specified.
@@ -357,11 +404,23 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       }
     }
 
+    // Legend entry and styling for graphs
     if (auto graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
+      if (plotOrder >= 2) {
+        // Style objects after Draw so we override palette/auto styling when requested
+        applyStyleToGraph(graph, graphConfig.style);
+        // Keep errors visually consistent with the main series
+        if (graphErrors) {
+          applyStyleToGraph(graphErrors, graphConfig.style);
+        }
+      }
       graph->SetName(graphConfig.name.c_str());
       graph->SetTitle(graphConfig.title.c_str());
-      legend->AddEntry(graph, graphConfig.title.c_str(), deduceGraphLegendOptions(graphConfig).c_str());
+      legend->AddEntry(graph, graphConfig.title.c_str(),
+                       deduceGraphLegendOptions(graphConfig).c_str());
     }
+
+    // Legend entry and styling for histograms
     if (auto htemp = dynamic_cast<TH1*>(c->FindObject("htemp"))) {
       if (plotOrder == 1) {
         htemp->SetName(graphConfig.name.c_str());
@@ -376,7 +435,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
       // so we have to do it here.
       htemp->BufferEmpty();
       // we keep the pointer to bg histogram for later postprocessing
-      if (background == nullptr) {
+      if (!background) {
         background = htemp;
       }
     }
@@ -430,6 +489,7 @@ TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
   } else {
     delete legend;
   }
+
   c->Modified();
   c->Update();
 
