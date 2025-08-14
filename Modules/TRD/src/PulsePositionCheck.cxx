@@ -207,8 +207,6 @@ Quality PulsePositionCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   return result;
 }
 
-std::string PulsePositionCheck::getAcceptedType() { return "TH1"; }
-
 void PulsePositionCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
 

@@ -93,8 +93,6 @@ Quality IncreasingEntries::check(std::map<std::string, std::shared_ptr<MonitorOb
   return result;
 }
 
-std::string IncreasingEntries::getAcceptedType() { return "TH1"; }
-
 void IncreasingEntries::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // only add the pavetext on the faulty plots

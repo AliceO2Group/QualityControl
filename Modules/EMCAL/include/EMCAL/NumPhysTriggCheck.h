@@ -47,10 +47,7 @@ class NumPhysTriggCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
 
   /// \brief Accept only TH1 histograms as input
-  /// \return Name of the accepted object: TH1
-  std::string getAcceptedType() override;
-
-  ClassDefOverride(NumPhysTriggCheck, 1);
+  /// \return Name of the accepted object: TH1  ClassDefOverride(NumPhysTriggCheck, 1);
 
  private:
   double mFracToMaxGood = 0.5; ///< Thresholds for minimum fraction of physics triggers compared to maximum

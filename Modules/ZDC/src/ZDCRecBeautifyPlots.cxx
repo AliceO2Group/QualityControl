@@ -48,12 +48,6 @@ Quality ZDCRecBeautifyPlots::check(std::map<std::string, std::shared_ptr<Monitor
   return result;
 }
 
-std::string ZDCRecBeautifyPlots::getAcceptedType()
-{
-  // This method is a remnant of early interface prototype and will be removed in the scope of ticket QC-373
-  return "TH1";
-}
-
 void ZDCRecBeautifyPlots::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "h_CENTR_ZNA" || mo->getName() == "h_CENTR_ZNC" || mo->getName() == "h_CENTR_ZNA_cut_ZEM" || mo->getName() == "h_CENTR_ZNC_cut_ZEM") {

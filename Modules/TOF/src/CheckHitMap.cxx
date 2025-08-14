@@ -49,10 +49,6 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
-    if (!isObjectCheckable(mo)) {
-      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
-      continue;
-    }
     ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
     const auto* h = static_cast<TH2F*>(mo->getObject());
     if (h->GetEntries() == 0) { // Histogram is empty
@@ -132,10 +128,6 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
-  if (!isObjectCheckable(mo)) {
-    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
-    return;
-  }
   if (1) {
     auto* h = static_cast<TH2F*>(mo->getObject());
     if (checkResult != Quality::Good) {

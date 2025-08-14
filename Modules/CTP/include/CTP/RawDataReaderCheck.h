@@ -42,7 +42,6 @@ class RawDataReaderCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
   void startOfActivity(const Activity& activity) override;
   const double_t nofOrbitsPerTF = o2::base::GRPGeomHelper::instance().getNHBFPerTF();
   const double_t TimeTF = nofOrbitsPerTF * o2::constants::lhc::LHCOrbitMUS / 1e6; // in seconds

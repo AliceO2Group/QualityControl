@@ -48,9 +48,7 @@ class HmpidRawChecks : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  // std::string getAcceptedType() override;
-
- private:
+  // private:
   std::array<Quality, 14> check_hHmpBigMap(TProfile2D* h); // <-- Dimensione da chiarire
   std::array<Quality, 42> check_hHmpHvSectorQ(TH2F* h);
   std::array<Quality, 14> check_hHmpPadOccPrf(TProfile* h);
