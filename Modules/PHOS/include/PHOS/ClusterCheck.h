@@ -39,7 +39,9 @@ class ClusterCheck : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; protected:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+
+ protected:
   int mDeadThreshold[5] = { 10, 10, 10, 10, 10 };   /// Number of new dead channels per module to decalre bad
   int mNoisyThreshold[5] = { 2, 2, 2, 2, 2 };       /// Number of new noisy channels per module to send warning
   int mMaxOccupancyCut[5] = { 10, 10, 10, 10, 10 }; /// occupancy in noisy channel wrt mean over module

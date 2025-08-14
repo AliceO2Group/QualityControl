@@ -356,8 +356,6 @@ Quality TrendCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   return result;
 }
 
-
-
 static void drawThresholds(TGraph* graph, const std::vector<std::pair<double, std::pair<double, double>>>& thresholds, int lineColor, int lineStyle)
 {
   if (thresholds.empty()) {

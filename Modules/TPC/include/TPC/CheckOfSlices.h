@@ -42,7 +42,6 @@ class CheckOfSlices : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
 
-
  private:
   ClassDefOverride(CheckOfSlices, 3);
   std::string createMetaData(const std::vector<std::string>& pointMetaData);

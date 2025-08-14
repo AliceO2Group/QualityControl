@@ -46,8 +46,6 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
     return result;
   }
 
-  
-
   void NonEmpty::beautify(std::shared_ptr<MonitorObject> /*mo*/, Quality /*checkResult*/)
   {
     // NOOP

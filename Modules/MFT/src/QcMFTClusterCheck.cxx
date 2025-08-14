@@ -217,8 +217,6 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
   return result;
 }
 
-
-
 void QcMFTClusterCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
 {
   long timestamp = mo->getValidity().getMin();

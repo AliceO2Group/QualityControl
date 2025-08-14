@@ -50,8 +50,6 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
   return result;
 }
 
-
-
 void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "RDHCounter") {

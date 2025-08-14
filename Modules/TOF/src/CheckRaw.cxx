@@ -73,8 +73,6 @@ Quality CheckRaw::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   return result;
 }
 
-
-
 void CheckRaw::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "hDiagnostic") {

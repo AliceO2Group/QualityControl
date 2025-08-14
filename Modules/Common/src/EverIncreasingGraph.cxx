@@ -55,8 +55,6 @@ Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<Monitor
   return result;
 }
 
-
-
 void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Info, Support) << "EverIncreasingGraph::Beautify" << ENDM;

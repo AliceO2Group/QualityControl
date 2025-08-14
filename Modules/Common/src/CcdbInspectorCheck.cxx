@@ -71,8 +71,6 @@ Quality CcdbInspectorCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   return result;
 }
 
-
-
 void CcdbInspectorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
 }

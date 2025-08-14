@@ -72,8 +72,6 @@ Quality RawQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   return result;
 }
 
-
-
 void RawQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "mDetElemID") {

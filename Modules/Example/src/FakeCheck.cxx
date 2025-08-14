@@ -34,8 +34,6 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
     return result;
   }
 
-  
-
   void FakeCheck::beautify(std::shared_ptr<MonitorObject> /*mo*/, Quality /*checkResult*/)
   {
     // NOOP

@@ -226,8 +226,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   return result;
 }
 
-
-
 void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("Error") != std::string::npos) {

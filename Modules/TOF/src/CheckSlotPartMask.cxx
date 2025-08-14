@@ -90,7 +90,6 @@ Quality CheckSlotPartMask::check(std::map<std::string, std::shared_ptr<MonitorOb
   return result;
 }
 
-
 void CheckSlotPartMask::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "hSlotPartMask") {

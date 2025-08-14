@@ -130,8 +130,6 @@ void RawDataCheckStats::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   }
 }
 
-
-
 void RawDataCheckStats::reset()
 {
   ILOG(Debug, Devel) << "RawDataCheckStats::reset" << ENDM;
@@ -205,8 +203,6 @@ void RawDataCheckSizes::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     }
   }
 }
-
-
 
 void RawDataCheckSizes::reset()
 {

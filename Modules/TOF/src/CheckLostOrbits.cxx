@@ -55,8 +55,6 @@ Quality CheckLostOrbits::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-
-
 void CheckLostOrbits::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "OrbitsInTFEfficiency") {

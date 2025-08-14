@@ -77,8 +77,6 @@ Quality CellAmpCheck::check(
   return result;
 }
 
-
-
 void CellAmpCheck::beautify(std::shared_ptr<MonitorObject> mo,
                             Quality checkResult)
 {

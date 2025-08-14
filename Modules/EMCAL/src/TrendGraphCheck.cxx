@@ -117,8 +117,6 @@ Quality TrendGraphCheck::check(
   return result;
 }
 
-
-
 void TrendGraphCheck::beautify(std::shared_ptr<MonitorObject> mo,
                                Quality checkResult)
 {

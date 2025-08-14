@@ -130,8 +130,6 @@ Quality ClustersCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-
-
 // get the ROOT color code associated to a given quality level
 static int getQualityColor(Quality q)
 {

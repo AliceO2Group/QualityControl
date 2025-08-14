@@ -257,8 +257,6 @@ Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   return result;
 } // namespace o2::quality_control_modules::phos
 
-
-
 void ClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("ClusterOccupancyM") != std::string::npos) {

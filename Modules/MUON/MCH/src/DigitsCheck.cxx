@@ -322,8 +322,6 @@ Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return mQualityChecker.getQuality();
 }
 
-
-
 static void updateTitle(TH1* hist, std::string suffix)
 {
   if (!hist) {

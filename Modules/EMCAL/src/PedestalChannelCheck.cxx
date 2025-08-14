@@ -164,8 +164,6 @@ Quality PedestalChannelCheck::check(std::map<std::string, std::shared_ptr<Monito
   return result;
 }
 
-
-
 void PedestalChannelCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   std::array<std::string, 4> channelHists = { { "mPedestalChannelFECHG", "mPedestalChannelFECLG", "mPedestalChannelLEDMONHG", "mPedestalChannelLEDMONLG" } };

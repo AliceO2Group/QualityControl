@@ -35,7 +35,9 @@ class CheckLostOrbits : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override; private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
+
+ private:
   MessagePad mShifterMessages{ "", 0.15, 0.65, 0.4, 0.85 };
   /// To select to check link inefficiencies (if recovery does not work)
   double mFractionThr = 0.9;

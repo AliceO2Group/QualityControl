@@ -56,8 +56,6 @@ Quality MergedTreeCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return Quality::Bad;
 }
 
-
-
 void MergedTreeCheck::beautify(std::shared_ptr<MonitorObject>, Quality)
 {
 }

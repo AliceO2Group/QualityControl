@@ -305,8 +305,6 @@ Quality ZDCRecDataCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-
-
 void ZDCRecDataCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "h_summary_ADC") {

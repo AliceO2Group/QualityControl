@@ -255,7 +255,6 @@ Quality CheckOfPads::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
 //______________________________________________________________________________
 
-
 //______________________________________________________________________________
 void CheckOfPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)
 {

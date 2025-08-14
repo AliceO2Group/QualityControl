@@ -69,8 +69,6 @@ class CheckInterface : public core::UserCodeInterface
   /// then this should be reset here.
   virtual void reset(); // not fully abstract because we don't want to change all the existing subclasses
 
-
-
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
   virtual void endOfActivity(const core::Activity& activity);   // not fully abstract because we don't want to change all the existing subclasses
 

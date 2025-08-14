@@ -60,8 +60,6 @@ Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<Monitor
   return result;
 }
 
-
-
 void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "hDiagnostic") {

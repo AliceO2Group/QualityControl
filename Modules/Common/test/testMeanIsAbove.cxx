@@ -72,7 +72,6 @@ BOOST_AUTO_TEST_CASE(test_types)
 
   MeanIsAbove check;
 
-
   Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Null);
 }

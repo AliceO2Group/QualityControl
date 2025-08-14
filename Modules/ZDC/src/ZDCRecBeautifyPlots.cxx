@@ -48,8 +48,6 @@ Quality ZDCRecBeautifyPlots::check(std::map<std::string, std::shared_ptr<Monitor
   return result;
 }
 
-
-
 void ZDCRecBeautifyPlots::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "h_CENTR_ZNA" || mo->getName() == "h_CENTR_ZNC" || mo->getName() == "h_CENTR_ZNA_cut_ZEM" || mo->getName() == "h_CENTR_ZNC_cut_ZEM") {

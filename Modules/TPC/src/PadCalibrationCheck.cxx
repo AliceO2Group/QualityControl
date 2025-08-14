@@ -123,7 +123,6 @@ Quality PadCalibrationCheck::check(std::map<std::string, std::shared_ptr<Monitor
 
 //______________________________________________________________________________
 
-
 //______________________________________________________________________________
 void PadCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality)
 {

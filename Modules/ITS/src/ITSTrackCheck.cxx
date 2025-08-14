@@ -196,8 +196,6 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-
-
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   std::vector<std::string> vPlotWithTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "plotWithTextMessage", ""));

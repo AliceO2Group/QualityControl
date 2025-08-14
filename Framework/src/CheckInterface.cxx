@@ -24,8 +24,6 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control::checker
 {
 
-
-
 void CheckInterface::configure()
 {
   // noop, override it if you want.

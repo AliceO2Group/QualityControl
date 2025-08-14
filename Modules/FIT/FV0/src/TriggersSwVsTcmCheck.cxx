@@ -103,8 +103,6 @@ Quality TriggersSwVsTcmCheck::check(std::map<std::string, std::shared_ptr<Monito
   return result;
 }
 
-
-
 void TriggersSwVsTcmCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (!mo) {

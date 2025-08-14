@@ -151,8 +151,6 @@ Quality TrackletCountCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   return mFinalResult;
 }
 
-
-
 void TrackletCountCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "trackletsperevent") {

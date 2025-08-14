@@ -62,8 +62,6 @@ Quality CheckDRMDiagnostics::check(std::map<std::string, std::shared_ptr<Monitor
   return result;
 }
 
-
-
 void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "DRMCounter") {

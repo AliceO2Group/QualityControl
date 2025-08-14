@@ -33,8 +33,6 @@ BOOST_AUTO_TEST_CASE(checkable)
   MonitorObject monitorObject(&histo, "task", "testClass", "TST");
   monitorObject.setIsOwner(false);
   NonEmpty myCheck;
-
-
 }
 
 BOOST_AUTO_TEST_CASE(beautify)

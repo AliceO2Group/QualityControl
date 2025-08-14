@@ -81,8 +81,6 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-
-
 void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.

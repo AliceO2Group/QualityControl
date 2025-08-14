@@ -43,7 +43,9 @@ class DecodingCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   void startOfActivity(const Activity& activity) override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+
+ private:
   std::string mGoodFracHistName{ "DecodingErrors/GoodBoardsFractionPerDE" };
   std::string mGoodFracPerSolarHistName{ "DecodingErrors/GoodBoardsFractionPerSolar" };
   std::string mSyncFracHistName{ "SyncErrors/SyncedBoardsFractionPerDE" };

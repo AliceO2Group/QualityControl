@@ -31,8 +31,6 @@ Quality ITSThresholdCalibrationCheck::check(std::map<std::string, std::shared_pt
   return result;
 }
 
-
-
 void ITSThresholdCalibrationCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
 }

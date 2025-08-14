@@ -40,7 +40,8 @@ class NumPatchesPerFastORCheck : public o2::quality_control::checker::CheckInter
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;  struct FastORNoiseInfo {
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+  struct FastORNoiseInfo {
     int mCounts;
     int mTRUIndex;
     int mFastORIndex;

@@ -62,8 +62,6 @@ class TestCheck : public checker::CheckInterface
     str->String().Append(" is beautiful now");
   }
 
-
-
   string mValidString;
 };
 
@@ -87,6 +85,4 @@ TEST_CASE("test_invoke_all_interface_methods")
 
   testCheck.beautify(mo);
   CHECK(reinterpret_cast<TObjString*>(mo->getObject())->String() == "A string is beautiful now");
-
-
 }

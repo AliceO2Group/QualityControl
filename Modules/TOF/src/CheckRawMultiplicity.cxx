@@ -66,7 +66,8 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
   /// Number of events with TOF hits multiplicity > 0
   float hitsIntegral = 0.f;
 
-  for (auto& [moName, mo] : *moMap) {ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
+  for (auto& [moName, mo] : *moMap) {
+    ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
     if (mo->getName() == "Multiplicity/Integrated") {
       const auto* h = static_cast<TH1I*>(mo->getObject());
       if (h->GetEntries() == 0) { // Histogram is empty
@@ -149,7 +150,8 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
 
 void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;if (mo->getName() == "Multiplicity/Integrated") {
+  ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (mo->getName() == "Multiplicity/Integrated") {
     auto* h = static_cast<TH1I*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (!msg) {

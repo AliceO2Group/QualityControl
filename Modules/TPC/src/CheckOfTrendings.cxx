@@ -379,8 +379,6 @@ Quality CheckOfTrendings::check(std::map<std::string, std::shared_ptr<MonitorObj
   return totalQuality;
 }
 
-
-
 void CheckOfTrendings::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* canv = dynamic_cast<TCanvas*>(mo->getObject());

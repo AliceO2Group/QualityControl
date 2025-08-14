@@ -38,7 +38,9 @@ class IncreasingEntries : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+
+ private:
   std::map<std::string, double> mLastEntries; // moName -> number of entries
 
   // count the number of faults we have seen in a row for each object

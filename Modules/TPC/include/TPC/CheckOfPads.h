@@ -36,7 +36,9 @@ class CheckOfPads : public o2::quality_control::checker::CheckInterface
   // Override interface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override; private:
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+
+ private:
   ClassDefOverride(CheckOfPads, 1);
   static constexpr std::string_view CheckChoiceMean = "Mean";
   static constexpr std::string_view CheckChoiceExpectedValue = "ExpectedValue";

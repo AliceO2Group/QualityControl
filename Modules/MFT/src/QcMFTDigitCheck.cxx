@@ -271,7 +271,6 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-
 void QcMFTDigitCheck::readMaskedChips(std::shared_ptr<MonitorObject> mo)
 {
   long timestamp = mo->getValidity().getMin();

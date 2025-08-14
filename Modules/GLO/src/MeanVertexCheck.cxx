@@ -166,8 +166,6 @@ Quality MeanVertexCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-
-
 void MeanVertexCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto moName = mo->getName();

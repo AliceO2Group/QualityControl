@@ -38,8 +38,6 @@ void MeanIsAbove::configure()
   mThreshold = stof(mCustomParameters.at("meanThreshold"));
 }
 
-
-
 Quality MeanIsAbove::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;

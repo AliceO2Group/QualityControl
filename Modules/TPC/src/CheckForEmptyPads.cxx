@@ -221,7 +221,6 @@ std::string CheckForEmptyPads::summarizeMetaData(Quality quality)
 
 //______________________________________________________________________________
 
-
 //______________________________________________________________________________
 void CheckForEmptyPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)
 {

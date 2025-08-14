@@ -34,7 +34,8 @@ class RawQcCheck : public o2::quality_control::checker::CheckInterface
 
   // Override interface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;  ClassDefOverride(RawQcCheck, 2);
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+  ClassDefOverride(RawQcCheck, 2);
 };
 
 } // namespace o2::quality_control_modules::mid
