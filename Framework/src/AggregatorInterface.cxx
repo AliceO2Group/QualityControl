@@ -15,12 +15,24 @@
 ///
 
 #include "QualityControl/AggregatorInterface.h"
+#include "QualityControl/DataAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {
+
+std::map<std::string, core::Quality> AggregatorInterface::aggregate(std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap)
+{
+  auto data = createData(qoMap);
+  return aggregate(data);
+}
+
+std::map<std::string, core::Quality> AggregatorInterface::aggregate(const core::Data& data)
+{
+  return {};
+}
 
 void AggregatorInterface::startOfActivity(const Activity& activity)
 {
