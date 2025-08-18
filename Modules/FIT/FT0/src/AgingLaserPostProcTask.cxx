@@ -9,7 +9,7 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-/// \file   AgingLaserPostProcTask.h
+/// \file   AgingLaserPostProcTask.cxx
 /// \author Andreas Molander <andreas.molander@cern.ch>, Jakub Muszyński <jakub.milosz.muszynski@cern.ch>
 
 #include "FT0/AgingLaserPostProcTask.h"
@@ -28,47 +28,64 @@
 #include <string>
 
 using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control_modules::fit;
 
 namespace o2::quality_control_modules::ft0
 {
 
 AgingLaserPostProcTask::~AgingLaserPostProcTask() = default;
 
+void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
+{
+  const char* cfgPath = Form("qc.postprocessing.%s", getID().c_str());
+  const char* cfgCustom = Form("%s.custom", cfgPath);
+
+  mPostProcHelper.configure(cfg, cfgPath, "FT0");
+
+  auto key = [&cfgCustom](const std::string& e) { return Form("%s.%s", cfgCustom, e.c_str()); };
+
+  mAmpMoPath = helper::getConfigFromPropertyTree<std::string>(cfg, key("agingTaskSourcePath"), mAmpMoPath);
+
+  mDetectorChIDs.resize(208);
+  std::iota(mDetectorChIDs.begin(), mDetectorChIDs.end(), 0);
+  const std::string detSkip =
+    helper::getConfigFromPropertyTree<std::string>(cfg, key("ignoreDetectorChannels"), "");
+  if (!detSkip.empty()) {
+    auto toSkip = fit::helper::parseParameters<uint8_t>(detSkip, ",");
+    for (auto s : toSkip) {
+      mDetectorChIDs.erase(std::remove(mDetectorChIDs.begin(), mDetectorChIDs.end(), s),
+                           mDetectorChIDs.end());
+    }
+  }
+
+  // Reference channels: default 208–210, then remove skipped ones
+  mReferenceChIDs.clear();
+  for (uint8_t ch = 208; ch < 211; ++ch) {
+    mReferenceChIDs.push_back(ch);
+  }
+  const std::string refSkip =
+    helper::getConfigFromPropertyTree<std::string>(cfg, key("ignoreRefChannels"), "");
+  if (!refSkip.empty()) {
+    auto toSkip = fit::helper::parseParameters<uint8_t>(refSkip, ",");
+    for (auto s : toSkip) {
+      mReferenceChIDs.erase(std::remove(mReferenceChIDs.begin(), mReferenceChIDs.end(), s),
+                            mReferenceChIDs.end());
+    }
+  }
+
+  mADCSearchMin = helper::getConfigFromPropertyTree<double>(cfg, key("refPeakWindowMin"), mADCSearchMin);
+  mADCSearchMax = helper::getConfigFromPropertyTree<double>(cfg, key("refPeakWindowMax"), mADCSearchMax);
+  mFracWindowA = helper::getConfigFromPropertyTree<double>(cfg, key("fracWindowLow"), mFracWindowA);
+  mFracWindowB = helper::getConfigFromPropertyTree<double>(cfg, key("fracWindowHigh"), mFracWindowB);
+}
+
 void AgingLaserPostProcTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
-  ILOG(Info) << "initialize AgingLaserPostProcTask" << ENDM;
+  ILOG(Debug, Devel) << "initialize AgingLaserPostProcTask" << ENDM;
 
-  const std::string detChs = o2::quality_control_modules::common::getFromConfig<std::string>(
-    mCustomParameters, "detectorChannelIDs", "");
-  if (!detChs.empty()) {
-    mDetectorChIDs = fit::helper::parseParameters<uint8_t>(detChs, ",");
-  } else { // default: all detector channels 0–207
-    mDetectorChIDs.resize(208);
-    std::iota(mDetectorChIDs.begin(), mDetectorChIDs.end(), 0);
-  }
-
-  const std::string refChs = o2::quality_control_modules::common::getFromConfig<std::string>(
-    mCustomParameters, "referenceChannelIDs", "");
-  if (!refChs.empty()) {
-    mReferenceChIDs = fit::helper::parseParameters<uint8_t>(refChs, ",");
-  } else { // default: 208–210
-    for (uint8_t ch = 208; ch < 211; ++ch)
-      mReferenceChIDs.push_back(ch);
-  }
-
-  mADCSearchMin = o2::quality_control_modules::common::getFromConfig<double>(
-    mCustomParameters, "adcSearchMin", mADCSearchMin);
-  mADCSearchMax = o2::quality_control_modules::common::getFromConfig<double>(
-    mCustomParameters, "adcSearchMax", mADCSearchMax);
-  mFracWindowA = o2::quality_control_modules::common::getFromConfig<double>(
-    mCustomParameters, "fracWindowA", mFracWindowA);
-  mFracWindowB = o2::quality_control_modules::common::getFromConfig<double>(
-    mCustomParameters, "fracWindowB", mFracWindowB);
-
-  ILOG(Info) << "detector channels  : " << detChs << ENDM;
-  ILOG(Info) << "reference channels : " << refChs << ENDM;
-  ILOG(Info) << "ADC search window  : [" << mADCSearchMin << ", " << mADCSearchMax << "]" << ENDM;
-  ILOG(Info) << "fractional window  : a=" << mFracWindowA << "  b=" << mFracWindowB << ENDM;
+  ILOG(Debug, Devel) << "agingTaskSourcePath : " << mAmpMoPath << ENDM;
+  ILOG(Debug, Devel) << "ADC search window : [" << mADCSearchMin << ", " << mADCSearchMax << "]" << ENDM;
+  ILOG(Debug, Devel) << "fractional window : a=" << mFracWindowA << "  b=" << mFracWindowB << ENDM;
 
   mAmpVsChNormWeightedMeanA = fit::helper::registerHist<TH1F>(
     getObjectsManager(),
@@ -90,11 +107,11 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
 
   /* ---- fetch source histogram ---- */
   auto& qcdb = srv.get<quality_control::repository::DatabaseInterface>();
-  auto moIn = qcdb.retrieveMO("FT0/MO/AgingLaser", "AmpPerChannel", t.timestamp, t.activity);
+  auto moIn = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannel", t.timestamp, t.activity);
   TH2* h2amp = moIn ? dynamic_cast<TH2*>(moIn->getObject()) : nullptr;
 
   if (!h2amp) {
-    ILOG(Error) << "Could not retrieve FT0/MO/AgingLaser/AmpPerChannel for timestamp "
+    ILOG(Error) << "Could not retrieve " << mAmpMoPath << "/AmpPerChannel for timestamp "
                 << t.timestamp << ENDM;
     return;
   }
@@ -164,15 +181,16 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
     }
   };
 
-  for (uint8_t ch = 0; ch < sNCHANNELS_PM; ++ch)
+  for (auto ch : mDetectorChIDs) {
     processChannel(ch);
+  }
 
-  ILOG(Info) << "update done – " << nRef << " reference fits, norm=" << norm << ENDM;
+  ILOG(Debug, Devel) << "update done – " << nRef << " reference fits, norm=" << norm << ENDM;
 }
 
 void AgingLaserPostProcTask::finalize(Trigger, framework::ServiceRegistryRef)
 {
-  ILOG(Info) << "finalize AgingLaserPostProcTask" << ENDM;
+  ILOG(Debug, Devel) << "finalize AgingLaserPostProcTask" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::ft0

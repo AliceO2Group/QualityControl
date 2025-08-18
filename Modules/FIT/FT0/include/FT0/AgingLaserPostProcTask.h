@@ -18,11 +18,13 @@
 #define QC_MODULE_FT0_AGINGLASERPOSTPROC_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include <FT0Base/Constants.h>
+#include "FT0Base/Constants.h"
+#include "FITCommon/PostProcHelper.h"
 
 #include <TH1F.h>
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace o2::quality_control_modules::ft0
 {
@@ -35,12 +37,15 @@ class AgingLaserPostProcTask final : public quality_control::postprocessing::Pos
   AgingLaserPostProcTask() = default;
   ~AgingLaserPostProcTask() override;
 
+  void configure(const boost::property_tree::ptree& config) override;
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistryRef) override;
 
  private:
   static constexpr std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
+
+  std::string mAmpMoPath = "FT0/MO/AgingLaser"; //< Path to amplitude monitor object
 
   std::vector<uint8_t> mDetectorChIDs;  ///< Detector (target) channels
   std::vector<uint8_t> mReferenceChIDs; ///< Reference channels
@@ -52,6 +57,8 @@ class AgingLaserPostProcTask final : public quality_control::postprocessing::Pos
 
   std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanA;
   std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanC;
+
+  o2::quality_control_modules::fit::PostProcHelper mPostProcHelper;
 };
 
 } // namespace o2::quality_control_modules::ft0
