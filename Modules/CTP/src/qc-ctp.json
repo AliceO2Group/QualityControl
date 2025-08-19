@@ -104,6 +104,7 @@
       "active": "true",
       "machines": [],
       "query": "random:CTP/RAWDATA",
+      "outputs": "filter:DS/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
