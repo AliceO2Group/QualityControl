@@ -37,19 +37,12 @@ AgingLaserPostProcTask::~AgingLaserPostProcTask() = default;
 
 void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
 {
-  const char* cfgPath = Form("qc.postprocessing.%s", getID().c_str());
-  const char* cfgCustom = Form("%s.custom", cfgPath);
-
-  mPostProcHelper.configure(cfg, cfgPath, "FT0");
-
-  auto key = [&cfgCustom](const std::string& e) { return Form("%s.%s", cfgCustom, e.c_str()); };
-
-  mAmpMoPath = helper::getConfigFromPropertyTree<std::string>(cfg, key("agingTaskSourcePath"), mAmpMoPath);
+  mAmpMoPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingTaskSourcePath", mAmpMoPath);
 
   mDetectorChIDs.resize(208);
   std::iota(mDetectorChIDs.begin(), mDetectorChIDs.end(), 0);
   const std::string detSkip =
-    helper::getConfigFromPropertyTree<std::string>(cfg, key("ignoreDetectorChannels"), "");
+    o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "ignoreDetectorChannels", "");
   if (!detSkip.empty()) {
     auto toSkip = fit::helper::parseParameters<uint8_t>(detSkip, ",");
     for (auto s : toSkip) {
@@ -64,7 +57,7 @@ void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
     mReferenceChIDs.push_back(ch);
   }
   const std::string refSkip =
-    helper::getConfigFromPropertyTree<std::string>(cfg, key("ignoreRefChannels"), "");
+    o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "ignoreRefChannels", "");
   if (!refSkip.empty()) {
     auto toSkip = fit::helper::parseParameters<uint8_t>(refSkip, ",");
     for (auto s : toSkip) {
@@ -73,10 +66,10 @@ void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
     }
   }
 
-  mADCSearchMin = helper::getConfigFromPropertyTree<double>(cfg, key("refPeakWindowMin"), mADCSearchMin);
-  mADCSearchMax = helper::getConfigFromPropertyTree<double>(cfg, key("refPeakWindowMax"), mADCSearchMax);
-  mFracWindowA = helper::getConfigFromPropertyTree<double>(cfg, key("fracWindowLow"), mFracWindowA);
-  mFracWindowB = helper::getConfigFromPropertyTree<double>(cfg, key("fracWindowHigh"), mFracWindowB);
+  mADCSearchMin = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "refPeakWindowMin", mADCSearchMin);
+  mADCSearchMax = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "refPeakWindowMax", mADCSearchMax);
+  mFracWindowA = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "fracWindowLow", mFracWindowA);
+  mFracWindowB = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "fracWindowHigh", mFracWindowB);
 }
 
 void AgingLaserPostProcTask::initialize(Trigger, framework::ServiceRegistryRef)

@@ -38,14 +38,18 @@
         "className": "o2::quality_control_modules::ft0::AgingLaserPostProcTask",
         "moduleName": "QcFT0",
         "detectorName": "FT0",
-        "custom": {
-            "agingTaskSourcePath": "FT0/MO/AgingLaser",
-            "refPeakWindowMin": "150",
-            "refPeakWindowMax": "600",
-            "fracWindowLow": "0.25",
-            "fracWindowHigh": "0.25",
-            "ignoreDetectorChannels": "",
-            "ignoreRefChannels": "209"
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "agingTaskSourcePath": "FT0/MO/AgingLaser",
+              "refPeakWindowMin":        "150",
+              "refPeakWindowMax":        "600",
+              "fracWindowLow":         "0.30",
+              "fracWindowHigh":         "0.30",
+              "ignoreDetectorChannels":  "",
+              "ignoreRefChannels": "209"
+            }
+          }
         },
         "initTrigger":   [ "userorcontrol" ],
         "updateTrigger": [ "newobject:qcdb:FT0/MO/AgingLaser/AmpPerChannel" ],

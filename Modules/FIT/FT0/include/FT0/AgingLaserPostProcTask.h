@@ -26,6 +26,8 @@
 #include <vector>
 #include <string>
 
+using namespace o2::quality_control::core;
+
 namespace o2::quality_control_modules::ft0
 {
 
