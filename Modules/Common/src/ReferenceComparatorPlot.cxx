@@ -306,8 +306,8 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     }
     mRatioPlot->SetLineColor(kBlack);
     mRatioPlot->SetStats(0);
-    mRatioPlot->SetOption("E");
-    mRatioPlot->Draw("E");
+    mRatioPlot->SetOption(drawOption.c_str());
+    mRatioPlot->Draw(drawOption.c_str());
     if (drawRatioOnly) {
       mRatioPlot->SetMinimum(0);
       mRatioPlot->SetMaximum(2);
