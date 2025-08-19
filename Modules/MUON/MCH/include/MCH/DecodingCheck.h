@@ -52,21 +52,21 @@ class DecodingCheck : public o2::quality_control::checker::CheckInterface
   std::string mSyncFracHistName{ "SyncErrors/SyncedBoardsFractionPerDE" };
   std::string mSyncFracPerSolarHistName{ "SyncErrors/SyncedBoardsFractionPerSolar" };
   std::string mGoodFracRefCompHistName{ "DecodingErrors/RefComp/GoodBoardsFractionPerDE" };
-  std::string mGoodFracPerSolarRefCompHistName{ "DecodingErrors/RefComp/GoodBoardsFractionPerSolar" };
   std::string mSyncFracRefCompHistName{ "SyncErrors/RefComp/SyncedBoardsFractionPerDE" };
+  std::string mGoodFracPerSolarRefCompHistName{ "DecodingErrors/RefComp/GoodBoardsFractionPerSolar" };
   std::string mSyncFracPerSolarRefCompHistName{ "SyncErrors/RefComp/SyncedBoardsFractionPerSolar" };
   int mMaxBadST12{ 2 };
   int mMaxBadST345{ 3 };
   double mMinGoodErrorFrac{ 0.9 };
   std::array<std::optional<double>, 5> mMinGoodErrorFracPerStation;
-  double mMinGoodErrorFracPerSolar{ 0.5 };
   double mMinGoodErrorFracRatio{ 0.9 };
+  double mMinGoodErrorFracPerSolar{ 0.5 };
   double mMinGoodErrorFracRatioPerSolar{ 0.9 };
 
   double mMinGoodSyncFrac{ 0.9 };
   std::array<std::optional<double>, 5> mMinGoodSyncFracPerStation;
-  double mMinGoodSyncFracPerSolar{ 0.5 };
   double mMinGoodSyncFracRatio{ 0.9 };
+  double mMinGoodSyncFracPerSolar{ 0.5 };
   double mMinGoodSyncFracRatioPerSolar{ 0.9 };
 
   double mMinHeartBeatRate{ 0 };

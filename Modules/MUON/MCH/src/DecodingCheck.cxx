@@ -48,19 +48,37 @@ void DecodingCheck::startOfActivity(const Activity& activity)
   mGoodFracPerSolarHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracPerSolarHistName", mGoodFracPerSolarHistName, activity);
   mSyncFracPerSolarHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracPerSolarHistName", mSyncFracPerSolarHistName, activity);
 
+  mGoodFracRefCompHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracRefCompHistName", mGoodFracRefCompHistName, activity);
+  mSyncFracRefCompHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracRefCompHistName", mSyncFracRefCompHistName, activity);
+
+  mGoodFracPerSolarRefCompHistName = getConfigurationParameter<std::string>(mCustomParameters, "GoodFracPerSolarRefCompHistName", mGoodFracPerSolarRefCompHistName, activity);
+  mSyncFracPerSolarRefCompHistName = getConfigurationParameter<std::string>(mCustomParameters, "SyncFracPerSolarRefCompHistName", mSyncFracPerSolarRefCompHistName, activity);
+
   getThresholdsPerStation(mCustomParameters, activity, "MinGoodErrorFrac", mMinGoodErrorFracPerStation, mMinGoodErrorFrac);
-  getThresholdsPerStation(mCustomParameters, activity, "MinGoodSyncFrac", mMinGoodSyncFracPerStation, mMinGoodSyncFrac);
+  mMinGoodErrorFracRatio = getConfigurationParameter<double>(mCustomParameters, "MinGoodErrorFracRatio", mMinGoodErrorFracRatio, activity);
 
   mMinGoodErrorFracPerSolar = getConfigurationParameter<double>(mCustomParameters, "MinGoodErrorFracPerSolar", mMinGoodErrorFracPerSolar, activity);
+  mMinGoodErrorFracRatioPerSolar = getConfigurationParameter<double>(mCustomParameters, "MinGoodErrorFracRatioPerSolar", mMinGoodErrorFracRatioPerSolar, activity);
+
+  getThresholdsPerStation(mCustomParameters, activity, "MinGoodSyncFrac", mMinGoodSyncFracPerStation, mMinGoodSyncFrac);
+  mMinGoodSyncFracRatio = getConfigurationParameter<double>(mCustomParameters, "MinGoodSyncFracRatio", mMinGoodSyncFracRatio, activity);
+
   mMinGoodSyncFracPerSolar = getConfigurationParameter<double>(mCustomParameters, "MinGoodSyncFracPerSolar", mMinGoodSyncFracPerSolar, activity);
+  mMinGoodSyncFracRatioPerSolar = getConfigurationParameter<double>(mCustomParameters, "MinGoodSyncFracRatioPerSolar", mMinGoodSyncFracRatioPerSolar, activity);
+
+  mMinHeartBeatRate = getConfigurationParameter<double>(mCustomParameters, "MinHeartBeatRate", mMinHeartBeatRate, activity);
+  mMaxHeartBeatRate = getConfigurationParameter<double>(mCustomParameters, "MaxHeartBeatRate", mMaxHeartBeatRate, activity);
+
+  mGoodFracRatioPlotRange = getConfigurationParameter<double>(mCustomParameters, "GoodFracRatioPlotRange", mGoodFracRatioPlotRange, activity);
+  mGoodFracRatioPerSolarPlotRange = getConfigurationParameter<double>(mCustomParameters, "GoodFracRatioPerSolarPlotRange", mGoodFracRatioPerSolarPlotRange, activity);
+
+  mSyncFracRatioPlotRange = getConfigurationParameter<double>(mCustomParameters, "SyncFracRatioPlotRange", mSyncFracRatioPlotRange, activity);
+  mSyncFracRatioPerSolarPlotRange = getConfigurationParameter<double>(mCustomParameters, "SyncFracRatioPerSolarPlotRange", mSyncFracRatioPerSolarPlotRange, activity);
 
   mMaxBadST12 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST12", mMaxBadST12, activity);
   mMaxBadST345 = getConfigurationParameter<int>(mCustomParameters, "MaxBadDE_ST345", mMaxBadST345, activity);
   mQualityChecker.mMaxBadST12 = mMaxBadST12;
   mQualityChecker.mMaxBadST345 = mMaxBadST345;
-
-  mMinHeartBeatRate = getConfigurationParameter<double>(mCustomParameters, "MinHeartBeatRate", mMinHeartBeatRate, activity);
-  mMaxHeartBeatRate = getConfigurationParameter<double>(mCustomParameters, "MaxHeartBeatRate", mMaxHeartBeatRate, activity);
 }
 
 Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
