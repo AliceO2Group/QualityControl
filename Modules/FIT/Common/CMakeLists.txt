@@ -8,6 +8,7 @@ set(SRCS
   src/HelperHist.cxx
   src/HelperLUT.cxx
   src/DigitSync.cxx
+  src/HelperGraph.cxx
 )
 
 set(HEADERS
@@ -18,6 +19,7 @@ set(HEADERS
   include/FITCommon/HelperLUT.h
   include/FITCommon/DigitSync.h
   include/FITCommon/PostProcHelper.h
+  include/FITCommon/HelperGraph.h
 )
 
 # ---- Library ----
@@ -48,3 +50,6 @@ install(
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/FITCommon
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/QualityControl")
