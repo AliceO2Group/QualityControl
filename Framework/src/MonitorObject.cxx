@@ -162,7 +162,7 @@ std::optional<std::string> MonitorObject::getMetadata(const std::string& key)
   return std::nullopt;
 }
 
-bool MonitorObject::encapsulatedInheritFrom(std::string_view className) const
+bool MonitorObject::encapsulatedInheritsFrom(std::string_view className) const
 {
   if (!mObject) {
     return false;

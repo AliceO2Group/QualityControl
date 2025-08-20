@@ -57,7 +57,7 @@ void MeanIsAbove::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   // A line is drawn at the level of the threshold.
   // Its colour depends on the quality.
 
-  if (!mo->encapsulatedInheritFrom("TH1")) {
+  if (!mo->encapsulatedInheritsFrom("TH1")) {
     ILOG(Error, Support) << "object not checkable" << ENDM;
     return;
   }

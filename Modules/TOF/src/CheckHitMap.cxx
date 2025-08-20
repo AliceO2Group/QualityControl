@@ -49,7 +49,7 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
-    if (!mo->encapsulatedInheritFrom(mAcceptedType)) {
+    if (!mo->encapsulatedInheritsFrom(mAcceptedType)) {
       ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << mAcceptedType << ENDM;
       continue;
     }
@@ -132,7 +132,7 @@ Quality CheckHitMap::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 void CheckHitMap::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
-  if (!mo->encapsulatedInheritFrom(mAcceptedType)) {
+  if (!mo->encapsulatedInheritsFrom(mAcceptedType)) {
     ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << mAcceptedType << ENDM;
     return;
   }

@@ -120,7 +120,7 @@ class MonitorObject : public TObject
   /// \brief Check if the encapsulated object inherits from the given class name
   /// \param className Name of the class to check inheritance from
   /// \return true if the encapsulated object inherits from the given class, false otherwise
-  bool encapsulatedInheritFrom(std::string_view className) const;
+  bool encapsulatedInheritsFrom(std::string_view className) const;
 
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
