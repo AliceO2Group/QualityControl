@@ -52,8 +52,6 @@ class AgingLaserPostProcTask final : public quality_control::postprocessing::Pos
   std::vector<uint8_t> mDetectorChIDs;  ///< Detector (target) channels
   std::vector<uint8_t> mReferenceChIDs; ///< Reference channels
 
-  double mADCSearchMin = 150.; ///< lower edge of peak-search window (ADC) for ref channels
-  double mADCSearchMax = 600.; ///< upper edge of peak-search window (ADC) for ref channels
   double mFracWindowA = 0.25;  ///< low fractional window parameter a
   double mFracWindowB = 0.25;  ///< high fractional window parameter b
 

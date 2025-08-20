@@ -66,8 +66,6 @@ void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
     }
   }
 
-  mADCSearchMin = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "refPeakWindowMin", mADCSearchMin);
-  mADCSearchMax = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "refPeakWindowMax", mADCSearchMax);
   mFracWindowA = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "fracWindowLow", mFracWindowA);
   mFracWindowB = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "fracWindowHigh", mFracWindowB);
 }
@@ -77,7 +75,6 @@ void AgingLaserPostProcTask::initialize(Trigger, framework::ServiceRegistryRef)
   ILOG(Debug, Devel) << "initialize AgingLaserPostProcTask" << ENDM;
 
   ILOG(Debug, Devel) << "agingTaskSourcePath : " << mAmpMoPath << ENDM;
-  ILOG(Debug, Devel) << "ADC search window : [" << mADCSearchMin << ", " << mADCSearchMax << "]" << ENDM;
   ILOG(Debug, Devel) << "fractional window : a=" << mFracWindowA << "  b=" << mFracWindowB << ENDM;
 
   mAmpVsChNormWeightedMeanA = fit::helper::registerHist<TH1F>(
@@ -101,10 +98,32 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
   /* ---- fetch source histogram ---- */
   auto& qcdb = srv.get<quality_control::repository::DatabaseInterface>();
   auto moIn = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannel", t.timestamp, t.activity);
+  auto moIn0 = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannelPeak1ADC0", t.timestamp, t.activity);
+  auto moIn1 = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannelPeak1ADC1", t.timestamp, t.activity);
   TH2* h2amp = moIn ? dynamic_cast<TH2*>(moIn->getObject()) : nullptr;
+  TH2* h2amp0 = moIn0 ? dynamic_cast<TH2*>(moIn0->getObject()) : nullptr;
+  TH2* h2amp1 = moIn1 ? dynamic_cast<TH2*>(moIn1->getObject()) : nullptr;
+  TH2* h2ampMerged = nullptr;
+  if (h2amp0 && h2amp1) {
+    h2ampMerged = new TH2F("h2ampMerged", "h2ampMerged", 96, 0, 96, 112, 96, 208);
+    h2ampMerged->Add(h2amp0);
+    h2ampMerged->Add(h2amp1);
+  }
 
   if (!h2amp) {
     ILOG(Error) << "Could not retrieve " << mAmpMoPath << "/AmpPerChannel for timestamp "
+                << t.timestamp << ENDM;
+    return;
+  }
+
+  if (!h2amp0 || !h2amp1) {
+    ILOG(Error) << "Could not retrieve " << mAmpMoPath << "/AmpPerChannelPeak1ADC0 or " << mAmpMoPath << "/AmpPerChannelPeak1ADC1 for timestamp "
+                << t.timestamp << ENDM;
+    return;
+  }
+
+  if (!h2ampMerged) {
+    ILOG(Error) << "Could not create merged histogram from " << mAmpMoPath << "/AmpPerChannelPeak1ADC0 and " << mAmpMoPath << "/AmpPerChannelPeak1ADC1 for timestamp "
                 << t.timestamp << ENDM;
     return;
   }
@@ -113,18 +132,10 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
   std::vector<double> refMus;
 
   for (auto chId : mReferenceChIDs) {
-    auto h1 = std::unique_ptr<TH1>(h2amp->ProjectionY(
+    auto h1 = std::unique_ptr<TH1>(h2ampMerged->ProjectionY(
       Form("ref_%d", chId), chId + 1, chId + 1));
 
-    const int binLow = h1->FindBin(mADCSearchMin);
-    const int binHigh = h1->FindBin(mADCSearchMax);
-
-    int binMax = binLow;
-    for (int b = binLow + 1; b <= binHigh; ++b) {
-      if (h1->GetBinContent(b) > h1->GetBinContent(binMax)) {
-        binMax = b;
-      }
-    }
+    int binMax = h1->GetMaximumBin();
     const double xMax = h1->GetBinCenter(binMax);
     const double winLo = TMath::Max(0., (1. - mFracWindowA) * xMax);
     const double winHi = (1. + mFracWindowB) * xMax;
