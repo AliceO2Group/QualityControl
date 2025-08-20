@@ -16,6 +16,7 @@
 
 #include "QualityControl/MonitorObject.h"
 #include <TObject.h>
+#include <TClass.h>
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 
