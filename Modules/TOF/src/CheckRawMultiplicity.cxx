@@ -67,6 +67,10 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
   float hitsIntegral = 0.f;
 
   for (auto& [moName, mo] : *moMap) {
+    if (!mo->encapsulatedInheritFrom("TH1")) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type TH1" << ENDM;
+      continue;
+    }
     ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
     if (mo->getName() == "Multiplicity/Integrated") {
       const auto* h = static_cast<TH1I*>(mo->getObject());
@@ -151,6 +155,10 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
 void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (!mo->encapsulatedInheritFrom("TH1")) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type TH1" << ENDM;
+    return;
+  }
   if (mo->getName() == "Multiplicity/Integrated") {
     auto* h = static_cast<TH1I*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);

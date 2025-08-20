@@ -56,8 +56,7 @@ class RawErrorCheck : public o2::quality_control::checker::CheckInterface
   /// \param checkResult Quality status of this checker
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
 
-  /// \brief Accept only TH2 histograms as input
-  /// \return Name of the accepted object: TH2  ClassDefOverride(RawErrorCheck, 2);
+  ClassDefOverride(RawErrorCheck, 2);
 
  private:
   /// \brief Decode key of a configurable parameter as boolean

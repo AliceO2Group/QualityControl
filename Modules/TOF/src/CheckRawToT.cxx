@@ -51,6 +51,10 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   float ToTIntegral = 0.f;
 
   for (auto& [moName, mo] : *moMap) {
+    if (!mo->encapsulatedInheritFrom("TH1F")) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type TH1F" << ENDM;
+      continue;
+    }
     ILOG(Debug, Devel) << "Checking " << mo->getName() << ENDM;
 
     if (mo->getName().find("ToT/") != std::string::npos) {
@@ -92,6 +96,10 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
+  if (!mo->encapsulatedInheritFrom("TH1F")) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type TH1F" << ENDM;
+    return;
+  }
   if (mo->getName().find("ToT/") != std::string::npos) {
     auto* h = static_cast<TH1F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);

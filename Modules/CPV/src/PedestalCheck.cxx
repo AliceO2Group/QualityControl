@@ -279,8 +279,6 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-//
-
 void PedestalCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   return;                                // do noting for the time being. Maybe in the future we will do something sofisticated

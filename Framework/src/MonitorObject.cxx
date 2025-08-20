@@ -162,6 +162,14 @@ std::optional<std::string> MonitorObject::getMetadata(const std::string& key)
   return std::nullopt;
 }
 
+bool MonitorObject::encapsulatedInheritFrom(std::string_view className) const
+{
+  if (!mObject) {
+    return false;
+  }
+  return mObject->IsA()->InheritsFrom(className.data());
+}
+
 std::string MonitorObject::getPath() const
 {
   return RepoPathUtils::getMoPath(this);
