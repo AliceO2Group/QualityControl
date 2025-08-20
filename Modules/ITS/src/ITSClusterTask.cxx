@@ -65,6 +65,7 @@ ITSClusterTask::~ITSClusterTask()
 
             delete hClusterTopologySummaryIB[iLayer][iStave][iChip];
             delete hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip];
+            delete hClusterSizeSummaryIB[iLayer][iStave][iChip];
           }
         }
       } else {
@@ -242,6 +243,10 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         hClusterSizeLayerSummary[lay]->Fill(npix);
         hClusterTopologyLayerSummary[lay]->Fill(ClusterID);
+
+        if (mDoPublish1DSummary) {
+          hClusterSizeSummaryIB[lay][sta][chip]->Fill(npix);
+        }
 
         if (isGrouped) {
           if (mDoPublish1DSummary == 1) {
@@ -430,6 +435,7 @@ void ITSClusterTask::reset()
           for (int iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
             hClusterTopologySummaryIB[iLayer][iStave][iChip]->Reset();
             hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();
+            hClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();
           }
         }
       }
@@ -578,6 +584,11 @@ void ITSClusterTask::createAllHistos()
             hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size for grouped topologies on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
             addObject(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]);
             formatAxes(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
+
+            hClusterSizeSummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSize", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSize", iLayer, iStave, iChip), 100, 0, 100);
+            hClusterSizeSummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size for Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
+            addObject(hClusterSizeSummaryIB[iLayer][iStave][iChip]);
+            formatAxes(hClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
             hClusterTopologySummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterTopology", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterTopology", iLayer, iStave, iChip), 300, 0, 300);
             hClusterTopologySummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Topology on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
