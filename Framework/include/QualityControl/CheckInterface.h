@@ -57,7 +57,7 @@ class CheckInterface : public core::UserCodeInterface
   ///
   /// @param data An object with any type of data possible accesible via full names (i.e. <task_name>/<mo name> in case of MOs) as keys.
   /// @return The quality associated with these objects.
-  virtual core::Quality check(const core::Data& data);
+  virtual core::Quality check(const core::QCInputs& data);
 
   /// \brief Modify the aspect of the plot.
   ///

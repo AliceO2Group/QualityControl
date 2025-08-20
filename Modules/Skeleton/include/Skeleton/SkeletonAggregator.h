@@ -33,7 +33,7 @@ class SkeletonAggregator : public o2::quality_control::checker::AggregatorInterf
  public:
   // Override interface
   void configure() override;
-  std::map<std::string, o2::quality_control::core::Quality> aggregate(const o2::quality_control::core::Data& data) override;
+  std::map<std::string, o2::quality_control::core::Quality> aggregate(const o2::quality_control::core::QCInputs& data) override;
 
   ClassDefOverride(SkeletonAggregator, 1);
 };

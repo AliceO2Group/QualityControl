@@ -32,7 +32,7 @@ core::Quality CheckInterface::check(std::map<std::string, std::shared_ptr<core::
   return check(data);
 };
 
-core::Quality CheckInterface::check(const core::Data& data)
+core::Quality CheckInterface::check(const core::QCInputs& data)
 {
   return core::Quality{};
 };

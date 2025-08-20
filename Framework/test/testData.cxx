@@ -32,12 +32,12 @@ struct nonexistent {
 
 TEST_CASE("Data - constructor", "[Data]")
 {
-  REQUIRE_NOTHROW([]() { Data data{}; });
+  REQUIRE_NOTHROW([]() { QCInputs data{}; });
 }
 
 TEST_CASE("Data insert and get", "[Data]")
 {
-  Data data;
+  QCInputs data;
   data.insert("test", 1);
   auto valueStr = data.get<std::string>("test");
   REQUIRE(!valueStr.has_value());
@@ -48,7 +48,7 @@ TEST_CASE("Data insert and get", "[Data]")
 
 TEST_CASE("Data - iterateByType", "[Data]")
 {
-  Data data;
+  QCInputs data;
   data.insert("testint1", 1);
   data.insert("teststr1", std::string{ "1" });
   REQUIRE(data.size() == 2);
@@ -72,7 +72,7 @@ TEST_CASE("Data - iterateByType", "[Data]")
 
 TEST_CASE("Data - iterateByTypeAndFilter", "[Data]")
 {
-  Data data;
+  QCInputs data;
   data.insert("1", 1);
   data.insert("2", 2);
   data.insert("str", "str");
@@ -95,7 +95,7 @@ TEST_CASE("Data - iterateByTypeFilterAndTransform", "[Data]")
   auto h2 = new TH1F("th12", "th12", 100, 0, 99);
   std::shared_ptr<MonitorObject> mo2 = std::make_shared<MonitorObject>(h2, "taskname", "class2", "TST");
 
-  Data data;
+  QCInputs data;
   data.insert("1", mo1);
   data.insert("2", mo2);
   data.insert("str", "str");
@@ -115,7 +115,7 @@ TEST_CASE("Data - iterateByTypeFilterAndTransform", "[Data]")
 
 TEST_CASE("Data - raw pointers", "[Data]")
 {
-  Data data;
+  QCInputs data;
   int a = 1;
   int b = 2;
   data.insert("1", &a);
@@ -141,7 +141,7 @@ TEMPLATE_TEST_CASE("Data - inserting fundamental types", "[.Data-benchmark]", st
 
   BENCHMARK("insert size_t")
   {
-    DataGeneric<TestType> data;
+    QCInputsGeneric<TestType> data;
     // for (size_t i = 0; i != iterations; ++i) {
     for (size_t i = iterations; i != 0; --i) {
       data.insert(std::to_string(i), i);
@@ -152,7 +152,7 @@ TEMPLATE_TEST_CASE("Data - inserting fundamental types", "[.Data-benchmark]", st
 TEMPLATE_TEST_CASE("Data - iterating fundamental types", "[.Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
 {
   constexpr size_t iterations = 20000;
-  DataGeneric<TestType> data;
+  QCInputsGeneric<TestType> data;
   for (size_t i = 0; i != iterations; ++i) {
     data.insert(std::to_string(i), i);
   }
@@ -174,7 +174,7 @@ TEMPLATE_TEST_CASE("Data - iterating fundamental types", "[.Data-benchmark]", st
 TEMPLATE_TEST_CASE("Data - get fundamental types", "[.Data-benchmark]", stdmap, boostflatmap, transparent_unordered_map)
 {
   constexpr size_t iterations = 20000;
-  DataGeneric<TestType> data;
+  QCInputsGeneric<TestType> data;
   for (size_t i = 0; i != iterations; ++i) {
     data.insert(std::to_string(i), i);
   }
@@ -221,7 +221,7 @@ TEMPLATE_TEST_CASE("Data - inserting and iterating MOs", "[.Data-benchmark]", st
 
   BENCHMARK("insert - iterate MOs")
   {
-    DataGeneric<TestType> data;
+    QCInputsGeneric<TestType> data;
     for (const auto& mo : MOs) {
       data.insert(mo->getFullName(), mo);
     }
@@ -240,7 +240,7 @@ TEMPLATE_TEST_CASE("Data - inserting and iterating MOs", "[.Data-benchmark]", st
 TEST_CASE("Data adapters - helper functions", "[Data]")
 {
 
-  Data data;
+  QCInputs data;
   {
     for (size_t i{}; i != 10; ++i) {
       const auto iStr = std::to_string(i);

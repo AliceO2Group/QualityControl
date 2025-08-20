@@ -33,7 +33,7 @@ void SkeletonAggregator::configure()
   std::string parameter = mCustomParameters.atOrDefaultValue("myOwnKey", "fallback value");
 }
 
-std::map<std::string, Quality> SkeletonAggregator::aggregate(const o2::quality_control::core::Data& data)
+std::map<std::string, Quality> SkeletonAggregator::aggregate(const o2::quality_control::core::QCInputs& data)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   std::map<std::string, Quality> result;

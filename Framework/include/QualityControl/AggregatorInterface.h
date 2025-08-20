@@ -49,7 +49,7 @@ class AggregatorInterface : public o2::quality_control::core::UserCodeInterface
   ///
   /// @param data A generic data structure containing QualityObjects or possible other inputs.
   /// @return The new qualities, associated with a name.
-  virtual std::map<std::string, core::Quality> aggregate(const core::Data& data);
+  virtual std::map<std::string, core::Quality> aggregate(const core::QCInputs& data);
 
   virtual void startOfActivity(const core::Activity& activity);
   virtual void endOfActivity(const core::Activity& activity);

@@ -19,25 +19,25 @@
 namespace o2::quality_control::core
 {
 
-Data createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
+QCInputs createData(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
-  Data data;
+  QCInputs data;
   for (const auto& [key, mo] : moMap) {
     data.insert(key, mo);
   }
   return data;
 }
 
-Data createData(const QualityObjectsMapType& qoMap)
+QCInputs createData(const QualityObjectsMapType& qoMap)
 {
-  Data data;
+  QCInputs data;
   for (const auto& [key, qo] : qoMap) {
     data.insert(key, qo);
   }
   return data;
 }
 
-std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const Data& data, std::string_view objectName)
+std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const QCInputs& data, std::string_view objectName)
 {
   const auto filterQOByName = [objectName](const auto& pair) {
     return std::string_view(pair.second->GetName()) == objectName;

@@ -30,12 +30,12 @@
 namespace o2::quality_control::core
 {
 
-inline auto iterateMonitorObjects(const o2::quality_control::core::Data& data)
+inline auto iterateMonitorObjects(const o2::quality_control::core::QCInputs& data)
 {
   return data.iterateByType<o2::quality_control::core::MonitorObject>();
 }
 
-inline auto iterateMonitorObjects(const Data& data, std::string_view taskName)
+inline auto iterateMonitorObjects(const QCInputs& data, std::string_view taskName)
 {
   const auto filterMOByTaskName = [taskName](const auto& pair) {
     return pair.second->getTaskName() == taskName;
@@ -48,7 +48,7 @@ namespace helpers
 {
 
 template <typename StoredType, typename Filter>
-std::optional<std::reference_wrapper<const StoredType>> getMonitorObjectCommon(const Data& data, Filter&& filter)
+std::optional<std::reference_wrapper<const StoredType>> getMonitorObjectCommon(const QCInputs& data, Filter&& filter)
 {
   if constexpr (std::same_as<StoredType, MonitorObject>) {
     for (const auto& mo : data.iterateByTypeAndFilter<o2::quality_control::core::MonitorObject>(filter)) {
@@ -68,7 +68,7 @@ std::optional<std::reference_wrapper<const StoredType>> getMonitorObjectCommon(c
 } // namespace helpers
 
 template <typename StoredType>
-std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Data& data, std::string_view objectName, std::string_view taskName)
+std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const QCInputs& data, std::string_view objectName, std::string_view taskName)
 {
   const auto filterMOByNameAndTaskName = [objectName, taskName](const auto& pair) {
     return std::tuple{ std::string_view{ pair.second->GetName() }, pair.second->getTaskName() } == std::tuple{ objectName, taskName };
@@ -78,7 +78,7 @@ std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const D
 }
 
 template <typename StoredType>
-std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Data& data, std::string_view objectName)
+std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const QCInputs& data, std::string_view objectName)
 {
   const auto filterMOByName = [objectName](const auto& pair) {
     return std::string_view(pair.second->GetName()) == objectName;
@@ -87,7 +87,7 @@ std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const D
   return helpers::getMonitorObjectCommon<StoredType>(data, filterMOByName);
 }
 
-inline auto iterateQualityObjects(const Data& data)
+inline auto iterateQualityObjects(const QCInputs& data)
 {
   return data.iterateByType<o2::quality_control::core::QualityObject>();
 }

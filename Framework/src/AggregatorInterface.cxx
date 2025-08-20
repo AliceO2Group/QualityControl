@@ -29,7 +29,7 @@ std::map<std::string, core::Quality> AggregatorInterface::aggregate(std::map<std
   return aggregate(data);
 }
 
-std::map<std::string, core::Quality> AggregatorInterface::aggregate(const core::Data& data)
+std::map<std::string, core::Quality> AggregatorInterface::aggregate(const core::QCInputs& data)
 {
   return {};
 }

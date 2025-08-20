@@ -33,10 +33,10 @@ template <typename Function, typename Result, typename... Args>
 concept invocable_r = std::invocable<Function, Args...> && std::same_as<std::invoke_result_t<Function, Args...>, Result>;
 
 template <typename ContainerMap>
-class DataGeneric
+class QCInputsGeneric
 {
  public:
-  DataGeneric() = default;
+  QCInputsGeneric() = default;
 
   template <typename Result>
   std::optional<std::reference_wrapper<const Result>> get(std::string_view key);
@@ -78,7 +78,7 @@ struct StringHash {
 
 using transparent_unordered_map = std::unordered_map<std::string, std::any, StringHash, std::equal_to<>>;
 
-using Data = DataGeneric<transparent_unordered_map>;
+using QCInputs = QCInputsGeneric<transparent_unordered_map>;
 
 } // namespace o2::quality_control::core
 

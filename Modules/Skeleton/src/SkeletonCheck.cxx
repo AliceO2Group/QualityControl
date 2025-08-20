@@ -48,7 +48,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return check(data);
 }
 
-Quality SkeletonCheck::check(const quality_control::core::Data& data)
+Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   Quality result = Quality::Null;
