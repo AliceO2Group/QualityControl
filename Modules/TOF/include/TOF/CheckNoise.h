@@ -43,6 +43,8 @@ class CheckNoise : public o2::quality_control::checker::CheckInterface
   MessagePad mShifterMessages;
   /// Name of the accepted MO
   static constexpr char mAcceptedName[] = "hIndexEOHitRate";
+  /// Accepted type for this check
+  static constexpr char mAcceptedType[] = "TH1F";
   /// Maximum rate allowed before declaring a channel noisy
   float mMaxNoiseRate = 50.f; // Hz
 

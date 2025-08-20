@@ -60,6 +60,8 @@ class CheckHitMap : public o2::quality_control::checker::CheckInterface
   int mMaxHitMoreThanRef = 2;         /// Maximum number of Hits more than Ref that is accepted
   int mMaxRefMoreThanHit = 317;       /// Maximum number of Refs more than Hits that is accepted (usual 5%of enabled channels)
   bool mEnablePadPerMismatch = false; /// Flag to enable showing where the mismatch happens in the plot with TPads
+  /// Accepted type for this check
+  static constexpr char mAcceptedType[] = "TH2F";
 
   ClassDefOverride(CheckHitMap, 2);
 };

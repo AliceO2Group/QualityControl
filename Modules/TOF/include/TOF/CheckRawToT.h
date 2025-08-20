@@ -49,6 +49,8 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   // User variables
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
+  /// Accepted type for this check
+  static constexpr char mAcceptedType[] = "TH1F";
 
   ClassDefOverride(CheckRawToT, 2);
 };

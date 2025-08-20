@@ -58,6 +58,8 @@ class CheckRawTime : public o2::quality_control::checker::CheckInterface
 
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
+  /// Accepted type for this check
+  static constexpr char mAcceptedType[] = "TH1F";
 
   ClassDefOverride(CheckRawTime, 2);
 };
