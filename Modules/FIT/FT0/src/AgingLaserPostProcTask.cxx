@@ -105,7 +105,7 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
   TH2* h2amp1 = moIn1 ? dynamic_cast<TH2*>(moIn1->getObject()) : nullptr;
   TH2* h2ampMerged = nullptr;
   if (h2amp0 && h2amp1) {
-    h2ampMerged = new TH2F("h2ampMerged", "h2ampMerged", 96, 0, 96, 112, 96, 208);
+    h2ampMerged = new TH2F("h2ampMerged", "h2ampMerged", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
     h2ampMerged->Add(h2amp0);
     h2ampMerged->Add(h2amp1);
   }
