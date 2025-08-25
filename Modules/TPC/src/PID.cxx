@@ -114,7 +114,7 @@ void PID::endOfCycle()
         fitFunc.SetParameter(5, 10); // Sigma of the second Gaussian
 
         // Fit the histogram with the fitting function
-        hist->Fit(&fitFunc, "QRN");
+        hist->Fit(&fitFunc, "QRNM");
 
         const TString binLabels[8] = { "Amplitude Pi", "Mean Pi", "Sigma Pi", "Amplitude El", "Mean El", "Sigma El", "Separation Power", "chiSquare/ndf" };
 
