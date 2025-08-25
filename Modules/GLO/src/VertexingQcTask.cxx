@@ -209,9 +209,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto timeUnc = pvertices[i].getTimeStamp().getTimeStampError();
     ILOG(Debug, Support) << "x = " << x << ", y = " << y << ", z = " << z << ", nContributors = " << nContr << ", timeUnc = " << timeUnc << ENDM;
     mX->Fill(x);
-    mX->Fit("fX", "Q", "", mX->GetMean() - mX->GetRMS(), mX->GetMean() + mX->GetRMS());
     mY->Fill(y);
-    mY->Fit("fY", "Q", "", mY->GetMean() - mY->GetRMS(), mY->GetMean() + mY->GetRMS());
     mZ->Fill(z);
     mNContributors->Fill(nContr);
     mTimeUncVsNContrib->Fill(nContr, timeUnc);
@@ -233,6 +231,8 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mVtxPullsZVsMult->Fill(mult, (vtMC[2] - pvertices[i].getZ()) / std::sqrt(pvertices[i].getSigmaZ2()));
     }
   }
+  mX->Fit("fX", "Q", "", mX->GetMean() - mX->GetRMS(), mX->GetMean() + mX->GetRMS());
+  mY->Fit("fY", "Q", "", mY->GetMean() - mY->GetRMS(), mY->GetMean() + mY->GetRMS());
 }
 
 void VertexingQcTask::endOfCycle()
