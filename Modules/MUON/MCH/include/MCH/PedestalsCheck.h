@@ -36,7 +36,6 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
 
  private:
   /// Maximum number of bad detection elements for "good" quality status

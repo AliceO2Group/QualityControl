@@ -40,7 +40,6 @@ class ClusterCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
 
  protected:
   int mDeadThreshold[5] = { 10, 10, 10, 10, 10 };   /// Number of new dead channels per module to decalre bad

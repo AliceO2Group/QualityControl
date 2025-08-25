@@ -68,8 +68,6 @@ Quality QcMFTTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string QcMFTTrackCheck::getAcceptedType() { return "TH1"; }
-
 void QcMFTTrackCheck::readAlpideCCDB(std::shared_ptr<MonitorObject> mo)
 {
   mROF = 0;

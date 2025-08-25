@@ -36,7 +36,6 @@ class GenericHistogramCheck : public o2::quality_control::checker::CheckInterfac
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
 
  private:
   ClassDefOverride(GenericHistogramCheck, 2);

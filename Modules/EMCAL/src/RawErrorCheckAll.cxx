@@ -90,8 +90,6 @@ Quality RawErrorCheckAll::check(std::map<std::string, std::shared_ptr<MonitorObj
   return result;
 }
 
-std::string RawErrorCheckAll::getAcceptedType() { return "TGraph"; }
-
 void RawErrorCheckAll::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "TrendRawDataError") {

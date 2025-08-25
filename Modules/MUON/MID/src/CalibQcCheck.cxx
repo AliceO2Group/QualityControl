@@ -56,8 +56,6 @@ Quality CalibQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   return result;
 }
 
-std::string CalibQcCheck::getAcceptedType() { return "TH1"; }
-
 void CalibQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto currentTime = mHistoHelper.getCurrentTime();

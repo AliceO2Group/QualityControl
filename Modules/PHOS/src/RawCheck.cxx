@@ -146,8 +146,6 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   return mCheckResult;
 }
 
-std::string RawCheck::getAcceptedType() { return "TH1"; }
-
 bool RawCheck::checkErrHistograms(MonitorObject* mo)
 {
   // Return true if mo found and handled

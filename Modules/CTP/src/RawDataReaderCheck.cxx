@@ -201,8 +201,6 @@ float RawDataReaderCheck::setTextPosition(float iPos, std::shared_ptr<TLatex> ms
   return MessagePos;
 }
 
-std::string RawDataReaderCheck::getAcceptedType() { return "TH1"; }
-
 void RawDataReaderCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   std::shared_ptr<TLatex> msg;

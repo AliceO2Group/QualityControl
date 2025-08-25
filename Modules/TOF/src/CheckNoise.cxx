@@ -36,8 +36,8 @@ Quality CheckNoise::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
-    if (!isObjectCheckable(mo)) {
-      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << getAcceptedType() << ENDM;
+    if (!mo->encapsulatedInheritsFrom(mAcceptedType)) {
+      ILOG(Error, Support) << "Cannot check MO " << mo->getName() << " " << moName << " which is not of type " << mAcceptedType << ENDM;
       continue;
     }
     if (mo->getName() != mAcceptedName) {
@@ -65,12 +65,12 @@ Quality CheckNoise::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
 void CheckNoise::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Debug, Devel) << "Beautifying " << mo->getName() << ENDM;
-  if (!isObjectCheckable(mo)) {
-    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << getAcceptedType() << ENDM;
+  if (!mo->encapsulatedInheritsFrom(mAcceptedType)) {
+    ILOG(Error, Support) << "Cannot beautify MO " << mo->getName() << " which is not of type " << mAcceptedType << ENDM;
     return;
   }
   if (mo->getName() == mAcceptedName) {
-    auto* h = static_cast<TH2F*>(mo->getObject());
+    auto* h = static_cast<TH1F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (!msg) {
       return;

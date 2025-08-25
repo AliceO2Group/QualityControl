@@ -69,17 +69,6 @@ class CheckInterface : public core::UserCodeInterface
   /// then this should be reset here.
   virtual void reset(); // not fully abstract because we don't want to change all the existing subclasses
 
-  /// \brief Returns the name of the class that can be treated by this check.
-  ///
-  /// The name of the class returned by this method will be checked against the MonitorObject's encapsulated
-  /// object's class. If it is the same or a parent then the check will be applied. Therefore, this method
-  /// must return the highest class in the hierarchy that this check can use.
-  /// If the class does not override it, we return "TObject".
-  virtual std::string getAcceptedType();
-
-  bool isObjectCheckable(const std::shared_ptr<core::MonitorObject> mo);
-  bool isObjectCheckable(const core::MonitorObject* mo);
-
   virtual void startOfActivity(const core::Activity& activity); // not fully abstract because we don't want to change all the existing subclasses
   virtual void endOfActivity(const core::Activity& activity);   // not fully abstract because we don't want to change all the existing subclasses
 

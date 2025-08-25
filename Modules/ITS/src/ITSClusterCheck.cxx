@@ -136,8 +136,6 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 } // end check
 
-std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
-
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   std::vector<std::string> vPlotWithTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "plotWithTextMessage", ""));

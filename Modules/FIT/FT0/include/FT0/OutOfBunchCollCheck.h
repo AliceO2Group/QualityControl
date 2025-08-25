@@ -37,8 +37,6 @@ class OutOfBunchCollCheck : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
-  std::string getAcceptedType() override;
-
   constexpr static std::size_t sBCperOrbit = o2::constants::lhc::LHCMaxBunches;
 
   ClassDefOverride(OutOfBunchCollCheck, 2);

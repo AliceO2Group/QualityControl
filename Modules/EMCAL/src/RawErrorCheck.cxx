@@ -355,8 +355,6 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string RawErrorCheck::getAcceptedType() { return "TH2"; }
-
 void RawErrorCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH1*>(mo->getObject());
