@@ -47,6 +47,7 @@ ITSTrackTask::~ITSTrackTask() // make_shared objects will be delete automaticall
   delete hVertexRvsZ;
   delete hVertexZ;
   delete hVertexContributors;
+  delete hVertexContvsZ;
   delete hAssociatedClusterFraction;
   delete hNtracks;
   delete hTrackPtVsEta;
@@ -177,6 +178,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     hVertexCoordinates->Fill(vertex.getX(), vertex.getY());
     hVertexRvsZ->Fill(vertex.getZ(), sqrt(vertex.getX() * vertex.getX() + vertex.getY() * vertex.getY()));
     hVertexZ->Fill(vertex.getZ());
+    hVertexContvsZ->Fill(vertex.getZ(), vertex.getNContributors());
     hVertexContributors->Fill(vertex.getNContributors());
   }
 
@@ -216,7 +218,6 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   float vx = 0, vy = 0, vz = 0;
   float dca[2]{ 0., 0. };
   float bz = 5.0;
-
   // loop on tracks per ROF
   for (int iROF = 0; iROF < trackRofArr.size(); iROF++) {
 
@@ -233,7 +234,6 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       hTrackPhi->getNum()->Fill(out.getPhi());
       hAngularDistribution->getNum()->Fill(Eta, out.getPhi());
       hNClusters->getNum()->Fill(track.getNumberOfClusters());
-
       hTrackPtVsEta->Fill(out.getPt(), Eta);
       hTrackPtVsPhi->Fill(out.getPt(), out.getPhi());
 
@@ -545,6 +545,7 @@ void ITSTrackTask::reset()
   hVertexRvsZ->Reset();
   hVertexZ->Reset();
   hVertexContributors->Reset();
+  hVertexContvsZ->Reset();
 
   hAssociatedClusterFraction->Reset();
   hNtracks->Reset();
@@ -634,6 +635,11 @@ void ITSTrackTask::createAllHistos()
   addObject(hVertexContributors);
   formatAxes(hVertexContributors, "Number of contributors for vertex", "Counts", 1, 1.10);
   hVertexContributors->SetStats(0);
+
+  hVertexContvsZ = new TH2D("VertexContvsZ", "Vertex Contributors vs Z", (int)(mVertexZsize * 2 / 0.01), -mVertexZsize, mVertexZsize, 500, 0, 500);
+  addObject(hVertexContvsZ);
+  formatAxes(hVertexContvsZ, "Z coordinate (cm)", "N contributors", 1, 1.10);
+  hVertexContvsZ->SetStats(0);
 
   hAssociatedClusterFraction = new TH1D("AssociatedClusterFraction", "AssociatedClusterFraction", 100, 0, 1);
   hAssociatedClusterFraction->SetTitle("The fraction of clusters into tracks event by event");
