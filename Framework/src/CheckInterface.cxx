@@ -37,20 +37,6 @@ core::Quality CheckInterface::check(const core::QCInputs& data)
   return core::Quality{};
 };
 
-std::string CheckInterface::getAcceptedType() { return "TObject"; }
-
-bool CheckInterface::isObjectCheckable(const std::shared_ptr<MonitorObject> mo)
-{
-  return isObjectCheckable(mo.get());
-}
-
-bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
-{
-  TObject* encapsulated = mo->getObject();
-
-  return encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str());
-}
-
 void CheckInterface::configure()
 {
   // noop, override it if you want.

@@ -88,6 +88,14 @@ inline auto iterateQualityObjects(const QCInputs& data)
   return data.iterateByType<o2::quality_control::core::QualityObject>();
 }
 
+inline auto iterateQualityObjects(const QCInputs& data, std::string_view checkName)
+{
+  const auto filterQOByName = [checkName](const auto& pair) {
+    return std::string_view(pair.second->getName()) == checkName;
+  };
+  return data.iterateByTypeAndFilter<QualityObject>(filterQOByName);
+}
+
 } // namespace o2::quality_control::core
 
 #endif

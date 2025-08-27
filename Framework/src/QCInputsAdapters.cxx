@@ -19,7 +19,6 @@
 namespace o2::quality_control::core
 {
 
-
 std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const QCInputs& data, std::string_view objectName)
 {
   const auto filterQOByName = [objectName](const auto& pair) {

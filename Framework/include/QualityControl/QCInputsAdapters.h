@@ -80,6 +80,11 @@ std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Q
 /// \brief Iterate over all QualityObject entries in QCInputs.
 inline auto iterateQualityObjects(const QCInputs& data);
 
+/// \brief Iterate over QualityObject entries filtered by check name.
+/// \param data QCInputs containing QualityObjects.
+/// \param checkName Check name to filter entries.
+inline auto iterateQualityObjects(const QCInputs& data, std::string_view checkName);
+
 /// \brief Retrieve the first QualityObject matching a given check name.
 /// \param data QCInputs to search.
 /// \param checkName Name of the quality check.
