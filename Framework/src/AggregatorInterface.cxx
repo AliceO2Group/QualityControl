@@ -15,7 +15,7 @@
 ///
 
 #include "QualityControl/AggregatorInterface.h"
-#include "QualityControl/DataAdapters.h"
+#include "QualityControl/QCInputsAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;

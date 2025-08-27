@@ -21,7 +21,7 @@
 #include <Rtypes.h>
 // QC
 #include "QualityControl/AggregatorInterface.h"
-#include "QualityControl/Data.h"
+#include "QualityControl/QCInputs.h"
 
 namespace o2::quality_control_modules::skeleton
 {

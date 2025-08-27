@@ -10,22 +10,18 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   DataAdapters.inl
+/// \file   QCInputsAdapters.inl
 /// \author Michal Tichak
 ///
 
-#ifndef QC_CORE_DATA_ADAPTERS_IMPL_H
-#define QC_CORE_DATA_ADAPTERS_IMPL_H
+#ifndef QC_CORE_DATA_ADAPTERS_INL
+#define QC_CORE_DATA_ADAPTERS_INL
 
 #include <optional>
 #include <string_view>
-#include "QualityControl/Data.h"
+#include "QCInputs.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
-
-#ifdef QC_CORE_DATA_ADAPTERS_H
-#include "QualityControl/DataAdapters.h"
-#endif
 
 namespace o2::quality_control::core
 {

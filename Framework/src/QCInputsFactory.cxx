@@ -10,11 +10,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   DataAdapters.cxx
+/// \file   QCInputsFactory.cxx
 /// \author Michal Tichak
 ///
 
-#include "QualityControl/DataAdapters.h"
+#include "QualityControl/QCInputsFactory.h"
 
 namespace o2::quality_control::core
 {
@@ -35,17 +35,6 @@ QCInputs createData(const QualityObjectsMapType& qoMap)
     data.insert(key, qo);
   }
   return data;
-}
-
-std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const QCInputs& data, std::string_view objectName)
-{
-  const auto filterQOByName = [objectName](const auto& pair) {
-    return std::string_view(pair.second->GetName()) == objectName;
-  };
-  for (const auto& qo : data.iterateByTypeAndFilter<QualityObject>(filterQOByName)) {
-    return { qo };
-  }
-  return std::nullopt;
 }
 
 } // namespace o2::quality_control::core

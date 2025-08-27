@@ -17,8 +17,8 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/Data.h"
-#include "QualityControl/DataAdapters.h"
+#include "QualityControl/QCInputs.h"
+#include "QualityControl/QCInputsAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;

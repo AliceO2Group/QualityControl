@@ -10,17 +10,16 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testData.cxx
+/// \file    testQCInputs.cxx
 /// \author  Michal Tichak
 ///
 
 #include <TH1.h>
 #include <boost/container/flat_map.hpp>
 #include <catch_amalgamated.hpp>
-#include "Framework/include/QualityControl/DataAdapters.inl"
 #include "Framework/include/QualityControl/MonitorObject.h"
-#include "QualityControl/Data.h"
-#include "QualityControl/DataAdapters.h"
+#include "QualityControl/QCInputs.h"
+#include "QualityControl/QCInputsAdapters.h"
 #include <cstring>
 #include <memory>
 #include <string>
@@ -187,6 +186,7 @@ TEMPLATE_TEST_CASE("Data - get fundamental types", "[.Data-benchmark]", stdmap, 
     for (size_t i = 0; i != iterations; ++i) {
       auto opt = data.template get<size_t>(std::to_string(i));
       r += opt.value();
+      auto& v = opt.value();
       count++;
     }
     REQUIRE(count == iterations);

@@ -23,7 +23,7 @@
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/Activity.h"
-#include "QualityControl/Data.h"
+#include "QualityControl/QCInputs.h"
 
 namespace o2::quality_control::checker
 {

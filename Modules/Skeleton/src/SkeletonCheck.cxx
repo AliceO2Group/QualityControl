@@ -19,8 +19,8 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
-#include "QualityControl/Data.h"
-#include "QualityControl/DataAdapters.h"
+#include "QualityControl/QCInputs.h"
+#include "QualityControl/QCInputsAdapters.h"
 // ROOT
 #include <TH1.h>
 
@@ -42,12 +42,6 @@ void SkeletonCheck::configure()
   std::string parameter = mCustomParameters.atOrDefaultValue("myOwnKey1", "default");
 }
 
-Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
-{
-  auto data = createData(*moMap);
-  return check(data);
-}
-
 Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
@@ -66,7 +60,8 @@ Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
     return result;
   }
 
-  const TH1& histogram = histOpt.value().get();
+  // histOpt contains reference_wrapper<const TH1>, it can be accesed by .get() or by implicit type conversion operator like in this example
+  const TH1& histogram = histOpt.value();
   // unless we find issues, we assume the quality is good
   result = Quality::Good;
 

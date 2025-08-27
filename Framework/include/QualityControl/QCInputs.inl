@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Data.inl
+/// \file   QCInputs.inl
 /// \author Michal Tichak
 ///
 
@@ -33,10 +33,10 @@ std::optional<std::reference_wrapper<const Result>> QCInputsGeneric<ContainerMap
 }
 
 template <typename ContainerMap>
-template <typename T, typename... Args>
+template <typename Result, typename... Args>
 void QCInputsGeneric<ContainerMap>::emplace(std::string_view key, Args&&... args)
 {
-  mObjects.emplace(key, std::any{ std::in_place_type<T>, std::forward<Args>(args)... });
+  mObjects.emplace(key, std::any{ std::in_place_type<Result>, std::forward<Args>(args)... });
 }
 
 template <typename ContainerMap>
@@ -70,17 +70,35 @@ static const T* any_cast_try_shared_raw_ptr(const std::any& value)
 }
 
 template <typename T>
-static constexpr auto any_to_specific = std::views::transform([](const auto& pair) -> std::pair<std::string_view, const T*> { return { pair.first, any_cast_try_shared_raw_ptr<T>(pair.second) }; });
+static constexpr auto any_to_specific = std::views::transform(
+  [](const auto& pair) -> std::pair<std::string_view, const T*> {
+    return { pair.first, any_cast_try_shared_raw_ptr<T>(pair.second) };
+  });
 
-static constexpr auto filter_nullptr_in_pair = std::views::filter([](const auto& pair) -> bool { return pair.second != nullptr; });
+static constexpr auto filter_nullptr_in_pair = std::views::filter(
+  [](const auto& pair) -> bool {
+    return pair.second != nullptr;
+  });
 
-static constexpr auto filter_nullptr = std::views::filter([](const auto* ptr) -> bool { return ptr != nullptr; });
+static constexpr auto filter_nullptr = std::views::filter(
+  [](const auto* ptr) -> bool {
+    return ptr != nullptr;
+  });
 
-static constexpr auto pair_to_reference = std::views::transform([](const auto& pair) -> const auto& { return *pair.second; });
+static constexpr auto pair_to_value_const_ref = std::views::transform(
+  [](const auto& pair) -> const auto& {
+    return *pair.second;
+  });
 
-static constexpr auto pair_to_value = std::views::transform([](const auto& pair) -> const auto* { return pair.second; });
+static constexpr auto pair_to_value = std::views::transform(
+  [](const auto& pair) -> const auto* {
+    return pair.second;
+  });
 
-static constexpr auto pointer_to_reference = std::views::transform([](const auto* ptr) -> const auto& { return *ptr; });
+static constexpr auto pointer_to_reference = std::views::transform(
+  [](const auto* ptr) -> const auto& {
+    return *ptr;
+  });
 
 } // namespace internal
 
@@ -89,7 +107,7 @@ template <typename T>
 auto QCInputsGeneric<ContainerMap>::iterateByType() const
 {
   using namespace internal;
-  return mObjects | any_to_specific<T> | filter_nullptr_in_pair | pair_to_reference;
+  return mObjects | any_to_specific<T> | filter_nullptr_in_pair | pair_to_value_const_ref;
 }
 
 template <typename ContainerMap>
@@ -97,7 +115,7 @@ template <typename T, std::predicate<const std::pair<std::string_view, const T*>
 auto QCInputsGeneric<ContainerMap>::iterateByTypeAndFilter(Pred&& filter) const
 {
   using namespace internal;
-  return mObjects | any_to_specific<T> | filter_nullptr_in_pair | std::views::filter(filter) | pair_to_reference;
+  return mObjects | any_to_specific<T> | filter_nullptr_in_pair | std::views::filter(filter) | pair_to_value_const_ref;
 }
 
 template <typename ContainerMap>
