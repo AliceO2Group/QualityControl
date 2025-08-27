@@ -34,8 +34,6 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
     return result;
   }
 
-  std::string FakeCheck::getAcceptedType() { return "TH1"; }
-
   void FakeCheck::beautify(std::shared_ptr<MonitorObject> /*mo*/, Quality /*checkResult*/)
   {
     // NOOP

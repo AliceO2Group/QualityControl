@@ -130,11 +130,6 @@ void RawDataCheckStats::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   }
 }
 
-std::string RawDataCheckStats::getAcceptedType()
-{
-  return "TH1";
-}
-
 void RawDataCheckStats::reset()
 {
   ILOG(Debug, Devel) << "RawDataCheckStats::reset" << ENDM;
@@ -207,11 +202,6 @@ void RawDataCheckSizes::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       msg->SetFillColor(kOrange);
     }
   }
-}
-
-std::string RawDataCheckSizes::getAcceptedType()
-{
-  return "TH2";
 }
 
 void RawDataCheckSizes::reset()

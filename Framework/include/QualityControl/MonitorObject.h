@@ -117,6 +117,11 @@ class MonitorObject : public TObject
   /// \brief Get metadata value of given key, returns std::nullopt if none exists;
   std::optional<std::string> getMetadata(const std::string& key);
 
+  /// \brief Check if the encapsulated object inherits from the given class name
+  /// \param className Name of the class to check inheritance from
+  /// \return true if the encapsulated object inherits from the given class, false otherwise
+  bool encapsulatedInheritsFrom(std::string_view className) const;
+
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
@@ -149,7 +154,7 @@ class MonitorObject : public TObject
   void releaseObject();
   void cloneAndSetObject(const MonitorObject&);
 
-  ClassDefOverride(MonitorObject, 14);
+  ClassDefOverride(MonitorObject, 15);
 };
 
 } // namespace o2::quality_control::core

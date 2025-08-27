@@ -16,6 +16,7 @@
 
 #include "QualityControl/MonitorObject.h"
 #include <TObject.h>
+#include <TClass.h>
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -160,6 +161,14 @@ std::optional<std::string> MonitorObject::getMetadata(const std::string& key)
     return foundIt->second;
   }
   return std::nullopt;
+}
+
+bool MonitorObject::encapsulatedInheritsFrom(std::string_view className) const
+{
+  if (!mObject) {
+    return false;
+  }
+  return mObject->IsA()->InheritsFrom(className.data());
 }
 
 std::string MonitorObject::getPath() const

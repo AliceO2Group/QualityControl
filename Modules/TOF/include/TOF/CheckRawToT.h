@@ -36,7 +36,6 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
-  std::string getAcceptedType() override { return "TH1F"; }
 
  private:
   // Running configurable parameters
@@ -50,6 +49,8 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   // User variables
   /// Messages to print on the output PAD
   MessagePad mShifterMessages;
+  /// Accepted type for this check
+  static constexpr char mAcceptedType[] = "TH1F";
 
   ClassDefOverride(CheckRawToT, 2);
 };

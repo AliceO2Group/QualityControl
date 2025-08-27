@@ -254,7 +254,6 @@ Quality CheckOfPads::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 } // end of loop over moMap
 
 //______________________________________________________________________________
-std::string CheckOfPads::getAcceptedType() { return "TCanvas"; }
 
 //______________________________________________________________________________
 void CheckOfPads::beautify(std::shared_ptr<MonitorObject> mo, Quality)

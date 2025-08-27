@@ -33,13 +33,6 @@ BOOST_AUTO_TEST_CASE(checkable)
   MonitorObject monitorObject(&histo, "task", "testClass", "TST");
   monitorObject.setIsOwner(false);
   NonEmpty myCheck;
-
-  BOOST_CHECK_EQUAL(myCheck.getAcceptedType(), "TH1");
-  BOOST_CHECK_EQUAL(myCheck.isObjectCheckable(&monitorObject), true);
-
-  TObject obj;
-  monitorObject.setObject(&obj);
-  BOOST_CHECK_EQUAL(myCheck.isObjectCheckable(&monitorObject), false);
 }
 
 BOOST_AUTO_TEST_CASE(beautify)

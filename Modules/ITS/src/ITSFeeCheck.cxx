@@ -272,8 +272,6 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return result;
 } // end check
 
-std::string ITSFeeCheck::getAcceptedType() { return "TH2I, TH2Poly"; }
-
 void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   std::vector<std::string> vPlotWithTextMessage = convertToArray<std::string>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "plotWithTextMessage", ""));

@@ -33,8 +33,6 @@ Quality AlwaysGoodCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return Quality::Good;
 }
 
-std::string AlwaysGoodCheck::getAcceptedType() { return ""; }
-
 void AlwaysGoodCheck::beautify(std::shared_ptr<MonitorObject>, Quality)
 {
 }

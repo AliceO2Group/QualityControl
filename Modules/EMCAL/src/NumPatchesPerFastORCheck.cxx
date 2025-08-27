@@ -236,8 +236,6 @@ Quality NumPatchesPerFastORCheck::check(std::map<std::string, std::shared_ptr<Mo
   return result;
 }
 
-std::string NumPatchesPerFastORCheck::getAcceptedType() { return "TH1"; }
-
 void NumPatchesPerFastORCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "NumberOfPatchesWithFastOR") {

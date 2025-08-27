@@ -265,8 +265,6 @@ Quality GenericCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   return result;
 }
 
-std::string GenericCheck::getAcceptedType() { return "TObject"; }
-
 void GenericCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (!mo) {

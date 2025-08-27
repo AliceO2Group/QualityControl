@@ -45,8 +45,6 @@ Quality CalibMQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string CalibMQcCheck::getAcceptedType() { return "TH1"; }
-
 void CalibMQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
 

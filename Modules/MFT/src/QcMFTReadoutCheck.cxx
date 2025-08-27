@@ -210,8 +210,6 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
   return result;
 }
 
-std::string QcMFTReadoutCheck::getAcceptedType() { return "TH1, TH2"; }
-
 void QcMFTReadoutCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "mSummaryChipFault") {

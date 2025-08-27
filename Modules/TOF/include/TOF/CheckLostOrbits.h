@@ -36,7 +36,6 @@ class CheckLostOrbits : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
-  std::string getAcceptedType() override;
 
  private:
   MessagePad mShifterMessages{ "", 0.15, 0.65, 0.4, 0.85 };

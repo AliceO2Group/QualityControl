@@ -81,12 +81,6 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string SkeletonCheck::getAcceptedType()
-{
-  // This method is a remnant of early interface prototype and will be removed in the scope of ticket QC-373
-  return "TH1";
-}
-
 void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.

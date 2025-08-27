@@ -223,8 +223,6 @@ Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObjec
   return result;
 }
 
-std::string PedestalsCheck::getAcceptedType() { return "TH1"; }
-
 static void updateTitle(TH1* hist, std::string suffix)
 {
   if (!hist) {

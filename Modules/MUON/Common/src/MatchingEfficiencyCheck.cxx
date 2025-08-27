@@ -166,8 +166,6 @@ Quality MatchingEfficiencyCheck::check(std::map<std::string, std::shared_ptr<Mon
   return result;
 }
 
-std::string MatchingEfficiencyCheck::getAcceptedType() { return "TH1"; }
-
 void MatchingEfficiencyCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   TH1* hist = dynamic_cast<TH1*>(mo->getObject());

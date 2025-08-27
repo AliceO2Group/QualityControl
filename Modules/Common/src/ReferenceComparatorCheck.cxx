@@ -211,8 +211,6 @@ void ReferenceComparatorCheck::reset()
   mQualityFlags.clear();
 }
 
-std::string ReferenceComparatorCheck::getAcceptedType() { return "TH1"; }
-
 // return the ROOT color index associated to a give quality level
 static int getQualityColor(const Quality& q)
 {

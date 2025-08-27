@@ -71,7 +71,6 @@ BOOST_AUTO_TEST_CASE(test_types)
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
   MeanIsAbove check;
-  BOOST_TEST(!check.isObjectCheckable(mo));
 
   Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Null);

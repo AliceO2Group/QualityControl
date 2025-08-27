@@ -105,8 +105,6 @@ Quality TracksQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string TracksQcCheck::getAcceptedType() { return "TH1"; }
-
 static void updateTitle(TH1* hist, std::string suffix)
 {
   if (!hist) {

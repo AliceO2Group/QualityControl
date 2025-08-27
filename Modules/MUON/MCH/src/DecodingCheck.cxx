@@ -193,8 +193,6 @@ Quality DecodingCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return mQualityChecker.getQuality();
 }
 
-std::string DecodingCheck::getAcceptedType() { return "TH1"; }
-
 void DecodingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if ((mo->getName().find("RefComp/") != std::string::npos)) {

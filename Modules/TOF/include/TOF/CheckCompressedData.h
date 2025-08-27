@@ -39,7 +39,6 @@ class CheckCompressedData : public o2::quality_control::checker::CheckInterface
   void configure() override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
-  std::string getAcceptedType() override;
 
  private:
   float mDiagnosticThresholdPerSlot = 0;
