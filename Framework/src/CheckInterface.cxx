@@ -17,12 +17,25 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/ReferenceUtils.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QCInputs.h"
+#include "QualityControl/QCInputsAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control::checker
 {
+
+core::Quality CheckInterface::check(std::map<std::string, std::shared_ptr<core::MonitorObject>>* moMap)
+{
+  auto data = createData(*moMap);
+  return check(data);
+};
+
+core::Quality CheckInterface::check(const core::QCInputs& data)
+{
+  return core::Quality{};
+};
 
 void CheckInterface::configure()
 {

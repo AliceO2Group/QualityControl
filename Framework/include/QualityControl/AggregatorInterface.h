@@ -23,6 +23,7 @@
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/QCInputs.h"
 
 namespace o2::quality_control::checker
 {
@@ -42,7 +43,13 @@ class AggregatorInterface : public o2::quality_control::core::UserCodeInterface
   ///
   /// @param qoMap A map of the the QualityObjects to aggregate and their full names.
   /// @return The new qualities, associated with a name.
-  virtual std::map<std::string, core::Quality> aggregate(std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap) = 0;
+  virtual std::map<std::string, core::Quality> aggregate(std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap);
+
+  /// \brief Returns new qualities (usually fewer) based on the input qualities stored in Data structure
+  ///
+  /// @param data A generic data structure containing QualityObjects or possible other inputs.
+  /// @return The new qualities, associated with a name.
+  virtual std::map<std::string, core::Quality> aggregate(const core::QCInputs& data);
 
   virtual void startOfActivity(const core::Activity& activity);
   virtual void endOfActivity(const core::Activity& activity);
