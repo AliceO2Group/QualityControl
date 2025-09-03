@@ -16,6 +16,7 @@
 
 #include "Skeleton/SkeletonAggregator.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/QCInputsAdapters.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -32,22 +33,20 @@ void SkeletonAggregator::configure()
   std::string parameter = mCustomParameters.atOrDefaultValue("myOwnKey", "fallback value");
 }
 
-std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
+std::map<std::string, Quality> SkeletonAggregator::aggregate(const o2::quality_control::core::QCInputs& data)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   std::map<std::string, Quality> result;
 
   ILOG(Info, Devel) << "Entered SkeletonAggregator::aggregate" << ENDM;
-  ILOG(Info, Devel) << "   received a list of size : " << qoMap.size() << ENDM;
-  for (const auto& item : qoMap) {
-    ILOG(Info, Devel) << "Object: " << (*item.second) << ENDM;
-  }
+  ILOG(Info, Devel) << "   received a data of size : " << data.size() << ENDM;
 
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
-  for (const auto& qo : qoMap) {
-    if (qo.second->getQuality().isWorseThan(current)) {
-      current = qo.second->getQuality();
+  for (const auto& qo : iterateQualityObjects(data)) {
+    ILOG(Info, Devel) << "Object: " << qo << ENDM;
+    if (qo.getQuality().isWorseThan(current)) {
+      current = qo.getQuality();
     }
   }
 

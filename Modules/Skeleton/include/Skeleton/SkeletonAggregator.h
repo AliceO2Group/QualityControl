@@ -21,6 +21,7 @@
 #include <Rtypes.h>
 // QC
 #include "QualityControl/AggregatorInterface.h"
+#include "QualityControl/QCInputs.h"
 
 namespace o2::quality_control_modules::skeleton
 {
@@ -32,11 +33,11 @@ class SkeletonAggregator : public o2::quality_control::checker::AggregatorInterf
  public:
   // Override interface
   void configure() override;
-  std::map<std::string, o2::quality_control::core::Quality> aggregate(o2::quality_control::core::QualityObjectsMapType& qoMap) override;
+  std::map<std::string, o2::quality_control::core::Quality> aggregate(const o2::quality_control::core::QCInputs& data) override;
 
   ClassDefOverride(SkeletonAggregator, 1);
 };
 
 } // namespace o2::quality_control_modules::skeleton
 
-#endif //QUALITYCONTROL_SKELETONAGGREGATOR_H
+#endif // QUALITYCONTROL_SKELETONAGGREGATOR_H
