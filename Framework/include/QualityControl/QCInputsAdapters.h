@@ -60,7 +60,7 @@ inline auto iterateMonitorObjects(const QCInputs& data);
 inline auto iterateMonitorObjects(const QCInputs& data, std::string_view taskName);
 
 /// \brief Retrieve the first MonitorObject of type StoredType matching both name and task.
-/// \tparam StoredType Type of MonitorObject or subclass to retrieve.
+/// \tparam StoredType Type of MonitorObject or stored class to retrieve.
 /// \param data QCInputs to search.
 /// \param objectName Name of the MonitorObject.
 /// \param taskName Name of the originating task.
@@ -70,7 +70,7 @@ std::optional<std::reference_wrapper<const StoredType>> getMonitorObject(const Q
 
 // returns first occurence of MO with given name (possible name clash)
 /// \brief Retrieve the first MonitorObject of type StoredType matching name.
-/// \tparam StoredType Type of MonitorObject or subclass to retrieve.
+/// \tparam StoredType Type of MonitorObject or stored class to retrieve.
 /// \param data QCInputs to search.
 /// \param objectName Name of the MonitorObject.
 /// \returns Optional reference to const StoredType if found.

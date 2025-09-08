@@ -91,7 +91,7 @@ inline auto iterateQualityObjects(const QCInputs& data)
 inline auto iterateQualityObjects(const QCInputs& data, std::string_view checkName)
 {
   const auto filterQOByName = [checkName](const auto& pair) {
-    return std::string_view(pair.second->getName()) == checkName;
+    return std::string_view(pair.second->getCheckName()) == checkName;
   };
   return data.iterateByTypeAndFilter<QualityObject>(filterQOByName);
 }

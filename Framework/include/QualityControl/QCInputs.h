@@ -17,11 +17,13 @@
 /// \par Example
 /// \code{.cpp}
 /// QCInputs data;
-/// data.insert("count", 42u);
-/// if (auto opt = data.get<unsigned>("count")) {
-///   std::cout << "Count: " << opt->get() << std::endl;
+/// auto* h1 = new TH1F("th11", "th11", 100, 0, 99);
+/// data.insert("mo", std::make_shared<MonitorObject>(h1, "taskname", "class1", "TST"));
+/// if (auto opt = data.get<MonitorObject>("mo")) {
+///   MonitorObject& moObject = opt.value();
+///   std::cout << "mo name: " << moObject.getName() << std::endl;
 /// }
-/// for (const auto& v : data.iterateByType<unsigned>()) {
+/// for (const auto& mo : data.iterateByType<MonitorObject>()) {
 ///   // process each value
 /// }
 /// \endcode
@@ -52,14 +54,12 @@ concept invocable_r = std::invocable<Function, Args...> &&
 
 /// \brief Heterogeneous storage for named QC input objects.
 ///
-/// Stores values in an std::any-based container keyed by strings,
+/// Stores values in an std::unordered_map<std::string, std::any> while
 /// offering type-safe get, iteration, filtering, and transformation.
-/// Example of such container is transparent_unordered_map at the end of this file
-template <typename ContainerMap>
-class QCInputsGeneric
+class QCInputs
 {
  public:
-  QCInputsGeneric() = default;
+  QCInputs() = default;
 
   /// \brief Retrieve the object stored under the given key with matching type.
   /// \tparam Result Expected stored type.
@@ -67,7 +67,7 @@ class QCInputsGeneric
   /// \returns Optional reference to const Result if found desired item of type Result.
   /// \par Example
   /// \code{.cpp}
-  /// if (auto opt = data.get<unsigned>("count")) {
+  /// if (auto opt = data.get<MonitorObject>("mo")) {
   ///   if (opt.has_value()){
   ///     const unsigned& value = opt.value(); // careful about using auto here as we want to invoke implicit conversion operator of reference_wrapper
   ///   }
@@ -82,7 +82,8 @@ class QCInputsGeneric
   /// \param args Arguments forwarded to T's constructor.
   /// \par Example
   /// \code{.cpp}
-  /// data.emplace<std::string>("greeting", "hello");
+  /// auto* h1 = new TH1F("th11", "th11", 100, 0, 99);
+  /// data.emplace<MonitorObject>("mo", h1, "taskname", "class1", "TST");
   /// \endcode
   template <typename T, typename... Args>
   void emplace(std::string_view key, Args&&... args);
@@ -93,7 +94,8 @@ class QCInputsGeneric
   /// \param value Const reference to the value to insert.
   /// \par Example
   /// \code{.cpp}
-  /// data.insert("count", 10u);
+  /// auto* h1 = new TH1F("th11", "th11", 100, 0, 99);
+  /// data.insert("mo", std::make_shared<MonitorObject>(h1, "taskname", "class1", "TST"));
   /// \endcode
   template <typename T>
   void insert(std::string_view key, const T& value);
@@ -103,7 +105,7 @@ class QCInputsGeneric
   /// \returns Range of const references to stored Result instances.
   /// \par Example
   /// \code{.cpp}
-  /// for (auto& val : data.iterateByResultype<unsigned>()) {
+  /// for (auto& mo : data.iterateByType<MonitorObject>()) {
   ///   // use val
   /// }
   /// \endcode
@@ -117,9 +119,9 @@ class QCInputsGeneric
   /// \returns Range of const references to Result passing the filter.
   /// \par Example
   /// \code{.cpp}
-  /// auto even = [](auto const& pair) { return pair.second % 2 == 0; };
-  /// for (auto& val : data.iterateByTypeAndFilter<unsigned>(even)) {
-  ///   // use val
+  /// auto nameFilter = [](auto const& pair) { return pair.second->getName() == "name"; };
+  /// for (auto& mo : data.iterateByTypeAndFilter<MonitorObject>(nameFilter)) {
+  ///   // use mo
   /// }
   /// \endcode
   template <typename Result, std::predicate<const std::pair<std::string_view, const Result*>&> Pred>
@@ -138,8 +140,9 @@ class QCInputsGeneric
   /// \par Example
   /// \code{.cpp}
   /// // if we stored some MOs that are not TH1F, these will be filtered out of results
-  /// auto toHistogram = [](auto const& p) { return dynamic_cast<TH1F*>(p.second->getObject()); };
-  /// for (auto& h : data.iterateByTypeFilterAndTransform<MonitorObject, TH1F>([](auto const& p){ return p.first=="histo"; }, toHistogram)) {
+  /// auto toHistogram = [](auto const& p) -> const auto* { return dynamic_cast<TH1F*>(p.second->getObject()); };
+  /// auto nameFilter = [](auto const& p){ return p.first == "histo"; };
+  /// for (auto& h : data.iterateByTypeFilterAndTransform<MonitorObject, TH1F>(nameFilter, toHistogram)) {
   ///   // use histogram h
   /// }
   /// \endcode
@@ -155,32 +158,25 @@ class QCInputsGeneric
   size_t size() const noexcept;
 
  private:
-  ContainerMap mObjects;
+  /// \brief Transparent hash functor for string and string_view.
+  ///
+  /// Enables heterogeneous lookup in unordered maps keyed by std::string.
+  struct StringHash {
+    using is_transparent = void; // Required for heterogeneous lookup
+
+    std::size_t operator()(const std::string& str) const
+    {
+      return std::hash<std::string>{}(str);
+    }
+
+    std::size_t operator()(std::string_view sv) const
+    {
+      return std::hash<std::string_view>{}(sv);
+    }
+  };
+
+  std::unordered_map<std::string, std::any, StringHash, std::equal_to<>> mObjects;
 };
-
-/// \brief Transparent hash functor for string and string_view.
-///
-/// Enables heterogeneous lookup in unordered maps keyed by std::string.
-struct StringHash {
-  using is_transparent = void; // Required for heterogeneous lookup
-
-  std::size_t operator()(const std::string& str) const
-  {
-    return std::hash<std::string>{}(str);
-  }
-
-  std::size_t operator()(std::string_view sv) const
-  {
-    return std::hash<std::string_view>{}(sv);
-  }
-};
-
-/// \brief Unordered map storing std::any values with heterogeneous key lookup. It was chosen based on benchmark
-///        in testQCInputs.cxx
-using transparent_unordered_map = std::unordered_map<std::string, std::any, StringHash, std::equal_to<>>;
-
-/// \brief Default alias for QC inputs using transparent_unordered_map container.
-using QCInputs = QCInputsGeneric<transparent_unordered_map>;
 
 } // namespace o2::quality_control::core
 

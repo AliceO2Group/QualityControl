@@ -20,9 +20,8 @@
 namespace o2::quality_control::core
 {
 
-template <typename ContainerMap>
 template <typename Result>
-std::optional<std::reference_wrapper<const Result>> QCInputsGeneric<ContainerMap>::get(std::string_view key)
+std::optional<std::reference_wrapper<const Result>> QCInputs::get(std::string_view key)
 {
   if (const auto foundIt = mObjects.find(key); foundIt != mObjects.end()) {
     if (auto* casted = std::any_cast<Result>(&foundIt->second); casted != nullptr) {
@@ -32,16 +31,14 @@ std::optional<std::reference_wrapper<const Result>> QCInputsGeneric<ContainerMap
   return std::nullopt;
 }
 
-template <typename ContainerMap>
 template <typename Result, typename... Args>
-void QCInputsGeneric<ContainerMap>::emplace(std::string_view key, Args&&... args)
+void QCInputs::emplace(std::string_view key, Args&&... args)
 {
   mObjects.emplace(key, std::any{ std::in_place_type<Result>, std::forward<Args>(args)... });
 }
 
-template <typename ContainerMap>
 template <typename T>
-void QCInputsGeneric<ContainerMap>::insert(std::string_view key, const T& value)
+void QCInputs::insert(std::string_view key, const T& value)
 {
   mObjects.insert({ std::string{ key }, value });
 }
@@ -102,25 +99,22 @@ static constexpr auto pointer_to_reference = std::views::transform(
 
 } // namespace internal
 
-template <typename ContainerMap>
 template <typename T>
-auto QCInputsGeneric<ContainerMap>::iterateByType() const
+auto QCInputs::iterateByType() const
 {
   using namespace internal;
   return mObjects | any_to_specific<T> | filter_nullptr_in_pair | pair_to_value_const_ref;
 }
 
-template <typename ContainerMap>
 template <typename T, std::predicate<const std::pair<std::string_view, const T*>&> Pred>
-auto QCInputsGeneric<ContainerMap>::iterateByTypeAndFilter(Pred&& filter) const
+auto QCInputs::iterateByTypeAndFilter(Pred&& filter) const
 {
   using namespace internal;
   return mObjects | any_to_specific<T> | filter_nullptr_in_pair | std::views::filter(filter) | pair_to_value_const_ref;
 }
 
-template <typename ContainerMap>
 template <typename StoredType, typename ResultingType, std::predicate<const std::pair<std::string_view, const StoredType*>&> Pred, invocable_r<const ResultingType*, const StoredType*> Transform>
-auto QCInputsGeneric<ContainerMap>::iterateByTypeFilterAndTransform(Pred&& filter, Transform&& transform) const
+auto QCInputs::iterateByTypeFilterAndTransform(Pred&& filter, Transform&& transform) const
 {
   using namespace internal;
   return mObjects |
@@ -133,8 +127,7 @@ auto QCInputsGeneric<ContainerMap>::iterateByTypeFilterAndTransform(Pred&& filte
          pointer_to_reference;
 }
 
-template <typename ContainerMap>
-size_t QCInputsGeneric<ContainerMap>::size() const noexcept
+inline size_t QCInputs::size() const noexcept
 {
   return mObjects.size();
 }

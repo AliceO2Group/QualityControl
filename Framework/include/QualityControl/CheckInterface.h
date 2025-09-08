@@ -48,6 +48,8 @@ class CheckInterface : public core::UserCodeInterface
   virtual ~CheckInterface() = default;
 
   /// \brief Returns the quality associated with these objects.
+  /// \deprecated This function won't be deleted in future releases for compatibility reasons but users should
+  ///             use check(const Data&) for any new Checks.
   ///
   /// @param moMap A map of the the MonitorObjects to check and their full names (i.e. <task_name>/<mo name>) as keys.
   /// @return The quality associated with these objects.

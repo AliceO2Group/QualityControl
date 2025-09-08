@@ -22,7 +22,7 @@ namespace o2::quality_control::core
 std::optional<std::reference_wrapper<const QualityObject>> getQualityObject(const QCInputs& data, std::string_view objectName)
 {
   const auto filterQOByName = [objectName](const auto& pair) {
-    return std::string_view(pair.second->GetName()) == objectName;
+    return std::string_view(pair.second->getCheckName()) == objectName;
   };
   for (const auto& qo : data.iterateByTypeAndFilter<QualityObject>(filterQOByName)) {
     return { qo };
