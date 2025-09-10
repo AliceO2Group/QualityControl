@@ -22,11 +22,14 @@
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/Activity.h"
 
+#include "QualityControl/QCInputs.h"
+
 namespace o2::quality_control::core
 {
 class Activity;
 class MonitorObject;
-}
+
+} // namespace o2::quality_control::core
 
 using namespace o2::quality_control::core;
 
@@ -45,10 +48,18 @@ class CheckInterface : public core::UserCodeInterface
   virtual ~CheckInterface() = default;
 
   /// \brief Returns the quality associated with these objects.
+  /// \deprecated This function won't be deleted in future releases for compatibility reasons but users should
+  ///             use check(const Data&) for any new Checks.
   ///
   /// @param moMap A map of the the MonitorObjects to check and their full names (i.e. <task_name>/<mo name>) as keys.
   /// @return The quality associated with these objects.
-  virtual core::Quality check(std::map<std::string, std::shared_ptr<core::MonitorObject>>* moMap) = 0;
+  virtual core::Quality check(std::map<std::string, std::shared_ptr<core::MonitorObject>>* moMap);
+
+  /// \brief Returns the quality associated with these objects.
+  ///
+  /// @param data An object with any type of data possible accesible via full names (i.e. <task_name>/<mo name> in case of MOs) as keys.
+  /// @return The quality associated with these objects.
+  virtual core::Quality check(const core::QCInputs& data);
 
   /// \brief Modify the aspect of the plot.
   ///

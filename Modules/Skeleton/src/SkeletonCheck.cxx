@@ -18,6 +18,9 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Skeleton/SkeletonTask.h"
+#include "QualityControl/QCInputs.h"
+#include "QualityControl/QCInputsAdapters.h"
 // ROOT
 #include <TH1.h>
 
@@ -39,7 +42,7 @@ void SkeletonCheck::configure()
   std::string parameter = mCustomParameters.atOrDefaultValue("myOwnKey1", "default");
 }
 
-Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   Quality result = Quality::Null;
@@ -49,35 +52,36 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   // and you can get your custom parameters:
   ILOG(Debug, Devel) << "custom param physics.pp.myOwnKey1 : " << mCustomParameters.atOrDefaultValue("myOwnKey1", "default_value", "physics", "pp") << ENDM;
 
-  // This is an example of accessing the histogram 'example' created by SkeletonTask
-  for (auto& [moName, mo] : *moMap) {
-    if (mo->getName() == "example") {
-      auto* h = dynamic_cast<TH1*>(mo->getObject());
-      if (h == nullptr) {
-        ILOG(Error, Support) << "Could not cast `example` to TH1*, skipping" << ENDM;
-        continue;
-      }
-      // unless we find issues, we assume the quality is good
-      result = Quality::Good;
+  constexpr static auto name = "example";
+  // get MonitorObject with a given name from generic data object and converts it into requested type (TH1 here)
+  const auto histOpt = getMonitorObject<TH1>(data, name);
+  if (!histOpt.has_value()) {
+    ILOG(Warning, Support) << "Data object does not contain any MonitorObject with a name: " << name << ", or it couldn't be transformed into TH1" << ENDM;
+    return result;
+  }
 
-      // an example of a naive quality check: we want bins 1-7 to be non-empty and bins 0 and >7 to be empty.
-      for (int i = 0; i < h->GetNbinsX(); i++) {
-        if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
-          result = Quality::Bad;
-          // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
-          result.addFlag(FlagTypeFactory::BadPID(), "It is bad because there is nothing in bin " + std::to_string(i));
-          break;
-        } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
-          result = Quality::Medium;
-          // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
-          result.addFlag(FlagTypeFactory::Unknown(), "It is medium because bin " + std::to_string(i) + " is not empty");
-          result.addFlag(FlagTypeFactory::BadTracking(), "We can assign more than one Flag to a Quality");
-        }
-      }
-      // optionally, we can associate some custom metadata to a Quality
-      result.addMetadata("mykey", "myvalue");
+  // histOpt contains reference_wrapper<const TH1>, it can be accesed by .get() or by implicit type conversion operator like in this example
+  const TH1& histogram = histOpt.value();
+  // unless we find issues, we assume the quality is good
+  result = Quality::Good;
+
+  // an example of a naive quality check: we want bins 1-7 to be non-empty and bins 0 and >7 to be empty.
+  for (int i = 0; i < histogram.GetNbinsX(); i++) {
+    if (i > 0 && i < 8 && histogram.GetBinContent(i) == 0) {
+      result = Quality::Bad;
+      // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
+      result.addFlag(FlagTypeFactory::BadPID(), "It is bad because there is nothing in bin " + std::to_string(i));
+      break;
+    } else if ((i == 0 || i > 7) && histogram.GetBinContent(i) > 0) {
+      result = Quality::Medium;
+      // optionally, we can add flags indicating the effect on data and a comment explaining why it was assigned.
+      result.addFlag(FlagTypeFactory::Unknown(), "It is medium because bin " + std::to_string(i) + " is not empty");
+      result.addFlag(FlagTypeFactory::BadTracking(), "We can assign more than one Flag to a Quality");
     }
   }
+  // optionally, we can associate some custom metadata to a Quality
+  result.addMetadata("mykey", "myvalue");
+
   return result;
 }
 
