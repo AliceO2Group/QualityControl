@@ -55,7 +55,7 @@ void ITSChipStatusTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   StaveOverview = new TH2Poly();
   StaveOverview->SetName("StaveStatusOverview");
-  TString title = "Number of QC cycles when stave is without data";
+  TString title = "QC cycles when stave is without data";
   title += ";mm (IB 3x);mm (IB 3x)";
   StaveOverview->SetTitle(title);
   StaveOverview->SetStats(0);
@@ -234,8 +234,8 @@ void ITSChipStatusTask::endOfCycle()
 
           if (nEmptyChips == nChipsPerHic[iLayer] * nHicPerStave[iLayer]) { // all the chips of the stave are dead
 
-            int binContent = StaveOverview->GetBinContent(iStave + StaveBoundary[iLayer]) * NCycleForOverview + 1;
-            StaveOverview->SetBinContent(iStave + StaveBoundary[iLayer], 1. * binContent / NCycleForOverview);
+            int binContent = StaveOverview->GetBinContent(iStave + 1 + StaveBoundary[iLayer]) * NCycleForOverview + 1;
+            StaveOverview->SetBinContent(iStave + 1 + StaveBoundary[iLayer], 1. * binContent / NCycleForOverview);
           }
           nEmptyChips = 0;
           iStave++;
