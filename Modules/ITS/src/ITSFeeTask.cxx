@@ -260,7 +260,7 @@ void ITSFeeTask::setPlotsFormat()
     mTrailerCount->GetYaxis()->SetBinLabel(6, "45 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(8, "67 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(11, "101 kHz");
-    mTrailerCount->GetYaxis()->SetBinLabel(15, "135 kHz");
+    mTrailerCount->GetYaxis()->SetBinLabel(14, "135 kHz");
     mTrailerCount->GetYaxis()->SetBinLabel(20, "202 kHz");
 
     setAxisTitle(mTrailerCount_reset, "QC FEEId", "Estimated ROF frequenccy");
@@ -269,7 +269,7 @@ void ITSFeeTask::setPlotsFormat()
     mTrailerCount_reset->GetYaxis()->SetBinLabel(6, "45 kHz");
     mTrailerCount_reset->GetYaxis()->SetBinLabel(8, "67 kHz");
     mTrailerCount_reset->GetYaxis()->SetBinLabel(11, "101 kHz");
-    mTrailerCount_reset->GetYaxis()->SetBinLabel(15, "135 kHz");
+    mTrailerCount_reset->GetYaxis()->SetBinLabel(14, "135 kHz");
     mTrailerCount_reset->GetYaxis()->SetBinLabel(20, "202 kHz");
   }
 
