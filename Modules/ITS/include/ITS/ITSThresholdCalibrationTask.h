@@ -32,10 +32,8 @@ enum {
   VCASN,
   ITHR,
   THR,
-  TOT,
-  pixel_noise,
-  pixel_dead,
-  pixel_ineff
+  pixel,
+  TOT
 };
 
 namespace o2::quality_control_modules::its
@@ -128,7 +126,9 @@ class ITSThresholdCalibrationTask : public TaskInterface
   TH2F *hCalibrationThrNoiseRMSChipAverage[3], *hCalibrationThrNoiseChipAverage[3];
   // TH2F *hCalibrationDeadColumns[3], *hCalibrationDeadPixels[3];
   TH2D* hCalibrationDColChipAverage[3];
-  TH2D* hCalibrationPixelpAverage[3][3];
+  TH2D* hCalibrationPixel_dead[3];
+  TH2D* hCalibrationPixel_noise[3];
+  TH2D* hCalibrationPixel_inEff[3];
 
   TH2F* hUnsuccess[3];
   TH1F *hCalibrationLayer[NLayer][3], *hCalibrationRMSLayer[NLayer][3];
