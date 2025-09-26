@@ -79,17 +79,23 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
       }
 
       std::vector<float> allCollPerFeeModule(mo->getMetadataMap().size() + 1, 0);
+      int parsedBins = 0;
       for (auto metainfo : mo->getMetadataMap()) {
         int bin = 0;
         float value = 0;
-        try {
-          bin = std::stoi(metainfo.first);
-          value = std::stof(metainfo.second);
+        if (std::from_chars(metainfo.first.data(), metainfo.first.data() + metainfo.first.size(), bin).ptr == metainfo.first.data() + metainfo.first.size()) {
+          try {
+            value = std::stof(metadata.second);
+          } catch (std::invalid_argument& e) {
+            ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float" << ENDM;
+            continue;
+          }
+          parsedBins++;
           allCollPerFeeModule[bin] = value;
-        } catch (const std::invalid_argument& e) {
-          ILOG(Warning, Support) << "Could not get value for key " << metainfo.first << ENDM;
-          continue;
         }
+      }
+      if (parsedBins != histogram->GetNbinsY()) {
+        ILOG(Warning, Support) << "Missing bins in OutOfBunchColl_BCvsFeeModules: expected " << histogram->GetNbinsY() << ", get " << parsedBins << ENDM;
       }
 
       // Calculate out-of-bunch-coll fraction for Fee Modules
