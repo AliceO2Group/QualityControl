@@ -83,7 +83,9 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
       for (auto metainfo : mo->getMetadataMap()) {
         int bin = 0;
         float value = 0;
-        if (std::from_chars(metainfo.first.data(), metainfo.first.data() + metainfo.first.size(), bin).ptr == metainfo.first.data() + metainfo.first.size()) {
+        const char* metaInfoKey = metainfo.first.data();
+        const char* metaInfoKeyEnd = metainfo.first.data() + metainfo.first.size();
+        if (std::from_chars(metaInfoKey, metaInfoKey, bin).ptr == metaInfoKeyEnd) {
           try {
             value = std::stof(metadata.second);
           } catch (std::invalid_argument& e) {
