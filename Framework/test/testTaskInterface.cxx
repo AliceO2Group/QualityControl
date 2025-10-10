@@ -172,7 +172,7 @@ TEST_CASE("test_task_factory")
     "TST",
     "",
     {},
-    "",
+    "something",
     {},
     "SkeletonTaskRunner",
     "skeletonTask",
