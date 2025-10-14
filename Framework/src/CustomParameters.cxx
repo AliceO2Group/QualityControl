@@ -105,7 +105,11 @@ std::optional<boost::property_tree::ptree> CustomParameters::getOptionalPtree(co
   if (text.has_value()) {
     std::stringstream listingAsStringStream{ text.value() };
     boost::property_tree::ptree pt;
-    boost::property_tree::read_json(listingAsStringStream, pt);
+    try {
+      boost::property_tree::read_json(listingAsStringStream, pt);
+    } catch (const boost::property_tree::json_parser::json_parser_error& e) {
+      return result;
+    }
     result = pt;
   }
 

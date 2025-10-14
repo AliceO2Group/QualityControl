@@ -269,7 +269,7 @@ TEST_CASE("test_getAllDefaults")
 TEST_CASE("test_getOptionalPtree")
 {
   CustomParameters cp;
-  cp.set("key", R""""(
+  std::string content = R""""(
 [
           {
             "name": "mean_of_histogram",
@@ -303,25 +303,6 @@ TEST_CASE("test_getOptionalPtree")
               }]
           },
           {
-            "name": "correlation_mean_stddev",
-            "title": "Correlation between the mean and stddev of the example histogram",
-            "graphs" : [{
-              "varexp": "example.mean:example.stddev",
-              "selection": "",
-              "option": "*"
-            }]
-          },
-          {
-            "name": "correlation_stddev_entries",
-            "title": "Correlation between the stddev and entries of the example histogram",
-            "graphAxisLabel": "stddev:entries",
-            "graphs" : [{
-              "varexp": "example.stddev:example.entries",
-              "selection": "",
-              "option": "*"
-            }]
-          },
-          {
             "name": "example_quality",
             "title": "Trend of the example histogram's quality",
             "graphs" : [{
@@ -331,11 +312,13 @@ TEST_CASE("test_getOptionalPtree")
             }]
           }
         ]
-  )"""");
+  )"""";
+  cp.set("key", content);
   auto pt = cp.getOptionalPtree("key");
+  CHECK(pt.has_value());
 
   std::size_t number_plots = std::distance(pt->begin(), pt->end());
-  CHECK(number_plots == 5);
+  CHECK(number_plots == 3);
 
   auto first_plot = pt->begin()->second;
   CHECK(first_plot.get<string>("name") == "mean_of_histogram");
@@ -344,4 +327,15 @@ TEST_CASE("test_getOptionalPtree")
 
   auto last_plot = std::prev(pt->end())->second;
   CHECK(last_plot.get<string>("name") == "example_quality");
+
+  // test for failure
+  CustomParameters cp2;
+  cp2.set("key", "blabla");
+  auto pt2 = cp2.getOptionalPtree("key");
+  CHECK(!pt2.has_value());
+
+  // try to get it as text
+  auto text = cp.atOptional("key");
+  CHECK(text.has_value());
+  CHECK(text == content);
 }
