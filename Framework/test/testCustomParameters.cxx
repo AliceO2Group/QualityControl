@@ -265,3 +265,83 @@ TEST_CASE("test_getAllDefaults")
   auto result = cp.getAllDefaults();
   CHECK(result.size() == 0);
 }
+
+TEST_CASE("test_getOptionalPtree")
+{
+  CustomParameters cp;
+  cp.set("key", R""""(
+[
+          {
+            "name": "mean_of_histogram",
+            "title": "Mean trend of the example histogram",
+            "graphAxisLabel": "Mean X:time",
+            "graphYRange": "0:10000",
+            "graphs" : [
+              {
+                "name": "mean_trend",
+                "title": "mean trend",
+                "varexp": "example.mean:time",
+                "selection": "",
+                "option": "*L PLC PMC"
+              }, {
+                "name": "mean_trend_1000",
+                "title": "mean trend + 1000",
+                "varexp": "example.mean + 1000:time",
+                "selection": "",
+                "option": "* PMC",
+                "graphErrors": "1:200"
+              }
+            ]
+          },
+          {
+            "name": "histogram_of_means",
+            "title": "Distribution of mean values in the example histogram",
+            "graphs" : [{
+                "varexp": "example.mean",
+                "selection": "",
+                "option": ""
+              }]
+          },
+          {
+            "name": "correlation_mean_stddev",
+            "title": "Correlation between the mean and stddev of the example histogram",
+            "graphs" : [{
+              "varexp": "example.mean:example.stddev",
+              "selection": "",
+              "option": "*"
+            }]
+          },
+          {
+            "name": "correlation_stddev_entries",
+            "title": "Correlation between the stddev and entries of the example histogram",
+            "graphAxisLabel": "stddev:entries",
+            "graphs" : [{
+              "varexp": "example.stddev:example.entries",
+              "selection": "",
+              "option": "*"
+            }]
+          },
+          {
+            "name": "example_quality",
+            "title": "Trend of the example histogram's quality",
+            "graphs" : [{
+              "varexp": "QcCheck.name:time",
+              "selection": "",
+              "option": "*"
+            }]
+          }
+        ]
+  )"""");
+  auto pt = cp.getOptionalPtree("key");
+
+  std::size_t number_plots = std::distance(pt->begin(), pt->end());
+  CHECK(number_plots == 5);
+
+  auto first_plot = pt->begin()->second;
+  CHECK(first_plot.get<string>("name") == "mean_of_histogram");
+  auto graphs = first_plot.get_child("graphs");
+  CHECK(graphs.size() == 2);
+
+  auto last_plot = std::prev(pt->end())->second;
+  CHECK(last_plot.get<string>("name") == "example_quality");
+}

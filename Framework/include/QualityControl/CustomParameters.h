@@ -108,11 +108,33 @@ class CustomParameters
   /**
    * Return the optional value for the given key, runType and beamType.
    * If no key is found for the runType and the Beamtype, the fallback is to substitute with "default", first for beamType then for runType.
-   * Empty is only returned if the key could not be found in any combination of the provided run and beam types with "default".   * @param key
+   * Empty is only returned if the key could not be found in any combination of the provided run and beam types with "default".
+   * @param key
    * @param activity
    * @return an optional with the value for the given key and for the given activity.
    */
   std::optional<std::string> atOptional(const std::string& key, const Activity& activity) const;
+
+  /**
+   * Return the ptree representation of the optional value for the given key, runType and beamType.
+   * If no key is found for the runType and the Beamtype, the fallback is to substitute with "default", first for beamType then for runType.
+   * Empty is only returned if the key could not be found in any combination of the provided run and beam types with "default".
+   * @param key
+   * @param runType
+   * @param beamType
+   * @return an optional with the ptree representation of the value for the given key, runType and beamType or empty if not found.
+   */
+  std::optional<boost::property_tree::ptree> getOptionalPtree(const std::string& key, const std::string& runType = "default", const std::string& beamType = "default") const;
+
+  /**
+    * Return the ptree representation of the optional value for the given key, runType and beamType.
+    * If no key is found for the runType and the Beamtype, the fallback is to substitute with "default", first for beamType then for runType.
+    * Empty is only returned if the key could not be found in any combination of the provided run and beam types with "default".
+    * @param key
+    * @param activity
+    * @return an optional with the ptree representation of the value for the given key, runType and beamType or empty if not found.
+    */
+  std::optional<boost::property_tree::ptree> getOptionalPtree(const std::string& key, const Activity& activity) const;
 
   /**
    * Return the value for the given key, runType and beamType (the two latter optional). If it does not exist, returns the default value if provided or an empty string.
