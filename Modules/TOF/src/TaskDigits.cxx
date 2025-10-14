@@ -117,19 +117,19 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   if (mFlagEnableDiagnostic) {
     mHistoDecodingErrors = std::make_shared<TH2I>("DecodingErrors", "TOF decoding error;Crate;Error", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, 13, 1, 14);
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(4, "TRM 4");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(5, "TRM 5");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(6, "TRM 6");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(7, "TRM 7");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(8, "TRM 8");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(9, "TRM 9");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(10, "TRM 10");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12");
-    mHistoDecodingErrors->GetYaxis()->SetBinLabel(13, "recovered");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM Header");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(4, "TRM 4 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(5, "TRM 5 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(6, "TRM 6 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(7, "TRM 7 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(8, "TRM 8 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(9, "TRM 9 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(10, "TRM 10 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12 Err.");
+    mHistoDecodingErrors->GetYaxis()->SetBinLabel(13, "DRM Error");
     getObjectsManager()->startPublishing(mHistoDecodingErrors.get());
   }
 
@@ -292,27 +292,27 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       mHistoOrbitID->Fill(row.mFirstIR.orbit % mRangeMaxOrbitId, crate);
       mHistoBCID->Fill(row.mFirstIR.bc, crate);
       mHistoEventCounter->Fill(row.mEventCounter % mRangeMaxEventCounter, crate);
+    }
 
-      // check patterns
-      int trmMult[72][10] = { 0 }; // multiplicity in TRM and ROW
-      for (auto const& digit : digits_in_row) {
-        if (digit.getChannel() < 0) {
-          LOG(error) << "No valid channel";
-          continue;
-        }
-        int ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
-        int crate = o2::tof::Geo::getCrateFromECH(ech);
-        int trm = o2::tof::Geo::getTRMFromECH(ech) - 3;
-        trmMult[crate][trm]++;
+    // check patterns
+    int trmMult[72][10] = { 0 }; // multiplicity in TRM and ROW
+    for (auto const& digit : digits_in_row) {
+      if (digit.getChannel() < 0) {
+        LOG(error) << "No valid channel";
+        continue;
       }
+      int ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
+      int crate = o2::tof::Geo::getCrateFromECH(ech);
+      int trm = o2::tof::Geo::getTRMFromECH(ech) - 3;
+      trmMult[crate][trm]++;
+    }
 
-      for (int crate = 0; crate < 72; crate++) {
-        if (row.isEmptyCrate(crate)) { // Only for active crates
-          continue;
-        }
-        for (int trm = 0; trm < 10; trm++) {
-          mHistoDecodingCrate[trm]->Fill(0., crate, trmMult[crate][trm]);
-        }
+    for (int crate = 0; crate < 72; crate++) {
+      if (row.isEmptyCrate(crate)) { // Only for active crates
+        continue;
+      }
+      for (int trm = 0; trm < 10; trm++) {
+        mHistoDecodingCrate[trm]->Fill(0., crate, trmMult[crate][trm]);
       }
 
       if (mFlagEnableDiagnostic) {
@@ -330,11 +330,15 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
           if (el > 28) { // new slot
             slot = el - 28;
-          } else if (slot > -1 && lastslot != slot) { // fill only one time per TRM and row
+          } else if (slot > 1 && lastslot != slot) { // fill only one time per TRM and row
             // fill error
             mHistoDecodingErrors->Fill(crate, slot);
             lastslot = slot;
-          } else { // fill TRM mult for the current  bit error for this TRM
+          } else if (slot == 1 && lastslot != slot) {
+            mHistoDecodingErrors->Fill(crate, 13); // DRM error
+            lastslot = slot;
+          }
+          if (el <= 28 && slot > 2 && slot < 13) { // fill TRM mult for the current  bit error for this TRM
             mHistoDecodingCrate[slot - 3]->Fill(el, crate, trmMult[crate][slot - 3]);
           }
         }
