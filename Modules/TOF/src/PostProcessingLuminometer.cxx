@@ -89,10 +89,31 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
   auto moEfficiency = mDatabase->retrieveMO(mCCDBPath, mMOEfficiency, t.timestamp, t.activity);
   auto moActiveChannels = mDatabase->retrieveMO(mCCDBPath, mMOActiveChannels, t.timestamp, t.activity);
   auto moMultiplicity = mDatabase->retrieveMO(mCCDBPath, mMOMultiplicity, t.timestamp, t.activity);
+  auto moDecodingErrors = mDatabase->retrieveMO(mCCDBPath, mMOdecodingErrors, t.timestamp, t.activity);
 
   float ROeff = 1.;
   float hitMult = 0.;
   float activeCh = 1.;
+  float decodingEff = 1.;
+
+  // Decoding Errors
+  if (moDecodingErrors) {
+    TH2D* htemp = static_cast<TH2D*>(moDecodingErrors->getObject());
+    TH1D* hproj = (TH1D*)htemp->ProjectionY();
+    hproj->SetName("decodErr_pro");
+    if (hproj->GetBinContent(1) > 0) {
+      hproj->Scale(0.1 / hproj->GetBinContent(1));                // normalize to the first bin content and divide by 10 (TRMs)
+      for (int ibin = 3; ibin < hproj->GetNbinsX() - 1; ibin++) { // count on TRM errors (skip last bin = DRM errors)
+        decodingEff -= hproj->GetBinContent(ibin);
+      }
+      if (decodingEff < 1E-2) {
+        ILOG(Warning) << "decodingEff = " << decodingEff << " -> it is too low? Why? ... skipping such a correction " << ENDM;
+        decodingEff = 1.;
+      }
+    }
+  } else {
+    ILOG(Warning) << "Did not find MO " << moDecodingErrors << " in path " << mCCDBPath << ENDM;
+  }
 
   // Readout efficiency
   TH2F* moHEfficiency = static_cast<TH2F*>(moEfficiency ? moEfficiency->getObject() : nullptr);
@@ -142,7 +163,14 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
     ILOG(Warning) << "Did not find MO " << mMOMultiplicity << " in path " << mCCDBPath << ENDM;
   }
 
-  mHistoLuminometer->Fill(hitMult / (activeCh * ROeff));
+  mHistoLuminometer->Fill(hitMult / (activeCh * ROeff * decodingEff));
+  ILOG(Info) << "____________________" << ENDM;
+  ILOG(Info) << "Luminometer summary " << ENDM;
+  ILOG(Info) << "decodingEff = " << decodingEff << ENDM;
+  ILOG(Info) << "activeCh = " << activeCh << ENDM;
+  ILOG(Info) << "ROeff = " << ROeff << ENDM;
+  ILOG(Info) << "hitMult = " << hitMult << ENDM;
+  ILOG(Info) << "____________________" << ENDM;
 }
 
 void PostProcessingLuminometer::finalize(Trigger, framework::ServiceRegistryRef)
