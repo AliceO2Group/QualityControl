@@ -63,6 +63,7 @@ class PostProcessingLuminometer final : public quality_control::postprocessing::
   std::string mCCDBPath = "TOF/MO/TaskDigits/";
   std::string mMOEfficiency = "OrbitVsCrate";
   std::string mMOActiveChannels = "HitMap";
+  std::string mMOdecodingErrors = "DecodingErrors";
   std::string mMOMultiplicity = "Multiplicity/Integrated";
   std::shared_ptr<TH1F> mHistoOrbitsInTFEfficiency = nullptr;
   std::shared_ptr<TH1F> mHistoLuminometer = nullptr;
