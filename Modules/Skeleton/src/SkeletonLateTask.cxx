@@ -19,6 +19,8 @@
 #include <TH1.h>
 
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/QCInputs.h"
+#include "QualityControl/QCInputsAdapters.h"
 #include "Skeleton/SkeletonLateTask.h"
 #include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
@@ -54,50 +56,19 @@ void SkeletonLateTask::startOfActivity(const Activity& activity)
   // mGraph->Clear();
 }
 
-void SkeletonLateTask::process(o2::framework::ProcessingContext& ctx)
+void SkeletonLateTask::process(const quality_control::core::QCInputs& data)
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
-  if (ctx.inputs().isValid("QcTask")) {
-    auto qcTaskMOs = ctx.inputs().get<MonitorObjectCollection*>("QcTask");
-    if (qcTaskMOs == nullptr) {
-      ILOG(Error, Ops) << "empty ptr" << ENDM;
-      return;
-    }
+  if (auto histoOpt = getMonitorObject<TH1>(data, "example")) {
+    const TH1& histo = histoOpt.value();
 
-    ILOG(Info, Ops) << "MOC has " << qcTaskMOs->GetEntries() << " entries" << ENDM;
-    for (auto const& obj : *qcTaskMOs) {
-
-      if (obj == nullptr) {
-        ILOG(Error, Ops) << "Found a null MonitorObject in the collection" << ENDM;
-        continue;
-      }
-
-      auto mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(obj);
-      if (mo == nullptr) {
-        ILOG(Error, Ops) << "Could not cast TObject into MonitorObject" << ENDM;
-        continue;
-      }
-
-      if (mo->getName() == "example") {
-        ILOG(Info, Ops) << "Got the 'example' object" << ENDM;
-      } else {
-        continue;
-      }
-
-      auto histo = dynamic_cast<TH1*>(mo->getObject());
-      if (histo == nullptr) {
-        ILOG(Error, Ops) << "Could not cast MonitorObject to TH1" << ENDM;
-        continue;
-      }
-
-      ILOG(Info, Ops) << "Histogram " << histo->GetName() << " has " << histo->GetEntries() << " entries" << ENDM;
-
-      mGraph->AddPoint(histo->GetEntries(), histo->GetMean());
-    }
+    ILOG(Info, Ops) << "Histogram " << histo.GetName() << " has " << histo.GetEntries() << " entries" << ENDM;
+    mGraph->AddPoint(histo.GetEntries(), histo.GetMean());
   }
-  if (ctx.inputs().isValid("QcCheck")) {
-    ILOG(Info, Ops) << "got QcCheck results" << ENDM;
+
+  if (auto qoOpt = getQualityObject(data, "QcCheck")) {
+    ILOG(Info, Ops) << "Got QcCheck result: " << qoOpt.value().get().getQuality() << ENDM;
   }
 }
 
