@@ -87,10 +87,47 @@ void LateTaskRunner::init(InitContext& iCtx)
 
 void LateTaskRunner::run(ProcessingContext& pCtx)
 {
+  // todo: derive from received objects
   mValidity.update(getCurrentTimestamp());
 
+  QCInputs taskInputs;
+  for (const auto& ref : InputRecordWalker(pCtx.inputs())) {
+    // InputRecordWalker because the output of CheckRunner can be multi-part
+    const auto* inputSpec = ref.spec;
+    if (inputSpec == nullptr) {
+      continue;
+    }
+    const auto dataOrigin = DataSpecUtils::asConcreteOrigin(*inputSpec);
+
+    // fixme: come up with an elegant way for this. LateTask should be probably aware of the requested user inputs aside from just InputSpecs
+    //  also, we should filter only expect objects from the received collections
+    if (dataOrigin.str[0] == 'Q' || dataOrigin.str[0] == 'W') { // main MOs and moving windows from QC tasks
+      auto moc = DataRefUtils::as<MonitorObjectCollection>(ref);
+      moc->postDeserialization();
+
+      for (const auto& obj : *moc) {
+        auto mo = dynamic_cast<MonitorObject*>(obj);
+        if (mo != nullptr) {
+          taskInputs.insert(mo->getName(), std::shared_ptr<MonitorObject>(mo));
+        }
+      }
+
+      moc->SetOwner(false);
+    } else if (dataOrigin.str[0] == 'C' || dataOrigin.str[0] == 'A') { // QOs from Checks and Aggregators
+      // QO
+      auto qo = DataRefUtils::as<QualityObject>(ref);
+      auto key = qo->getName();
+      taskInputs.insert(key, std::shared_ptr<QualityObject>(std::move(qo)));
+
+    } else {
+      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("LateTaskRunner currently supports only MonitorObject and Quality inputs"));
+    }
+  }
+
+
+
   // run the task
-  mTask->process(pCtx);
+  mTask->process(taskInputs);
 
   // publish objects
   mObjectsManager->setValidity(mValidity);
