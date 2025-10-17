@@ -494,9 +494,9 @@ void TrackPlotter::fillHistograms(const o2::globaltracking::RecoContainer& recoC
 
       // sort the vector of matching candidates in ascending order of the matching chi2
       std::sort(matchingCandidatesVector.begin(), matchingCandidatesVector.end(),
-          [](const std::pair<int64_t, double>& t1, const std::pair<int64_t, double>& t2) -> bool {
-        return (t1.second < t2.second);
-      });
+                [](const std::pair<int64_t, double>& t1, const std::pair<int64_t, double>& t2) -> bool {
+                  return (t1.second < t2.second);
+                });
 
       // store the leading candidate
       auto& t = tracksFwd[matchingCandidatesVector[0].first];
