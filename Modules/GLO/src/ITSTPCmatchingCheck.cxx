@@ -527,6 +527,9 @@ void ITSTPCmatchingCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
         msg->AddText(Form("RError %.2f%%", rerr * 1e2));
         msg->SetFillColor(kGreen);
       }
+      if (TF1* fit = h->GetFunction("gloFitK0sMassSignal"); fit != nullptr) {
+        h->GetListOfFunctions()->Add(fit);
+      }
     }
     h->GetListOfFunctions()->Add(msg);
   }

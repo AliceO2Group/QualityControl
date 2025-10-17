@@ -23,6 +23,8 @@
 
 #include <TF1.h>
 #include <TH1.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
 
 namespace o2::quality_control_modules::glo::helpers
 {
@@ -84,23 +86,41 @@ struct K0sFitter {
 
   bool fit(TH1* h, bool add = false)
   {
-    if (h->GetEntries() == 0) {
-      ILOG(Warning, Devel) << "Cannot fit empty histogram: " << h->GetName() << ENDM;
+    if (!h || h->GetEntries() == 0) {
+      ILOG(Warning, Devel) << "Cannot fit empty histogram: "
+                           << (h ? h->GetName() : "<null>") << ENDM;
       return false;
     }
-    Int_t res = h->Fit(mBackground.get(), "RNQ");
-    if (res) {
-      ILOG(Warning, Devel) << "Failed k0s background fit for histogram: " << h->GetName() << ENDM;
+
+    // --- First: background-only fit
+    auto bgResult = h->Fit(mBackground.get(), "RNQS");
+    if (bgResult.Get() == nullptr || bgResult->Status() != 0) {
+      ILOG(Warning, Devel) << "Failed k0s background fit for histogram: "
+                           << h->GetName()
+                           << " (status=" << (bgResult ? bgResult->Status() : -1) << ")"
+                           << ENDM;
       return false;
     }
+
+    // --- Initialize signal+background from background fit
     mSignalAndBackground->SetParameter(Parameters::Pol0, mBackground->GetParameter(Parameters::Pol0));
     mSignalAndBackground->SetParameter(Parameters::Pol1, mBackground->GetParameter(Parameters::Pol1));
     mSignalAndBackground->SetParameter(Parameters::Pol2, mBackground->GetParameter(Parameters::Pol2));
     mSignalAndBackground->SetParameter(Parameters::Amplitude, h->GetMaximum() - mBackground->Eval(mMassK0s));
     mSignalAndBackground->SetParameter(Parameters::Mass, mMassK0s);
     mSignalAndBackground->SetParameter(Parameters::Sigma, 0.005);
-    mSignalAndBackground->SetParLimits(Parameters::Sigma, 1e-6, 1);
-    h->Fit(mSignalAndBackground.get(), (add) ? "RMQ" : "RMQ0");
+    mSignalAndBackground->SetParLimits(Parameters::Sigma, 1e-6, 1.0);
+
+    // --- Fit signal+background
+    const std::string fitOpt = add ? "RMQS" : "RMQS0";
+    auto sbResult = h->Fit(mSignalAndBackground.get(), fitOpt.c_str());
+    if (sbResult.Get() == nullptr || sbResult->Status() != 0) {
+      ILOG(Warning, Devel) << "Failed k0s signal+background fit for histogram: "
+                           << h->GetName()
+                           << " (status=" << (sbResult ? sbResult->Status() : -1) << ")"
+                           << ENDM;
+      return false;
+    }
     return true;
   }
 
