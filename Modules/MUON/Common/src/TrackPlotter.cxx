@@ -465,12 +465,41 @@ void TrackPlotter::fillHistograms(const o2::globaltracking::RecoContainer& recoC
   }
   if (mSrc == GID::MFTMCH || mSrc == GID::MFTMCHMID) {
     auto tracksFwd = recoCont.getGlobalFwdTracks();
-    for (auto& t : tracksFwd) {
-      MuonTrack mt(&t, recoCont, mFirstTForbit);
+    std::map<int64_t, std::vector<std::pair<int64_t, double>>> matchingCandidates;
+    // loop over the global forward tracks and collect the matching candidates
+    for (size_t ti = 0; ti < tracksFwd.size(); ti++) {
+      auto& t = tracksFwd[ti];
       // skip tracks without MID if full matching is requested
-      if (mSrc == GID::MFTMCHMID && !mt.hasMID()) {
+      if (mSrc == GID::MFTMCHMID && t.getMIDTrackID() < 0) {
         continue;
       }
+
+      // associate the matching candidate to the corresponding MCH standalone track, and store the matching chi2
+      int64_t mchTrackIndex = t.getMCHTrackID();
+      double matchingChi2 = t.getMFTMCHMatchingChi2();
+      auto matchingCandidateIterator = matchingCandidates.find(mchTrackIndex);
+      if (matchingCandidateIterator != matchingCandidates.end()) {
+        matchingCandidateIterator->second.push_back(std::make_pair(ti, matchingChi2));
+      } else {
+        matchingCandidates[mchTrackIndex].push_back(std::make_pair(ti, matchingChi2));
+      }
+    }
+
+    // loop over the matching candidate for each standalone MCH track, sort the candidates according to the matching chi2,
+    // and for each MCH track pick the leading candidate for further processing
+    for (auto& [mchTrackIndex, matchingCandidatesVector] : matchingCandidates) {
+      if (matchingCandidates.empty()) {
+        continue;
+      }
+
+      // sort the vector of matching candidates in ascending order of the matching chi2
+      std::sort(matchingCandidatesVector.begin(), matchingCandidatesVector.end(),
+          [](const std::pair<int64_t, double>& t1, const std::pair<int64_t, double>& t2) -> bool {
+        return (t1.second < t2.second);
+      });
+
+      // store the leading candidate
+      auto& t = tracksFwd[matchingCandidatesVector[0].first];
       mMuonTracks.emplace_back(std::make_pair<MuonTrack, bool>({ &t, recoCont, mFirstTForbit }, true));
     }
   }
