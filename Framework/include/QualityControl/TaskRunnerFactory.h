@@ -46,7 +46,7 @@ class TaskRunnerFactory
   /// \param taskConfig
   static o2::framework::DataProcessorSpec create(const TaskRunnerConfig&);
 
-  /// \brief Knows how to create TaskConfig from Specs
+  /// \brief Knows how to create TaskRunnerConfig from Specs
   static TaskRunnerConfig extractConfig(const CommonSpec&, const TaskSpec&, std::optional<int> id = std::nullopt, std::optional<int> resetAfterCycles = std::nullopt);
 
   static int computeResetAfterCycles(const TaskSpec& taskSpec, bool runningWithMergers);
