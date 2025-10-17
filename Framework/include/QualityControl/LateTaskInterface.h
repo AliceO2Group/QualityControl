@@ -27,6 +27,8 @@
 #include "QualityControl/UserCodeInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
+#include "QualityControl/QCInputs.h"
+
 
 namespace o2::monitoring
 {
@@ -96,7 +98,7 @@ class LateTaskInterface : public UserCodeInterface
   //   optionally, it could also hide DPL's InputRecord or decorate it with a method which allows to access sampled
   //   and unsampled data in a unified way.
   // virtual void process(std::map<std::string, std::shared_ptr<const core::MonitorObject>>& moMap, std::map<std::string, std::shared_ptr<const core::QualityObject>>& qoMap) = 0;
-  virtual void process(o2::framework::ProcessingContext& ctx) = 0;
+  virtual void process(const core::QCInputs& data) = 0;
   virtual void endOfActivity(const Activity& activity) = 0;
   virtual void reset() = 0;
 

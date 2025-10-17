@@ -24,10 +24,10 @@ class SkeletonLateTask final : public LateTaskInterface
   ~SkeletonLateTask() override;
 
   // Definition of the methods for the template method pattern
-  void initialize(o2::framework::InitContext& ctx) override;
-  void startOfActivity(const Activity& activity) override;
-  void process(o2::framework::ProcessingContext& ctx) override;
-  void endOfActivity(const Activity& activity) override;
+  void initialize(o2::framework::InitContext&) override;
+  void startOfActivity(const Activity&) override;
+  void process(const quality_control::core::QCInputs&) override;
+  void endOfActivity(const Activity&) override;
   void reset() override;
 
   private:
