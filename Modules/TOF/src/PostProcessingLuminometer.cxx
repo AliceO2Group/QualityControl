@@ -102,8 +102,8 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
     TH1D* hproj = (TH1D*)htemp->ProjectionY();
     hproj->SetName("decodErr_pro");
     if (hproj->GetBinContent(1) > 0) {
-      hproj->Scale(0.1 / hproj->GetBinContent(1));                // normalize to the first bin content and divide by 10 (TRMs)
-      for (int ibin = 3; ibin < hproj->GetNbinsX() - 1; ibin++) { // count on TRM errors (skip last bin = DRM errors)
+      hproj->Scale(0.1 / hproj->GetBinContent(1));            // normalize to the first bin content and divide by 10 (TRMs)
+      for (int ibin = 3; ibin < hproj->GetNbinsX(); ibin++) { // count on TRM errors (skip last bin = DRM errors)
         decodingEff -= hproj->GetBinContent(ibin);
       }
       if (decodingEff < 1E-2) {
