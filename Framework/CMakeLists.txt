@@ -2,144 +2,146 @@
 # variables. We don't want to pollute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
-               @ONLY)
+    "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
+    @ONLY)
 
 # ---- Library for IL ----
 add_library(O2QualityControlInfoLogger STATIC
-  src/QcInfoLogger.cxx
-)
+    src/QcInfoLogger.cxx
+    )
 
 target_include_directories(O2QualityControlInfoLogger
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-)
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
 
 target_link_libraries(O2QualityControlInfoLogger
-  PUBLIC
-  AliceO2::InfoLogger
-)
+    PUBLIC
+    AliceO2::InfoLogger
+    )
 
 # ---- Library for the types ----
 add_library(O2QualityControlTypes
-  src/MonitorObject.cxx
-  src/QualityObject.cxx
-  src/Quality.cxx
-)
+    src/MonitorObject.cxx
+    src/QualityObject.cxx
+    src/Quality.cxx
+    )
 
 target_include_directories(
-  O2QualityControlTypes
-  PUBLIC $<INSTALL_INTERFACE:include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
+    O2QualityControlTypes
+    PUBLIC $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
 
 target_link_libraries(O2QualityControlTypes
-  PRIVATE
-  O2QualityControlInfoLogger
-  PUBLIC
-  AliceO2::BookkeepingApi
-  AliceO2::Common
-  O2::DataFormatsQualityControl
-  ROOT::Hist
-)
+    PRIVATE
+    O2QualityControlInfoLogger
+    PUBLIC
+    AliceO2::BookkeepingApi
+    AliceO2::Common
+    O2::DataFormatsQualityControl
+    ROOT::Hist
+    )
 
 add_root_dictionary(O2QualityControlTypes
-  HEADERS include/QualityControl/MonitorObject.h
-  include/QualityControl/QualityObject.h
-  include/QualityControl/Quality.h
-  include/QualityControl/Activity.h
-  LINKDEF include/QualityControl/TypesLinkDef.h)
+    HEADERS include/QualityControl/MonitorObject.h
+    include/QualityControl/QualityObject.h
+    include/QualityControl/Quality.h
+    include/QualityControl/Activity.h
+    LINKDEF include/QualityControl/TypesLinkDef.h)
 
 # ---- Kafka ----
 
 add_library(O2QualityControlKafkaProtos OBJECT
-  proto/events.proto)
+    proto/events.proto)
 
 target_link_libraries(O2QualityControlKafkaProtos PUBLIC
-  protobuf::libprotobuf
-)
+    protobuf::libprotobuf
+    )
 
 target_include_directories(O2QualityControlKafkaProtos PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-)
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+    )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/proto")
 
 protobuf_generate(
-  TARGET O2QualityControlKafkaProtos
-  IMPORT_DIRS "${CMAKE_CURRENT_LIST_DIR}/proto"
-  PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto")
+    TARGET O2QualityControlKafkaProtos
+    IMPORT_DIRS "${CMAKE_CURRENT_LIST_DIR}/proto"
+    PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto")
 
 # ---- Library ----
 
 add_library(O2QualityControl
-  src/Activity.cxx
-  src/ActivityHelpers.cxx
-  src/ObjectsManager.cxx
-  src/CheckRunner.cxx
-  src/BookkeepingQualitySink.cxx
-  src/AggregatorRunner.cxx
-  src/CheckRunnerFactory.cxx
-  src/AggregatorRunnerFactory.cxx
-  src/CheckInterface.cxx
-  src/AggregatorInterface.cxx
-  src/DatabaseFactory.cxx
-  src/CcdbDatabase.cxx
-  src/TaskFactory.cxx
-  src/TaskRunner.cxx
-  src/TaskRunnerFactory.cxx
-  src/TaskInterface.cxx
-  src/UserCodeInterface.cxx
-  src/RepositoryBenchmark.cxx
-  src/RepoPathUtils.cxx
-  src/stringUtils.cxx
-  src/InfrastructureGenerator.cxx
-  src/InfrastructureSpecReader.cxx
-  src/Check.cxx
-  src/Aggregator.cxx
-  src/HashDataDescription.cxx
-  src/Triggers.cxx
-  src/TriggerHelpers.cxx
-  src/PostProcessingRunner.cxx
-  src/PostProcessingFactory.cxx
-  src/PostProcessingConfig.cxx
-  src/PostProcessingInterface.cxx
-  src/PostProcessingDevice.cxx
-  src/TrendingTask.cxx
-  src/TrendingTaskConfig.cxx
-  src/DummyDatabase.cxx
-  src/DataProducer.cxx
-  src/HistoProducer.cxx
-  src/DataProducerExample.cxx
-  src/MonitorObjectCollection.cxx
-  src/UpdatePolicyManager.cxx
-  src/AdvancedWorkflow.cxx
-  src/QualitiesToFlagCollectionConverter.cxx
-  src/DataSourceSpec.cxx
-  src/RootFileSink.cxx
-  src/RootFileSource.cxx
-  src/UpdatePolicyType.cxx
-  src/RootClassFactory.cxx
-  src/ConfigParamGlo.cxx
-  src/SliceTrendingTask.cxx
-  src/SliceTrendingTaskConfig.cxx
-  src/Bookkeeping.cxx
-  src/CustomParameters.cxx
-  src/runnerUtils.cxx
-  src/Timekeeper.cxx
-  src/TimekeeperSynchronous.cxx
-  src/TimekeeperAsynchronous.cxx
-  src/WorkflowType.cxx
-  src/TimekeeperFactory.cxx
-  src/RootFileStorage.cxx
-  src/ReductorHelpers.cxx
-  src/KafkaPoller.cxx
-  src/FlagHelpers.cxx
-  src/ObjectMetadataHelpers.cxx
-  src/QCInputsAdapters.cxx
-  src/QCInputsFactory.cxx
-)
+    src/Activity.cxx
+    src/ActivityHelpers.cxx
+    src/ObjectsManager.cxx
+    src/CheckRunner.cxx
+    src/BookkeepingQualitySink.cxx
+    src/AggregatorRunner.cxx
+    src/CheckRunnerFactory.cxx
+    src/AggregatorRunnerFactory.cxx
+    src/CheckInterface.cxx
+    src/AggregatorInterface.cxx
+    src/DatabaseFactory.cxx
+    src/CcdbDatabase.cxx
+    src/TaskFactory.cxx
+    src/TaskRunner.cxx
+    src/TaskRunnerFactory.cxx
+    src/TaskInterface.cxx
+    src/UserCodeInterface.cxx
+    src/RepositoryBenchmark.cxx
+    src/RepoPathUtils.cxx
+    src/stringUtils.cxx
+src/InfrastructureGenerator.cxx
+src/InfrastructureSpecReader.cxx
+src/Check.cxx
+src/Aggregator.cxx
+src/HashDataDescription.cxx
+src/Triggers.cxx
+src/TriggerHelpers.cxx
+src/PostProcessingRunner.cxx
+src/PostProcessingFactory.cxx
+src/PostProcessingConfig.cxx
+src/PostProcessingInterface.cxx
+src/PostProcessingDevice.cxx
+src/TrendingTask.cxx
+src/TrendingTaskConfig.cxx
+src/DummyDatabase.cxx
+src/DataProducer.cxx
+src/HistoProducer.cxx
+src/DataProducerExample.cxx
+src/MonitorObjectCollection.cxx
+src/UpdatePolicyManager.cxx
+src/AdvancedWorkflow.cxx
+src/QualitiesToFlagCollectionConverter.cxx
+src/DataSourceSpec.cxx
+src/RootFileSink.cxx
+src/RootFileSource.cxx
+src/UpdatePolicyType.cxx
+src/RootClassFactory.cxx
+src/ConfigParamGlo.cxx
+src/SliceTrendingTask.cxx
+src/SliceTrendingTaskConfig.cxx
+src/Bookkeeping.cxx
+src/CustomParameters.cxx
+src/runnerUtils.cxx
+src/Timekeeper.cxx
+src/TimekeeperSynchronous.cxx
+src/TimekeeperAsynchronous.cxx
+src/WorkflowType.cxx
+src/TimekeeperFactory.cxx
+src/RootFileStorage.cxx
+src/ReductorHelpers.cxx
+src/KafkaPoller.cxx
+src/FlagHelpers.cxx
+src/ObjectMetadataHelpers.cxx
+src/QCInputsAdapters.cxx
+src/QCInputsFactory.cxx
+src/LateTaskRunner.cxx
+src/LateTaskRunnerFactory.cxx
+src/LateTaskInterface.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -182,6 +184,7 @@ add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
   include/QualityControl/TaskInterface.h
+  include/QualityControl/LateTaskInterface.h
   include/QualityControl/UserCodeInterface.h
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h
