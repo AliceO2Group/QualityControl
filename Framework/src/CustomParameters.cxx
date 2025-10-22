@@ -96,7 +96,7 @@ std::optional<std::string> CustomParameters::atOptional(const std::string& key, 
   return atOptional(key, activity.mType, activity.mBeamType);
 }
 
-std::optional<boost::property_tree::ptree> CustomParameters::getOptionalPtree(const std::string& key, const std::string& runType , const std::string& beamType ) const
+std::optional<boost::property_tree::ptree> CustomParameters::getOptionalPtree(const std::string& key, const std::string& runType, const std::string& beamType) const
 {
   std::optional<boost::property_tree::ptree> result = std::nullopt;
 
