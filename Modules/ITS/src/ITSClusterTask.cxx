@@ -53,6 +53,10 @@ ITSClusterTask::~ITSClusterTask()
       delete hLongClustersPerChip[iLayer];
       delete hMultPerChipWhenLongClusters[iLayer];
     }
+
+    else {
+      delete hLongClustersPerStave[iLayer - NLayerIB];
+    }
     delete hClusterSizeLayerSummary[iLayer];
     delete hClusterTopologyLayerSummary[iLayer];
     delete hGroupedClusterSizeLayerSummary[iLayer];
@@ -161,8 +165,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     int nDigits3pixLay[7] = { 0 };
     int nClusters3pixLay[7] = { 0 };
     int nClusters3pix = 0;
-    int nLongClusters[ChipBoundary[NLayerIB]] = {};
+    int nLongClusters[ChipBoundary[NLayerIB + 2]] = {}; // for IB
     int nHitsFromClusters[ChipBoundary[NLayerIB]] = {}; // only IB is implemented at the moment
+    int nLongClustersStave[4][mNStaves[6]] = { {} };    // for OB. nLongClustersStaveave[n][m] means stave L<3+n>_<m>
 
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
@@ -228,9 +233,13 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         nHitsFromClusters[ChipID] += npix;
       }
 
-      if (lay < NLayerIB && colspan >= minColSpanLongCluster && rowspan <= maxRowSpanLongCluster) {
+      if (colspan >= minColSpanLongCluster && rowspan <= maxRowSpanLongCluster) {
         // definition of long cluster
-        nLongClusters[ChipID]++;
+        if (lay < NLayerIB) {
+          nLongClusters[ChipID]++;
+        } else {
+          nLongClustersStave[lay - NLayerIB][sta]++;
+        }
       }
 
       if (lay < NLayerIB) {
@@ -293,7 +302,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
 
-    // filling these anomaly plots once per ROF, ignoring chips w/o long clusters
+    // filling these anomaly plots once per ROF, ignoring chips w/o long clusters -- IB
     for (int ichip = 0; ichip < ChipBoundary[NLayerIB]; ichip++) {
 
       int nLong = TMath::Min(nLongClusters[ichip], 40);
@@ -306,6 +315,17 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       hLongClustersPerChip[ilayer]->Fill(ichip, nLong);
       hMultPerChipWhenLongClusters[ilayer]->Fill(ichip, nHitsFromClusters[ichip]);
+    }
+    // filling anomaly plots once per ROF, ignoring staves w/o long clusters -- OB
+    for (int ilay = 3; ilay < 7; ilay++) {
+      for (int ist = 0; ist < mNStaves[ilay]; ist++) {
+
+        int nLong = TMath::Min(nLongClustersStave[ilay - NLayerIB][ist], 40);
+        if (nLong < 1) {
+          continue;
+        }
+        hLongClustersPerStave[ilay - NLayerIB]->Fill(ist, nLong);
+      }
     }
   }
 
@@ -440,6 +460,7 @@ void ITSClusterTask::reset()
         }
       }
     } else {
+      hLongClustersPerStave[iLayer - NLayerIB]->Reset();
       hAverageClusterOccupancySummaryOB[iLayer]->Reset();
       hAverageClusterSizeSummaryOB[iLayer]->Reset();
       if (mDoPublish1DSummary == 1) {
@@ -498,6 +519,14 @@ void ITSClusterTask::createAllHistos()
       addObject(hMultPerChipWhenLongClusters[iLayer]);
       formatAxes(hMultPerChipWhenLongClusters[iLayer], "Chip ID", "Sum of clusters size (events w/ long clus)", 1, 1.10);
       hMultPerChipWhenLongClusters[iLayer]->SetStats(0);
+    }
+
+    else {
+
+      hLongClustersPerStave[iLayer - NLayerIB] = new TH2D(Form("Anomalies/Layer%d/LongClusters", iLayer), Form("Layer%d/LongClusters", iLayer), mNStaves[iLayer], 0, mNStaves[iLayer], 41, 0, 41);
+      addObject(hLongClustersPerStave[iLayer - NLayerIB]);
+      formatAxes(hLongClustersPerStave[iLayer - NLayerIB], "Stave", "number of long clusters", 1, 1.10);
+      hLongClustersPerStave[iLayer - NLayerIB]->SetStats(0);
     }
 
     hClusterSizeLayerSummary[iLayer] = new TH1L(Form("Layer%d/AverageClusterSizeSummary", iLayer), Form("Layer%dAverageClusterSizeSummary", iLayer), 128 * 128, 0, 128 * 128);
