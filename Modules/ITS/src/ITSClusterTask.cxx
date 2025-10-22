@@ -167,7 +167,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     int nClusters3pix = 0;
     int nLongClusters[ChipBoundary[NLayerIB]] = {};     // for IB
     int nHitsFromClusters[ChipBoundary[NLayerIB]] = {}; // only IB is implemented at the moment
-    int nLongClustersStave[4][mNStaves[6]] = { {} };    // for OB. nLongClustersStaveave[n][m] means stave L<3+n>_<m>
+    int nLongClustersStave[4][mNStaves[6]] = { {} };    // for OB. nLongClustersStave[n][m] means stave L<3+n>_<m>
 
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
