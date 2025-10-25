@@ -92,7 +92,7 @@ void TrendingCalibDiagnostics::finalize(Trigger t, framework::ServiceRegistryRef
 
 void TrendingCalibDiagnostics::trendValues(const Trigger& t, repository::DatabaseInterface& ccdb)
 {
-  mTime = t.timestamp / 1000;
+  mTime = t.activity.mValidity.getMax() / 1000;
   mMetaData.runNumber = t.activity.mId;
   mCrateEff = 0.;
   mTRMEff = 0.;
