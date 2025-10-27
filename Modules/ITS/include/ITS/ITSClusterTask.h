@@ -74,6 +74,8 @@ class ITSClusterTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
+  static constexpr int NStavesIB = 12 + 16 + 20;
+  static constexpr int NStavesOB = 24 + 30 + 42 + 48;
 
   std::vector<TObject*> mPublishedObjects;
 
@@ -103,8 +105,9 @@ class ITSClusterTask : public TaskInterface
   TH2D* hClusterOccupancyDistribution[NLayer] = { nullptr }; // number of clusters and hits per chip, per ROF. From clusters with npix > 2
 
   // Anomalies plots
-  TH2D* hLongClustersPerChip[3] = { nullptr };
+  TH2D* hLongClustersPerChip[3] = { nullptr }; // IB layers
   TH2D* hMultPerChipWhenLongClusters[3] = { nullptr };
+  TH2D* hLongClustersPerStave[4] = { nullptr }; // OB layers
 
   // General
   TH2D* hClusterVsBunchCrossing = nullptr;
@@ -148,6 +151,7 @@ class ITSClusterTask : public TaskInterface
   static constexpr int mNStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   static constexpr int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   static constexpr int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
+  static constexpr int mNChipsPerStave[NLayer] = { 9, 9, 9, 112, 112, 196, 196 };
   static constexpr int mNLanePerHic[NLayer] = { 3, 3, 3, 2, 2, 2, 2 };
   static constexpr int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   static constexpr int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
