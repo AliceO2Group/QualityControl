@@ -32,6 +32,8 @@ def parse_args():
     parser.add_argument('--metadata', dest='metadata', action='store', default="",
                         help='Delete only versions matching these metadata. Format: "[/key=value]*"')
     parser.add_argument('--yes', action='store_true', help='Answers yes to all. You should really not use that.')
+    parser.add_argument('--preserve-one-out-of', dest='preserve_one_out_of', type=int, default=0,
+                        help='Preserve 1 out of N versions (e.g. 100 means keep every 100th version). Default: 0 (disable).')
 
     args = parser.parse_args()
     dryable.set(args.dry_run)
@@ -60,20 +62,28 @@ def run(args):
         if answer.lower() not in ["y", "yes"]:
             exit(0)
 
-    for v in versions:
+    deleted_count = 0
+    for i, v in enumerate(versions):
+        # Skip every Nth version if preservation is enabled
+        if args.preserve_one_out_of and i % args.preserve_one_out_of == 0:
+            logging.info(f"Preserving {v} (index {i})")
+            continue
+
         logging.info(f"Ready to delete {v}")
         if args.one_by_one:
             answer = input("  Continue? y/n\n  ")
             if answer.lower() in ["y", "yes"]:
                 ccdb.delete_version(v)
+                deleted_count = deleted_count + 1
             elif answer.lower() in ["n", "no"]:
                 logging.info("   skipping")
             else:
                 logging.error("   wrong input, skipping")
         else:
             ccdb.delete_version(v)
+            deleted_count = deleted_count + 1
 
-    logging.info(f"Deleted items: {len(versions)}")
+    logging.info(f"Deleted items: {deleted_count}")
 
 
 # ****************
