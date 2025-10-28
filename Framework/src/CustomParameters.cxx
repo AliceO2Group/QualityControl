@@ -16,6 +16,8 @@
 #include <vector>
 #include <boost/property_tree/json_parser.hpp>
 
+using namespace std;
+
 namespace o2::quality_control::core
 {
 
@@ -202,7 +204,20 @@ void CustomParameters::populateCustomParameters(const boost::property_tree::ptre
   for (const auto& [runtype, subTreeRunType] : tree) {
     for (const auto& [beamtype, subTreeBeamType] : subTreeRunType) {
       for (const auto& [key, value] : subTreeBeamType) {
-        set(key, value.get_value<std::string>(), runtype, beamtype);
+        // Check if value has children (thus it is json)
+        if (value.empty()) { // just a simple value
+          set(key, value.get_value<std::string>(), runtype, beamtype);
+        } else {
+          // It's some json, serialize it to string
+          std::stringstream ss;
+          boost::property_tree::write_json(ss, value, false);
+          std::string jsonString = ss.str();
+          // Remove trailing newline if present
+          if (!jsonString.empty() && jsonString.back() == '\n') {
+            jsonString.pop_back();
+          }
+          set(key, jsonString, runtype, beamtype);
+        }
       }
     }
   }

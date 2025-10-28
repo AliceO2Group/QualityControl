@@ -18,8 +18,12 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "getTestDataDirectory.h"
+#include "QualityControl/InfrastructureGenerator.h"
+
 #include <iostream>
 #include <catch_amalgamated.hpp>
+#include <Configuration/ConfigurationFactory.h>
+#include <DataSampling/DataSampling.h>
 
 using namespace o2::quality_control::core;
 using namespace std;
@@ -201,6 +205,28 @@ TEST_CASE("test_load_from_ptree")
   CHECK(cp.at("myOwnKey") == "myOwnValue");
   CHECK(cp.at("myOwnKey1", "PHYSICS") == "myOwnValue1b");
   CHECK(cp.atOptional("asdf").has_value() == false);
+
+  string json = R"""(
+  [
+                  {
+                    "name": "mean_of_histogram",
+                    "title": "Mean trend of the example histogram",
+                    "graphAxisLabel": "Mean X:time",
+                    "graphYRange": "0:10000",
+                    "graphs" : [
+                      {
+                        "name": "mean_trend",
+                        "title": "mean trend",
+                        "varexp": "example.mean:time",
+                        "selection": "",
+                        "option": "*L PLC PMC"
+                      }
+                    ]
+                  }
+                ]
+)""";
+  auto value = cp.getOptionalPtree("myOwnKey3");
+  CHECK(value.has_value() == true);
 }
 
 TEST_CASE("test_default_if_not_found_at_optional")
