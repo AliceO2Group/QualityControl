@@ -16,8 +16,6 @@
 #include <vector>
 #include <boost/property_tree/json_parser.hpp>
 
-using namespace std;
-
 namespace o2::quality_control::core
 {
 
