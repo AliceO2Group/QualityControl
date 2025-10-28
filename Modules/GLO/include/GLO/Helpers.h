@@ -97,7 +97,7 @@ struct K0sFitter {
     if (bgResult.Get() == nullptr || bgResult->Status() != 0) {
       ILOG(Warning, Devel) << "Failed k0s background fit for histogram: "
                            << h->GetName()
-                           << " (status=" << (bgResult ? bgResult->Status() : -1) << ")"
+                           << " (status=" << (bgResult.Get() ? bgResult->Status() : -1) << ")"
                            << ENDM;
       return false;
     }
