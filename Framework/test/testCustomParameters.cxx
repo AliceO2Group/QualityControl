@@ -206,27 +206,34 @@ TEST_CASE("test_load_from_ptree")
   CHECK(cp.at("myOwnKey1", "PHYSICS") == "myOwnValue1b");
   CHECK(cp.atOptional("asdf").has_value() == false);
 
-  string json = R"""(
-  [
-                  {
-                    "name": "mean_of_histogram",
-                    "title": "Mean trend of the example histogram",
-                    "graphAxisLabel": "Mean X:time",
-                    "graphYRange": "0:10000",
-                    "graphs" : [
-                      {
-                        "name": "mean_trend",
-                        "title": "mean trend",
-                        "varexp": "example.mean:time",
-                        "selection": "",
-                        "option": "*L PLC PMC"
-                      }
-                    ]
-                  }
-                ]
-)""";
   auto value = cp.getOptionalPtree("myOwnKey3");
   CHECK(value.has_value() == true);
+
+  // Check that it's an array with 1 element
+  std::size_t arraySize = std::distance(value->begin(), value->end());
+  CHECK(arraySize == 1);
+
+  // Get the first (and only) element of the array
+  auto firstElement = value->begin()->second;
+
+  // Check the top-level properties
+  CHECK(firstElement.get<string>("name") == "mean_of_histogram");
+  CHECK(firstElement.get<string>("title") == "Mean trend of the example histogram");
+  CHECK(firstElement.get<string>("graphAxisLabel") == "Mean X:time");
+  CHECK(firstElement.get<string>("graphYRange") == "0:10000");
+
+  // Check the graphs array
+  auto graphs = firstElement.get_child("graphs");
+  std::size_t graphsSize = std::distance(graphs.begin(), graphs.end());
+  CHECK(graphsSize == 1);
+
+  // Check the first graph properties
+  auto firstGraph = graphs.begin()->second;
+  CHECK(firstGraph.get<string>("name") == "mean_trend");
+  CHECK(firstGraph.get<string>("title") == "mean trend");
+  CHECK(firstGraph.get<string>("varexp") == "example.mean:time");
+  CHECK(firstGraph.get<string>("selection") == "");
+  CHECK(firstGraph.get<string>("option") == "*L PLC PMC");
 }
 
 TEST_CASE("test_default_if_not_found_at_optional")
