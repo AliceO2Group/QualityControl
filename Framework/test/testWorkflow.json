@@ -28,7 +28,24 @@
           "default": {
             "default": {
               "myOwnKey": "myOwnValue",
-              "myOwnKey2": "myOwnValue2"
+              "myOwnKey2": "myOwnValue2",
+              "myOwnKey3": [
+                {
+                  "name": "mean_of_histogram",
+                  "title": "Mean trend of the example histogram",
+                  "graphAxisLabel": "Mean X:time",
+                  "graphYRange": "0:10000",
+                  "graphs" : [
+                    {
+                      "name": "mean_trend",
+                      "title": "mean trend",
+                      "varexp": "example.mean:time",
+                      "selection": "",
+                      "option": "*L PLC PMC"
+                    }
+                  ]
+                }
+              ]
             }
           },
           "PHYSICS": {
