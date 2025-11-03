@@ -47,16 +47,30 @@ class AgingLaserPostProcTask final : public quality_control::postprocessing::Pos
  private:
   static constexpr std::size_t sNCHANNELS_PM = o2::ft0::Constants::sNCHANNELS_PM;
 
-  std::string mAmpMoPath = "FT0/MO/AgingLaser"; //< Path to amplitude monitor object
+  /// Flag to indicate whether the aging correction has recently been performed.
+  /// If true, the trends should be reset.
+  /// If true, mAmpVsChNormWeightedMean[A/C]AfterLastCorr will be published to the database, and this will be used
+  /// as a normalization factor for the datapoints in the new trends.
+  bool mReset = false;
+
+  std::string mAgingLaserPath = "FT0/MO/AgingLaser";                 //< Path to the AgingLaser task output in QCDB
+  std::string mAgingLaserPostProcPath = "FT0/MO/AgingLaserPostProc"; //< Path to the AgingLaserPostProc task output in QCDB
 
   std::vector<uint8_t> mDetectorChIDs;  ///< Detector (target) channels
   std::vector<uint8_t> mReferenceChIDs; ///< Reference channels
 
-  double mFracWindowA = 0.25;  ///< low fractional window parameter a
-  double mFracWindowB = 0.25;  ///< high fractional window parameter b
+  /// Flag to indicate whether to skip processing of channels marked dead in the dead channel map
+  bool mUseDeadChannelMap = true;
+
+  double mFracWindowA = 0.25; ///< low fractional window parameter a
+  double mFracWindowB = 0.25; ///< high fractional window parameter b
 
   std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanA;
   std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanC;
+  std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanAfterLastCorrA;
+  std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanAfterLastCorrC;
+  std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanCorrectedA;
+  std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanCorrectedC;
 
   o2::quality_control_modules::fit::PostProcHelper mPostProcHelper;
 };

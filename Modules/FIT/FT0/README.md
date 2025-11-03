@@ -1,154 +1,169 @@
 # FT0 quality control
 
-## Aging monitoring
+# Aging monitoring
 
-The aging monitoring of FT0 is performed by 1 minute long laser runs that should be launched after each beam dump. A dedicated QC task is analyzing the laser data: `o2::quality_control_modules::ft0::AgingLaserTask`.
+_The following documentation consern FT0 aging **monitoring**. Software to deduce the aging **correction** will come later._
 
-At the moment the QC task is adapted to the FT0 laser calibration system (LCS) and the monitoring of the FT0 aging. If needed, the task can be generalized to work with other FIT detectors.
+The aging monitoring of FT0 is performed by 1 minute long laser runs that are launched after each beam dump.
 
-### Monitoring principles
+Dedicated QC tasks analyze the data:
+
+- `o2::quality_control_modules::ft0::AgingLaserTask` - raw collection of the data
+- `o2::quality_control_modules::ft0::AgingLaserPostProc` - post processing of the data
+- `o2::quality_control::postprocessing::SliceTrendingTask` - trending of the post processing data
+
+At the moment, the QC task is adapted to the FT0 laser calibration system (LCS) and the monitoring of the FT0 aging. If needed, the task can be generalized to work with other FIT detectors.
+
+## Monitoring principles
 
 The schematics of the LCS is shown below. Per laser pulse, there will be two signals in each reference channel and one signal in each detector channel. The signals are separated in time by well defined delays, so one can identify them by BC ID.
 
 <img src="images/lcs.png" width="500px">
 
+The basic idea is to monitor the amplitudes seen in the detector during the laser runs. The reference channels don't age and the amplitudes in these are used as a normalization factor for the detector channel amplitudes.
+
 More information about the LCS and the hardware side of the aging monitoring can be found [here](https://indico.cern.ch/event/1229241/contributions/5172798/attachments/2561719/4420583/Ageing-related%20tasks.pdf).
 
 ---
 
+## Aging monitoring QC tasks
+
 ### AgingLaserTask
 
-#### What it does (high level)
+The `AgingLaserTask` task collects the raw data from the laser runs.
 
-* Selects laser events in specific bunch crossings (BCs).
+**Procedure:**
+
+* Selects laser events with specific BC IDs
 * Separately identifies:
+  * detector channel laser signals
+  * reference channel signals, separating the two signals per laser pulse
+* Fills per-channel **amplitude** and **time** histograms, both ADCs together as well as separated by ADC
+* (Optional) produces a rich set of debug histograms
 
-  * detector-channel laser signals,
-  * reference-channel peak-1 and peak-2 signals (two per laser shot).
-* Fills per-channel **amplitude** and **time** histograms, split by ADC where relevant.
-* (Optional) Produces a rich set of debug histograms.
+This task is the *producer* of the raw per-channel spectra used later in post-processing.
 
-This task is the *producer* of the raw per-channel spectra used later by post-processing.
+#### Input
 
-#### Inputs
+* Digits and channel streams, specified in the config as
 
-* Digits and channel streams (from workflow config), e.g.
-
-  ```
-  digits: FT0/DIGITSBC/0
-  channels: FT0/DIGITSCH/0
+  ```json
+  "dataSource": {
+    "type": "direct",
+    "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0"
+  },
   ```
 
 #### Configuration
 
-Example: `etc/ft0-aging-laser.json`.
+An example configuration can be found in [etc/ft0-aging-laser.json](https://github.com/AliceO2Group/QualityControl/blob/master/Modules/FIT/FT0/etc/ft0-aging-laser.json). The task parameters are listed in the table below.
 
-| Key                      |         Type |           Default | Meaning                                                        |
-| ------------------------ | -----------: | ----------------: | -------------------------------------------------------------- |
-| `detectorChannelIDs`     | list `uint8` |       all `0–207` | Detector channels to monitor.                                  |
-| `referenceChannelIDs`    | list `uint8` | `208,209,210,211` | Reference (laser monitor) channels.                            |
-| `detectorAmpCut`         |          int |               `0` | Minimum ADC for detector channels (**currently not applied**). |
-| `referenceAmpCut`        |          int |             `100` | Minimum ADC for reference channels (suppress cross-talk).      |
-| `laserTriggerBCs`        |   list `int` |          `0,1783` | BCs where the laser is triggered.                              |
-| `detectorBCdelay`        |          int |             `131` | BC shift from trigger to detector signal.                      |
-| `referencePeak1BCdelays` |   list `int` | `115,115,115,115` | BC shifts for ref. peak-1 (per reference channel).             |
-| `referencePeak2BCdelays` |   list `int` | `136,142,135,141` | BC shifts for ref. peak-2 (per reference channel).             |
+| Key                      |         Type |           Default | Meaning                                                         |
+| ------------------------ | -----------: | ----------------: | --------------------------------------------------------------- |
+| `detectorChannelIDs`     | list `uint8` |                   | Detector channels to monitor, omit to use all                   |
+| `referenceChannelIDs`    | list `uint8` | `208,209,210,211` | Reference channels to monitor                                  |
+| `detectorAmpCut`         |          int |               `0` | Minimum amplitude for detector channels (**currently not applied**)  |
+| `referenceAmpCut`        |          int |             `100` | Minimum amplitude for reference channels (suppress noise cross-talk) |
+| `laserTriggerBCs`        |   list `int` |          `0,1783` | BCs where the laser is fired                              |
+| `detectorBCdelay`        |          int |             `131` | BC delay from laser pulse to detector signal                      |
+| `referencePeak1BCdelays` |   list `int` | `115,115,115,115` | BC delay from laser pulse to the first reference channel signal             |
+| `referencePeak2BCdelays` |   list `int` | `136,142,135,141` | BC delay from laser pulse to the second reference channel signal             |
 | `debug`                  |         bool |           `false` | Enable extra (heavy) debug histograms.                         |
 
-> The BC delays and channel ID ranges are hardware-driven and stable; adjust only if the LCS timing changes.
+> The BC delays and channel ID ranges are stable and set by hardware; adjust only if the LCS changes.
 
-#### Outputs (Monitor Objects)
+#### Output
 
-Always produced (names correspond to *amplitude/time vs channel*; all TH2I unless noted):
+| Name                     | Type | Description                                                      |
+|--------------------------|------|------------------------------------------------------------------|
+| `AmpPerChannel`          | TH2I | Amplitude distribution per channel (both ADCs)                   |
+| `AmpPerChannelADC0`      | TH2I | Amplitude distribution per channel for ADC0                      |
+| `AmpPerChannelADC1`      | TH2I | Amplitude distribution per channel for ADC1                      |
+| `AmpPerChannelPeak1ADC0` | TH2I | Amplitude distribution per channel for the first peak with ADC0  |
+| `AmpPerChannelPeak1ADC1` | TH2I | Amplitude distribution per channel for the first peak with ADC1  |
+| `AmpPerChannelPeak2ADC0` | TH2I | Amplitude distribution per channel for the second peak with ADC0 |
+| `AmpPerChannelPeak2ADC1` | TH2I | Amplitude distribution per channel for the second peak with ADC1 |
+| `TimePerChannel`         | TH2I | Time distribution per channel (both ADCs)                        |
+| `TimePerChannelPeak1`    | TH2I | Time distribution per channel for the first peak (both ADCs)     |
+| `TimePerChannelPeak2`    | TH2I | Time distribution per channel for the second peak (both ADCs)    |
 
-* **Amplitude vs channel**
+> A set of debug histograms can be set if the `debug` parameter is set to `true`. See the task header file for the definition of these histograms.
 
-  * `AmpPerChannel` - used by postprocessing task
-  * `AmpVsChADC0` - detector + reference, ADC0
-  * `AmpVsChADC1` - detector + reference, ADC1
-  * `AmpVsChPeak1ADC0` / `AmpVsChPeak1ADC1` - reference peak-1
-  * `AmpVsChPeak2ADC0` / `AmpVsChPeak2ADC1` - reference peak-2
-* **Time vs channel**
+#### TODO
 
-  * `TimeVsCh` - detector + reference
-  * `TimeVsChPeak1` - reference peak-1 (both ADCs)
-  * `TimeVsChPeak2` - reference peak-2 (both ADCs)
+- The MO's should be distinguished by:
+  - Gain setting (number of ADC channels per MIP)
+      - In the future we will fetch this from CCDB, but at the moment we pass the value via the QC config.
+  - The gain could be stored in the MO metadata. This can then be used as we wish in the post processing.
+  - B field -> We decided not to care about this (???)
+      - Can be fetched from GRP in CCDB (?)
+- Should we have some out-of-bunch checking as part of a LCS sanity check?
 
-Debug (enabled with `debug=true`; types indicated):
+### AgingLaserPostProcTask
 
-* **Reference-channel 1D spectra (per channel, TH1I)**
-  amplitude: `mMapDebugHistAmp*` (for all/ADC0/ADC1/peak1/peak2/combos)
-  time: `mMapDebugHistTimePeak{1,2}*`
-* **Time vs channel (TH2I)**: `DebugTimeVsChADC{0,1}`, `DebugTimeVsChPeak{1,2}ADC{0,1}`
-* **BC distributions (TH1I)**: `DebugBC*`, split by detector/reference, ADC and with/without amplitude cuts
-* **Amplitude vs BC (TH2I)** per reference channel: `mMapDebugHistAmpVsBC*`
+The `AgingLaserPostProc` task reads the output from the `AgingLaserTask` and produces output suitable for aging monitoring.
 
-> Note: the “time vs BC” debug maps are intentionally disabled in local-batch to avoid ROOT I/O size issues.
-
----
-
-# AgingLaserPostProcTask
-
-`o2::quality_control_modules::ft0::AgingLaserPostProcTask`
-
-#### Purpose
-
-Reduce the raw per-channel amplitude spectra to **one scalar per channel** representing the **weighted-mean amplitude**, normalized to the reference channels. Output is split into two histograms: A-side (channels 0–95) and C-side (channels 96–207).
-
-#### Inputs
+#### Input
 
 * From the QC repository path `FT0/MO/AgingLaser`:
+  * `AmpPerChannel` (TH2): amplitude (ADC) vs channel
 
-  * `AmpPerChannel` (TH2): amplitude (ADC) vs channel, aggregated by the task.
-    *(If you renamed the source MO, adjust the retrieval in the task config.)*
-
-#### Algorithm (per update)
+#### Algorithm
 
 1. **Reference normalization**
-
    * For each configured reference channel:
-
-     * Project its slice `AmpPerChannel(ch)` → `TH1`.
-     * In `[adcSearchMin, adcSearchMax]` find the maximum `x_max`.
-     * Fit a Gaussian in `[(1−a)·x_max, (1+b)·x_max]` → mean `μ_ref`.
+     * Project its slice amplitude distribtion `AmpPerChannel` → `TH1`
+     * Find the maximum `x_max`
+     * Fit a Gaussian in `[(1−fracWindowLow)·x_max, (1+fracWindowHigh)·x_max]` → mean `μ_ref`.
    * `norm = average(μ_ref)` over all successful fits.
 2. **Per-channel value**
-
    * For **every** detector channel:
-
      * Find the global maximum `x_max`.
      * In the same fractional window around `x_max`, compute **weighted mean**
        `⟨x⟩ = Σ w_i x_i / Σ w_i` with weights `w_i = bin content`.
      * Store `value = ⟨x⟩ / norm`.
-3. **Publish two TH1F MOs**
-
+     * Store `value_corrected = value / value_after_last_aging_correction`
+3. **Publish four TH1F MOs**
    * `AmpPerChannelNormWeightedMeanA`: 96 bins, channels 0–95.
    * `AmpPerChannelNormWeightedMeanC`: 112 bins, channels 96–207.
+   * `AmpPerChannelNormWeightedMeanCorrectedA`: 96 bins, channels 0–95. Normalized with amplitudes from the last aging correction.
+   * `AmpPerChannelNormWeightedMeanCorrectedC`: 112 bins, channels 96–207. Normalized with amplitudes from the last aging correction.
+4. **In case of a "reset" run - publish two more TH1F MOs**
+   * `AmpPerChannelNormWeightedMeanAfterLastCorrectionA`:  96 bins, channels 0–95. Used as normalization to deduce relative aging since last aging correction.
+   * `AmpPerChannelNormWeightedMeanAfterLastCorrectionC`:  112 bins, channels 96–207. Used as normalization to deduce relative aging since last aging correction.
 
 > Tip: when booking the C-side histogram use upper edge **208** (exclusive) with 112 bins to avoid off-by-one bin widths.
 
-#### Configuration (extendedTaskParameters)
+#### Configuration
 
-| Key                   |         Type |   Default | Meaning                                        |
-| --------------------- | -----------: | --------: | ---------------------------------------------- |
-| `detectorChannelIDs`  | list `uint8` |   `0–207` | Detector channels to process (subset allowed). |
-| `referenceChannelIDs` | list `uint8` | `208–210` | Reference channels used for normalization.     |
-| `adcSearchMin`        |       double |     `150` | Lower ADC for reference peak search.           |
-| `adcSearchMax`        |       double |     `600` | Upper ADC for reference peak search.           |
-| `fracWindowA`         |       double |    `0.25` | Low fractional window, `a` in `(1−a)·x_max`.   |
-| `fracWindowB`         |       double |    `0.25` | High fractional window, `b` in `(1+b)·x_max`.  |
+| Key                      |          Type |                     Default | Meaning                                                                                                                                                                   |
+|--------------------------|--------------:|----------------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `reset`                  |          bool |                       false | To be set true (only) on the scans following aging corrections. The amplitudes are stored in an additional path, and are used for normalization in following laser scans. |
+| `useDeadChannelMap`      |          bool |                        true | If true, channels marked dead in the dead channel map are not processed                                                                                                   |
+| `ignoreDetectorChannels` | list `uint_8` |                             | Detector channels to ignore                                                                                                                                               |
+| `ignoreRefChannels`      |  list `uint8` |                             | Reference channels to ignore                                                                                                                                              |
+| `fracWindowLow`          |        double |                      `0.25` | Low fractional window for the Gaussian fits                                                                                                                               |
+| `fracWindowHigh`         |        double |                      `0.25` | High fractional window for the Gaussian fits                                                                                                                              |
+| `agingLaserTaskPath`     |        string |         `FT0/MO/AgingLaser` | Path to the AgingLaser task output in QCDB                                                                                                                                |
+| `agingLaserPostProcPath` |        string | `FT0/MO/AgingLaserPostProc` | Path to the AgingLaserPostProc task output in QCDB                                                                                                                        |
 
-#### Output objects (names & types)
+#### Output
 
-* `FT0/MO/AgingLaserPostProc/AmpPerChannelNormWeightedMeanA` (TH1F)
-* `FT0/MO/AgingLaserPostProc/AmpPerChannelNormWeightedMeanC` (TH1F)
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `AmpPerChannelNormWeightedMeanA` | TH1F | Weighted means of A-side amplitudes normalized with reference channel amplitudes |
+| `AmpPerChannelNormWeightedMeanC` | TH1F | Weighted means of C-side amplitudes normalized with reference channel amplitudes |
+| `AmpPerChannelNormWeightedMeanCorrectedA` | TH1F | AmpPerChannelNormWeightedMeanA normalized with the same values from last aging correction |
+| `AmpPerChannelNormWeightedMeanCorrectedC` | TH1F | AmpPerChannelNormWeightedMeanC normalized with the same values from last aging correction |
+| `AmpPerChannelNormWeightedMeanAfterLastCorrectionA` | TH1F | AmpPerChannelNormWeightedMeanA from the last aging correction |
+| `AmpPerChannelNormWeightedMeanAfterLastCorrectionC` | TH1F | AmpPerChannelNormWeightedMeanC from the last aging correction |
 
-#### Trending (example)
+#### Trending
 
-Having two output MOs, allows us to create two time series, one per side. An example workflow that accomplishes this is in `etc/ft0-aging-laser-postproc.json`.
+Having four output MOs from the `AgingLaserPostProcTask`, allows us to create four time series, one per side. An example QC configuration that accomplishes this is in [`etc/ft0-aging-laser-postproc.json`](https://github.com/AliceO2Group/QualityControl/blob/master/Modules/FIT/FT0/etc/ft0-aging-laser-postproc.json).
 
 #### Notes & gotchas
 
 * **Off-by-one binning (C side)**: for channels `96–207` you need **112 bins** and an **exclusive** upper edge at `208`. Using `207` with 112 bins yields non-unit bin width and will trip histogram helpers.
-* **Reference fits**: if all Gaussian fits fail, the post-proc update exits early and publishes nothing for that cycle.
-* **Amplitude cuts**: `detectorAmpCut` is currently not used by the task’s filling logic; if you need a cut in the derived quantity, apply it in post-processing or trending.
+* **Reference fits**: if all Gaussian fits fail, the post-processing update exits early and publishes nothing for that cycle.
+

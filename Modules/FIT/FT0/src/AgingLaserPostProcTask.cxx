@@ -15,6 +15,7 @@
 #include "FT0/AgingLaserPostProcTask.h"
 
 #include "Common/Utils.h"
+#include "DataFormatsFIT/DeadChannelMap.h"
 #include "FITCommon/HelperHist.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -24,6 +25,7 @@
 #include <TMath.h>
 
 #include <algorithm>
+#include <memory>
 #include <numeric>
 #include <string>
 
@@ -37,7 +39,11 @@ AgingLaserPostProcTask::~AgingLaserPostProcTask() = default;
 
 void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
 {
-  mAmpMoPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingTaskSourcePath", mAmpMoPath);
+  mReset = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "reset", false);
+  ILOG(Info, Support) << "Is this a reset run: " << mReset << ENDM;
+
+  mAgingLaserPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingLaserTaskPath", mAgingLaserPath);
+  mAgingLaserPostProcPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingLaserPostProcPath", mAgingLaserPostProcPath);
 
   mDetectorChIDs.resize(208);
   std::iota(mDetectorChIDs.begin(), mDetectorChIDs.end(), 0);
@@ -48,6 +54,19 @@ void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
     for (auto s : toSkip) {
       mDetectorChIDs.erase(std::remove(mDetectorChIDs.begin(), mDetectorChIDs.end(), s),
                            mDetectorChIDs.end());
+    }
+  }
+  mUseDeadChannelMap = o2::quality_control_modules::common::getFromConfig<bool>(mCustomParameters, "useDeadChannelMap", true);
+  if (mUseDeadChannelMap) {
+    o2::fit::DeadChannelMap* dcm = retrieveConditionAny<o2::fit::DeadChannelMap>("FT0/Calib/DeadChannelMap");
+    if (!dcm) {
+      ILOG(Error) << "Could not retrieve DeadChannelMap from CCDB!" << ENDM;
+    } else {
+      for (unsigned chId = 0; chId < dcm->map.size(); chId++) {
+        if (!dcm->isChannelAlive(chId)) {
+          mDetectorChIDs.erase(std::remove(mDetectorChIDs.begin(), mDetectorChIDs.end(), chId), mDetectorChIDs.end());
+        }
+      }
     }
   }
 
@@ -74,7 +93,8 @@ void AgingLaserPostProcTask::initialize(Trigger, framework::ServiceRegistryRef)
 {
   ILOG(Debug, Devel) << "initialize AgingLaserPostProcTask" << ENDM;
 
-  ILOG(Debug, Devel) << "agingTaskSourcePath : " << mAmpMoPath << ENDM;
+  ILOG(Debug, Devel) << "agingTaskSourcePath : " << mAgingLaserPath << ENDM;
+  ILOG(Debug, Devel) << "agingLaserPostProcPath : " << mAgingLaserPostProcPath << ENDM;
   ILOG(Debug, Devel) << "fractional window : a=" << mFracWindowA << "  b=" << mFracWindowB << ENDM;
 
   mAmpVsChNormWeightedMeanA = fit::helper::registerHist<TH1F>(
@@ -88,51 +108,120 @@ void AgingLaserPostProcTask::initialize(Trigger, framework::ServiceRegistryRef)
     quality_control::core::PublicationPolicy::ThroughStop,
     "", "AmpPerChannelNormWeightedMeanC", "AmpPerChannelNormWeightedMeanC",
     112, 96, 208);
+
+  if (mReset) {
+    mAmpVsChNormWeightedMeanAfterLastCorrA = fit::helper::registerHist<TH1F>(
+      getObjectsManager(),
+      quality_control::core::PublicationPolicy::ThroughStop,
+      "", "AmpPerChannelNormWeightedMeanAfterLastCorrectionA", "AmpPerChannelNormWeightedMeanAfterLastCorrectionA",
+      96, 0, 96);
+
+    mAmpVsChNormWeightedMeanAfterLastCorrC = fit::helper::registerHist<TH1F>(
+      getObjectsManager(),
+      quality_control::core::PublicationPolicy::ThroughStop,
+      "", "AmpPerChannelNormWeightedMeanAfterLastCorrectionC", "AmpPerChannelNormWeightedMeanAfterLastCorrectionC",
+      112, 96, 208);
+  }
+
+  mAmpVsChNormWeightedMeanCorrectedA = fit::helper::registerHist<TH1F>(
+    getObjectsManager(),
+    quality_control::core::PublicationPolicy::ThroughStop,
+    "", "AmpPerChannelNormWeightedMeanCorrectedA", "AmpPerChannelNormWeightedMeanCorrectedA",
+    96, 0, 96);
+  mAmpVsChNormWeightedMeanCorrectedC = fit::helper::registerHist<TH1F>(
+    getObjectsManager(),
+    quality_control::core::PublicationPolicy::ThroughStop,
+    "", "AmpPerChannelNormWeightedMeanCorrectedC", "AmpPerChannelNormWeightedMeanCorrectedC",
+    112, 96, 208);
 }
 
 void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv)
 {
   mAmpVsChNormWeightedMeanA->Reset();
   mAmpVsChNormWeightedMeanC->Reset();
+  if (mReset) {
+    mAmpVsChNormWeightedMeanAfterLastCorrA->Reset();
+    mAmpVsChNormWeightedMeanAfterLastCorrC->Reset();
+  }
+  mAmpVsChNormWeightedMeanCorrectedA->Reset();
+  mAmpVsChNormWeightedMeanCorrectedC->Reset();
 
   /* ---- fetch source histogram ---- */
   auto& qcdb = srv.get<quality_control::repository::DatabaseInterface>();
-  auto moIn = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannel", t.timestamp, t.activity);
-  auto moIn0 = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannelPeak1ADC0", t.timestamp, t.activity);
-  auto moIn1 = qcdb.retrieveMO(mAmpMoPath, "AmpPerChannelPeak1ADC1", t.timestamp, t.activity);
-  TH2* h2amp = moIn ? dynamic_cast<TH2*>(moIn->getObject()) : nullptr;
-  TH2* h2amp0 = moIn0 ? dynamic_cast<TH2*>(moIn0->getObject()) : nullptr;
-  TH2* h2amp1 = moIn1 ? dynamic_cast<TH2*>(moIn1->getObject()) : nullptr;
-  TH2* h2ampMerged = nullptr;
-  if (h2amp0 && h2amp1) {
-    h2ampMerged = new TH2F("h2ampMerged", "h2ampMerged", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
-    h2ampMerged->Add(h2amp0);
-    h2ampMerged->Add(h2amp1);
+
+  auto moAmpPerChannel = qcdb.retrieveMO(mAgingLaserPath, "AmpPerChannel", t.timestamp, t.activity);
+  auto moAmpPerChannelPeak1ADC0 = qcdb.retrieveMO(mAgingLaserPath, "AmpPerChannelPeak1ADC0", t.timestamp, t.activity);
+  auto moAmpPerChannelPeak1ADC1 = qcdb.retrieveMO(mAgingLaserPath, "AmpPerChannelPeak1ADC1", t.timestamp, t.activity);
+
+  TH2* h2AmpPerChannel = moAmpPerChannel ? dynamic_cast<TH2*>(moAmpPerChannel->getObject()) : nullptr;
+  TH2* h2AmpPerChannelPeak1ADC0 = moAmpPerChannelPeak1ADC0 ? dynamic_cast<TH2*>(moAmpPerChannelPeak1ADC0->getObject()) : nullptr;
+  TH2* h2AmpPerChannelPeak1ADC1 = moAmpPerChannelPeak1ADC1 ? dynamic_cast<TH2*>(moAmpPerChannelPeak1ADC1->getObject()) : nullptr;
+  TH2* hAmpPerChannelPeak1 = nullptr;
+
+  if (h2AmpPerChannelPeak1ADC0 && h2AmpPerChannelPeak1ADC1) {
+    hAmpPerChannelPeak1 = new TH2F("hAmpPerChannelPeak1", "hAmpPerChannelPeak1", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
+    hAmpPerChannelPeak1->Add(h2AmpPerChannelPeak1ADC0);
+    hAmpPerChannelPeak1->Add(h2AmpPerChannelPeak1ADC1);
+  } else {
+    ILOG(Fatal) << "Could not retrieve " << mAgingLaserPath << "/AmpPerChannelPeak1ADC0 or " << mAgingLaserPath << "/AmpPerChannelPeak1ADC1 for timestamp "
+                << t.timestamp << ENDM;
   }
 
-  if (!h2amp) {
-    ILOG(Error) << "Could not retrieve " << mAmpMoPath << "/AmpPerChannel for timestamp "
+  if (!h2AmpPerChannel) {
+    ILOG(Fatal) << "Could not retrieve " << mAgingLaserPath << "/AmpPerChannel for timestamp "
                 << t.timestamp << ENDM;
-    return;
   }
 
-  if (!h2amp0 || !h2amp1) {
-    ILOG(Error) << "Could not retrieve " << mAmpMoPath << "/AmpPerChannelPeak1ADC0 or " << mAmpMoPath << "/AmpPerChannelPeak1ADC1 for timestamp "
+  if (!hAmpPerChannelPeak1) {
+    ILOG(Fatal) << "Could not create merged histogram from " << mAgingLaserPath << "/AmpPerChannelPeak1ADC0 and " << mAgingLaserPath << "/AmpPerChannelPeak1ADC1 for timestamp "
                 << t.timestamp << ENDM;
-    return;
   }
 
-  if (!h2ampMerged) {
-    ILOG(Error) << "Could not create merged histogram from " << mAmpMoPath << "/AmpPerChannelPeak1ADC0 and " << mAmpMoPath << "/AmpPerChannelPeak1ADC1 for timestamp "
-                << t.timestamp << ENDM;
-    return;
+  // Weighted mean of amplitude per detector channel, normalized by the average of the reference channel amplitudes, as stored after performing an aging correction.
+  // This is used as a normalization factor to get the relative aging in "non-reset" runs since the time of the last aging correction.
+  std::unique_ptr<TH1> hAmpVsChWeightedMeanAfterLastCorrA;
+  std::unique_ptr<TH1> hAmpVsChWeightedMeanAfterLastCorrC;
+
+  if (!mReset) {
+    auto validity = qcdb.getLatestObjectValidity("qc/" + mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionA");
+    long timestamp = validity.getMin();
+
+    ILOG(Info, Support) << "Retrieving normalization histograms from timestamp " << timestamp << ENDM;
+
+    auto moAmpPerChannelNormWeightedMeanAfterLastCorrA = qcdb.retrieveMO(
+      mAgingLaserPostProcPath, "AmpPerChannelNormWeightedMeanAfterLastCorrectionA", timestamp);
+    if (!moAmpPerChannelNormWeightedMeanAfterLastCorrA) {
+      ILOG(Fatal) << "Failed to retrieve histogram " << mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionA"
+                  << " for timestamp " << timestamp << "! This is not a 'resetting' run and this histogram is therefore needed." << ENDM;
+    } else {
+      hAmpVsChWeightedMeanAfterLastCorrA = std::unique_ptr<TH1>(
+        dynamic_cast<TH1*>(moAmpPerChannelNormWeightedMeanAfterLastCorrA->getObject()->Clone()));
+    }
+
+    auto moAmpPerChannelNormWeightedMeanAfterLastCorrC = qcdb.retrieveMO(
+      mAgingLaserPostProcPath, "AmpPerChannelNormWeightedMeanAfterLastCorrectionC", timestamp);
+    if (!moAmpPerChannelNormWeightedMeanAfterLastCorrC) {
+      ILOG(Fatal) << "Failed to retrieve histogram " << mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionC"
+                  << " for timestamp " << timestamp << "! This is not a 'resetting' run and this histogram is therefore needed."
+                  << " Please contact the FIT expert." << ENDM;
+    } else {
+      hAmpVsChWeightedMeanAfterLastCorrC = std::unique_ptr<TH1>(
+        dynamic_cast<TH1*>(moAmpPerChannelNormWeightedMeanAfterLastCorrC->getObject()->Clone()));
+    }
+
+    if (!hAmpVsChWeightedMeanAfterLastCorrA || !hAmpVsChWeightedMeanAfterLastCorrC) {
+      ILOG(Fatal) << "Failed to clone normalization histograms from "
+                  << mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionA or "
+                  << mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionC"
+                  << "! This is not a 'resetting' run and these histograms are therefore needed." << ENDM;
+    }
   }
 
   /* ---- 1. Reference-channel Gaussian fits ---- */
   std::vector<double> refMus;
 
   for (auto chId : mReferenceChIDs) {
-    auto h1 = std::unique_ptr<TH1>(h2ampMerged->ProjectionY(
+    auto h1 = std::unique_ptr<TH1>(hAmpPerChannelPeak1->ProjectionY(
       Form("ref_%d", chId), chId + 1, chId + 1));
 
     int binMax = h1->GetMaximumBin();
@@ -157,7 +246,7 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
 
   /* ---- 2. Loop over ALL channels ---- */
   auto processChannel = [&](uint8_t chId) {
-    auto h1 = std::unique_ptr<TH1>(h2amp->ProjectionY(
+    auto h1 = std::unique_ptr<TH1>(h2AmpPerChannel->ProjectionY(
       Form("proj_%d", chId), chId + 1, chId + 1));
 
     // global maximum
@@ -180,8 +269,26 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
     const double val = (norm > 0.) ? wMean / norm : 0.;
     if (chId < 96) {
       mAmpVsChNormWeightedMeanA->SetBinContent(chId + 1, val);
+      if (mReset) {
+        mAmpVsChNormWeightedMeanAfterLastCorrA->SetBinContent(chId + 1, mAmpVsChNormWeightedMeanA->GetBinContent(chId + 1));
+      }
+      Float_t valCorr = (!mReset ? hAmpVsChWeightedMeanAfterLastCorrA->GetBinContent(chId + 1) : mAmpVsChNormWeightedMeanAfterLastCorrA->GetBinContent(chId + 1));
+      if (valCorr == 0) {
+        ILOG(Error, Support) << "Normalization factor = 0 for channel " << chId + 1 << ". Skipping." << ENDM;
+        return;
+      }
+      mAmpVsChNormWeightedMeanCorrectedA->SetBinContent(chId + 1, val / valCorr);
     } else if (chId >= 96 && chId <= 208) {
       mAmpVsChNormWeightedMeanC->SetBinContent(chId - 95, val);
+      if (mReset) {
+        mAmpVsChNormWeightedMeanAfterLastCorrC->SetBinContent(chId - 95, mAmpVsChNormWeightedMeanC->GetBinContent(chId - 95));
+      }
+      Float_t valCorr = (!mReset ? hAmpVsChWeightedMeanAfterLastCorrC->GetBinContent(chId - 95) : mAmpVsChNormWeightedMeanAfterLastCorrC->GetBinContent(chId - 95));
+      if (valCorr == 0) {
+        ILOG(Error, Support) << "Normalization factor = 0 for channel " << chId + 1 << ". Skipping." << ENDM;
+        return;
+      }
+      mAmpVsChNormWeightedMeanCorrectedC->SetBinContent(chId - 95, val / valCorr);
     }
   };
 
