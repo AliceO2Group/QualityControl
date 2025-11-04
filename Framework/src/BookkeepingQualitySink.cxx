@@ -26,10 +26,10 @@
 #include "QualityControl/runnerUtils.h"
 
 #include <BookkeepingApi/QcFlagServiceClient.h>
-#include <BookkeepingApi/BkpClientFactory.h>
 #include <CCDB/BasicCCDBManager.h>
 #include <stdexcept>
 #include <utility>
+#include <QualityControl/Bookkeeping.h>
 
 namespace o2::quality_control::core
 {
@@ -45,6 +45,7 @@ void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::Comp
 
 void BookkeepingQualitySink::init(framework::InitContext& iCtx)
 {
+  Bookkeeping::getInstance().init(mGrpcUri);
   initInfologger(iCtx, {}, "bkqsink/", "");
 
   try { // registering state machine callbacks
@@ -147,11 +148,6 @@ auto collectionForQualityObject(const QualityObject& qualityObject) -> std::uniq
     qualityObject.getActivity().mPeriodName,
     qualityObject.getActivity().mPassName,
     qualityObject.getActivity().mProvenance);
-}
-
-void BookkeepingQualitySink::init(framework::InitContext& context)
-{
-  o2::quality_control::core::Bookkeeping::getInstance().init(mGrpcUri);
 }
 
 void BookkeepingQualitySink::run(framework::ProcessingContext& context)
