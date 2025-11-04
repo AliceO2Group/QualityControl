@@ -46,7 +46,7 @@ def run(args):
     total_planned = 0
 
     file = open(args.runs_file)
-    csvreader = csv.DictReader(file)
+    csvreader = csv.DictReader(file, delimiter=";")
     for row in csvreader:
         nb_deleted = 0
         run_number = row["runNumber"]
