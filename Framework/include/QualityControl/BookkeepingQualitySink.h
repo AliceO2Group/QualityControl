@@ -39,8 +39,8 @@ class BookkeepingQualitySink : public framework::Task
   // sendCallback is mainly used for testing without the necessity to do grpc calls
   BookkeepingQualitySink(const std::string& grpcUri, Provenance, SendCallback sendCallback = send);
 
-  void init(framework::InitContext&) override;
   void run(framework::ProcessingContext&) override;
+  void init(framework::InitContext& iCtx) override;
 
   void endOfStream(framework::EndOfStreamContext& context) override;
   void stop() override;
@@ -50,6 +50,9 @@ class BookkeepingQualitySink : public framework::Task
   static void send(const std::string& grpcUri, const FlagsMap&, Provenance);
 
  private:
+  /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
+  void start(framework::ServiceRegistryRef services);
+
   std::string mGrpcUri;
   Provenance mProvenance;
   SendCallback mSendCallback;

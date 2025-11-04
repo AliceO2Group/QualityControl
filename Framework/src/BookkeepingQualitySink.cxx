@@ -20,15 +20,16 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
 #include <DataFormatsQualityControl/QualityControlFlagCollection.h>
-#include "QualityControl/Bookkeeping.h"
 #include "QualityControl/QualitiesToFlagCollectionConverter.h"
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/runnerUtils.h"
+
 #include <BookkeepingApi/QcFlagServiceClient.h>
-#include <BookkeepingApi/BkpClientFactory.h>
 #include <CCDB/BasicCCDBManager.h>
 #include <stdexcept>
 #include <utility>
+#include <QualityControl/Bookkeeping.h>
 
 namespace o2::quality_control::core
 {
@@ -40,6 +41,27 @@ void BookkeepingQualitySink::customizeInfrastructure(std::vector<framework::Comp
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("BookkeepingQualitySinkCompletionPolicy", matcher));
+}
+
+void BookkeepingQualitySink::init(framework::InitContext& iCtx)
+{
+  Bookkeeping::getInstance().init(mGrpcUri);
+  initInfologger(iCtx, {}, "bkqsink/", "");
+
+  try { // registering state machine callbacks
+    iCtx.services().get<framework::CallbackService>().set<framework::CallbackService::Id::Start>([this, services = iCtx.services()]() mutable { start(services); });
+  } catch (o2::framework::RuntimeErrorRef& ref) {
+    ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
+  }
+
+  ILOG(Info, Devel) << "Initialized BookkeepingQualitySink" << ENDM;
+}
+
+void BookkeepingQualitySink::start(framework::ServiceRegistryRef services)
+{
+  Activity fallback; // no proper fallback as we don't have the config in this device
+  auto currentActivity = computeActivity(services, fallback);
+  QcInfoLogger::setRun(currentActivity.mId);
 }
 
 void BookkeepingQualitySink::send(const std::string& grpcUri, const BookkeepingQualitySink::FlagsMap& flags, Provenance provenance)
@@ -126,11 +148,6 @@ auto collectionForQualityObject(const QualityObject& qualityObject) -> std::uniq
     qualityObject.getActivity().mPeriodName,
     qualityObject.getActivity().mPassName,
     qualityObject.getActivity().mProvenance);
-}
-
-void BookkeepingQualitySink::init(framework::InitContext& context)
-{
-  o2::quality_control::core::Bookkeeping::getInstance().init(mGrpcUri);
 }
 
 void BookkeepingQualitySink::run(framework::ProcessingContext& context)
