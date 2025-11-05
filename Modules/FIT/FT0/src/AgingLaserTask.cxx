@@ -125,6 +125,7 @@ void AgingLaserTask::initialize(o2::framework::InitContext&)
   // Initialize histograms
 
   // Amplitude per channel
+  mHistAmpVsCh = std::make_unique<TH2I>("AmpPerChannel", "Amplitude vs channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
   mHistAmpVsChADC0 = std::make_unique<TH2I>("AmpPerChannelADC0", "Amplitude vs channel (ADC0);Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
   mHistAmpVsChADC1 = std::make_unique<TH2I>("AmpPerChannelADC1", "Amplitude vs channel (ADC1);Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
   mHistAmpVsChPeak1ADC0 = std::make_unique<TH2I>("AmpPerChannelPeak1ADC0", "Amplitude vs channel (peak 1, ADC0);Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
@@ -154,11 +155,10 @@ void AgingLaserTask::initialize(o2::framework::InitContext&)
   getObjectsManager()->setDefaultDrawOptions(mHistTimeVsCh.get(), "COLZ");
   getObjectsManager()->setDefaultDrawOptions(mHistTimeVsChPeak1.get(), "COLZ");
   getObjectsManager()->setDefaultDrawOptions(mHistTimeVsChPeak2.get(), "COLZ");
+  getObjectsManager()->startPublishing(mHistAmpVsCh.get());
+  getObjectsManager()->setDefaultDrawOptions(mHistAmpVsCh.get(), "COLZ");
 
   // Debug histograms
-
-  // Amplitude per channel
-  mDebugHistAmpVsCh = std::make_unique<TH2I>("AmpPerChannel", "Amplitude vs channel;Channel;Amp", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4200, -100, 4100);
 
   // Time per channel
   mDebugHistTimeVsChADC0 = std::make_unique<TH2I>("TimePerChannelADC0", "Time vs channel (ADC0);Channel;Time", sNCHANNELS_PM, 0, sNCHANNELS_PM, 4100, -2050, 2050);
@@ -215,10 +215,6 @@ void AgingLaserTask::initialize(o2::framework::InitContext&)
   }
 
   if (mDebug) {
-    // Amplitude per channel
-    getObjectsManager()->startPublishing(mDebugHistAmpVsCh.get());
-    getObjectsManager()->setDefaultDrawOptions(mDebugHistAmpVsCh.get(), "COLZ");
-
     // Time per channel
     getObjectsManager()->startPublishing(mDebugHistTimeVsChADC0.get());
     getObjectsManager()->startPublishing(mDebugHistTimeVsChADC1.get());
@@ -347,7 +343,7 @@ void AgingLaserTask::monitorData(o2::framework::ProcessingContext& ctx)
       bcHasReferenceChAmpCutADC1 = (isRef && isAmpCutOk && isADC1) || bcHasReferenceChAmpCutADC1;
 
       // Fill amplitude and time per channel histograms
-      mDebugHistAmpVsCh->Fill(chId, chAmp);
+      mHistAmpVsCh->Fill(chId, chAmp);
       mHistTimeVsCh->Fill(chId, chTime);
       isADC0 ? mHistAmpVsChADC0->Fill(chId, chAmp) : mHistAmpVsChADC1->Fill(chId, chAmp);
       isADC0 ? mDebugHistTimeVsChADC0->Fill(chId, chTime) : mDebugHistTimeVsChADC1->Fill(chId, chTime);
@@ -475,7 +471,7 @@ void AgingLaserTask::reset()
   mHistTimeVsChPeak2->Reset();
 
   // Amplitude per channel
-  mDebugHistAmpVsCh->Reset();
+  mHistAmpVsCh->Reset();
 
   // Amplitude histograms for reference channel peaks
   for (auto& entry : mMapDebugHistAmp) {

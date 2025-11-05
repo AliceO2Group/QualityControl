@@ -3,8 +3,8 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "#host": "ccdb-test.cern.ch:8080",
-        "host": "http://localhost:8080",
+        "host": "ccdb-test.cern.ch:8080",
+        "#host": "http://localhost:8080",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::ft0::AgingLaserTask",
         "moduleName": "QcFT0",
         "detectorName": "FT0",
-        "cycleDurationSeconds": "300",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
