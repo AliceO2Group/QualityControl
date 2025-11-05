@@ -3,6 +3,7 @@
 add_library(O2QcFT0)
 
 target_sources(O2QcFT0 PRIVATE src/AgingLaserTask.cxx
+                               src/AgingLaserPostProcTask.cxx
                                src/DigitQcTask.cxx
                                src/GenericCheck.cxx
                                src/CFDEffCheck.cxx
@@ -34,6 +35,7 @@ install(TARGETS O2QcFT0
 
 add_root_dictionary(O2QcFT0
   HEADERS include/FT0/AgingLaserTask.h
+          include/FT0/AgingLaserPostProcTask.h
           include/FT0/DigitQcTask.h
           include/FT0/PostProcTask.h
           include/FT0/CFDEffCheck.h

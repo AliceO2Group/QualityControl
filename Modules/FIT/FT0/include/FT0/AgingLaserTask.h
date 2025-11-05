@@ -109,7 +109,7 @@ class AgingLaserTask final : public TaskInterface
   // Debug histograms
 
   // Ampltiude per channel
-  std::unique_ptr<TH2I> mDebugHistAmpVsCh; ///< Amplitude per channel (detector + reference channels)
+  std::unique_ptr<TH2I> mHistAmpVsCh; ///< Amplitude per channel (detector + reference channels)
 
   // Ampltidue histograms for reference channel peaks
   std::map<uint8_t, std::unique_ptr<TH1I>> mMapDebugHistAmp;          ///< Amplitude (both ADCs and peaks)
