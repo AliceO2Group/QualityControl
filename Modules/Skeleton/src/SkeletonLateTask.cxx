@@ -22,6 +22,8 @@
 #include "QualityControl/QCInputs.h"
 #include "QualityControl/QCInputsAdapters.h"
 #include "Skeleton/SkeletonLateTask.h"
+
+#include <boost/property_tree/ptree.hpp>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/DataRefUtils.h>
 
@@ -46,6 +48,11 @@ void SkeletonLateTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGraph->SetName("graph_example");
   mGraph->SetTitle("graph_example");
   getObjectsManager()->startPublishing(mGraph.get(), PublicationPolicy::Forever);
+
+  auto plots = mCustomParameters.getOptionalPtree("plots");
+  if (plots.has_value()) {
+    ILOG(Info, Support) << "nested param: " <<  plots.value().get<std::string>("nested") << ENDM;
+  }
 }
 
 void SkeletonLateTask::startOfActivity(const Activity& activity)

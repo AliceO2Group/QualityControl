@@ -35,8 +35,8 @@ class LateTaskFactory
     auto* result = root_class_factory::create<LateTaskInterface>(taskConfig.moduleName, taskConfig.className);
     result->setName(taskConfig.taskName);
     result->setObjectsManager(objectsManager);
-    // result->setCustomParameters(taskConfig.customParameters);
-    // result->setCcdbUrl(taskConfig.ccdbUrl);
+    result->setCustomParameters(taskConfig.customParameters);
+    result->setCcdbUrl(taskConfig.ccdbUrl);
 
     return result;
   }

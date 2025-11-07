@@ -121,8 +121,16 @@
           "type": "Task",
           "name": "QcTask",
           "MOs": ["example"]
-        }]
-
+        }],
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "plots" : {
+                "nested": "value"
+              }
+            }
+          }
+        }
       }
     }
   },
