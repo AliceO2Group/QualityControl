@@ -456,6 +456,15 @@ LateTaskSpec
     lts.updatePolicy = UpdatePolicyTypeUtils::FromString(policy.get());
   }
 
+  if (lateTaskTree.count("extendedTaskParameters") > 0) {
+    lts.customParameters.populateCustomParameters(lateTaskTree.get_child("extendedTaskParameters"));
+  } else if (lateTaskTree.count("taskParameters") > 0) {
+    for (const auto& [key, value] : lateTaskTree.get_child("taskParameters")) {
+      lts.customParameters.set(key, value.get_value<std::string>());
+    }
+  }
+
+
   // if (lateTaskTree.count("grpGeomRequest") > 0) {
     // lts.grpGeomRequestSpec = readSpecEntry<GRPGeomRequestSpec>(lts.taskName, lateTaskTree.get_child("grpGeomRequest"), wholeTree);
   // }
