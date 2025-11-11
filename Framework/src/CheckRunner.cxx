@@ -114,7 +114,8 @@ std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 
 std::string CheckRunner::createSinkCheckRunnerName(InputSpec input)
 {
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-sink-");
+  // we need a shorter name, thus we only use "qc-sink" and not "qc-check-sink"
+  std::string name("qc-sink-");
   name += DataSpecUtils::label(input);
   return name;
 }
