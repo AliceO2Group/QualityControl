@@ -17,6 +17,7 @@
 /// \author Diana Maria Krupova
 /// \author David Grund
 /// \author Sara Haidlova
+/// \author Jakub Juracka
 ///
 
 // C++
