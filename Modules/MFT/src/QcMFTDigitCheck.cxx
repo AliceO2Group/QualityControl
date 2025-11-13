@@ -408,18 +408,15 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
         }
       }
       // quality of a noise scan
-      bool isTotalNoiseGood = (mTotalNoisy < mNoiseTotalMediumMax) && (mTotalNoisy > mNoiseTotalMediumMin);
-      bool isNewNoiseGood = (mNewNoisy < mNoiseNewMediumMax) && (mNewNoisy > mNoiseNewMediumMin);
-      bool isDisNoiseGood = (mDisNoisy < mNoiseDisMediumMax) && (mDisNoisy > mNoiseDisMediumMin);
-      bool isTotalNoiseMedium = (mTotalNoisy > mNoiseTotalMediumMax && mTotalNoisy < mNoiseTotalBadMax) ||
-                                (mTotalNoisy > mNoiseTotalBadMin && mTotalNoisy < mNoiseTotalMediumMin);
-      bool isNewNoiseMedium = (mNewNoisy < mNoiseNewMediumMin) ||
-                              (mNewNoisy > mNoiseNewMediumMax && mNewNoisy < mNoiseNewBadMax);
-      bool isDisNoiseMedium = (mDisNoisy < mNoiseDisMediumMin) ||
-                              (mDisNoisy > mNoiseDisMediumMax && mDisNoisy < mNoiseDisBadMax);
-      bool isTotalNoiseBad = (mTotalNoisy > mNoiseTotalBadMax) || (mTotalNoisy < mNoiseTotalBadMin);
-      bool isNewNoiseBad = mNewNoisy > mNoiseNewBadMax;
-      bool isDisNoiseBad = mDisNoisy > mNoiseDisBadMax;
+      bool isTotalNoiseGood = (mNoiseTotalMediumMin <= mTotalNoisy) && (mTotalNoisy <= mNoiseTotalMediumMax);
+      bool isNewNoiseGood = (mNoiseNewMediumMin <= mNewNoisy) && (mNewNoisy <= mNoiseNewMediumMax);
+      bool isDisNoiseGood = (mNoiseDisMediumMin <= mDisNoisy) && (mDisNoisy <= mNoiseDisMediumMax);
+      bool isTotalNoiseMedium = (mNoiseTotalBadMin <= mTotalNoisy && mTotalNoisy < mNoiseTotalMediumMin) || (mNoiseTotalMediumMax < mTotalNoisy && mTotalNoisy <= mNoiseTotalBadMax);
+      bool isNewNoiseMedium = (mNewNoisy < mNoiseNewMediumMin) || (mNoiseNewMediumMax < mNewNoisy && mNewNoisy <= mNoiseNewBadMax);
+      bool isDisNoiseMedium = (mDisNoisy < mNoiseDisMediumMin) || (mNoiseDisMediumMax < mDisNoisy && mDisNoisy <= mNoiseDisBadMax);
+      bool isTotalNoiseBad = (mTotalNoisy < mNoiseTotalBadMin) || (mNoiseTotalBadMax < mTotalNoisy);
+      bool isNewNoiseBad = mNoiseNewBadMax < mNewNoisy;
+      bool isDisNoiseBad = mNoiseDisBadMax < mDisNoisy;
 
       if (isTotalNoiseGood && isNewNoiseGood && isDisNoiseGood) {
         mQualityGood = true;
