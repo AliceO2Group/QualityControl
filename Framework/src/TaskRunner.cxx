@@ -434,12 +434,14 @@ void TaskRunner::startCycle()
 
 void TaskRunner::registerToBookkeeping()
 {
-  // register ourselves to the BK at the first cycle
-  ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
-  try {
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
-  } catch (std::runtime_error& error) {
-    ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
+  if (!gSystem->Getenv("O2_QC_DONT_REGISTER_IN_BK")) { // Set this variable to disable the registration
+    // register ourselves to the BK at the first cycle
+    ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
+    try {
+      Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
+    } catch (std::runtime_error& error) {
+      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
+    }
   }
 }
 
