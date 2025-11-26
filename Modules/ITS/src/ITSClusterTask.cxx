@@ -93,7 +93,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  // create binning for fine checks
+  // Create binning for fine checks
   setRphiBinningIB();
   setZBinningIB();
   setRphiBinningOB();
