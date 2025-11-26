@@ -112,6 +112,7 @@ class ITSClusterTask : public TaskInterface
   // General
   TH2D* hClusterVsBunchCrossing = nullptr;
   std::unique_ptr<TH2DRatio> mGeneralOccupancy = nullptr;
+  TH2D* hClusterCenterMap[3] = { nullptr }; // only IB
 
   // Fine checks
 
