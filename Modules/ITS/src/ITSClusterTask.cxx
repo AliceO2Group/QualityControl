@@ -50,6 +50,7 @@ ITSClusterTask::~ITSClusterTask()
       continue;
 
     if (iLayer < NLayerIB) {
+      delete hClusterCenterMap[iLayer];
       delete hLongClustersPerChip[iLayer];
       delete hMultPerChipWhenLongClusters[iLayer];
     }
@@ -92,7 +93,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getJsonParameters();
 
-  // create binning for fine checks
+  // Create binning for fine checks
   setRphiBinningIB();
   setZBinningIB();
   setRphiBinningOB();
@@ -246,6 +247,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         hAverageClusterOccupancySummaryIB[lay]->getNum()->Fill(chip, sta);
         hAverageClusterSizeSummaryIB[lay]->getNum()->Fill(chip, sta, (double)npix);
         hAverageClusterSizeSummaryIB[lay]->getDen()->Fill(chip, sta, 1.);
+        hClusterCenterMap[lay]->Fill(cluster.getCol(), cluster.getRow());
         if (mDoPublish1DSummary == 1) {
           hClusterTopologySummaryIB[lay][sta][chip]->Fill(ClusterID);
         }
@@ -446,6 +448,7 @@ void ITSClusterTask::reset()
     hClusterTopologyLayerSummary[iLayer]->Reset();
 
     if (iLayer < NLayerIB) {
+      hClusterCenterMap[iLayer]->Reset();
       hLongClustersPerChip[iLayer]->Reset();
       hMultPerChipWhenLongClusters[iLayer]->Reset();
       hAverageClusterOccupancySummaryIB[iLayer]->Reset();
@@ -511,6 +514,11 @@ void ITSClusterTask::createAllHistos()
       continue;
 
     if (iLayer < NLayerIB) {
+      hClusterCenterMap[iLayer] = new TH2D(Form("ClusterCenterMapL%d", iLayer), Form("Stacked map of cluster centers for all L%d chips;Column;Row", iLayer), 1024, -0.5, 1023.5, 512, -0.5, 511.5);
+      addObject(hClusterCenterMap[iLayer]);
+      formatAxes(hClusterCenterMap[iLayer], "Column", "Row", 1, 1.10);
+      hClusterCenterMap[iLayer]->SetStats(0);
+
       hLongClustersPerChip[iLayer] = new TH2D(Form("Anomalies/Layer%d/LongClusters", iLayer), Form("Layer%d/LongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 41, 0, 41);
       hMultPerChipWhenLongClusters[iLayer] = new TH2D(Form("Anomalies/Layer%d/HitsWhenLongClusters", iLayer), Form("Layer%d/HitsWhenLongClusters", iLayer), ChipBoundary[iLayer + 1] - ChipBoundary[iLayer], ChipBoundary[iLayer], ChipBoundary[iLayer + 1], 250, 0, 40000);
       addObject(hLongClustersPerChip[iLayer]);
