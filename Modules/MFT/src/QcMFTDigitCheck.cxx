@@ -351,8 +351,8 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
       auto* hMap = dynamic_cast<TH2F*>(mo->getObject());
       int binCx = hMap->GetXaxis()->FindBin(mX[mMaskedChips[i]]);
       int binCy = hMap->GetYaxis()->FindBin(mY[mMaskedChips[i]]);
-      // the -0.5 is a shift to centre better the skulls
-      TLatex* tl = new TLatex(hMap->GetXaxis()->GetBinCenter(binCx) - 0.5, hMap->GetYaxis()->GetBinCenter(binCy), "N");
+      TLatex* tl = new TLatex(hMap->GetXaxis()->GetBinCenter(binCx), hMap->GetYaxis()->GetBinCenter(binCy), "N");
+      tl->SetTextAlign(22);
       tl->SetTextFont(142);
       tl->SetTextSize(0.08);
       hMap->GetListOfFunctions()->Add(tl);
