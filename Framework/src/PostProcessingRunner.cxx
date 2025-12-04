@@ -189,11 +189,7 @@ void PostProcessingRunner::start(framework::ServiceRegistryRef dplServices)
   // register ourselves to the BK
   if (!gSystem->Getenv("O2_QC_DONT_REGISTER_IN_BK")) { // Set this variable to disable the registration
     ILOG(Debug, Devel) << "Registering pp task to BookKeeping" << ENDM;
-    try {
-      Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bkp::DplProcessType::QC_POSTPROCESSING, "");
-    } catch (std::runtime_error& error) {
-      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
-    }
+    Bookkeeping::getInstance().registerProcess(mActivity.mId, mRunnerConfig.taskName, mRunnerConfig.detectorName, bkp::DplProcessType::QC_POSTPROCESSING, "");
   }
 
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {

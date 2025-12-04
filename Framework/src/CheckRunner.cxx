@@ -458,11 +458,7 @@ void CheckRunner::start(ServiceRegistryRef services)
   // register ourselves to the BK
   if (!gSystem->Getenv("O2_QC_DONT_REGISTER_IN_BK")) { // Set this variable to disable the registration
     ILOG(Debug, Devel) << "Registering checkRunner to BookKeeping" << ENDM;
-    try {
-      Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, mDetectorName, bkp::DplProcessType::QC_CHECKER, "");
-    } catch (std::runtime_error& error) {
-      ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
-    }
+    Bookkeeping::getInstance().registerProcess(mActivity->mId, mDeviceName, mDetectorName, bkp::DplProcessType::QC_CHECKER, "");
   }
 }
 
