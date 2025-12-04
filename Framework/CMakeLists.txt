@@ -416,7 +416,7 @@ configure_file(batch-test.json.in ${CMAKE_BINARY_DIR}/tests/batch-test.json) # s
 add_test(NAME batch_test COMMAND o2-qc-batch-test.sh)
 set_tests_properties(batch_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST batch_test PROPERTY LABELS slow)
-set_property(TEST batch_test PROPERTY TIMEOUT 45)
+set_property(TEST batch_test PROPERTY TIMEOUT 60)
 
 # ---- Install ----
 

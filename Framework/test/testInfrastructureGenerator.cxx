@@ -190,7 +190,15 @@ TEST_CASE("qc_factory_remote_test")
       return d.name.find("qc-check") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 6);
+  REQUIRE(checkRunnerCount == 4);
+
+  auto checkSinkCount = std::count_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name.find("qc-sink") != std::string::npos &&
+             d.inputs.size() == 1;
+    });
+  REQUIRE(checkSinkCount == 2);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
@@ -272,7 +280,15 @@ TEST_CASE("qc_factory_standalone_test")
       return d.name.find("qc-check") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 5);
+  REQUIRE(checkRunnerCount == 4);
+
+  auto checkSinkCount = std::count_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name.find("qc-sink") != std::string::npos &&
+             d.inputs.size() == 1;
+    });
+  REQUIRE(checkSinkCount == 1);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
@@ -411,7 +427,15 @@ TEST_CASE("qc_infrastructure_remote_batch_test")
       return d.name.find("qc-check") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  REQUIRE(checkRunnerCount == 6);
+  REQUIRE(checkRunnerCount == 4);
+
+  auto checkSinkCount = std::count_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name.find("qc-sink") != std::string::npos &&
+             d.inputs.size() == 1;
+    });
+  REQUIRE(checkSinkCount == 2);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
