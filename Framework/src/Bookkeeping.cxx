@@ -116,7 +116,7 @@ void Bookkeeping::registerProcess(int runNumber, const std::string& name, const 
   }
 
   std::thread([this, runNumber, type, name, args, detector]() {
-    try{
+    try {
       this->mClient->dplProcessExecution()->registerProcessExecution(runNumber, type, getHostName(), name, args, detector);
     } catch (std::runtime_error& error) { // catch here because we are in a thread
       ILOG(Warning, Devel) << "Failed registration to the BookKeeping: " << error.what() << ENDM;
