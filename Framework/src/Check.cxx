@@ -267,6 +267,7 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
   }
 
   return {
+    checkSpec.checkName,
     checkSpec.moduleName,
     checkSpec.className,
     checkSpec.detectorName,
@@ -274,7 +275,7 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     checkSpec.customParameters,
     commonSpec.conditionDBUrl,
     commonSpec.database,
-    checkSpec.checkName,
+    checkSpec.dataSources,
     updatePolicy,
     std::move(objectNames),
     checkAllObjects,

@@ -42,7 +42,6 @@ namespace o2::quality_control::core
 /// \brief  Container for the configuration of a Task
 struct TaskRunnerConfig : public UserCodeConfig {
   std::string deviceName;
-  std::string taskName;
   std::vector<std::pair<size_t, size_t>> cycleDurations = {};
   int maxNumberCycles;
   bool critical;
