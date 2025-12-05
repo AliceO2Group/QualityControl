@@ -13,18 +13,18 @@
 #define QC_CORE_LATETASKRUNNERCONFIG_H
 
 #include "QualityControl/UserCodeConfig.h"
+#include "QualityControl/DataSourceSpec.h"
 
 #include <Framework/DataProcessorSpec.h>
+
 
 namespace o2::quality_control::core {
 
 // fixme: should it be LateTaskConfig instead?
-struct LateTaskRunnerConfig : public UserCodeConfig {
-  std::string taskName;
-  std::string deviceName;
-  framework::Inputs inputSpecs;
-  framework::OutputSpec moSpec;
-  framework::Options options;
+struct LateTaskConfig : public UserCodeConfig {
+
+  // fixme: we should think what should happen when a user wants a critical late task relying on a non-critical QC task.
+  //  should it be marked as resilient?
   bool critical = true;
 };
 

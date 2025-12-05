@@ -17,82 +17,46 @@
 /// \author Piotr Konopka
 ///
 
-#include <Framework/Task.h>
-#include <Framework/DataProcessorSpec.h>
-#include <Framework/CompletionPolicy.h>
+#include "QualityControl/LateTaskConfig.h"
+#include "QualityControl/LateTaskRunnerTraits.h"
 
-#include "QualityControl/LateTaskRunnerConfig.h"
+#include "QualityControl/ActorTraits.h"
+#include "QualityControl/Actor.h"
+#include <string_view>
+#include <memory>
 
 namespace o2::quality_control::core {
 
 class LateTaskInterface;
 class ObjectsManager;
 
-class LateTaskRunner : public framework::Task
+class LateTaskRunner : public Actor<LateTaskRunner>
 {
-  /// \brief Number of bytes in data description used for hashing of Task names. See HashDataDescription.h for details
-  static constexpr size_t taskDescriptionHashLength = 4;
-  static_assert(taskDescriptionHashLength <= o2::header::DataDescription::size);
-
  public:
-  explicit LateTaskRunner(const LateTaskRunnerConfig& config);
-  ~LateTaskRunner() override = default;
+  LateTaskRunner(const ServicesConfig& servicesConfig, const LateTaskConfig& config);
+  ~LateTaskRunner() = default;
 
-  /// \brief LateTaskRunner's init callback
-  void init(framework::InitContext& iCtx) override;
-  /// \brief LateTaskRunner's process callback
-  void run(framework::ProcessingContext& pCtx) override;
-  /// \brief LateTaskRunner's finaliseCCDB callback
-  // void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj) override;
+  void onStart(framework::ServiceRegistryRef services);
+  void onInit(framework::InitContext& iCtx);
+  void onProcess(framework::ProcessingContext& pCtx);
 
-  std::string getDeviceName() const { return mTaskConfig.deviceName; };
-  const framework::Inputs& getInputsSpecs() const { return mTaskConfig.inputSpecs; };
-  const framework::OutputSpec& getOutputSpec() const { return mTaskConfig.moSpec; };
-  const framework::Options& getOptions() const { return mTaskConfig.options; };
-
-  /// \brief Data Processor Label to identify all Late Task Runners
-  static framework::DataProcessorLabel getLabel() { return { "qc-late-task" }; }
-  /// \brief ID string for all LateTaskRunner devices
-  static std::string createIdString();
-  /// \brief Unified DataOrigin for Quality Control tasks
-  static header::DataOrigin createDataOrigin(const std::string& detectorCode);
-  /// \brief Unified DataDescription naming scheme for all tasks
-  static header::DataDescription createDataDescription(const std::string& taskName);
-
-  /// \brief Callback for CallbackService::Id::EndOfStream
-  // void endOfStream(framework::EndOfStreamContext& eosContext) override;
+  std::string_view getDetectorName() const { return mTaskConfig.detectorName; }
+  std::string_view getUserCodeName() const { return mTaskConfig.name; }
+  bool isCritical() const { return mTaskConfig.critical; }
 
  private:
-  /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
-  // void start(framework::ServiceRegistryRef services);
-  /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
-  // void stop(framework::ServiceRegistryRef services);
-  /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
-  // void reset();
 
   void startOfActivity();
   void endOfActivity();
   int publish(framework::DataAllocator& outputs);
-  // void publishCycleStats();
-  // void updateMonitoringStats(framework::ProcessingContext& pCtx);
-  // void registerToBookkeeping();
 
  private:
-  LateTaskRunnerConfig mTaskConfig;
-  // std::shared_ptr<monitoring::Monitoring> mCollector;
+  LateTaskConfig mTaskConfig;
   std::shared_ptr<LateTaskInterface> mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
-  // std::shared_ptr<Timekeeper> mTimekeeper;
-  Activity mActivity;
   ValidityInterval mValidity;
-
-  // stats
-  // int mNumberMessagesReceivedInCycle = 0;
-  // int mNumberObjectsPublishedInCycle = 0;
-  // int mTotalNumberObjectsPublished = 0; // over a run
-  // double mLastPublicationDuration = 0;
-  // uint64_t mDataReceivedInCycle = 0;
 };
+
 
 
 }
