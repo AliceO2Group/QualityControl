@@ -47,6 +47,8 @@ void SkeletonLateTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGraph = std::make_unique<TGraph>();
   mGraph->SetName("graph_example");
   mGraph->SetTitle("graph_example");
+  mGraph->SetMarkerStyle(kStar); // star markers
+  mGraph->SetLineStyle(kSolid); // solid line
   getObjectsManager()->startPublishing(mGraph.get(), PublicationPolicy::Forever);
 
   auto plots = mCustomParameters.getOptionalPtree("plots");
