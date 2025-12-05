@@ -12,6 +12,8 @@
 #ifndef QC_HASH_DATA_DESCRIPTION_H
 #define QC_HASH_DATA_DESCRIPTION_H
 
+// fixme: rename to DataHeaderHelpers?
+
 #include <cstddef>
 #include <string>
 
@@ -19,6 +21,9 @@
 
 namespace o2::quality_control::core
 {
+
+
+header::DataOrigin createDataOrigin(char actorTypeCharacterId, const std::string& detectorCode);
 
 /// \brief Creates DataDescription from given name.
 ///
@@ -29,7 +34,7 @@ namespace o2::quality_control::core
 /// is the hash create inside the function
 ///
 /// \param name - name which should cut and hashed
-/// \param hashLenght - number of bytes which will overwrite the end of the name
+/// \param hashLength - number of bytes which will overwrite the end of the name
 o2::header::DataDescription createDataDescription(const std::string& name, size_t hashLength);
 
 } // namespace o2::quality_control::core
