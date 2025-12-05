@@ -33,7 +33,7 @@ class LateTaskFactory
   static LateTaskInterface* create(const LateTaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
   {
     auto* result = root_class_factory::create<LateTaskInterface>(taskConfig.moduleName, taskConfig.className);
-    result->setName(taskConfig.taskName);
+    result->setName(taskConfig.name);
     result->setObjectsManager(objectsManager);
     result->setCustomParameters(taskConfig.customParameters);
     result->setCcdbUrl(taskConfig.ccdbUrl);
