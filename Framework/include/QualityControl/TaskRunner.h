@@ -28,6 +28,7 @@
 #include <Framework/ServiceRegistryRef.h>
 // QC
 #include "QualityControl/TaskRunnerConfig.h"
+#include "QualityControl/ActorTraits.h"
 
 namespace o2::configuration
 {
@@ -163,6 +164,27 @@ class TaskRunner : public framework::Task
   AliceO2::Common::Timer mTimerTotalDurationActivity;
   AliceO2::Common::Timer mTimerDurationCycle;
 };
+
+template <>
+struct ActorTraits<TaskRunner>
+{
+  constexpr static auto sActorTypeShort = "task";
+  constexpr static auto sActorTypeKebabCase = "qc-task";
+  constexpr static auto sActorTypeUpperCamelCase = "TaskRunner";
+  constexpr static size_t sDataDescriptionHashLength = 4;
+
+  constexpr static std::array<Service, 3> sRequiredServices = {Service::InfoLogger, Service::Monitoring, Service::Bookkeeping};
+  constexpr static bkp::DplProcessType sDplProcessType{bkp::DplProcessType::QC_TASK};
+  constexpr static std::array<DataSourceType, 2> sConsumedDataSources = {DataSourceType::DataSamplingPolicy, DataSourceType::Direct};
+  constexpr static std::array<DataSourceType, 1> sPublishedDataSources = {DataSourceType::Task};
+
+  constexpr static UserCodeInstanceCardinality sUserCodeInstanceCardinality = UserCodeInstanceCardinality::One;
+  constexpr static bool sDetectorSpecific = true;
+  constexpr static Criticality sCriticality = Criticality::UserDefined;
+};
+
+static_assert(ValidActorTraits<ActorTraits<TaskRunner>>);
+
 
 } // namespace o2::quality_control::core
 
