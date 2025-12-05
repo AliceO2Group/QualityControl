@@ -141,7 +141,9 @@ src/QCInputsAdapters.cxx
 src/QCInputsFactory.cxx
 src/LateTaskRunner.cxx
 src/LateTaskRunnerFactory.cxx
-src/LateTaskInterface.cxx)
+src/LateTaskInterface.cxx
+src/Actor.cxx
+src/ActorHelpers.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -273,6 +275,7 @@ endforeach()
 add_executable(o2-qc-test-core
                test/testActivity.cxx
                test/testActivityHelpers.cxx
+               test/testActorTraits.cxx
                test/testAggregatorInterface.cxx
                test/testAggregatorRunner.cxx
                test/testCheck.cxx

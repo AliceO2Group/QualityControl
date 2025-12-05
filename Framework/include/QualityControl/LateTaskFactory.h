@@ -8,7 +8,7 @@
 // STL
 #include <memory>
 // QC
-#include "QualityControl/LateTaskRunnerConfig.h"
+#include "QualityControl/LateTaskConfig.h"
 #include "QualityControl/LateTaskInterface.h"
 #include "QualityControl/RootClassFactory.h"
 
