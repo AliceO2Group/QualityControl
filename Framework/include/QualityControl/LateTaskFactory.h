@@ -30,7 +30,7 @@ class LateTaskFactory
 
   /// \brief Create a new instance of a LateTaskInterface.
   /// The LateTaskInterface actual class is decided based on the parameters passed.
-  static LateTaskInterface* create(const LateTaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
+  static LateTaskInterface* create(const LateTaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
   {
     auto* result = root_class_factory::create<LateTaskInterface>(taskConfig.moduleName, taskConfig.className);
     result->setName(taskConfig.name);

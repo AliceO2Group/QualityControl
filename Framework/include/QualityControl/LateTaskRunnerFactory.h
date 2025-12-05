@@ -20,7 +20,7 @@
 #include <vector>
 #include <optional>
 
-#include "QualityControl/LateTaskRunnerConfig.h"
+#include "QualityControl/LateTaskConfig.h"
 #include <Framework/DataProcessorSpec.h>
 
 namespace o2::framework
@@ -32,8 +32,9 @@ namespace o2::quality_control::core
 {
 
 struct LateTaskSpec;
-struct LateTaskRunnerConfig;
+struct LateTaskConfig;
 struct CommonSpec;
+struct ServicesConfig;
 
 /// \brief Factory in charge of creating DataProcessorSpec of LateTaskRunner
 class LateTaskRunnerFactory
@@ -45,10 +46,10 @@ class LateTaskRunnerFactory
   /// \brief Creates LateTaskRunner
   ///
   /// \param taskConfig
-  static o2::framework::DataProcessorSpec create(const LateTaskRunnerConfig&);
+  static o2::framework::DataProcessorSpec create(const ServicesConfig& ServicesConfig, const LateTaskConfig& taskConfig);
 
   /// \brief Knows how to create LateTaskConfig from Specs
-  static LateTaskRunnerConfig extractConfig(const CommonSpec&, const LateTaskSpec&);
+  static LateTaskConfig extractConfig(const CommonSpec&, const LateTaskSpec&);
 
   /// \brief Provides necessary customization of the LateTaskRunners.
   ///

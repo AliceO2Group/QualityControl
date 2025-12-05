@@ -16,62 +16,38 @@
 
 #include "QualityControl/LateTaskRunnerFactory.h"
 
+#include "QualityControl/ActorHelpers.h"
 #include "QualityControl/LateTaskRunner.h"
 #include "QualityControl/LateTaskSpec.h"
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/DataProcessorAdapter.h"
 
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
 
 
+
 using namespace o2::framework;
 
-namespace o2::quality_control::core
+namespace o2::quality_control::core {
+
+o2::framework::DataProcessorSpec LateTaskRunnerFactory::create(const ServicesConfig& ServicesConfig, const LateTaskConfig& taskConfig)
 {
+  auto dataProcessorName = actor_helpers::dataProcessorName<LateTaskRunner>(taskConfig.name, taskConfig.detectorName);
+  auto inputs = actor_helpers::collectUserInputs<LateTaskRunner>(taskConfig);
+  auto outputs = actor_helpers::collectUserOutputs<LateTaskRunner, DataSourceType::LateTask>(taskConfig);
 
-o2::framework::DataProcessorSpec LateTaskRunnerFactory::create(const LateTaskRunnerConfig& config)
-{
-  LateTaskRunner qcTask{ config };
-
-  DataProcessorSpec newTask{
-    config.deviceName,
-    config.inputSpecs,
-    { config.moSpec },
-    adaptFromTask<LateTaskRunner>(std::move(qcTask)),
-    config.options
-  };
-  newTask.labels.emplace_back(LateTaskRunner::getLabel());
-  if (!config.critical) {
-    framework::DataProcessorLabel expendableLabel = { "expendable" };
-    newTask.labels.emplace_back(expendableLabel);
-  }
-
-  return newTask;
+  LateTaskRunner task(ServicesConfig, taskConfig);
+  return DataProcessorAdapter::adapt<LateTaskRunner>(std::move(task), std::move(dataProcessorName), std::move(inputs), std::move(outputs), Options{});
 }
 
-LateTaskRunnerConfig LateTaskRunnerFactory::extractConfig(const CommonSpec& commonSpec, const LateTaskSpec& lateTaskSpec)
+LateTaskConfig LateTaskRunnerFactory::extractConfig(const CommonSpec& commonSpec, const LateTaskSpec& lateTaskSpec)
 {
-  // todo: this could be generalized
-  std::string deviceName{ LateTaskRunner::createIdString() + "-" + InfrastructureSpecReader::validateDetectorName(lateTaskSpec.detectorName) + "-" + lateTaskSpec.taskName };
 
-  // todo: this could generalized
-  std::vector<InputSpec> inputs;
-  for (const auto& ds : lateTaskSpec.dataSources) {
-    if (!ds.isOneOf(DataSourceType::Task, DataSourceType::TaskMovingWindow, DataSourceType::Check, DataSourceType::Aggregator)) {
-      throw std::runtime_error("This data source of the task '" + lateTaskSpec.taskName + "' is not supported.");
-    }
-    inputs.insert(inputs.end(), ds.inputs.begin(), ds.inputs.end());
-  }
-
-  OutputSpec monitorObjectsSpec{ { "mo" },
-                               LateTaskRunner::createDataOrigin(lateTaskSpec.detectorName),
-                               LateTaskRunner::createDataDescription(lateTaskSpec.taskName),
-                               0,
-                               Lifetime::Sporadic };
-
-  return LateTaskRunnerConfig{
+  return LateTaskConfig{
     {
+      .name = lateTaskSpec.taskName,
       .moduleName = lateTaskSpec.moduleName,
       .className = lateTaskSpec.className,
       .detectorName = lateTaskSpec.detectorName,
@@ -79,19 +55,15 @@ LateTaskRunnerConfig LateTaskRunnerFactory::extractConfig(const CommonSpec& comm
       .customParameters = lateTaskSpec.customParameters,
       .ccdbUrl = commonSpec.conditionDBUrl,
       .repository = commonSpec.database,
+      .dataSources = lateTaskSpec.dataSources
     },
-    lateTaskSpec.taskName,
-    deviceName,
-    inputs,
-    monitorObjectsSpec,
-    {},
     lateTaskSpec.critical
   };
 }
 
 void LateTaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = LateTaskRunner::getLabel()](auto const& device) {
+  auto matcher = [label = actor_helpers::dataProcessorLabel<LateTaskRunner>()](auto const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   policies.emplace_back(CompletionPolicyHelpers::consumeWhenAny("lateTasksCompletionPolicy", matcher));

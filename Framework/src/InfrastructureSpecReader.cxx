@@ -15,11 +15,13 @@
 
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/LateTaskRunnerTraits.h"
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/PostProcessingDevice.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/AggregatorRunner.h"
 #include "QualityControl/LateTaskRunner.h"
+#include "QualityControl/InputUtils.h"
 
 #include <DataSampling/DataSampling.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -301,7 +303,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.name = wholeTree.get<std::string>("qc.lateTasks." + dss.id + ".taskName", dss.id);
       auto detectorName = wholeTree.get<std::string>("qc.lateTasks." + dss.id + ".detectorName");
 
-      dss.inputs = { { dss.name, LateTaskRunner::createDataOrigin(detectorName), LateTaskRunner::createDataDescription(dss.name), 0, Lifetime::Sporadic } };
+      dss.inputs = { createUserInputSpec<LateTaskRunner, DataSourceType::LateTask>(detectorName, dss.name) };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());

@@ -56,17 +56,19 @@ using namespace o2::monitoring;
 namespace o2::quality_control::core
 {
 
-LateTaskRunner::LateTaskRunner(const LateTaskRunnerConfig& config)
-  : mTaskConfig(config)
+LateTaskRunner::LateTaskRunner(const ServicesConfig& servicesConfig, const LateTaskConfig& config)
+: Actor<LateTaskRunner>(servicesConfig), mTaskConfig(config)
 {
+  // fixme: this should be moved to Actor
   o2::ccdb::BasicCCDBManager::instance().setFatalWhenNull(false);
 }
 
-void LateTaskRunner::init(InitContext& iCtx)
+void LateTaskRunner::onInit(InitContext& iCtx)
 {
+  // fixme: move exception handling to Actor
   try {
     // setup publisher
-    mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, 0);
+    mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.name, mTaskConfig.className, mTaskConfig.detectorName, 0);
 
     // setup user's task
     mTask.reset(LateTaskFactory::create(mTaskConfig, mObjectsManager));
@@ -78,14 +80,15 @@ void LateTaskRunner::init(InitContext& iCtx)
     mValidity = gInvalidValidityInterval;
 
     // todo move to start
-    mTask->startOfActivity({});
+    mTask->startOfActivity(getActivity());
+    mObjectsManager->setActivity(getActivity());
   } catch (boost::exception& e) {
     ILOG(Info, Devel) << "exception during init " << diagnostic_information(e) << ENDM;
     throw;
   }
 }
 
-void LateTaskRunner::run(ProcessingContext& pCtx)
+void LateTaskRunner::onProcess(ProcessingContext& pCtx)
 {
   // todo: derive from received objects
   mValidity.update(getCurrentTimestamp());
@@ -101,7 +104,7 @@ void LateTaskRunner::run(ProcessingContext& pCtx)
 
     // fixme: come up with an elegant way for this. LateTask should be probably aware of the requested user inputs aside from just InputSpecs
     //  also, we should filter only expect objects from the received collections
-    if (dataOrigin.str[0] == 'Q' || dataOrigin.str[0] == 'W') { // main MOs and moving windows from QC tasks
+    if (dataOrigin.str[0] == 'Q' || dataOrigin.str[0] == 'W' || dataOrigin.str[0] == 'L') { // main MOs and moving windows from QC tasks, and outputs of late tasks
       auto moc = DataRefUtils::as<MonitorObjectCollection>(ref);
       moc->postDeserialization();
 
@@ -124,50 +127,14 @@ void LateTaskRunner::run(ProcessingContext& pCtx)
     }
   }
 
-
-
   // run the task
   mTask->process(taskInputs);
 
   // publish objects
   mObjectsManager->setValidity(mValidity);
   std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
-  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mTaskConfig.moSpec);
-  pCtx.outputs().snapshot(Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, *array);
+  pCtx.outputs().snapshot(mTaskConfig.name, *array);
   mObjectsManager->stopPublishing(PublicationPolicy::Once);
-}
-
-/// \brief ID string for all LateTaskRunner devices
-std::string LateTaskRunner::createIdString()
-{
-  return { "qc-late-task" };
-}
-/// \brief Unified DataOrigin for Quality Control tasks
-header::DataOrigin LateTaskRunner::createDataOrigin(const std::string& detectorCode)
-{
-  std::string originStr = "L";
-  if (detectorCode.empty()) {
-    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
-    originStr += "DET";
-  } else if (detectorCode.size() > 3) {
-    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
-    originStr += detectorCode.substr(0, 3);
-  } else {
-    originStr += detectorCode;
-  }
-  o2::header::DataOrigin origin;
-  origin.runtimeInit(originStr.c_str());
-  return origin;
-}
-
-/// \brief Unified DataDescription naming scheme for all tasks
-header::DataDescription LateTaskRunner::createDataDescription(const std::string& lateTaskName)
-{
-  if (lateTaskName.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty lateTaskName for task's data description"));
-  }
-
-  return quality_control::core::createDataDescription(lateTaskName, LateTaskRunner::taskDescriptionHashLength);
 }
 
 

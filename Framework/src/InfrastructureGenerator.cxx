@@ -52,6 +52,9 @@
 #include <vector>
 #include <ranges>
 
+#include "QualityControl/ActorHelpers.h"
+#include "QualityControl/InputUtils.h"
+
 using namespace o2::framework;
 using namespace o2::configuration;
 using namespace o2::mergers;
@@ -657,10 +660,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   }
 
   for (const auto& lateTaskSpec : infrastructureSpec.lateTasks | std::views::filter(&LateTaskSpec::active)) {
-    InputSpec lateTaskOutput{ lateTaskSpec.taskName,
-                            LateTaskRunner::createDataOrigin(lateTaskSpec.detectorName),
-                            LateTaskRunner::createDataDescription(lateTaskSpec.taskName),
-                            Lifetime::Sporadic };
+    InputSpec lateTaskOutput = createUserInputSpec<LateTaskRunner, DataSourceType::LateTask>(lateTaskSpec.detectorName, lateTaskSpec.taskName);
     tasksOutputMap.insert({ DataSpecUtils::label(lateTaskOutput), lateTaskOutput });
   }
 
@@ -841,7 +841,10 @@ void InfrastructureGenerator::generateLateTasks(framework::WorkflowSpec& workflo
   }
 
   for (const auto& lateTaskSpec : infrastructureSpec.lateTasks | std::views::filter(&LateTaskSpec::active)) {
-    DataProcessorSpec spec = LateTaskRunnerFactory::create(LateTaskRunnerFactory::extractConfig(infrastructureSpec.common, lateTaskSpec));
+    auto servicesConfig = actor_helpers::extractConfig(infrastructureSpec.common);
+    auto lateTaskConfig = LateTaskRunnerFactory::extractConfig(infrastructureSpec.common, lateTaskSpec);
+
+    DataProcessorSpec spec = LateTaskRunnerFactory::create(servicesConfig, lateTaskConfig);
     workflow.emplace_back(std::move(spec));
   }
 }
