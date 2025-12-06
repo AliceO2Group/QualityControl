@@ -9,6 +9,6 @@ PyYAML==6.0.1
 requests==2.32.4
 responses==0.25.0
 six==1.16.0
-urllib3==2.5.0
+urllib3==2.6.0
 qcrepocleaner~=1.9
 setuptools~=70.3.0
