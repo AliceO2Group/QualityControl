@@ -16,6 +16,7 @@
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
 /// \author David Grund
+/// \author Jakub Juracka
 ///
 
 // C++
@@ -176,7 +177,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTrackTanl.get());
   getObjectsManager()->setDisplayHint(mTrackTanl.get(), "hist");
 
-  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", MaxTrackROFSize, 0, MaxTrackROFSize, true);
+  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", static_cast<int>(mROFBins.size() - 1), mROFBins.data(), true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
   getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist logx logy");
 
