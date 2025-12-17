@@ -234,8 +234,8 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
           getObjectsManager()->startPublishing(mClusterChipOccupancyMap[idx].get());
           getObjectsManager()->setDefaultDrawOptions(mClusterChipOccupancyMap[idx].get(), "colz");
         } // loop over faces
-      }   // loop over disks
-    }     // loop over halfs
+      } // loop over disks
+    } // loop over halfs
 
     // layer histograms
     for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
