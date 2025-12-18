@@ -16,7 +16,6 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 /// \author David Grund
-/// \author Jakub Juracka
 ///
 
 // C++
@@ -161,7 +160,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDigitsROFSize = std::make_unique<TH1FRatio>("mDigitsROFSize",
                                                "Distribution of the #digits per ROF; # digits per ROF; # entries per orbit",
-                                               static_cast<int>(mROFBins.size() - 1), mROFBins.data(), true);
+                                               maxDigitROFSize, 0, maxDigitROFSize, true);
   mDigitsROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mDigitsROFSize.get());
   getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "hist logx logy");
