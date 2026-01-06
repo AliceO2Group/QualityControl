@@ -18,7 +18,6 @@
 #include "Framework/ProcessingContext.h"
 #include "DataFormatsTPC/KrCluster.h"
 #include "DataFormatsTPC/ClusterNative.h"
-#include "TPCBase/Painter.h"
 #include "Framework/InputRecordWalker.h"
 #include "DetectorsBase/GRPGeomHelper.h"
 

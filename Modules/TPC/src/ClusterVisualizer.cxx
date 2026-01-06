@@ -15,8 +15,13 @@
 ///
 
 // O2 includes
+#if __has_include("TPCBase/Painter.h")
 #include "TPCBase/Painter.h"
 #include "TPCBase/CDBInterface.h"
+#else
+#include "TPCBaseRecSim/Painter.h"
+#include "TPCBaseRecSim/CDBInterface.h"
+#endif
 #include "TPCQC/Helpers.h"
 #include "DetectorsBase/GRPGeomHelper.h"
 
