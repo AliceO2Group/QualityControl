@@ -18,7 +18,11 @@
 #define QC_MODULE_TPC_ROCREDUCTOR_H
 
 #include "QualityControl/ReductorTObject.h"
+#if __has_include("TPCBase/CalDet.h")
 #include "TPCBase/CalDet.h"
+#else
+#include "TPCBaseRecSim/CalDet.h"
+#endif
 //#include "CCDB/TObjectWrapper.h"
 
 namespace o2::quality_control_modules::tpc

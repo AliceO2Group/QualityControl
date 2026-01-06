@@ -20,7 +20,11 @@
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/CustomParameters.h"
 
+#if __has_include("TPCBase/CalDet.h")
 #include "TPCBase/CalDet.h"
+#else
+#include "TPCBaseRecSim/CalDet.h"
+#endif
 #include "DataFormatsTPC/ClusterNative.h"
 #include "DataFormatsTPC/WorkflowHelper.h"
 #include "Framework/ProcessingContext.h"

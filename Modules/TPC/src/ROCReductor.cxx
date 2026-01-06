@@ -16,7 +16,11 @@
 //
 
 #include "TPC/ROCReductor.h"
+#if __has_include("TPCBase/CalDet.h")
 #include "TPCBase/CalDet.h"
+#else
+#include "TPCBaseRecSim/CalDet.h"
+#endif
 #include "TPCBase/CalArray.h"
 #include "TPCQC/CalPadWrapper.h"
 #include <TMath.h>

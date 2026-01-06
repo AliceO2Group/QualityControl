@@ -17,7 +17,11 @@
 // O2 includes
 #include "Framework/ProcessingContext.h"
 #include "DataFormatsTPC/ClusterNative.h"
+#if __has_include("TPCBase/Painter.h")
 #include "TPCBase/Painter.h"
+#else
+#include "TPCBaseRecSim/Painter.h"
+#endif
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
