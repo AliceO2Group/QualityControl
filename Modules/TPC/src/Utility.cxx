@@ -19,11 +19,10 @@
 #include "Framework/InputRecordWalker.h"
 #include "DataFormatsTPC/ClusterNativeHelper.h"
 #include "DataFormatsTPC/TPCSectorHeader.h"
-#if __has_include("TPCBase/CalDet.h")
 #include "TPCBase/CalDet.h"
+#if __has_include("TPCBase/Painter.h")
 #include "TPCBase/Painter.h"
 #else
-#include "TPCBaseRecSim/CalDet.h"
 #include "TPCBaseRecSim/Painter.h"
 #endif
 #include "CommonUtils/StringUtils.h"
