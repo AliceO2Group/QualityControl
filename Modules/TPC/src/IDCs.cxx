@@ -19,12 +19,11 @@
 #if __has_include("TPCBase/Painter.h")
 #include "TPCBase/Painter.h"
 #include "TPCBase/CDBInterface.h"
-#include "TPCBase/CalDet.h"
 #else
 #include "TPCBaseRecSim/Painter.h"
 #include "TPCBaseRecSim/CDBInterface.h"
-#include "TPCBaseRecSim/CalDet.h"
 #endif
+#include "TPCBase/CalDet.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
