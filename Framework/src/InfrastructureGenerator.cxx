@@ -38,6 +38,7 @@
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/O2ControlParameters.h>
+#include <Framework/CommonLabels.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
 #include <DataSampling/DataSampling.h>
@@ -568,6 +569,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   if (!taskSpec.critical) {
     proxy.labels.emplace_back(framework::DataProcessorLabel{ "expendable" });
   }
+  proxy.labels.emplace_back(framework::suppressDomainInfoLabel); // QC-1320
   // if not in RUNNING, we should drop all the incoming messages, we set the corresponding proxy option.
   enableDraining(proxy.options);
   if (getenv("O2_QC_KILL_PROXIES") != nullptr) {
@@ -607,6 +609,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.monitoringUrl = std::move(monitoringUrl);
   mergerConfig.detectorName = detectorName;
   mergerConfig.labels.push_back({ "resilient" });
+  mergerConfig.labels.push_back(framework::suppressDomainInfoLabel); // QC-1320
   mergerConfig.publishMovingWindow = { enableMovingWindows ? PublishMovingWindow::Yes : PublishMovingWindow::No };
   mergerConfig.parallelismType = { (mergerConfig.inputObjectTimespan.value == InputObjectsTimespan::LastDifference) ? ParallelismType::RoundRobin : ParallelismType::SplitInputs };
   mergersBuilder.setConfig(mergerConfig);
