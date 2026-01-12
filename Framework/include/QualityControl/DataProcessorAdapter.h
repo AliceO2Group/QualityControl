@@ -44,6 +44,8 @@ struct DataProcessorAdapter
       case Criticality::UserDefined:
         if (!actor.isCritical()) {
           dataProcessor.labels.emplace_back( "expendable" );
+        } else {
+          // that's the default in DPL
         }
         break;
     }

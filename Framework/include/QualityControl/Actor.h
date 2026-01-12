@@ -127,7 +127,6 @@ class Actor
 
   void initServices(framework::InitContext& ictx)
   {
-    // fixme: this still forces non-detector-specific actors to have the function
     std::string detectorName;
     if constexpr (traits::sDetectorSpecific) {
       detectorName = std::string{concreteActor().getDetectorName()};
@@ -203,9 +202,17 @@ class Actor
       impl::startMonitoring(*mMonitoring, mActivity.mId);
     }
     if constexpr (requiresService<Service::Bookkeeping>()) {
-      // todo not sure if these are constexpr, check
-      auto actorName = runsUserCode<traits>() ? concreteActor().getUserCodeName() : traits::sActorTypeKebabCase;
-      auto detectorName = traits::sDetectorSpecific ? concreteActor().getDetectorName() : "";
+      std::string actorName;
+      if constexpr (runsUserCode<traits>()) {
+        actorName = concreteActor().getUserCodeName();
+      } else {
+        actorName = traits::sActorTypeKebabCase;
+      }
+
+      std::string detectorName;
+      if constexpr (traits::sDetectorSpecific) {
+        detectorName = concreteActor().getDetectorName();
+      }
 
       // todo: get args
       impl::startBookkeeping(mActivity.mId, actorName, detectorName, traits::sDplProcessType, "");
@@ -272,7 +279,6 @@ class Actor
   const ServicesConfig mServicesConfig;
 
   std::shared_ptr<monitoring::Monitoring> mMonitoring;
-
 };
 
 
