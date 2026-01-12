@@ -25,9 +25,9 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   ExampleTask task;
   TaskRunnerConfig config;
   config.consulUrl = "";
-  config.taskName = "qcExampleTest";
+  config.name = "qcExampleTest";
   config.detectorName = "TST";
-  auto manager = make_shared<ObjectsManager>(config.taskName, "ExampleTask", config.detectorName, 0);
+  auto manager = make_shared<ObjectsManager>(config.name, "ExampleTask", config.detectorName, 0);
   task.setObjectsManager(manager);
   //  task.initialize();// TODO
 
