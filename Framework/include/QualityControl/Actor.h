@@ -89,10 +89,13 @@ class Actor
     mServicesConfig{servicesConfig},
     mActivity(servicesConfig.activity)
   {
-    // todo extract to a separate method
-    // todo also do it for onProcess and onInit
-    // compile-time checks which can be performed only once ConcreteActor is a complete type, i.e. inside a function body
+    // compile-time (!) checks which can be performed only once ConcreteActor is a complete type, i.e. inside a function body
+    assertCorrectConcreteActor();
 
+  }
+
+  consteval void assertCorrectConcreteActor() const
+  {
     // mandatory methods
     static_assert( requires(ConcreteActor& actor, framework::ProcessingContext& pCtx) { { actor.onProcess(pCtx) } -> std::convertible_to<void>; });
     static_assert( requires(ConcreteActor& actor, framework::InitContext& iCtx) { { actor.onInit(iCtx) } -> std::convertible_to<void>; });
