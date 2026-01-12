@@ -114,8 +114,6 @@ class Actor
     }
   }
 
-  bool isCritical() const { return true; } // todo
-
   void init(framework::InitContext& ictx)
   {
     // we set the fallback activity. fields might get overwritten once runtime values become available
