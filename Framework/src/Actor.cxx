@@ -6,13 +6,13 @@
 #include "QualityControl/Actor.h"
 
 #include "QualityControl/Bookkeeping.h"
+#include "QualityControl/DatabaseFactory.h"
 #include <Monitoring/Monitoring.h>
 #include <Monitoring/MonitoringFactory.h>
-
+#include <CCDB/BasicCCDBManager.h>
 
 namespace o2::quality_control::core
 {
-
 
 namespace impl
 {
@@ -47,6 +47,28 @@ Bookkeeping& getBookkeeping()
 {
   return Bookkeeping::getInstance();
 }
+
+std::shared_ptr<quality_control::repository::DatabaseInterface> initRepository(const std::unordered_map<std::string, std::string>& config)
+{
+  auto db = quality_control::repository::DatabaseFactory::create(config.at("implementation"));
+  assert(db != nullptr);
+  db->connect(config);
+  ILOG(Info, Devel) << "Database that is going to be used > Implementation : " << config.at("implementation") << " / Host : " << config.at("host") << ENDM;
+  return std::move(db);
+}
+
+void initCCDB(const std::string& url)
+{
+  auto& mgr = o2::ccdb::BasicCCDBManager::instance();
+  mgr.setURL(url);
+  mgr.setFatalWhenNull(false);
+}
+
+ccdb::CCDBManagerInstance& getCCDB()
+{
+  return o2::ccdb::BasicCCDBManager::instance();
+}
+
 
 }
 

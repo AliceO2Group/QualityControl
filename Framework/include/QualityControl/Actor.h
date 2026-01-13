@@ -30,6 +30,15 @@ namespace o2::bkp {
 enum class DplProcessType;
 }
 
+
+namespace o2::quality_control::repository {
+class DatabaseInterface;
+}
+
+namespace o2::ccdb {
+class CCDBManagerInstance;
+}
+
 namespace o2::quality_control::core {
 
 
@@ -45,6 +54,11 @@ void startMonitoring(monitoring::Monitoring&, int runNumber);
 void initBookkeeping(std::string_view url);
 void startBookkeeping(int runNumber, std::string_view actorName, std::string_view detectorName, const o2::bkp::DplProcessType& processType, std::string_view args);
 Bookkeeping& getBookkeeping();
+
+std::shared_ptr<repository::DatabaseInterface> initRepository(const std::unordered_map<std::string, std::string>& config);
+
+void initCCDB(const std::string& url);
+ccdb::CCDBManagerInstance& getCCDB();
 
 }
 
@@ -132,7 +146,6 @@ class Actor
       detectorName = std::string{concreteActor().getDetectorName()};
     }
 
-    // init services
     if constexpr (requiresService<Service::InfoLogger>()) {
       std::string facility;
       if constexpr (runsUserCode<traits>()) {
@@ -150,7 +163,12 @@ class Actor
     if constexpr (requiresService<Service::Bookkeeping>()) {
       impl::initBookkeeping(mServicesConfig.bookkeepingUrl);
     }
-    // todo: init the rest, such as QCDB
+    if constexpr (requiresService<Service::QCDB>()) {
+      mRepository = impl::initRepository(mServicesConfig.database);
+    }
+    if constexpr (requiresService<Service::CCDB>()) {
+      impl::initCCDB(mServicesConfig.conditionDBUrl);
+    }
   }
 
   void initDplCallbacks(framework::InitContext& ictx)
@@ -272,6 +290,16 @@ class Actor
     return impl::getBookkeeping();
   }
 
+  repository::DatabaseInterface& getRepository() requires (requiresService<Service::QCDB>())
+  {
+    return *mRepository;
+  }
+
+  ccdb::CCDBManagerInstance& getCCDB() requires (requiresService<Service::QCDB>())
+  {
+    return impl::getCCDB();
+  }
+
   const Activity& getActivity() const { return mActivity; }
 
   private:
@@ -279,6 +307,7 @@ class Actor
   const ServicesConfig mServicesConfig;
 
   std::shared_ptr<monitoring::Monitoring> mMonitoring;
+  std::shared_ptr<repository::DatabaseInterface> mRepository;
 };
 
 

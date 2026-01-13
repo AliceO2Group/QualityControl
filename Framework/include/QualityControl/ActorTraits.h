@@ -52,7 +52,8 @@ enum class Service {
   Monitoring,
   InfoLogger,
   CCDB,
-  Bookkeeping
+  Bookkeeping,
+  QCDB
 };
 
 template<typename ActorTraitsT, Service S>
