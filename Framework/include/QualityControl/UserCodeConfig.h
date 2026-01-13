@@ -19,12 +19,14 @@
 
 #include "QualityControl/CustomParameters.h"
 #include "QualityControl/stringUtils.h"
+#include "QualityControl/DataSourceSpec.h"
 
 namespace o2::quality_control::core
 {
 
 /// \brief  Container for the configuration of a Task
 struct UserCodeConfig {
+  std::string name; // task name, check name, etc...
   std::string moduleName;
   std::string className;
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
@@ -32,6 +34,7 @@ struct UserCodeConfig {
   CustomParameters customParameters;
   std::string ccdbUrl;
   std::unordered_map<std::string, std::string> repository; // we need the full config of the database to build the database in the subclasses
+  std::vector<DataSourceSpec> dataSources;
 };
 
 } // namespace o2::quality_control::core

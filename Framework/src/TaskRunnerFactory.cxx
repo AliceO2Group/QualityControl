@@ -169,6 +169,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   o2::globaltracking::RecoContainer rd;
 
   return {
+    taskSpec.taskName,
     taskSpec.moduleName,
     taskSpec.className,
     InfrastructureSpecReader::validateDetectorName(taskSpec.detectorName),
@@ -176,8 +177,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.customParameters,
     globalConfig.conditionDBUrl,
     globalConfig.database,
+    taskSpec.dataSources,
     deviceName,
-    taskSpec.taskName,
     multipleCycleDurations,
     taskSpec.maxNumberCycles,
     taskSpec.critical,

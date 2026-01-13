@@ -42,6 +42,25 @@ auto toHex(const std::string& input, size_t hashLength) -> std::string
 
 } // namespace hash
 
+
+header::DataOrigin createDataOrigin(char actorTypeCharacterId, const std::string& detectorCode)
+{
+  std::string originStr{ actorTypeCharacterId };
+  if (detectorCode.empty()) {
+    // fixme: that's probably a configuration error, so maybe we should just throw?
+    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
+    originStr += "DET";
+  } else if (detectorCode.size() > 3) {
+    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
+    originStr += detectorCode.substr(0, 3);
+  } else {
+    originStr += detectorCode;
+  }
+  o2::header::DataOrigin origin;
+  origin.runtimeInit(originStr.c_str());
+  return origin;
+}
+
 std::string createDescriptionWithHash(const std::string& input, size_t hashLength)
 {
   return input.substr(0, o2::header::DataDescription::size - hashLength).append(hash::toHex(input, hashLength));

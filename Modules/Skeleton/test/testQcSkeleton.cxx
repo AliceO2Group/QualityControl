@@ -36,9 +36,9 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   SkeletonTask task;
   TaskRunnerConfig config;
   config.consulUrl = "";
-  config.taskName = "qcSkeletonTest";
+  config.name = "qcSkeletonTest";
   config.detectorName = "TST";
-  auto manager = make_shared<ObjectsManager>(config.taskName, "SkeletonTask", config.detectorName, 0);
+  auto manager = make_shared<ObjectsManager>(config.name, "SkeletonTask", config.detectorName, 0);
   task.setObjectsManager(manager);
   //  o2::framework::InitContext ctx;
   //  task.initialize(ctx);
