@@ -10,6 +10,8 @@
 #include <Monitoring/Monitoring.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <CCDB/BasicCCDBManager.h>
+#include <boost/exception/diagnostic_information.hpp>
+#include <Framework/RuntimeError.h>
 
 namespace o2::quality_control::core
 {
@@ -69,6 +71,19 @@ ccdb::CCDBManagerInstance& getCCDB()
   return o2::ccdb::BasicCCDBManager::instance();
 }
 
+void handleExceptions(std::string_view when, const std::function<void()>& f)
+{
+  try {
+    f();
+  } catch (o2::framework::RuntimeErrorRef& ref) {
+    ILOG(Error) << "Error occurred during " << when << ": " << o2::framework::error_from_ref(ref).what << ENDM;
+    throw;
+  } catch (...) {
+    ILOG(Error) << "Error occurred during " << when << " :"
+                << boost::current_exception_diagnostic_information(true) << ENDM;
+    throw;
+  }
+}
 
 }
 

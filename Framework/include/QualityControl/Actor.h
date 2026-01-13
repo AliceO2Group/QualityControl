@@ -10,6 +10,7 @@
 #include <memory>
 #include <type_traits>
 #include <format>
+#include <functional>
 
 #include "QualityControl/ActorTraits.h"
 #include "QualityControl/runnerUtils.h"
@@ -60,11 +61,11 @@ std::shared_ptr<repository::DatabaseInterface> initRepository(const std::unorder
 void initCCDB(const std::string& url);
 ccdb::CCDBManagerInstance& getCCDB();
 
+void handleExceptions(std::string_view when, const std::function<void()>&);
+
 }
 
 
-// todo catch and handle exceptions
-// todo check if onProcess() and onInit() are implemented by ConcreteActor
 // todo consider having a check to avoid overriding Actor methods
 // Actor is supposed to contain any common logic for QC actors (starting services, handling exceptions) and bridging with DPL (specs, registering callbacks).
 template<typename ConcreteActor>
@@ -130,13 +131,15 @@ class Actor
 
   void init(framework::InitContext& ictx)
   {
-    // we set the fallback activity. fields might get overwritten once runtime values become available
-    mActivity = mServicesConfig.activity;
+    impl::handleExceptions("process", [&] {
+      // we set the fallback activity. fields might get overwritten once runtime values become available
+      mActivity = mServicesConfig.activity;
 
-    initServices(ictx);
-    initDplCallbacks(ictx);
+      initServices(ictx);
+      initDplCallbacks(ictx);
 
-    concreteActor().onInit(ictx);
+      concreteActor().onInit(ictx);
+    });
   }
 
   void initServices(framework::InitContext& ictx)
@@ -203,79 +206,88 @@ class Actor
 
   void process(framework::ProcessingContext& ctx)
   {
-    concreteActor().onProcess(ctx);
+    impl::handleExceptions("process", [&] {
+      concreteActor().onProcess(ctx);
+    });
   }
 
   void start(framework::ServiceRegistryRef services) {
-    ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " start" << ENDM;
-    // todo catch and handle exceptions
+    impl::handleExceptions("start", [&] {
+      ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " start" << ENDM;
 
-    mActivity = computeActivity(services, mActivity);
+      mActivity = computeActivity(services, mActivity);
 
-    if constexpr (requiresService<Service::InfoLogger>()) {
-      QcInfoLogger::setRun(mActivity.mId);
-      QcInfoLogger::setPartition(mActivity.mPartitionName);
-    }
-    if constexpr (requiresService<Service::Monitoring>()) {
-      impl::startMonitoring(*mMonitoring, mActivity.mId);
-    }
-    if constexpr (requiresService<Service::Bookkeeping>()) {
-      std::string actorName;
-      if constexpr (runsUserCode<traits>()) {
-        actorName = concreteActor().getUserCodeName();
-      } else {
-        actorName = traits::sActorTypeKebabCase;
+      if constexpr (requiresService<Service::InfoLogger>()) {
+        QcInfoLogger::setRun(mActivity.mId);
+        QcInfoLogger::setPartition(mActivity.mPartitionName);
+      }
+      if constexpr (requiresService<Service::Monitoring>()) {
+        impl::startMonitoring(*mMonitoring, mActivity.mId);
+      }
+      if constexpr (requiresService<Service::Bookkeeping>()) {
+        std::string actorName;
+        if constexpr (runsUserCode<traits>()) {
+          actorName = concreteActor().getUserCodeName();
+        } else {
+          actorName = traits::sActorTypeKebabCase;
+        }
+
+        std::string detectorName;
+        if constexpr (traits::sDetectorSpecific) {
+          detectorName = concreteActor().getDetectorName();
+        }
+
+        // todo: get args
+        impl::startBookkeeping(mActivity.mId, actorName, detectorName, traits::sDplProcessType, "");
       }
 
-      std::string detectorName;
-      if constexpr (traits::sDetectorSpecific) {
-        detectorName = concreteActor().getDetectorName();
+      // fixme: should we just have empty methods in the base class for the sake of readability?
+      if constexpr (requires {ConcreteActor::onStart;}) {
+        concreteActor().onStart(services, mActivity);
       }
-
-      // todo: get args
-      impl::startBookkeeping(mActivity.mId, actorName, detectorName, traits::sDplProcessType, "");
-    }
-
-    // fixme: should we just have empty methods in the base class for the sake of readability?
-    if constexpr (requires {ConcreteActor::onStart;}) {
-      concreteActor().onStart(services, mActivity);
-    }
+    });
   }
 
   void stop(framework::ServiceRegistryRef services) {
-    ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " stop" << ENDM;
+    impl::handleExceptions("stop", [&] {
+      ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " stop" << ENDM;
 
-    mActivity = computeActivity(services, mActivity);
+      mActivity = computeActivity(services, mActivity);
 
-    if constexpr (requires {ConcreteActor::onStop;}) {
-      concreteActor().onStop(services, mActivity);
-    }
+      if constexpr (requires {ConcreteActor::onStop;}) {
+        concreteActor().onStop(services, mActivity);
+      }
+    });
   }
 
   void reset(framework::ServiceRegistryRef services) {
-    ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " reset" << ENDM;
+    impl::handleExceptions("reset", [&] {
+      ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " reset" << ENDM;
 
-    mActivity = mServicesConfig.activity;
+      mActivity = mServicesConfig.activity;
 
-    if constexpr (requires {ConcreteActor::onReset;}) {
-      concreteActor().onReset(services, mActivity);
-    }
+      if constexpr (requires {ConcreteActor::onReset;}) {
+        concreteActor().onReset(services, mActivity);
+      }
+    });
   }
 
   void endOfStream(framework::EndOfStreamContext& eosContext) {
-    ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " endOfStream" << ENDM;
-    // todo catch and handle exceptions
-    if constexpr (requires {ConcreteActor::onEndOfStream;}) {
-      concreteActor().onEndOfStream(eosContext);
-    }
+    impl::handleExceptions("endOfStream", [&] {
+      ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " endOfStream" << ENDM;
+      if constexpr (requires {ConcreteActor::onEndOfStream;}) {
+        concreteActor().onEndOfStream(eosContext);
+      }
+    });
   }
   void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj)
   {
-    ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " finaliseCCDB" << ENDM;
-    // todo catch and handle exceptions
-    if constexpr (requires {ConcreteActor::onFinaliseCCDB;}) {
-      concreteActor().onFinaliseCCDB(matcher, obj);
-    }
+    impl::handleExceptions("finaliseCCDB", [&] {
+      ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " finaliseCCDB" << ENDM;
+      if constexpr (requires {ConcreteActor::onFinaliseCCDB;}) {
+        concreteActor().onFinaliseCCDB(matcher, obj);
+      }
+    });
   }
 
   protected:
@@ -302,7 +314,7 @@ class Actor
 
   const Activity& getActivity() const { return mActivity; }
 
-  private:
+ private:
   Activity mActivity;
   const ServicesConfig mServicesConfig;
 
