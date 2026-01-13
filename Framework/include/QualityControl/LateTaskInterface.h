@@ -9,19 +9,19 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+#ifndef QC_CORE_LATETASKINTERFACE_H
+#define QC_CORE_LATETASKINTERFACE_H
+
 ///
 /// \file   LateTaskInterface.h
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CORE_LATETASKINTERFACE_H
-#define QC_CORE_LATETASKINTERFACE_H
-
 #include <memory>
-// O2
+
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
-// QC
+
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/UserCodeInterface.h"

@@ -17,17 +17,14 @@
 #ifndef ACTORTRAITS_H
 #define ACTORTRAITS_H
 
-#include "QualityControl/DataSourceSpec.h"
-#include "QualityControl/stringUtils.h"
-
 #include <string_view>
-// #include <vector>
 #include <ranges>
+
 #include <Headers/DataHeader.h>
 #include <BookkeepingApi/DplProcessType.h>
 
-// #include "QcInfoLogger.h"
-
+#include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/stringUtils.h"
 
 // ActorTraits and specializations should not bring a lot of dependencies.
 // They should define the expected traits for each QC Actor and basic behaviours.
@@ -104,7 +101,8 @@ concept ValidActorTraits = requires
             true);
 
 
-  // we want to know if this Actor runs user code. fixme: could be simplified to a bool
+  // we want to know if this Actor runs user code.
+  // fixme: now could be simplified to a bool, but maybe some future usage will need One/Many distinction
   { ActorTraitsT::sUserCodeInstanceCardinality } -> std::convertible_to<UserCodeInstanceCardinality>;
 
   // do we normally associate this Actor with a specific detector (in the worst case, with "MANY" or "MISC")

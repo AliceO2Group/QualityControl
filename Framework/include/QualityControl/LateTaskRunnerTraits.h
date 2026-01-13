@@ -12,10 +12,15 @@
 #ifndef QUALITYCONTROL_LATETASKRUNNERTRAITS_H
 #define QUALITYCONTROL_LATETASKRUNNERTRAITS_H
 
-#include "QualityControl/ActorTraits.h"
+///
+/// \file   LateTaskRunnerTraits.h
+/// \author Piotr Konopka
+///
 
 #include <string_view>
 #include <array>
+
+#include "QualityControl/ActorTraits.h"
 #include "QualityControl/DataSourceSpec.h"
 
 namespace o2::quality_control::core {

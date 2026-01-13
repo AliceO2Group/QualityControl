@@ -17,13 +17,14 @@
 /// \author Piotr Konopka
 ///
 
-#include "QualityControl/LateTaskConfig.h"
-#include "QualityControl/LateTaskRunnerTraits.h"
-
-#include "QualityControl/ActorTraits.h"
-#include "QualityControl/Actor.h"
 #include <string_view>
 #include <memory>
+
+#include "QualityControl/LateTaskConfig.h"
+#include "QualityControl/LateTaskRunnerTraits.h"
+#include "QualityControl/ActorTraits.h"
+#include "QualityControl/Actor.h"
+
 
 namespace o2::quality_control::core {
 

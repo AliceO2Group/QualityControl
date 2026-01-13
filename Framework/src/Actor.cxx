@@ -1,17 +1,29 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// Created by pkonopka on 24/11/2025.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
+///
+/// \file   Actor.cxx
+/// \author Piotr Konopka
+///
 
 #include "QualityControl/Actor.h"
 
-#include "QualityControl/Bookkeeping.h"
-#include "QualityControl/DatabaseFactory.h"
+#include <boost/exception/diagnostic_information.hpp>
 #include <Monitoring/Monitoring.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <CCDB/BasicCCDBManager.h>
-#include <boost/exception/diagnostic_information.hpp>
 #include <Framework/RuntimeError.h>
+
+#include "QualityControl/Bookkeeping.h"
+#include "QualityControl/DatabaseFactory.h"
 
 namespace o2::quality_control::core
 {

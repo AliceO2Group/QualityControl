@@ -12,11 +12,15 @@
 #ifndef QC_CORE_LATETASKRUNNERCONFIG_H
 #define QC_CORE_LATETASKRUNNERCONFIG_H
 
-#include "QualityControl/UserCodeConfig.h"
-#include "QualityControl/DataSourceSpec.h"
+///
+/// \file   LateTaskRunnerConfig.h
+/// \author Piotr Konopka
+///
 
 #include <Framework/DataProcessorSpec.h>
 
+#include "QualityControl/UserCodeConfig.h"
+#include "QualityControl/DataSourceSpec.h"
 
 namespace o2::quality_control::core {
 

@@ -17,14 +17,13 @@
 /// \author Piotr Konopka
 ///
 
+#include <string>
+#include <vector>
+
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/CustomParameters.h"
 #include "QualityControl/UpdatePolicyType.h"
 #include "QualityControl/RecoRequestSpecs.h"
-
-#include <string>
-#include <vector>
-
 
 namespace o2::quality_control::core {
 

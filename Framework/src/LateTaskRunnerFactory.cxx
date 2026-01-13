@@ -16,17 +16,15 @@
 
 #include "QualityControl/LateTaskRunnerFactory.h"
 
+#include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/DeviceSpec.h>
+
 #include "QualityControl/ActorHelpers.h"
 #include "QualityControl/LateTaskRunner.h"
 #include "QualityControl/LateTaskSpec.h"
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/DataProcessorAdapter.h"
-
-#include <Framework/CompletionPolicyHelpers.h>
-#include <Framework/DeviceSpec.h>
-
-
 
 using namespace o2::framework;
 

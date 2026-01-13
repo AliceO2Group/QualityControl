@@ -1,6 +1,18 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// Created by pkonopka on 23/06/25.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+///
+/// \file   Actor.h
+/// \author Piotr Konopka
+///
 
 #ifndef ACTOR_H
 #define ACTOR_H
@@ -12,16 +24,15 @@
 #include <format>
 #include <functional>
 
-#include "QualityControl/ActorTraits.h"
-#include "QualityControl/runnerUtils.h"
-#include "QualityControl/ServicesConfig.h"
-
 #include <Framework/CallbackService.h>
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
 #include <Framework/EndOfStreamContext.h>
 #include <Framework/ConcreteDataMatcher.h>
 
+#include "QualityControl/ActorTraits.h"
+#include "QualityControl/runnerUtils.h"
+#include "QualityControl/ServicesConfig.h"
 
 namespace o2::monitoring {
 class Monitoring;

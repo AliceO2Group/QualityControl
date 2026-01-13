@@ -16,7 +16,11 @@
 
 #include "QualityControl/LateTaskRunner.h"
 
-// O2
+#include <numeric>
+#include <utility>
+
+#include <TSystem.h>
+
 #include <Common/Exceptions.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
@@ -26,11 +30,6 @@
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
 
-#include <numeric>
-#include <utility>
-#include <TSystem.h>
-
-// QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Aggregator.h"

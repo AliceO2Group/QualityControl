@@ -9,19 +9,20 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+#ifndef QC_CORE_LATETASKRUNNERFACTORY_H
+#define QC_CORE_LATETASKRUNNERFACTORY_H
+
 ///
 /// \file   LateTaskRunnerFactory.h
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CORE_LATETASKRUNNERFACTORY_H
-#define QC_CORE_LATETASKRUNNERFACTORY_H
-
 #include <vector>
 #include <optional>
 
-#include "QualityControl/LateTaskConfig.h"
 #include <Framework/DataProcessorSpec.h>
+
+#include "QualityControl/LateTaskConfig.h"
 
 namespace o2::framework
 {
