@@ -125,7 +125,6 @@ struct ActorTraits {
 };
 
 template<typename ConcreteActor>
-requires ValidActorTraits<ActorTraits<ConcreteActor>>
 consteval bool publishesDataSource(DataSourceType dataSourceType)
 {
   for (auto t : ActorTraits<ConcreteActor>::sPublishedDataSources) {
@@ -138,7 +137,6 @@ consteval bool publishesDataSource(DataSourceType dataSourceType)
 
 template<typename ConcreteActor, DataSourceType dataSourceType>
 concept ValidDataSourceForActor =
-  ValidActorTraits<ActorTraits<ConcreteActor>> &&
   publishesDataSource<ConcreteActor>(dataSourceType);
 
 }

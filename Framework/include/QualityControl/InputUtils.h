@@ -27,7 +27,7 @@
 namespace o2::quality_control::core {
 // the returned value can be used either as OutputSpec or InputSpec, depending who needs it
 template<typename ConcreteActor, DataSourceType dataSourceType>
-  requires ValidActorTraits<ActorTraits<ConcreteActor> > && ValidDataSourceForActor<ConcreteActor, dataSourceType>
+  requires ValidDataSourceForActor<ConcreteActor, dataSourceType>
 static framework::ConcreteDataMatcher createUserDataMatcher(const std::string& detectorName,
                                                             const std::string& userCodeName)
 {
@@ -40,7 +40,7 @@ static framework::ConcreteDataMatcher createUserDataMatcher(const std::string& d
 }
 
 template<typename ConcreteActor, DataSourceType dataSourceType>
-  requires ValidActorTraits<ActorTraits<ConcreteActor> > && ValidDataSourceForActor<ConcreteActor, dataSourceType>
+  requires ValidDataSourceForActor<ConcreteActor, dataSourceType>
 static framework::OutputSpec createUserOutputSpec(const std::string& detectorName, const std::string& userCodeName)
 {
   // currently all of our outputs are Lifetime::Sporadic, so we don't allow for customization, but it could be factored out
@@ -53,7 +53,7 @@ static framework::OutputSpec createUserOutputSpec(const std::string& detectorNam
 }
 
 template<typename ConcreteActor, DataSourceType dataSourceType>
-  requires ValidActorTraits<ActorTraits<ConcreteActor> > && ValidDataSourceForActor<ConcreteActor, dataSourceType>
+  requires ValidDataSourceForActor<ConcreteActor, dataSourceType>
 static framework::InputSpec createUserInputSpec(const std::string& detectorName, const std::string& userCodeName)
 {
   // currently all of our outputs are Lifetime::Sporadic, so we don't allow for customization, but it could be factored out

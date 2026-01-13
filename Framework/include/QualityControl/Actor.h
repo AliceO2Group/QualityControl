@@ -42,7 +42,6 @@ namespace o2::bkp {
 enum class DplProcessType;
 }
 
-
 namespace o2::quality_control::repository {
 class DatabaseInterface;
 }

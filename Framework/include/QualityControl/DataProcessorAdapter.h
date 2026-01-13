@@ -28,7 +28,6 @@ namespace o2::quality_control::core {
 struct DataProcessorAdapter
 {
   template<typename ConcreteActor>
-  requires ValidActorTraits<ActorTraits<ConcreteActor>>
   static o2::framework::DataProcessorSpec
   adapt(ConcreteActor&& actor, std::string&& dataProcessorName, framework::Inputs&& inputs, framework::Outputs&& outputs, framework::Options&& options)
   {

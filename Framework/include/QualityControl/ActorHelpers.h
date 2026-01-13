@@ -66,8 +66,7 @@ namespace actor_helpers
   ServicesConfig extractConfig(const CommonSpec& commonSpec);
 
   template<typename ConcreteActor>
-  requires (ValidActorTraits<ActorTraits<ConcreteActor>> &&
-            runsUserCode<ActorTraits<ConcreteActor>>() &&
+  requires (runsUserCode<ActorTraits<ConcreteActor>>() &&
             ActorTraits<ConcreteActor>::sDetectorSpecific)
   std::string dataProcessorName(std::string_view userCodeName, std::string_view detectorName)
   {
@@ -78,7 +77,6 @@ namespace actor_helpers
   }
 
   template<typename ConcreteActor>
-  requires (ValidActorTraits<ActorTraits<ConcreteActor>>)
   std::string dataProcessorName()
   {
     using traits = ActorTraits<ConcreteActor>;
@@ -86,8 +84,7 @@ namespace actor_helpers
   }
 
   template <typename ConcreteActor, typename ConfigT>
-  requires (ValidActorTraits<ActorTraits<ConcreteActor>> &&
-           (impl::UserCodeConfigSingle<ConfigT> || impl::UserCodeConfigRange<ConfigT>))
+  requires (impl::UserCodeConfigSingle<ConfigT> || impl::UserCodeConfigRange<ConfigT>)
   framework::Inputs collectUserInputs(ConfigT&& config)
   {
     using traits = ActorTraits<ConcreteActor>;
@@ -128,8 +125,7 @@ namespace actor_helpers
   }
 
   template <typename ConcreteActor, DataSourceType dataSourceType, typename ConfigT>
-  requires (ValidActorTraits<ActorTraits<ConcreteActor>> &&
-           (impl::UserCodeConfigSingle<ConfigT> || impl::UserCodeConfigRange<ConfigT>))
+  requires (impl::UserCodeConfigSingle<ConfigT> || impl::UserCodeConfigRange<ConfigT>)
   framework::Outputs collectUserOutputs(ConfigT&& config)
   {
     using traits = ActorTraits<ConcreteActor>;
@@ -148,7 +144,6 @@ namespace actor_helpers
   }
 
   template<typename ConcreteActor>
-  requires ValidActorTraits<ActorTraits<ConcreteActor>>
   framework::DataProcessorLabel dataProcessorLabel()
   {
     using traits = ActorTraits<ConcreteActor>;
