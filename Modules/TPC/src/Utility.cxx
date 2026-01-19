@@ -20,7 +20,11 @@
 #include "DataFormatsTPC/ClusterNativeHelper.h"
 #include "DataFormatsTPC/TPCSectorHeader.h"
 #include "TPCBase/CalDet.h"
+#if __has_include("TPCBase/Painter.h")
 #include "TPCBase/Painter.h"
+#else
+#include "TPCBaseRecSim/Painter.h"
+#endif
 #include "CommonUtils/StringUtils.h"
 
 // QC includes
