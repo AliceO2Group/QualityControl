@@ -195,7 +195,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDisplayHint(mClusterZ.get(), "hist");
 
   mClustersROFSize = std::make_unique<TH1FRatio>(
-    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries per orbit", 319, QcMFTUtilTables::mROFBins, true);
+    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "hist logx logy");

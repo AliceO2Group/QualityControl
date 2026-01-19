@@ -454,7 +454,7 @@ class QcMFTUtilTables
   };
 
   // bin limits for digits per ROF axis
-  inline static float mROFBins[320] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+  static constexpr float mROFBins[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                                         11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
                                         21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
                                         31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
@@ -486,6 +486,7 @@ class QcMFTUtilTables
                                         21000, 22000, 23000, 24000, 25000, 26000, 27000, 28000, 29000, 30000,
                                         31000, 32000, 33000, 34000, 35000, 36000, 37000, 38000, 39000, 40000,
                                         41000, 42000, 43000, 44000, 45000, 46000, 47000, 48000, 49000, 50000 };
+  static constexpr int nROFBins = sizeof(mROFBins) / sizeof(mROFBins[0]) - 1;
 };
 } // namespace o2::quality_control_modules::mft
 

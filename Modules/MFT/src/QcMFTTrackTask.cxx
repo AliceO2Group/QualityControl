@@ -178,7 +178,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTrackTanl.get());
   getObjectsManager()->setDisplayHint(mTrackTanl.get(), "hist");
 
-  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", 319, QcMFTUtilTables::mROFBins, true);
+  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
   getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist logx logy");
 
