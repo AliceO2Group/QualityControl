@@ -16,6 +16,7 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 /// \author David Grund
+/// \author Jakub Juracka
 ///
 
 // C++
@@ -194,7 +195,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDisplayHint(mClusterZ.get(), "hist");
 
   mClustersROFSize = std::make_unique<TH1FRatio>(
-    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries per orbit", maxClusterROFSize, 0, maxClusterROFSize, true);
+    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "hist logx logy");
@@ -233,8 +234,8 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
           getObjectsManager()->startPublishing(mClusterChipOccupancyMap[idx].get());
           getObjectsManager()->setDefaultDrawOptions(mClusterChipOccupancyMap[idx].get(), "colz");
         } // loop over faces
-      }   // loop over disks
-    }     // loop over halfs
+      } // loop over disks
+    } // loop over halfs
 
     // layer histograms
     for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {

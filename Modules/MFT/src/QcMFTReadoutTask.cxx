@@ -246,9 +246,9 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
             mZoneSummaryChipFault->Fill(xBin, yBin);
           }
         } // end loop over lanes
-      }   // end if is a DDW
-    }     // end if rdh->stop
-  }       // end loop over input
+      } // end if is a DDW
+    } // end if rdh->stop
+  } // end loop over input
 }
 
 void QcMFTReadoutTask::endOfCycle()

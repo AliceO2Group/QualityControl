@@ -16,6 +16,7 @@
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
 /// \author David Grund
+/// \author Jakub Juracka
 ///
 
 // C++
@@ -37,6 +38,7 @@
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTTrackTask.h"
+#include "MFT/QcMFTUtilTables.h"
 #include "Common/TH1Ratio.h"
 #include "Common/TH2Ratio.h"
 #include "DetectorsBase/GRPGeomHelper.h"
@@ -176,7 +178,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTrackTanl.get());
   getObjectsManager()->setDisplayHint(mTrackTanl.get(), "hist");
 
-  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", MaxTrackROFSize, 0, MaxTrackROFSize, true);
+  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
   getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist logx logy");
 

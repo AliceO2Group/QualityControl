@@ -160,7 +160,7 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDigitsROFSize = std::make_unique<TH1FRatio>("mDigitsROFSize",
                                                "Distribution of the #digits per ROF; # digits per ROF; # entries per orbit",
-                                               maxDigitROFSize, 0, maxDigitROFSize, true);
+                                               QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
   mDigitsROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mDigitsROFSize.get());
   getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "hist logx logy");
