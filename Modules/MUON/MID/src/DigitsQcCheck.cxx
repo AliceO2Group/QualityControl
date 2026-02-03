@@ -126,21 +126,21 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         nBadLB = 0;
         maxVal = 0;
         minVal = 1000;
-        int Resp = 0; // NN
+        int Resp = 0;
         auto histo = dynamic_cast<TH2F*>(item.second->getObject());
         if (histo) {
           mHistoHelper.normalizeHistoTokHz(histo);
           int by0 = 0; // NN
           for (int by = 1; by < 37; by++)
-            LineResp[by - 1] = 0; // init all lines NN
+            LineResp[by - 1] = 0;
           for (int bx = 1; bx < 15; bx++) {
             for (int by = 1; by < 37; by++) {
               Resp = 0; // NN
               if (bx > 1)
-                LineResp[by - 1] = LineResp[by - 1] << 2; // NN
+                LineResp[by - 1] = LineResp[by - 1] << 2;
 
-              if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
-                Resp = 1;                                              // NN
+              if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) {
+                Resp = 1;
                 double val = histo->GetBinContent(bx, by);
                 if (val > maxVal) {
                   maxVal = val;
@@ -155,25 +155,24 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
                   nBadLB++;
                   Resp = 3; // NN
                 }
-                LineResp[by - 1] = LineResp[by - 1] + Resp;               // NN
-                by0 = by;                                                 // NN
-                if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) { // board*4
+                LineResp[by - 1] = LineResp[by - 1] + Resp;
+                by0 = by;
+                if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) {
                   if ((bx == 14) && (by > 1) && (by < 33)) {
-                    LineResp[by + 1] = LineResp[by + 1] << 2; // Resp = 00 line 14 board*2
-                    if ((by > 12) && (by < 25)) {             // Resp = 00  board*4 NNN
+                    LineResp[by + 1] = LineResp[by + 1] << 2;
+                    if ((by > 12) && (by < 25)) {
                       LineResp[by] = LineResp[by] << 2;
                       LineResp[by + 2] = LineResp[by + 2] << 2;
                     }
                   }
                   by += 3;
-                } // zones 1 board
-                else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) { // board*2
-                                                                               // Resp = 00  board*2  ???
+                } else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
+
                   if ((bx > 10) && (by > 12) && (by < 25)) {
-                    LineResp[by] = LineResp[by] << 2; // Resp = 00  board*2 NNN
+                    LineResp[by] = LineResp[by] << 2;
                   }
                   by += 1;
-                } // zones 2 boards
+                }
               }
             }
           }
