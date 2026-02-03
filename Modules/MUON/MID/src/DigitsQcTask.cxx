@@ -68,6 +68,13 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   std::array<std::string, 4> chId{ "11", "12", "21", "22" };
 
+  for (size_t i = 0; i < 36; ++i) {
+    std::string nline = "";
+    nline = std::to_string(i + 1);
+    mLineLocalResp[i] = std::make_unique<TH1F>(fmt::format("RespBoardLine{}", nline).c_str(), fmt::format("RespBoardLine{}", nline).c_str(), 1, 0, 1);
+    getObjectsManager()->startPublishing(mLineLocalResp[i].get());
+  }
+
   for (size_t ich = 0; ich < 5; ++ich) {
     std::string chName = "";
     if (ich < 4) {
