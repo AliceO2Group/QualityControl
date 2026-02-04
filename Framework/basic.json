@@ -89,6 +89,48 @@
             }
           }
         }
+      },
+      "latecheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "LateTask",
+          "name": "late",
+          "MOs": ["graph_example"]
+        }],
+        "extendedCheckParameters": {
+          "physics": {
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            }
+          }
+        }
+      }
+    },
+    "lateTasks": {
+      "late": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonLateTask",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSources": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }],
+        "extendedTaskParameters": {
+          "default": {
+            "default": {
+              "plots" : {
+                "nested": "value"
+              }
+            }
+          }
+        }
       }
     }
   },

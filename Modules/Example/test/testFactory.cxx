@@ -26,12 +26,12 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
 {
   TaskFactory factory;
   TaskRunnerConfig config;
-  config.taskName = "task";
+  config.name = "task";
   config.moduleName = "QcCommon";
   config.className = "o2::quality_control_modules::example::ExampleTask";
   config.detectorName = "DAQ";
   config.ccdbUrl = "something";
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, 0);
+  auto manager = make_shared<ObjectsManager>(config.name, config.className, config.detectorName, 0);
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local  paths for the test
     factory.create(config, manager);
@@ -46,15 +46,15 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures, *utf::depends_on("Task_Factory") /* 
 {
   TaskFactory factory;
   TaskRunnerConfig config;
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, 0);
+  auto manager = make_shared<ObjectsManager>(config.name, config.className, config.detectorName, 0);
 
-  config.taskName = "task";
+  config.name = "task";
   config.moduleName = "WRONGNAME";
   config.className = "o2::quality_control_modules::example::ExampleTask";
   BOOST_CHECK_EXCEPTION(factory.create(config, manager), AliceO2::Common::FatalException, is_critical);
 
   gSystem->AddDynamicPath("lib:../../lib:../../../lib:"); // add local paths for the test
-  config.taskName = "task";
+  config.name = "task";
   config.moduleName = "QcCommon";
   config.className = "WRONGCLASS";
   BOOST_CHECK_EXCEPTION(factory.create(config, manager), AliceO2::Common::FatalException, is_critical);
