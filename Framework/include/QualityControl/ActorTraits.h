@@ -121,7 +121,7 @@ concept ValidActorTraits = requires
 // this is a fallback struct which is activated only if a proper specialization is missing (SFINAE).
 template<typename ActorType>
 struct ActorTraits {
-  static_assert(false, "ActorTraits must be specialized for each actor type.");
+  static_assert(false, "ActorTraits must be specialized for each Actor specialization.");
 };
 
 template<typename ConcreteActor>
@@ -136,8 +136,7 @@ consteval bool publishesDataSource(DataSourceType dataSourceType)
 }
 
 template<typename ConcreteActor, DataSourceType dataSourceType>
-concept ValidDataSourceForActor =
-  publishesDataSource<ConcreteActor>(dataSourceType);
+concept ValidDataSourceForActor = publishesDataSource<ConcreteActor>(dataSourceType);
 
 }
 #endif //ACTORTRAITS_H

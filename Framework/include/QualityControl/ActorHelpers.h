@@ -17,18 +17,18 @@
 #ifndef ACTORFACTORY_H
 #define ACTORFACTORY_H
 
-#include <format>
 #include <ranges>
 
 #include <Framework/DataProcessorSpec.h>
 
-#include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/ActorTraits.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/ServicesConfig.h"
 #include "QualityControl/UserCodeConfig.h"
 
 namespace o2::quality_control::core {
+
+struct CommonSpec;
 
 namespace impl {
 
@@ -59,24 +59,25 @@ auto as_range(T&& t)
 
 }
 
-struct CommonSpec;
-
 namespace actor_helpers
 {
   ServicesConfig extractConfig(const CommonSpec& commonSpec);
 
+  /// \brief Produces standardized QC Data Processor name for cases when it runs user code and is associated with a detector.
+  std::string dataProcessorName(std::string_view actorTypeKebabCase, std::string_view userCodeName, std::string_view detectorName);
+
+  /// \brief Produces standardized QC Data Processor name for cases when it runs user code and is associated with a detector.
   template<typename ConcreteActor>
-  requires (runsUserCode<ActorTraits<ConcreteActor>>() &&
-            ActorTraits<ConcreteActor>::sDetectorSpecific)
+  requires (runsUserCode<ActorTraits<ConcreteActor>>() && ActorTraits<ConcreteActor>::sDetectorSpecific)
   std::string dataProcessorName(std::string_view userCodeName, std::string_view detectorName)
   {
     using traits = ActorTraits<ConcreteActor>;
-    // todo move implementation to src (will avoid exposing <format>, InfrastructureSpecReader.h)
-    // todo perhaps detector name validation should happen earlier, just once and throw in case of configuration errors
-    return std::format("{}-{}-{}", traits::sActorTypeKebabCase, InfrastructureSpecReader::validateDetectorName(std::string{detectorName}), userCodeName);
+    return dataProcessorName(traits::sActorTypeKebabCase, detectorName, userCodeName);
   }
 
+  /// \brief Produces standardized QC Data Processor name for cases were no user code is ran and it's not detector specific.
   template<typename ConcreteActor>
+  requires (!runsUserCode<ActorTraits<ConcreteActor>>() || !ActorTraits<ConcreteActor>::sDetectorSpecific)
   std::string dataProcessorName()
   {
     using traits = ActorTraits<ConcreteActor>;
@@ -105,7 +106,6 @@ namespace actor_helpers
             return dataSource.type == allowed;
           });
       });
-
     if (firstInvalid != dataSources.end()) {
       throw std::invalid_argument(
         std::format("DataSource '{}' is not one of supported types for '{}'", firstInvalid->id, traits::sActorTypeUpperCamelCase)

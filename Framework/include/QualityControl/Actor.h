@@ -52,13 +52,11 @@ class CCDBManagerInstance;
 
 namespace o2::quality_control::core {
 
-
 class Bookkeeping;
 
 // anything we want to hide in the source file to avoid exposing headers
 namespace impl
 {
-// fixme: to my understanding, we cannot declare these are Actor members and have them compiled within .cxx, because it's a template
 std::shared_ptr<monitoring::Monitoring> initMonitoring(std::string_view url, std::string_view detector = "");
 void startMonitoring(monitoring::Monitoring&, int runNumber);
 
@@ -72,8 +70,13 @@ void initCCDB(const std::string& url);
 ccdb::CCDBManagerInstance& getCCDB();
 
 void handleExceptions(std::string_view when, const std::function<void()>&);
-
 }
+
+// notes on the design:
+// - CRTP, because we can do different things in base class and require different members according to the derived (concrete)
+//   some performance savings are nice, but not that important
+// - ActorTraits define some basic traits of ConcreteActors and allow Actor and helpers to behave accordingly while avoid code repeat
+// - we validate ActorTraits only in Actor and concrete ActorTraits to save on compile-time and clutter
 
 
 // todo consider having a check to avoid overriding Actor methods

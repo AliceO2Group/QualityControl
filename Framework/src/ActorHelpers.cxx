@@ -14,8 +14,11 @@
 /// \author Piotr Konopka
 ///
 
+#include <format>
+
 #include "QualityControl/ActorHelpers.h"
 #include "QualityControl/CommonSpec.h"
+#include "QualityControl/InfrastructureSpecReader.h"
 
 
 namespace o2::quality_control::core::actor_helpers {
@@ -43,6 +46,12 @@ ServicesConfig extractConfig(const CommonSpec& commonSpec)
     .kafkaBrokersUrl = commonSpec.kafkaBrokersUrl,
     .kafkaTopicAliECSRun = commonSpec.kafkaTopicAliECSRun
   };
+}
+
+std::string dataProcessorName(std::string_view actorTypeKebabCase, std::string_view userCodeName, std::string_view detectorName)
+{
+  // todo perhaps detector name validation should happen earlier, just once and throw in case of configuration errors
+  return std::format("{}-{}-{}", actorTypeKebabCase, InfrastructureSpecReader::validateDetectorName(std::string{detectorName}), userCodeName);
 }
 
 }
