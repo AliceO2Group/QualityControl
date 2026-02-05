@@ -24,7 +24,7 @@ namespace o2::quality_control::core
 TaskInterface* TaskFactory::create(const TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
 {
   auto* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
-  result->setName(taskConfig.taskName);
+  result->setName(taskConfig.name);
   result->setObjectsManager(objectsManager);
   result->setCustomParameters(taskConfig.customParameters);
   result->setCcdbUrl(taskConfig.ccdbUrl);

@@ -85,7 +85,7 @@ TaskRunner::~TaskRunner()
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.taskName, mTaskConfig.detectorName);
+  core::initInfologger(iCtx, mTaskConfig.infologgerDiscardParameters, "task/" + mTaskConfig.name, mTaskConfig.detectorName);
   ILOG(Info, Devel) << "Initializing TaskRunner" << ENDM;
 
   printTaskConfig();
@@ -103,11 +103,11 @@ void TaskRunner::init(InitContext& iCtx)
   // setup monitoring
   mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
-  mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
+  mCollector->addGlobalTag("TaskName", mTaskConfig.name);
   mCollector->addGlobalTag("DetectorName", mTaskConfig.detectorName);
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.parallelTaskID);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.name, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.parallelTaskID);
   mObjectsManager->setMovingWindowsList(mTaskConfig.movingWindows);
 
   // setup timekeeping
@@ -374,11 +374,11 @@ bool TaskRunner::isDataReady(const framework::InputRecord& inputs)
 
 void TaskRunner::printTaskConfig() const
 {
-  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.taskName //
-                    << " / Module name : " << mTaskConfig.moduleName                 //
-                    << " / Detector name : " << mTaskConfig.detectorName             //
-                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles      //
-                    << " / critical : " << mTaskConfig.critical                      //
+  ILOG(Info, Devel) << "Configuration loaded > Task name : " << mTaskConfig.name //
+                    << " / Module name : " << mTaskConfig.moduleName             //
+                    << " / Detector name : " << mTaskConfig.detectorName         //
+                    << " / Max number cycles : " << mTaskConfig.maxNumberCycles  //
+                    << " / critical : " << mTaskConfig.critical                  //
                     << " / Save to file : " << mTaskConfig.saveToFile
                     << " / Cycle duration seconds : ";
   for (auto& [cycleDuration, period] : mTaskConfig.cycleDurations) {
@@ -437,7 +437,7 @@ void TaskRunner::registerToBookkeeping()
   if (!gSystem->Getenv("O2_QC_DONT_REGISTER_IN_BK")) { // Set this variable to disable the registration
     // register ourselves to the BK at the first cycle
     ILOG(Debug, Devel) << "Registering taskRunner to BookKeeping" << ENDM;
-    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.taskName, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
+    Bookkeeping::getInstance().registerProcess(mActivity.mId, mTaskConfig.name, mTaskConfig.detectorName, bkp::DplProcessType::QC_TASK, "");
   }
 }
 
