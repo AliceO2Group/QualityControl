@@ -1067,6 +1067,13 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
     }
   };
 
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyGood);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyBad);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mIntegratedOccupancy);
+
   publishOptional(mCellTime);
   publishOptional(mCellTimeCalib);
   publishOptional(mCellAmplitude);
@@ -1091,8 +1098,6 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
   publishOptional(mCellAmplitudeCalib_EMCAL);
   publishOptional(mCellAmplitudeCalib_DCAL);
   publishOptional(mCellOccupancy);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
   publishOptional(mCellOccupancyThr);
   publishOptional(mCellOccupancyThrBelow);
   publishOptional(mCellOccupancyGood);
@@ -1169,6 +1174,14 @@ void CellTask::CellHistograms::reset()
   for (auto histos : mCellTimeBC) {
     resetOptional(histos);
   }
+
+  // Draw Grid Lines
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyGood);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyBad);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mIntegratedOccupancy);
 }
 
 void CellTask::CellHistograms::clean()
