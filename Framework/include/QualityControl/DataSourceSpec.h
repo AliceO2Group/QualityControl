@@ -21,20 +21,10 @@
 #include <Framework/InputSpec.h>
 #include <type_traits>
 
+#include "QualityControl/DataSourceType.h"
+
 namespace o2::quality_control::core
 {
-
-enum class DataSourceType {
-  DataSamplingPolicy,
-  Direct,
-  Task,
-  TaskMovingWindow,
-  Check,
-  Aggregator,
-  PostProcessingTask,
-  ExternalTask,
-  Invalid
-};
 
 // this should allow us to represent all data sources which come from DPL (and maybe CCDB).
 struct DataSourceSpec {

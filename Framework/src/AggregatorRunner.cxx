@@ -41,7 +41,7 @@
 #include "QualityControl/ConfigParamGlo.h"
 #include "QualityControl/Bookkeeping.h"
 #include "QualityControl/WorkflowType.h"
-#include "QualityControl/HashDataDescription.h"
+#include "QualityControl/DataHeaderHelpers.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;

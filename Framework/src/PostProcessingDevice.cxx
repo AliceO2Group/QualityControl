@@ -21,7 +21,7 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/HashDataDescription.h"
+#include "QualityControl/DataHeaderHelpers.h"
 #include "QualityControl/runnerUtils.h"
 
 #include <Common/Exceptions.h>

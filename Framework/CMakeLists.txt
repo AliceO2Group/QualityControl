@@ -98,7 +98,7 @@ add_library(O2QualityControl
   src/InfrastructureSpecReader.cxx
   src/Check.cxx
   src/Aggregator.cxx
-  src/HashDataDescription.cxx
+  src/DataHeaderHelpers.cxx
   src/Triggers.cxx
   src/TriggerHelpers.cxx
   src/PostProcessingRunner.cxx
@@ -276,6 +276,7 @@ add_executable(o2-qc-test-core
                test/testCheckInterface.cxx
                test/testCheckRunner.cxx
                test/testCustomParameters.cxx
+               test/testDataHeaderHelpers.cxx
                test/testInfrastructureGenerator.cxx
                test/testMonitorObject.cxx
                test/testPolicyManager.cxx

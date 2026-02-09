@@ -26,7 +26,7 @@
 #include "QualityControl/Activity.h"
 #include <Common/Exceptions.h>
 #include "QualityControl/CommonSpec.h"
-#include "QualityControl/HashDataDescription.h"
+#include "QualityControl/DataHeaderHelpers.h"
 
 #include <utility>
 #include <algorithm>

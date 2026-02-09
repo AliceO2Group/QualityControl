@@ -29,7 +29,7 @@
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Quality.h"
-#include "QualityControl/HashDataDescription.h"
+#include "QualityControl/DataHeaderHelpers.h"
 #include "QualityControl/ObjectMetadataHelpers.h"
 
 #include <QualityControl/AggregatorRunner.h>
