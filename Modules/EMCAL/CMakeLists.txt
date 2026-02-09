@@ -45,6 +45,8 @@ add_root_dictionary(O2QcEMCAL
   include/EMCAL/DrawGridlines.h
   include/EMCAL/FECRateVisualization.h
   include/EMCAL/NumPhysTriggCheck.h
+  include/EMCAL/NumPhysTriggCheck.h
+  include/EMCAL/IndicesConverter.h
   LINKDEF include/EMCAL/LinkDef.h)
 
 install(TARGETS O2QcEMCAL

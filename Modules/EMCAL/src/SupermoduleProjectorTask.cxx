@@ -49,6 +49,7 @@ void SupermoduleProjectorTask::initialize(Trigger, framework::ServiceRegistryRef
     getObjectsManager()->startPublishing(plot);
     mCanvasHandler[datasource.name] = plot;
   }
+  mIndicesConverter.Initialize();
 }
 
 void SupermoduleProjectorTask::update(Trigger t, framework::ServiceRegistryRef services)
@@ -201,7 +202,7 @@ void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObj
   plot.Divide(4, 5);
   for (int supermoduleID = 0; supermoduleID < 20; supermoduleID++) {
     std::string histname = std::string(inputhist->GetName()) + "_SM" + std::to_string(supermoduleID),
-                histtitle = "Supermodule " + std::to_string(supermoduleID);
+                histtitle = "Supermodule " + std::to_string(supermoduleID) + "  (" + mIndicesConverter.GetOnlineSMIndex(supermoduleID) + ")";
     TH1* projection = nullptr;
     if (xAxisSM) {
       projection = inputhist->ProjectionY(histname.data(), supermoduleID + 1, supermoduleID + 1);
@@ -210,6 +211,8 @@ void SupermoduleProjectorTask::makeProjections(quality_control::core::MonitorObj
     }
     projection->SetStats(false);
     projection->SetTitle(histtitle.data());
+    projection->SetTitleSize(12);
+    projection->SetTitleFont(43);
     bool logx = false;
     bool logy = false;
     if (customizations) {

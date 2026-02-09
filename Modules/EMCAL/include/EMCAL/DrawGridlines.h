@@ -14,6 +14,7 @@
 
 #include "TLine.h"
 #include "TH2D.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::emcal
 {
@@ -36,6 +37,24 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     if (histo == nullptr) {
       return;
     }
+
+    // check if the gridlines are already drawn by looking for a line at the first SM boundary
+    auto* funcs = histo->GetListOfFunctions();
+    if (!funcs) {
+      return;
+    }
+
+    // Remove previously added grid lines
+    TIter it(funcs);
+    TObject* obj = nullptr;
+    while ((obj = it())) {
+      if (obj->InheritsFrom(TLine::Class())) {
+        ILOG(Debug, Support) << "Removing existing grid line from histogram " << histo->GetName() << ENDM;
+        funcs->Remove(obj);
+        delete obj;
+      }
+    }
+
     // EMCAL
     for (int iside = 0; iside <= 48; iside += 24) {
       auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 63.5);
@@ -112,6 +131,63 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
       truseparator->SetLineWidth(3);
 
       histo->GetListOfFunctions()->Add(truseparator);
+    }
+  };
+
+  /// \brief Draw the gridlines in the standard cell geometry
+  static void DrawSMGridInStdGeo(TH2* histo = nullptr)
+  {
+    if (histo == nullptr) {
+      return;
+    }
+    // EMCAL
+    for (int iside = 0; iside <= 96; iside += 48) {
+      auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 127.5);
+      smline->SetLineWidth(6);
+
+      histo->GetListOfFunctions()->Add(smline);
+    }
+    for (int iphi = 0; iphi < 120; iphi += 24) {
+      auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 95.5, static_cast<double>(iphi) - 0.5);
+      smline->SetLineWidth(6);
+
+      histo->GetListOfFunctions()->Add(smline);
+    }
+    for (auto iphi = 120; iphi <= 128; iphi += 8) {
+      auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 95.5, static_cast<double>(iphi) - 0.5);
+      smline->SetLineWidth(6);
+
+      histo->GetListOfFunctions()->Add(smline);
+    }
+
+    // DCAL
+    for (int side = 0; side < 2; side++) {
+      int sideoffset = (side == 0) ? 0 : 64;
+      for (int isepeta = 0; isepeta < 2; isepeta++) {
+        int etaoffset = sideoffset + isepeta * 32;
+        auto smline = new TLine(static_cast<double>(etaoffset) - 0.5, 127.5, static_cast<double>(etaoffset) - 0.5, 199.5);
+        smline->SetLineWidth(6);
+
+        histo->GetListOfFunctions()->Add(smline);
+      }
+      for (auto iphi = 152; iphi <= 176; iphi += 24) {
+        auto smline = new TLine(static_cast<double>(sideoffset) - 0.5, static_cast<double>(iphi) - 0.5, static_cast<double>(sideoffset + 32) - 0.5, static_cast<double>(iphi) - 0.5);
+        smline->SetLineWidth(6);
+
+        histo->GetListOfFunctions()->Add(smline);
+      }
+    }
+    for (auto iphi = 200; iphi <= 208; iphi += 8) {
+      auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 95.5, static_cast<int>(iphi) - 0.5);
+      smline->SetLineWidth(6);
+
+      histo->GetListOfFunctions()->Add(smline);
+    }
+    for (auto ieta = 0; ieta <= 96; ieta += 48) {
+      auto smline = new TLine(static_cast<double>(ieta) - 0.5, 199.5, static_cast<double>(ieta) - 0.5, 207.5);
+      smline->SetLineWidth(6);
+
+      histo->GetListOfFunctions()->Add(smline);
     }
   };
 
