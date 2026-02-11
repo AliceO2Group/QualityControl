@@ -31,6 +31,7 @@
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/Version.h"
+#include "QualityControl/UserInputOutput.h"
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DataRefUtils.h>

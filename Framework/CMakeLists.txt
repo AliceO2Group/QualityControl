@@ -139,6 +139,7 @@ add_library(O2QualityControl
   src/ObjectMetadataHelpers.cxx
   src/QCInputsAdapters.cxx
   src/QCInputsFactory.cxx
+  src/UserInputOutput.cxx
 )
 
 target_include_directories(
@@ -293,6 +294,7 @@ add_executable(o2-qc-test-core
                test/testFlagHelpers.cxx
                test/testQualitiesToFlagCollectionConverter.cxx
                test/testQCInputs.cxx
+               test/testUserInputOutput.cxx
 )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
