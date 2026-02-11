@@ -44,4 +44,7 @@ TEST_CASE("DataDescription")
   CHECK(createDataDescription("LOOOOOOOOOOOOOOONG", 4) != DataDescription("LOOOOOOOOOOOOOON"));
 
   CHECK_THROWS(createDataDescription("LOOOOOOOOOOOOOOONG", DataDescription::size + 50));
+
+  CHECK(createDataDescription("LOOOOOOOOOOOOOOONG", DataSourceType::Task) != DataDescription("LOOOOOOOOOOOOOON"));
+  CHECK_THROWS(createDataDescription("WHATEVER", DataSourceType::ExternalTask));
 }

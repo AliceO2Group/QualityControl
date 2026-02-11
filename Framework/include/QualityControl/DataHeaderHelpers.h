@@ -27,7 +27,7 @@ namespace o2::quality_control::core
 /// Creates DataOrigin for a data source and detector code
 header::DataOrigin createDataOrigin(DataSourceType, const std::string& detectorCode);
 
-/// \brief Creates DataDescription from given name for any QC actor
+/// \brief Creates DataDescription from given name for a QC actor
 ///
 /// If the length of the name is <= 16 (hardcoded in DataDescription) it creates DataDescription from the original name.
 /// However, if the length of the name is > 16, it will create hash of the whole name and replace ending hashLength of bytes
@@ -38,6 +38,19 @@ header::DataOrigin createDataOrigin(DataSourceType, const std::string& detectorC
 /// \param name - name which should cut and hashed
 /// \param hashLength - number of bytes which will overwrite the end of the name
 o2::header::DataDescription createDataDescription(const std::string& name, size_t hashLength);
+
+/// \brief Creates DataDescription from given name for a QC actor
+///
+/// If the length of the name is <= 16 (hardcoded in DataDescription) it creates DataDescription from the original name.
+/// However, if the length of the name is > 16, it will create hash of the whole name and replace ending hashLength of bytes
+/// of the name with hexa representation of computed hash.
+/// eg.: name == "veryLongNameThatIsLongerThan16B" with hashLength == 4 will result in "veryLongNameABCD", where ABCD
+/// is the hash create inside the function.
+/// This function deduces hash length for the provided data source type.
+///
+/// \param name - name which should cut and hashed
+/// \param type - data source type associated to an actor
+o2::header::DataDescription createDataDescription(const std::string& name, DataSourceType type);
 
 } // namespace o2::quality_control::core
 
