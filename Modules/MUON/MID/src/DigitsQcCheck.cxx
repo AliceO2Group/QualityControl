@@ -30,6 +30,7 @@ namespace o2::quality_control_modules::mid
 
 void DigitsQcCheck::configure()
 {
+
   ILOG(Info, Devel) << "configure DigitsQcCheck" << ENDM;
   if (auto param = mCustomParameters.find("MeanMultThreshold"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - MeanMultThreshold: " << param->second << ENDM;
@@ -63,6 +64,7 @@ void DigitsQcCheck::configure()
 
 Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+
   Quality result = Quality::Good;
   // This info must be available from the beginning
   TH1* meanMultiHits = nullptr;
@@ -124,12 +126,21 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         nBadLB = 0;
         maxVal = 0;
         minVal = 1000;
+        int Resp = 0;
         auto histo = dynamic_cast<TH2F*>(item.second->getObject());
         if (histo) {
           mHistoHelper.normalizeHistoTokHz(histo);
+          int by0 = 0; // NN
+          for (int by = 1; by < 37; by++)
+            LineResp[by - 1] = 0;
           for (int bx = 1; bx < 15; bx++) {
             for (int by = 1; by < 37; by++) {
-              if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) { // central zone empty
+              Resp = 0; // NN
+              if (bx > 1)
+                LineResp[by - 1] = LineResp[by - 1] << 2;
+
+              if (!((bx > 6) && (bx < 9) && (by > 15) && (by < 22))) {
+                Resp = 1;
                 double val = histo->GetBinContent(bx, by);
                 if (val > maxVal) {
                   maxVal = val;
@@ -139,15 +150,29 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
                 }
                 if (val == 0) {
                   nEmptyLB++;
+                  Resp = 0; // NN
                 } else if (val > mLocalBoardThreshold) {
                   nBadLB++;
+                  Resp = 3; // NN
                 }
+                LineResp[by - 1] = LineResp[by - 1] + Resp;
+                by0 = by;
                 if ((bx == 1) || (bx == 14) || (by == 1) || (by == 33)) {
+                  if ((bx == 14) && (by > 1) && (by < 33)) {
+                    LineResp[by + 1] = LineResp[by + 1] << 2;
+                    if ((by > 12) && (by < 25)) {
+                      LineResp[by] = LineResp[by] << 2;
+                      LineResp[by + 2] = LineResp[by + 2] << 2;
+                    }
+                  }
                   by += 3;
-                } // zones 1 board
-                else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
+                } else if (!((bx > 4) && (bx < 11) && (by > 12) && (by < 25))) {
+
+                  if ((bx > 10) && (by > 12) && (by < 25)) {
+                    LineResp[by] = LineResp[by] << 2;
+                  }
                   by += 1;
-                } // zones 2 boards
+                }
               }
             }
           }
@@ -192,8 +217,24 @@ Quality DigitsQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
         mQualityMap[item.second->getName()] = qual;
         result = qual;
+
       } // if mNTFInSeconds > 0.
     }
+
+    /////NN
+    for (int by = 1; by < 37; by++) {
+      std::string nline = std::to_string(by);
+      std::string HistoName = "RespBoardLine" + nline;
+      if (item.second->getName() == HistoName) {
+        auto histo = dynamic_cast<TH1F*>(item.second->getObject());
+        if (histo) {
+          histo->SetBins(1, LineResp[by - 1] - 0.5, LineResp[by - 1] + 0.5);
+          histo->Fill(LineResp[by - 1]);
+        }
+      }
+    }
+    /////NN
+
     if (item.second->getName() == "NbLBEmpty") {
       auto histo = dynamic_cast<TH1F*>(item.second->getObject());
       if (histo) {
