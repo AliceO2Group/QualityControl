@@ -1067,12 +1067,12 @@ void CellTask::CellHistograms::startPublishing(o2::quality_control::core::Object
     }
   };
 
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancy);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyGood);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyBad);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mIntegratedOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyThr);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyThrBelow);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyGood);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyBad);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mIntegratedOccupancy);
 
   publishOptional(mCellTime);
   publishOptional(mCellTimeCalib);
@@ -1176,12 +1176,12 @@ void CellTask::CellHistograms::reset()
   }
 
   // Draw Grid Lines
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancy);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThr);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyThrBelow);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyGood);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mCellOccupancyBad);
-  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInTriggerGeo(mIntegratedOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancy);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyThr);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyThrBelow);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyGood);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mCellOccupancyBad);
+  o2::quality_control_modules::emcal::DrawGridlines::DrawSMGridInStdGeo(mIntegratedOccupancy);
 }
 
 void CellTask::CellHistograms::clean()

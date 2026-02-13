@@ -39,38 +39,24 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     }
 
     // check if the gridlines are already drawn by looking for a line at the first SM boundary
-    auto* funcs = histo->GetListOfFunctions();
-    if (!funcs) {
-      return;
-    }
-
-    // Remove previously added grid lines
-    TIter it(funcs);
-    TObject* obj = nullptr;
-    while ((obj = it())) {
-      if (obj->InheritsFrom(TLine::Class())) {
-        ILOG(Debug, Support) << "Removing existing grid line from histogram " << histo->GetName() << ENDM;
-        funcs->Remove(obj);
-        delete obj;
-      }
-    }
+    ResetLines(histo);
 
     // EMCAL
     for (int iside = 0; iside <= 48; iside += 24) {
       auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 63.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
     for (int iphi = 0; iphi < 60; iphi += 12) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
     for (auto iphi = 60; iphi <= 64; iphi += 4) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
@@ -81,26 +67,26 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
       for (int isepeta = 0; isepeta < 2; isepeta++) {
         int etaoffset = sideoffset + isepeta * 16;
         auto smline = new TLine(static_cast<double>(etaoffset) - 0.5, 63.5, static_cast<double>(etaoffset) - 0.5, 99.5);
-        smline->SetLineWidth(6);
+        smline->SetLineWidth(2);
 
         histo->GetListOfFunctions()->Add(smline);
       }
       for (auto iphi = 76; iphi <= 88; iphi += 12) {
         auto smline = new TLine(static_cast<double>(sideoffset) - 0.5, static_cast<double>(iphi) - 0.5, static_cast<double>(sideoffset + 16) - 0.5, static_cast<double>(iphi) - 0.5);
-        smline->SetLineWidth(6);
+        smline->SetLineWidth(2);
 
         histo->GetListOfFunctions()->Add(smline);
       }
     }
     for (auto iphi = 100; iphi <= 104; iphi += 4) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
     for (auto ieta = 0; ieta <= 48; ieta += 24) {
       auto smline = new TLine(static_cast<double>(ieta) - 0.5, 99.5, static_cast<double>(ieta) - 0.5, 103.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
@@ -112,13 +98,17 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     if (histo == nullptr) {
       return;
     }
+
+    // check if the gridlines are already drawn by looking for a line at the first SM boundary
+    ResetLines(histo);
+
     // EMCAL
     for (int side = 0; side < 2; side++) {
       int sideoffset = 24 * side;
       for (int itru = 0; itru < 2; itru++) {
         int truoffset = sideoffset + (itru + 1) * 8;
         auto truline = new TLine(static_cast<int>(truoffset) - 0.5, -0.5, static_cast<int>(truoffset) - 0.5, 59.5);
-        truline->SetLineWidth(3);
+        truline->SetLineWidth(2);
 
         histo->GetListOfFunctions()->Add(truline);
       }
@@ -128,7 +118,7 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     for (int side = 0; side < 2; side++) {
       int sideoffset = (side == 0) ? 0 : 32;
       auto truseparator = new TLine(static_cast<double>(sideoffset + 8) - 0.5, 63.5, static_cast<double>(sideoffset + 8) - 0.5, 99.5);
-      truseparator->SetLineWidth(3);
+      truseparator->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(truseparator);
     }
@@ -140,22 +130,26 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     if (histo == nullptr) {
       return;
     }
+
+    // check if the gridlines are already drawn by looking for a line at the first SM boundary
+    ResetLines(histo);
+
     // EMCAL
     for (int iside = 0; iside <= 96; iside += 48) {
       auto smline = new TLine(static_cast<double>(iside) - 0.5, -0.5, static_cast<double>(iside) - 0.5, 127.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
     for (int iphi = 0; iphi < 120; iphi += 24) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 95.5, static_cast<double>(iphi) - 0.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
     for (auto iphi = 120; iphi <= 128; iphi += 8) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 95.5, static_cast<double>(iphi) - 0.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
@@ -166,26 +160,26 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
       for (int isepeta = 0; isepeta < 2; isepeta++) {
         int etaoffset = sideoffset + isepeta * 32;
         auto smline = new TLine(static_cast<double>(etaoffset) - 0.5, 127.5, static_cast<double>(etaoffset) - 0.5, 199.5);
-        smline->SetLineWidth(6);
+        smline->SetLineWidth(2);
 
         histo->GetListOfFunctions()->Add(smline);
       }
       for (auto iphi = 152; iphi <= 176; iphi += 24) {
         auto smline = new TLine(static_cast<double>(sideoffset) - 0.5, static_cast<double>(iphi) - 0.5, static_cast<double>(sideoffset + 32) - 0.5, static_cast<double>(iphi) - 0.5);
-        smline->SetLineWidth(6);
+        smline->SetLineWidth(2);
 
         histo->GetListOfFunctions()->Add(smline);
       }
     }
     for (auto iphi = 200; iphi <= 208; iphi += 8) {
       auto smline = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 95.5, static_cast<int>(iphi) - 0.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
     for (auto ieta = 0; ieta <= 96; ieta += 48) {
       auto smline = new TLine(static_cast<double>(ieta) - 0.5, 199.5, static_cast<double>(ieta) - 0.5, 207.5);
-      smline->SetLineWidth(6);
+      smline->SetLineWidth(2);
 
       histo->GetListOfFunctions()->Add(smline);
     }
@@ -197,6 +191,10 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     if (histo == nullptr) {
       return;
     }
+
+    // check if the gridlines are already drawn by looking for a line at the first SM boundary
+    ResetLines(histo);
+
     // EMCAL
     for (int iphi = 1; iphi < 64; iphi++) {
       auto fastorLine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<double>(iphi) - 0.5);
@@ -228,6 +226,29 @@ class DrawGridlines : public quality_control::postprocessing::PostProcessingInte
     for (auto iphi = 101; iphi <= 103; iphi++) {
       auto philine = new TLine(-0.5, static_cast<double>(iphi) - 0.5, 47.5, static_cast<int>(iphi) - 0.5);
       histo->GetListOfFunctions()->Add(philine);
+    }
+  };
+
+  static void ResetLines(TH1* histo = nullptr)
+  {
+    if (histo == nullptr) {
+      return;
+    }
+
+    auto* funcs = histo->GetListOfFunctions();
+    if (!funcs) {
+      return;
+    }
+
+    // Remove previously added grid lines
+    TIter it(funcs);
+    TObject* obj = nullptr;
+    while ((obj = it())) {
+      if (obj->InheritsFrom(TLine::Class())) {
+        ILOG(Debug, Support) << "Removing existing grid line from histogram " << histo->GetName() << ENDM;
+        funcs->Remove(obj);
+        delete obj;
+      }
     }
   };
 };
