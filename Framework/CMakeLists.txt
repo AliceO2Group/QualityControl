@@ -173,8 +173,7 @@ target_link_libraries(O2QualityControl
                              O2::GlobalTracking
                              O2QualityControlKafkaProtos
                              ${RDKAFKA_LIB}
-                      PRIVATE Boost::system
-                              CURL::libcurl
+                      PRIVATE CURL::libcurl
                               O2QualityControlInfoLogger
                               )
 
