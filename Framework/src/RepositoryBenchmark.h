@@ -22,6 +22,7 @@
 #include <TH1.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <thread>
 #include <string>
 
