@@ -33,7 +33,7 @@
       "id": "digits",
       "active": "true",
       "machines": [],
-      "query": "digits:MID/DATA;digits_rof:MID/DATAROF",
+      "query": "digits:MID/DATA/0;digits_rof:MID/DATAROF/0",
       "samplingConditions": [
         {
           "condition": "random",
