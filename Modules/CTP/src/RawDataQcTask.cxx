@@ -256,17 +256,21 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
     mDecoder.setCheckConsistency(1);
     mDecoder.setDecodeInps(1);
     mPerformConsistencyCheck = true;
-    // clang-format off
-    for (std::size_t i = 0; i < shiftBC.size(); i++)
-      shiftBC[i] = 0;                                  // no shift
+    for (std::size_t i = 0; i < shiftBC.size(); i++) {
+      shiftBC[i] = 0; // no shift
+    }
   } else {
     mDecoder.setCheckConsistency(0);
     for (std::size_t i = 0; i < shiftBC.size(); i++) {
-      if (i <= 10)                 shiftBC[i] = 0;     // [00-10] without shift
-      if (i >= 11 && i <= 23)      shiftBC[i] = 15;    // [11-23] shift by 15 BCs
-      else if (i >= 24 && i <= 47) shiftBC[i] = 296;   // [24-47] shift by 296 BCs
-     }
-    // clang-format on
+      if (i <= 10) {
+        shiftBC[i] = 0; //   [00-10] without shift
+      }
+      if (i >= 11 && i <= 23) {
+        shiftBC[i] = 15; //  [11-23] shift by 15 BCs
+      } else if (i >= 24 && i <= 47) {
+        shiftBC[i] = 296; // [24-47] shift by 296 BCs
+      }
+    }
   }
 
   if (mPerformConsistencyCheck) {
