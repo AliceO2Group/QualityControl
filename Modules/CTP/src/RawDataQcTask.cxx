@@ -42,12 +42,15 @@ namespace o2::quality_control_modules::ctp
 
 CTPRawDataReaderTask::~CTPRawDataReaderTask()
 {
-  for (auto& h : mHisInputs)
+  for (auto& h : mHisInputs) {
     delete h;
-  for (auto& h : mHisInputsNotLHC) // must be before mHisInputsYesLHC
+  }
+  for (auto& h : mHisInputsNotLHC) { // must be before mHisInputsYesLHC
     delete h;
-  for (auto& h : mHisInputsYesLHC)
+  }
+  for (auto& h : mHisInputsYesLHC) {
     delete h;
+  }
 }
 
 void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -108,12 +111,15 @@ void CTPRawDataReaderTask::startOfActivity(const Activity& activity)
   mHistoInputRatios->Reset();
   mHistoBCMinBias1->Reset();
   mHistoBCMinBias2->Reset();
-  for (auto& h : mHisInputs)
+  for (auto& h : mHisInputs) {
     h->Reset();
-  for (auto& h : mHisInputsYesLHC)
+  }
+  for (auto& h : mHisInputsYesLHC) {
     h->Reset("ICES");
-  for (auto& h : mHisInputsNotLHC)
+  }
+  for (auto& h : mHisInputsNotLHC) {
     h->Reset();
+  }
 
   mRunNumber = activity.mId;
   mTimestamp = activity.mValidity.getMin();
@@ -391,11 +397,13 @@ void CTPRawDataReaderTask::splitSortInputs()
 
   std::vector<BC> BCs; // ?! std::array<BC, 3564> BCs = {} ?!
   for (std::size_t ih = 0; ih < mHisInputs.size(); ih++) {
-    if (mHisInputs[ih]->GetEntries() == 0)
+    if (mHisInputs[ih]->GetEntries() == 0) {
       continue;
+    }
     BCs.clear();
-    for (int ib = 1; ib <= mHisInputs[ih]->GetNbinsX(); ib++) // skip underflow bin
+    for (int ib = 1; ib <= mHisInputs[ih]->GetNbinsX(); ib++) { // skip underflow bin
       BCs.emplace_back(ib - 1, mHisInputs[ih]->GetBinContent(ib));
+    }
 
     std::sort(BCs.begin(), BCs.end(),
               [](const BC& a, const BC& b) { return a.entries > b.entries; }); // sort by BC.entries
@@ -407,10 +415,11 @@ void CTPRawDataReaderTask::splitSortInputs()
     mHisInputsYesLHC[ih]->Reset("ICES"); // don't delete mHisInputsNotLHC[ih] object
     mHisInputsNotLHC[ih]->Reset();
     for (std::size_t ibc = 0; ibc < BCs.size(); ibc++) { // skip underflow bin (in loop)
-      if (mLHCBCs.test(BCs[ibc].id))
+      if (mLHCBCs.test(BCs[ibc].id)) {
         mHisInputsYesLHC[ih]->SetBinContent(ibc + 1, BCs[ibc].entries);
-      else
+      } else {
         mHisInputsNotLHC[ih]->SetBinContent(ibc + 1, BCs[ibc].entries);
+      }
     }
 
     TLine* line = nullptr;
@@ -424,8 +433,9 @@ void CTPRawDataReaderTask::splitSortInputs()
       mHisInputsYesLHC[ih]->GetListOfFunctions()->Add(line, "same");
     } else { // always set Y2 line maximum (is different for each cycle)
       line = dynamic_cast<TLine*>(mHisInputsYesLHC[ih]->FindObject("TLine"));
-      if (line)
+      if (line) {
         line->SetY2(mHisInputsYesLHC[ih]->GetMaximum() * 1.05);
+      }
     }
   }
 }
@@ -446,12 +456,15 @@ void CTPRawDataReaderTask::reset()
   mHistoClassRatios->Reset();
   mHistoBCMinBias1->Reset();
   mHistoBCMinBias2->Reset();
-  for (auto& h : mHisInputs)
+  for (auto& h : mHisInputs) {
     h->Reset();
-  for (auto& h : mHisInputsYesLHC)
+  }
+  for (auto& h : mHisInputsYesLHC) {
     h->Reset("ICES");
-  for (auto& h : mHisInputsNotLHC)
+  }
+  for (auto& h : mHisInputsNotLHC) {
     h->Reset();
+  }
   if (mPerformConsistencyCheck)
     mHistoDecodeError->Reset();
 }
@@ -474,7 +487,7 @@ void CTPRawDataReaderTask::readLHCFillingScheme()
   } else {
     ILOG(Info, Support) << "LHC data found for (task) timestamp:" << mTimestamp << ENDM;
     lhcDataFileFound = true;
-    lhcifdata->print();
+    // lhcifdata->print();
   }
   auto bfilling = lhcifdata->getBunchFilling();
   std::vector<int> bcs = bfilling.getFilledBCs();
