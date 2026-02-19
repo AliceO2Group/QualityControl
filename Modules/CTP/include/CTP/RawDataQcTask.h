@@ -53,14 +53,14 @@ class CTPRawDataReaderTask final : public TaskInterface
   void readLHCFillingScheme();
 
  private:
-  o2::ctp::RawDataDecoder mDecoder;                              // ctp raw data decoder
-  std::unique_ptr<TH1DRatio> mHistoInputs = nullptr;             // histogram with ctp inputs
-  std::unique_ptr<TH1DRatio> mHistoClasses = nullptr;            // histogram with ctp classes
-  std::unique_ptr<TH1DRatio> mHistoInputRatios = nullptr;        // histogram with ctp input ratios to MB
-  std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr;        // histogram with ctp class ratios to MB
-  std::unique_ptr<TH1D> mHistoBCMinBias1 = nullptr;              // histogram of BC positions to check LHC filling scheme
-  std::unique_ptr<TH1D> mHistoBCMinBias2 = nullptr;              // histogram of BC positions to check LHC filling scheme
-  std::unique_ptr<TH1D> mHistoDecodeError = nullptr;             // histogram of erros from decoder
+  o2::ctp::RawDataDecoder mDecoder;                       // ctp raw data decoder
+  std::unique_ptr<TH1DRatio> mHistoInputs = nullptr;      // histogram with ctp inputs
+  std::unique_ptr<TH1DRatio> mHistoClasses = nullptr;     // histogram with ctp classes
+  std::unique_ptr<TH1DRatio> mHistoInputRatios = nullptr; // histogram with ctp input ratios to MB
+  std::unique_ptr<TH1DRatio> mHistoClassRatios = nullptr; // histogram with ctp class ratios to MB
+  std::unique_ptr<TH1D> mHistoBCMinBias1 = nullptr;       // histogram of BC positions to check LHC filling scheme
+  std::unique_ptr<TH1D> mHistoBCMinBias2 = nullptr;       // histogram of BC positions to check LHC filling scheme
+  std::unique_ptr<TH1D> mHistoDecodeError = nullptr;      // histogram of erros from decoder
   static constexpr int mUsedInputsMax = 18;
   std::array<TH1D*, mUsedInputsMax> mHisInputs = {};       ///< Array of input histograms, all BCs
   std::array<TH1D*, mUsedInputsMax> mHisInputsYesLHC = {}; ///< Array of input histograms, LHC BCs
