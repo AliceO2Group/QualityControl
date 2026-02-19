@@ -342,7 +342,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
     if (digit.CTPInputMask.count()) {
-      for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
+      for (int i = 0; i < mUsedInputsMax; i++) {
         if (digit.CTPInputMask[i]) {
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);

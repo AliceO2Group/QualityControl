@@ -61,10 +61,11 @@ class CTPRawDataReaderTask final : public TaskInterface
   std::unique_ptr<TH1D> mHistoBCMinBias1 = nullptr;              // histogram of BC positions to check LHC filling scheme
   std::unique_ptr<TH1D> mHistoBCMinBias2 = nullptr;              // histogram of BC positions to check LHC filling scheme
   std::unique_ptr<TH1D> mHistoDecodeError = nullptr;             // histogram of erros from decoder
-  std::array<TH1D*, o2::ctp::CTP_NINPUTS> mHisInputs = {};       ///< Array of input histograms, all BCs
-  std::array<TH1D*, o2::ctp::CTP_NINPUTS> mHisInputsYesLHC = {}; ///< Array of input histograms, LHC BCs
-  std::array<TH1D*, o2::ctp::CTP_NINPUTS> mHisInputsNotLHC = {}; ///< Array of input histograms, not LHC BCs
-  std::array<std::size_t, o2::ctp::CTP_NINPUTS> shiftBC = {};    ///< Array of shifts for the BCs for each input
+  static constexpr int mUsedInputsMax = 18;
+  std::array<TH1D*, mUsedInputsMax> mHisInputs = {};       ///< Array of input histograms, all BCs
+  std::array<TH1D*, mUsedInputsMax> mHisInputsYesLHC = {}; ///< Array of input histograms, LHC BCs
+  std::array<TH1D*, mUsedInputsMax> mHisInputsNotLHC = {}; ///< Array of input histograms, not LHC BCs
+  std::array<std::size_t, mUsedInputsMax> shiftBC = {};    ///< Array of shifts for the BCs for each input
   int mRunNumber;
   int indexMB1 = -1;
   int indexMB2 = -1;
