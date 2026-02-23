@@ -278,7 +278,6 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       tl->SetTextFont(142);
       tl->SetTextSize(0.08);
       hMap->GetListOfFunctions()->Add(tl);
-      tl->Draw();
     }
   }
 
@@ -299,7 +298,6 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
             b->SetFillStyle(4055);
             b->SetFillColor(15);
             h->GetListOfFunctions()->Add(b);
-            b->Draw();
           }
         }
       }
@@ -319,31 +317,25 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       msg1->Clear();
       msg1->AddText("Quality Good");
       msg1->SetFillColor(kGreen);
-      msg1->Draw();
       msg2->Clear();
       msg2->AddText("No action needed");
       msg2->SetFillColor(kGreen);
-      msg2->Draw();
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
       msg1->Clear();
       msg1->AddText("Quality medium");
       msg1->SetFillColor(kOrange);
-      msg1->Draw();
       msg2->Clear();
       msg2->AddText("Write a logbook entry tagging MFT");
       msg2->SetFillColor(kOrange);
-      msg2->Draw();
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad";
       msg1->Clear();
       msg1->AddText("Quality bad");
       msg1->SetFillColor(kRed);
-      msg1->Draw();
       msg2->Clear();
       msg2->AddText("Call the on-call!");
       msg2->SetFillColor(kRed);
-      msg2->Draw();
     }
   }
 }
