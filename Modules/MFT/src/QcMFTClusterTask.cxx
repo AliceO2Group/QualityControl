@@ -249,7 +249,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
       auto clusterR = std::make_unique<TH1FRatio>(
         Form("ClusterRinLayer/mClusterRinLayer%d", nMFTLayer),
-        Form("Cluster Radial Position in Layer %d; r (cm); # entries", nMFTLayer), 400, 0, 20, true);
+        Form("Cluster Radial Position in Layer %d; r (cm); # entries per orbit", nMFTLayer), 400, 0, 20, true);
       mClusterRinLayer.push_back(std::move(clusterR));
       getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
       getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
