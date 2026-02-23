@@ -408,6 +408,7 @@ void QcMFTClusterTask::endOfCycle()
       mClusterXYinLayer[nMFTLayer]->update();
       mClusterRinLayer[nMFTLayer]->update();
     }
+    updateCanvas();
   }
 }
 
@@ -440,6 +441,7 @@ void QcMFTClusterTask::reset()
       mClusterXYinLayer[nMFTLayer]->Reset();
       mClusterRinLayer[nMFTLayer]->Reset();
     }
+    mClusterRinAllLayers->Clear();
   }
 }
 
@@ -460,6 +462,21 @@ void QcMFTClusterTask::getChipMapData()
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
   }
+}
+
+void QcMFTClusterTask::updateCanvas()
+{
+  mClusterRinAllLayers->cd();
+  mClusterRinAllLayers->Clear();
+  THStack* stack = new THStack("stack", "Cluster Radial Position in All MFT Layers; r (cm); # entries");
+  for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+    mClusterRinLayer[nMFTLayer]->getNum()->SetTitle(Form("layer %d", nMFTLayer));
+    mClusterRinLayer[nMFTLayer]->getNum()->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
+    stack->Add(mClusterRinLayer[nMFTLayer]->getNum());
+  }
+  stack->Draw("nostack hist");
+  mClusterRinAllLayers->Update();
+  gPad->BuildLegend(0.8, 0.4, 0.9, 0.9, "", "l");
 }
 
 } // namespace o2::quality_control_modules::mft
