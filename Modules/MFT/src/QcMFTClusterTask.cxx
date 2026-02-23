@@ -262,7 +262,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mClusterRinAllLayersStack = std::make_unique<THStack>("mClusterRinAllLayersStack", "Cluster Radial Position in All MFT Layers; r (cm); # entries");
     for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
       mClusterRinLayer[nMFTLayer]->getNum()->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
-      mClusterRinLayer[nMFTLayer]->getNum()->SetTitle(Form("layer %d", nMFTLayer));
+      mClusterRinLayer[nMFTLayer]->getNum()->SetTitle(Form("D%dF%d", static_cast<int>(std::floor(nMFTLayer / 2.)), nMFTLayer % 2 == 0 ? 0 : 1));
       mClusterRinAllLayersStack->Add(mClusterRinLayer[nMFTLayer]->getNum());
     }
   }
@@ -476,7 +476,7 @@ void QcMFTClusterTask::updateCanvas()
   mClusterRinAllLayers->Clear();
   mClusterRinAllLayersStack->Draw("nostack hist");
   mClusterRinAllLayers->Update();
-  gPad->BuildLegend(0.8, 0.4, 0.9, 0.9, "", "l");
+  gPad->BuildLegend(0.83, 0.50, 0.90, 0.90, "", "l");
 }
 
 } // namespace o2::quality_control_modules::mft
