@@ -28,6 +28,8 @@
 #include <TH2.h>
 #include <TString.h>
 #include <TAxis.h>
+#include <THStack.h>
+#include <TColor.h>
 // O2
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
@@ -254,6 +256,9 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
       getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
     }
+    // canvas for for cluster R in all layers
+    mClusterRinAllLayers = std::make_unique<TCanvas>("mClusterRinAllLayers", "Cluster Radial Position in All MFT Layers");
+    getObjectsManager()->startPublishing(mClusterRinAllLayers.get());
   }
 }
 

@@ -16,6 +16,7 @@
 /// \author Katarina Krizkova Gajdosova
 /// \author Diana Maria Krupova
 /// \author David Grund
+/// \author Jakub Juracka
 ///
 
 #ifndef QC_MFT_CLUSTER_TASK_H
@@ -23,6 +24,8 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TCanvas.h>
+#include <TString.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include "ReconstructionDataFormats/BaseCluster.h"
 #include "MFTBase/GeometryTGeo.h"
@@ -79,6 +82,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::unique_ptr<TH1FRatio> mClusterZ = nullptr;
   std::vector<std::unique_ptr<TH2FRatio>> mClusterXYinLayer;
   std::vector<std::unique_ptr<TH1FRatio>> mClusterRinLayer;
+  std::unique_ptr<TCanvas> mClusterRinAllLayers = nullptr;
 
   std::unique_ptr<TH1FRatio> mClustersROFSize = nullptr;
   std::unique_ptr<TH1FRatio> mClustersBC = nullptr;
@@ -86,6 +90,8 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::vector<o2::BaseCluster<float>> mClustersGlobal;
 
   int mOnlineQC;
+
+  const TString mColors[10] = { "#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#8C564B", "#E377C2", "#9467BD", "#BCBD22", "#7F7F7F", "#17BECF" };
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };
