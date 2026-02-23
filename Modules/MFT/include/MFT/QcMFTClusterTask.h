@@ -26,6 +26,7 @@
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TString.h>
+#include <THStack.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include "ReconstructionDataFormats/BaseCluster.h"
 #include "MFTBase/GeometryTGeo.h"
@@ -83,6 +84,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   std::vector<std::unique_ptr<TH2FRatio>> mClusterXYinLayer;
   std::vector<std::unique_ptr<TH1FRatio>> mClusterRinLayer;
   std::unique_ptr<TCanvas> mClusterRinAllLayers = nullptr;
+  std::unique_ptr<THStack> mClusterRinAllLayersStack = nullptr;
 
   std::unique_ptr<TH1FRatio> mClustersROFSize = nullptr;
   std::unique_ptr<TH1FRatio> mClustersBC = nullptr;
