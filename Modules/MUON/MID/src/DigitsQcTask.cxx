@@ -140,8 +140,12 @@ void DigitsQcTask::startOfCycle()
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   mNbDigitTF->Fill(0.5, 1.);
-  auto digits = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Standard);
-  auto rofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Standard);
+
+  auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
+  auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digits_rof");
+
+  // auto digits = o2::mid::specs::getData(ctx, "digits", o2::mid::EventType::Standard);
+  // auto rofs = o2::mid::specs::getRofs(ctx, "digits", o2::mid::EventType::Standard);
 
   std::array<unsigned long int, 4> evtSizeB{};
   std::array<unsigned long int, 4> evtSizeNB{};
