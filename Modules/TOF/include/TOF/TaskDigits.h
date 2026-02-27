@@ -76,8 +76,11 @@ class TaskDigits final : public TaskInterface
   static constexpr int mBinsOrbitPerTimeFrame = mRangeMaxOrbitPerTimeFrame * 3; /// Max range in the OrbitPerTimeFrame axis. 3 orbits are recorded per time frame
   // Multiplicity
   int mBinsMultiplicity = 2000;                              /// Number of bins in multiplicity plot
+  int mBinsMultiplicity2D = 2000;                            /// Number of bins in multiplicity plot
+  int mBinsMultiplicityOrbit = 6000;                         /// Number of bins in multiplicity plot
   static constexpr int mRangeMinMultiplicity = 0;            /// Min range in multiplicity plot
   int mRangeMaxMultiplicity = mBinsMultiplicity;             /// Max range in multiplicity plot
+  int mRangeMaxMultiplicityOrbit = mBinsMultiplicityOrbit;   /// Max range in multiplicity plot
   static constexpr int mBinsBCForMultiplicity = mRangeMaxBC; /// Number of bins for the BC axis in the multiplicity vs BC plot
   // Time
   int mBinsTime = 300;                                  /// Number of bins in time plot
@@ -125,11 +128,13 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH2S> mHistoNoisyChannels = nullptr;       /// Channel flagged as noise (divided per flagged rate class)
 
   // Multiplicity
-  std::shared_ptr<TH1I> mHistoMultiplicity = nullptr;             /// TOF raw hit multiplicity per event
+  std::shared_ptr<TH1I> mHistoMultiplicity = nullptr;             /// TOF raw hit multiplicity per event - all rw
   std::shared_ptr<TH1I> mHistoMultiplicityIA = nullptr;           /// TOF raw hit multiplicity per event - I/A side
   std::shared_ptr<TH1I> mHistoMultiplicityOA = nullptr;           /// TOF raw hit multiplicity per event - O/A side
   std::shared_ptr<TH1I> mHistoMultiplicityIC = nullptr;           /// TOF raw hit multiplicity per event - I/C side
   std::shared_ptr<TH1I> mHistoMultiplicityOC = nullptr;           /// TOF raw hit multiplicity per event - O/C side
+  std::shared_ptr<TH1I> mHistoMultiplicityOrbit = nullptr;        /// TOF raw hit multiplicity per event - orbit
+  std::shared_ptr<TH1I> mHistoMultiplicityRW[3];                  /// TOF raw hit multiplicity per event - RW1
   std::shared_ptr<TH2F> mHitMultiplicityVsCrate = nullptr;        /// TOF raw hit multiplicity per event vs Crate
   std::shared_ptr<TProfile> mHitMultiplicityVsCratepro = nullptr; /// TOF raw hit multiplicity per event vs Crate (TProfile)
   std::shared_ptr<TH2F> mHitMultiplicityVsBC = nullptr;           /// TOF raw hit multiplicity per event vs BC
