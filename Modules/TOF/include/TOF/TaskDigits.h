@@ -77,7 +77,7 @@ class TaskDigits final : public TaskInterface
   // Multiplicity
   int mBinsMultiplicity = 2000;                              /// Number of bins in multiplicity plot
   int mBinsMultiplicity2D = 2000;                            /// Number of bins in multiplicity plot
-  int mBinsMultiplicityOrbit = 2000;                         /// Number of bins in multiplicity plot
+  int mBinsMultiplicityOrbit = 6000;                         /// Number of bins in multiplicity plot
   static constexpr int mRangeMinMultiplicity = 0;            /// Min range in multiplicity plot
   int mRangeMaxMultiplicity = mBinsMultiplicity;             /// Max range in multiplicity plot
   int mRangeMaxMultiplicityOrbit = mBinsMultiplicityOrbit;   /// Max range in multiplicity plot
