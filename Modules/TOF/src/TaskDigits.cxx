@@ -55,7 +55,10 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // Define parameters
   utils::parseIntParameter(mCustomParameters, "NbinsMultiplicity", mBinsMultiplicity);
+  utils::parseIntParameter(mCustomParameters, "NbinsMultiplicity2D", mBinsMultiplicity2D);
   utils::parseIntParameter(mCustomParameters, "RangeMaxMultiplicity", mRangeMaxMultiplicity);
+  utils::parseIntParameter(mCustomParameters, "NbinsMultiplicityOrbit", mBinsMultiplicityOrbit);
+  utils::parseIntParameter(mCustomParameters, "RangeMaxMultiplicityOrbit", mRangeMaxMultiplicityOrbit);
 
   utils::parseIntParameter(mCustomParameters, "NbinsTime", mBinsTime);
   utils::parseFloatParameter(mCustomParameters, "kNbinsWidthTime", fgkNbinsWidthTime);
@@ -144,16 +147,17 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   }
   getObjectsManager()->startPublishing(mHistoNoisyChannels.get());
 
-  // if mBinsMultiplicity > 1000 limit it in TH2F
-  int nBinsMultForTH2 = mBinsMultiplicity;
-  if (nBinsMultForTH2 > 1000) {
-    nBinsMultForTH2 = 1000;
-    ILOG(Info, Support) << "Requested Nbins in multiplicity is " << mBinsMultiplicity << " but limited to 1000 ONLY for TH2 " << ENDM;
-  }
-
   // Multiplicity
   mHistoMultiplicity = std::make_shared<TH1I>("Multiplicity/Integrated", "TOF hit multiplicity;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicity.get());
+
+  for (int i = 0; i < 3; i++) {
+    mHistoMultiplicityRW[i] = std::make_shared<TH1I>(Form("Multiplicity/ReadoutWindow%i", i + 1), Form("TOF hit multiplicity in rw%i;TOF hits;Events ", i + 1), mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+    getObjectsManager()->startPublishing(mHistoMultiplicityRW[i].get());
+  }
+
+  mHistoMultiplicityOrbit = std::make_shared<TH1I>("Multiplicity/IntegratedOrbit", "TOF hit multiplicity in orbit;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicityOrbit);
+  getObjectsManager()->startPublishing(mHistoMultiplicityOrbit.get());
 
   mHistoMultiplicityIA = std::make_shared<TH1I>("Multiplicity/SectorIA", "TOF hit multiplicity - I/A side;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicityIA.get());
@@ -167,13 +171,13 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoMultiplicityOC = std::make_shared<TH1I>("Multiplicity/SectorOC", "TOF hit multiplicity - O/C side;TOF hits;Events ", mBinsMultiplicity, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHistoMultiplicityOC.get());
 
-  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, nBinsMultForTH2, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  mHitMultiplicityVsCrate = std::make_shared<TH2F>("Multiplicity/VsCrate", "TOF hit multiplicity vs Crate;Crate;TOF hits", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, mBinsMultiplicity2D, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCrate.get());
 
   mHitMultiplicityVsCratepro = std::make_shared<TProfile>("Multiplicity/VsCratepro", "TOF hit multiplicity vs Crate;Crate;#LT TOF hits #GT", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mHitMultiplicityVsCratepro.get());
 
-  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, nBinsMultForTH2, mRangeMinMultiplicity, mRangeMaxMultiplicity);
+  mHitMultiplicityVsBC = std::make_shared<TH2F>("Multiplicity/VsBC", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC, mBinsMultiplicity2D, mRangeMinMultiplicity, mRangeMaxMultiplicity);
   getObjectsManager()->startPublishing(mHitMultiplicityVsBC.get());
 
   mHitMultiplicityVsBCpro = std::make_shared<TProfile>("Multiplicity/VsBCpro", "TOF hit multiplicity vs BC;BC;#TOF hits;Events", mBinsBCForMultiplicity, 0, mRangeMaxBC);
@@ -279,6 +283,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   int currentReadoutWindow = 0;
   int currentDiagnostics = 0;
+  int orbitMultiplicity = 0;
   // Loop on readout windows
   for (const auto& row : rows) {
     const auto& digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
@@ -345,7 +350,18 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         currentDiagnostics += nDia;
       }
     }
-    currentReadoutWindow++;
+
+    int windowIndex = currentReadoutWindow % 3;
+    int ndigits_in_row = digits_in_row.size();
+
+    mHistoMultiplicityRW[windowIndex]->Fill(ndigits_in_row);
+    orbitMultiplicity += ndigits_in_row;
+
+    if (windowIndex == 2) { // End of readout windows, fill orbit multiplicity
+
+      mHistoMultiplicityOrbit->Fill(orbitMultiplicity);
+      orbitMultiplicity = 0; // Reset
+    }
 
     // Loop on digits
     for (auto const& digit : digits_in_row) {
@@ -467,6 +483,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigitsPerQuater[1] = 0;
     ndigitsPerQuater[2] = 0;
     ndigitsPerQuater[3] = 0;
+    currentReadoutWindow++;
   }
 
   for (int iorb = 0; iorb < nOrbits; iorb++) {
@@ -542,6 +559,10 @@ void TaskDigits::reset()
   mHistoMultiplicityOA->Reset();
   mHistoMultiplicityIC->Reset();
   mHistoMultiplicityOC->Reset();
+  mHistoMultiplicityOrbit->Reset();
+  for (int i = 0; i < 3; i++) {
+    mHistoMultiplicityRW[i]->Reset();
+  }
   mHitMultiplicityVsCrate->Reset();
   mHitMultiplicityVsCratepro->Reset();
   mHitMultiplicityVsBC->Reset();
