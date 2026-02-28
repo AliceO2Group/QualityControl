@@ -195,7 +195,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDisplayHint(mClusterZ.get(), "hist");
 
   mClustersROFSize = std::make_unique<TH1FRatio>(
-    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
+    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), false);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "hist logx logy");
@@ -365,7 +365,8 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mGroupedClusterSizeSummary->getDen()->SetBinContent(1, mGroupedClusterSizeSummary->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mClusterOccupancySummary->getDen()->SetBinContent(1, 1, mClusterOccupancySummary->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
   mClusterZ->getDen()->SetBinContent(1, mClusterZ->getDen()->GetBinContent(1) + mNOrbitsPerTF);
-  mClustersROFSize->getDen()->SetBinContent(1, mClustersROFSize->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  for (int i = 0; i < QcMFTUtilTables::nROFBins; i++)
+    mClustersROFSize->getDen()->SetBinContent(i + 1, QcMFTUtilTables::mROFBins[i + 1] - QcMFTUtilTables::mROFBins[i]);
   mClustersBC->getDen()->SetBinContent(1, mClustersBC->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   if (mOnlineQC == 1) {
     mClusterPatternSensorIndices->getDen()->SetBinContent(1, 1, mClusterPatternSensorIndices->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
