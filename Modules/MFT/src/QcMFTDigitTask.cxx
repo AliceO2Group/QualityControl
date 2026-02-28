@@ -159,8 +159,8 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDisplayHint(mDigitOccupancySummary.get(), "colz");
 
   mDigitsROFSize = std::make_unique<TH1FRatio>("mDigitsROFSize",
-                                               "Distribution of the #digits per ROF; # digits per ROF; # entries per orbit",
-                                               QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
+                                               "Distribution of the #digits per ROF; # digits per ROF; # entries",
+                                               QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), false);
   mDigitsROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mDigitsROFSize.get());
   getObjectsManager()->setDisplayHint(mDigitsROFSize.get(), "hist logx logy");
@@ -310,7 +310,8 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDigitChipOccupancy->getDen()->SetBinContent(1, mDigitChipOccupancy->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mDigitOccupancySummary->getDen()->SetBinContent(1, 1, mDigitOccupancySummary->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
   mDigitDoubleColumnSensorIndices->getDen()->SetBinContent(1, 1, mDigitDoubleColumnSensorIndices->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
-  mDigitsROFSize->getDen()->SetBinContent(1, mDigitsROFSize->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  for (int i = 0; i < QcMFTUtilTables::nROFBins; i++)
+    mDigitsROFSize->getDen()->SetBinContent(i + 1, QcMFTUtilTables::mROFBins[i + 1] - QcMFTUtilTables::mROFBins[i]);
   mDigitsBC->getDen()->SetBinContent(1, mDigitsBC->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   for (int i = 0; i < 4; i++)
     mDigitChipOccupancyMap[i]->getDen()->SetBinContent(1, 1, mDigitChipOccupancyMap[i]->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);

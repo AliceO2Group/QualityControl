@@ -178,7 +178,7 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTrackTanl.get());
   getObjectsManager()->setDisplayHint(mTrackTanl.get(), "hist");
 
-  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
+  mTrackROFNEntries = std::make_unique<TH1FRatio>("mMFTTrackROFSize", "Distribution of the #tracks per ROF; # tracks per ROF; # entries", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), false);
   getObjectsManager()->startPublishing(mTrackROFNEntries.get());
   getObjectsManager()->setDisplayHint(mTrackROFNEntries.get(), "hist logx logy");
 
@@ -324,7 +324,8 @@ void QcMFTTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   mCATrackPt->getDen()->SetBinContent(1, mCATrackPt->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mLTFTrackPt->getDen()->SetBinContent(1, mLTFTrackPt->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mTrackTanl->getDen()->SetBinContent(1, mTrackTanl->getDen()->GetBinContent(1) + mNOrbitsPerTF);
-  mTrackROFNEntries->getDen()->SetBinContent(1, mTrackROFNEntries->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  for (int i = 0; i < QcMFTUtilTables::nROFBins; i++)
+    mTrackROFNEntries->getDen()->SetBinContent(i + 1, QcMFTUtilTables::mROFBins[i + 1] - QcMFTUtilTables::mROFBins[i]);
   mTracksBC->getDen()->SetBinContent(1, mTracksBC->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mAssociatedClusterFraction->getDen()->SetBinContent(1, mAssociatedClusterFraction->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mClusterRatioVsBunchCrossing->getDen()->SetBinContent(1, 1, mClusterRatioVsBunchCrossing->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
