@@ -92,7 +92,7 @@ void TrendingCalibLHCphase::finalize(Trigger t, framework::ServiceRegistryRef)
 
 void TrendingCalibLHCphase::trendValues(const Trigger& t, repository::DatabaseInterface& ccdb)
 {
-  mTime = t.timestamp / 1000;
+  mTime = t.activity.mValidity.getMax() / 1000;
   mMetaData.runNumber = t.activity.mId;
 
   mPhase = 0.;
