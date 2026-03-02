@@ -53,6 +53,7 @@ class DigitsQcCheck : public o2::quality_control::checker::CheckInterface
   int nBadLB = 0;
   double maxVal = 0;
   double minVal = 1000;
+  int LineResp[36] = { 0 }; // NN
 
   std::unordered_map<std::string, Quality> mQualityMap; ///! Quality map
 

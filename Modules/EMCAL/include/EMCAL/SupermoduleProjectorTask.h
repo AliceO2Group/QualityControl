@@ -20,6 +20,7 @@
 // QC includes
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/PostProcessingInterface.h"
+#include "EMCAL/IndicesConverter.h"
 #include <map>
 #include <memory>
 #include <vector>
@@ -98,6 +99,7 @@ class SupermoduleProjectorTask final : public quality_control::postprocessing::P
   std::vector<DataSource> mDataSources;                    ///< Data sources to be projected
   std::map<std::string, TCanvas*> mCanvasHandler;          ///< Mapping between data source and output canvas
   std::map<std::string, PlotAttributes> mAttributeHandler; ///< Customizations for canvases (i.e. axis titles)
+  o2::emcal::IndicesConverter mIndicesConverter;           ///< Converter for online-offline supermodule indices
 };
 
 } // namespace o2::quality_control_modules::emcal

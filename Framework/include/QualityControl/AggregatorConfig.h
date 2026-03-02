@@ -31,7 +31,6 @@ namespace o2::quality_control::checker
 
 /// \brief  Container for the configuration of an Aggregator.
 struct AggregatorConfig : public o2::quality_control::core::UserCodeConfig {
-  std::string name;
   UpdatePolicyType policyType = UpdatePolicyType::OnAny;
   std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var // fixme: duplicates "sources"
   bool allObjects = false;

@@ -13,6 +13,7 @@
 #define QC_MODULE_EMCAL_EMCALRAWCHECK_H
 
 #include "QualityControl/CheckInterface.h"
+#include "EMCAL/IndicesConverter.h"
 #include <array>
 #include <tuple>
 #include <vector>
@@ -63,6 +64,11 @@ class RawCheck final : public o2::quality_control::checker::CheckInterface
   bool mILMessageRawErrorCheck = false;            ///< Switch for IL message for error code
   bool mILMessageNoisyFECCheck = false;            ///< Switch for IL message for noisy FEC
   bool mILMessagePayloadSizeCheck = false;         ///< Switch for IL message for large payload size
+
+  /************************************************
+   * Conversion between online and offline indices *
+   ************************************************/
+  o2::emcal::IndicesConverter mIndicesConverter; ///< Converter for online and offline supermodule indices
 
   /************************************************
    * sigma cuts                                   *

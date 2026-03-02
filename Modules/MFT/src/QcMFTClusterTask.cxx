@@ -28,6 +28,8 @@
 #include <TH2.h>
 #include <TString.h>
 #include <TAxis.h>
+#include <THStack.h>
+#include <TColor.h>
 // O2
 #include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
@@ -195,7 +197,7 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDisplayHint(mClusterZ.get(), "hist");
 
   mClustersROFSize = std::make_unique<TH1FRatio>(
-    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries per orbit", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), true);
+    "mClustersROFSize", "Distribution of the #clusters per ROF; # clusters per ROF; # entries", QcMFTUtilTables::nROFBins, const_cast<float*>(QcMFTUtilTables::mROFBins), false);
   mClustersROFSize->SetStats(0);
   getObjectsManager()->startPublishing(mClustersROFSize.get());
   getObjectsManager()->setDisplayHint(mClustersROFSize.get(), "hist logx logy");
@@ -249,10 +251,19 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
       auto clusterR = std::make_unique<TH1FRatio>(
         Form("ClusterRinLayer/mClusterRinLayer%d", nMFTLayer),
-        Form("Cluster Radial Position in Layer %d; r (cm); # entries", nMFTLayer), 400, 0, 20, true);
+        Form("Cluster Radial Position in Layer %d; r (cm); # entries per orbit", nMFTLayer), 400, 0, 20, true);
       mClusterRinLayer.push_back(std::move(clusterR));
       getObjectsManager()->startPublishing(mClusterRinLayer[nMFTLayer].get());
       getObjectsManager()->setDisplayHint(mClusterRinLayer[nMFTLayer].get(), "hist");
+    }
+    // canvas for for cluster R in all layers
+    mClusterRinAllLayers = std::make_unique<TCanvas>("mClusterRinAllLayers", "Cluster Radial Position in All MFT Layers");
+    getObjectsManager()->startPublishing(mClusterRinAllLayers.get());
+    mClusterRinAllLayersStack = std::make_unique<THStack>("mClusterRinAllLayersStack", "Cluster Radial Position in All MFT Layers; r (cm); # entries");
+    for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+      mClusterRinLayer[nMFTLayer]->getNum()->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
+      mClusterRinLayer[nMFTLayer]->getNum()->SetTitle(Form("D%dF%d", static_cast<int>(std::floor(nMFTLayer / 2.)), nMFTLayer % 2 == 0 ? 0 : 1));
+      mClusterRinAllLayersStack->Add(mClusterRinLayer[nMFTLayer]->getNum());
     }
   }
 }
@@ -365,7 +376,8 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mGroupedClusterSizeSummary->getDen()->SetBinContent(1, mGroupedClusterSizeSummary->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   mClusterOccupancySummary->getDen()->SetBinContent(1, 1, mClusterOccupancySummary->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
   mClusterZ->getDen()->SetBinContent(1, mClusterZ->getDen()->GetBinContent(1) + mNOrbitsPerTF);
-  mClustersROFSize->getDen()->SetBinContent(1, mClustersROFSize->getDen()->GetBinContent(1) + mNOrbitsPerTF);
+  for (int i = 0; i < QcMFTUtilTables::nROFBins; i++)
+    mClustersROFSize->getDen()->SetBinContent(i + 1, QcMFTUtilTables::mROFBins[i + 1] - QcMFTUtilTables::mROFBins[i]);
   mClustersBC->getDen()->SetBinContent(1, mClustersBC->getDen()->GetBinContent(1) + mNOrbitsPerTF);
   if (mOnlineQC == 1) {
     mClusterPatternSensorIndices->getDen()->SetBinContent(1, 1, mClusterPatternSensorIndices->getDen()->GetBinContent(1, 1) + mNOrbitsPerTF);
@@ -403,6 +415,7 @@ void QcMFTClusterTask::endOfCycle()
       mClusterXYinLayer[nMFTLayer]->update();
       mClusterRinLayer[nMFTLayer]->update();
     }
+    updateCanvas();
   }
 }
 
@@ -435,6 +448,7 @@ void QcMFTClusterTask::reset()
       mClusterXYinLayer[nMFTLayer]->Reset();
       mClusterRinLayer[nMFTLayer]->Reset();
     }
+    mClusterRinAllLayers->Clear();
   }
 }
 
@@ -455,6 +469,15 @@ void QcMFTClusterTask::getChipMapData()
     mX[i] = MFTTable.mX[i];
     mY[i] = MFTTable.mY[i];
   }
+}
+
+void QcMFTClusterTask::updateCanvas()
+{
+  mClusterRinAllLayers->cd();
+  mClusterRinAllLayers->Clear();
+  mClusterRinAllLayersStack->Draw("nostack hist");
+  mClusterRinAllLayers->Update();
+  gPad->BuildLegend(0.83, 0.50, 0.90, 0.90, "", "l");
 }
 
 } // namespace o2::quality_control_modules::mft

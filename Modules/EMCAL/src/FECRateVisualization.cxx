@@ -17,6 +17,7 @@
 #include <TH1.h>
 #include <TLegend.h>
 #include <TTree.h>
+#include <TLatex.h>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -44,6 +45,7 @@ void FECRateVisualization::configure(const boost::property_tree::ptree& config)
 
 void FECRateVisualization::initialize(Trigger, framework::ServiceRegistryRef)
 {
+  mIndicesConverter.Initialize();
   for (int ism = 0; ism < 20; ism++) {
     mSupermoduleCanvas[ism] = std::make_unique<TCanvas>(Form("FECRatesSM%d", ism), Form("FEC rates for supermodule %d", ism), 800, 600);
     getObjectsManager()->startPublishing(mSupermoduleCanvas[ism].get(), PublicationPolicy::Forever);
@@ -79,6 +81,7 @@ void FECRateVisualization::update(Trigger t, framework::ServiceRegistryRef servi
     int minfec = smID * 40;
     mSupermoduleCanvas[smID]->Clear();
     mSupermoduleCanvas[smID]->Divide(2, 2);
+    mSupermoduleCanvas[smID]->SetTopMargin(0.1);
     int currentpad = 0;
     TLegend* leg = nullptr;
     bool isFirst = true;
@@ -144,6 +147,11 @@ void FECRateVisualization::update(Trigger t, framework::ServiceRegistryRef servi
     }
 
     mSupermoduleCanvas[smID]->cd();
+    TLatex* msg = new TLatex(0.35, 0.96, Form("Supermodule %d (%s)", smID, mIndicesConverter.GetOnlineSMIndex(smID).data()));
+    msg->SetNDC();
+    msg->SetTextSize(0.05);
+    msg->SetTextFont(62);
+    msg->Draw();
     mSupermoduleCanvas[smID]->Update();
   }
 }

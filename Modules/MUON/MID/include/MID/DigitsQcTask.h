@@ -85,6 +85,8 @@ class DigitsQcTask final : public TaskInterface
   std::array<std::unique_ptr<TH2F>, 4> mBendHitsMap{};
   std::array<std::unique_ptr<TH2F>, 4> mNBendHitsMap{};
 
+  std::array<std::unique_ptr<TH1F>, 36> mLineLocalResp{};
+
   std::unique_ptr<TH1F> mDigitBCCounts{ nullptr };
 
   o2::mid::Mapping mMapping;

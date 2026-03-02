@@ -26,7 +26,7 @@
 #include "QualityControl/Activity.h"
 #include <Common/Exceptions.h>
 #include "QualityControl/CommonSpec.h"
-#include "QualityControl/HashDataDescription.h"
+#include "QualityControl/DataHeaderHelpers.h"
 
 #include <utility>
 #include <algorithm>
@@ -240,6 +240,7 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
   }
 
   return {
+    aggregatorSpec.aggregatorName,
     aggregatorSpec.moduleName,
     aggregatorSpec.className,
     aggregatorSpec.detectorName,
@@ -247,7 +248,7 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
     aggregatorSpec.customParameters,
     commonSpec.conditionDBUrl,
     commonSpec.database,
-    aggregatorSpec.aggregatorName,
+    aggregatorSpec.dataSources,
     updatePolicy,
     std::move(objectNames),
     checkAllObjects,

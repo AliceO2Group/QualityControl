@@ -40,6 +40,6 @@
 #pragma link C++ class o2::quality_control_modules::emcal::RawErrorCheckAll + ;
 #pragma link C++ class o2::quality_control_modules::emcal::DrawGridlines + ;
 
-      #pragma link C++ class o2::quality_control_modules::emcal::FECRateVisualization+;
-      
-      #endif
+#pragma link C++ class o2::quality_control_modules::emcal::FECRateVisualization+;
+
+#endif

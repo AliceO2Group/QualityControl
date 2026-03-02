@@ -21,6 +21,7 @@
 #include <array>
 #include <memory>
 #include <TCanvas.h>
+#include <EMCAL/IndicesConverter.h>
 
 namespace o2::quality_control_modules::emcal
 {
@@ -60,6 +61,7 @@ class FECRateVisualization final : public quality_control::postprocessing::PostP
 
  private:
   std::array<std::unique_ptr<TCanvas>, 20> mSupermoduleCanvas; /// Canvas with FEC Rates per supermodule
+  o2::emcal::IndicesConverter mIndicesConverter;               ///< Converter for online-offline supermodule indices
   double mMaxRate = 2000.;
 };
 

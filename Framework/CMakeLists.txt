@@ -98,7 +98,7 @@ add_library(O2QualityControl
   src/InfrastructureSpecReader.cxx
   src/Check.cxx
   src/Aggregator.cxx
-  src/HashDataDescription.cxx
+  src/DataHeaderHelpers.cxx
   src/Triggers.cxx
   src/TriggerHelpers.cxx
   src/PostProcessingRunner.cxx
@@ -139,6 +139,7 @@ add_library(O2QualityControl
   src/ObjectMetadataHelpers.cxx
   src/QCInputsAdapters.cxx
   src/QCInputsFactory.cxx
+  src/UserInputOutput.cxx
 )
 
 target_include_directories(
@@ -173,8 +174,7 @@ target_link_libraries(O2QualityControl
                              O2::GlobalTracking
                              O2QualityControlKafkaProtos
                              ${RDKAFKA_LIB}
-                      PRIVATE Boost::system
-                              CURL::libcurl
+                      PRIVATE CURL::libcurl
                               O2QualityControlInfoLogger
                               )
 
@@ -276,6 +276,7 @@ add_executable(o2-qc-test-core
                test/testCheckInterface.cxx
                test/testCheckRunner.cxx
                test/testCustomParameters.cxx
+               test/testDataHeaderHelpers.cxx
                test/testInfrastructureGenerator.cxx
                test/testMonitorObject.cxx
                test/testPolicyManager.cxx
@@ -293,6 +294,7 @@ add_executable(o2-qc-test-core
                test/testFlagHelpers.cxx
                test/testQualitiesToFlagCollectionConverter.cxx
                test/testQCInputs.cxx
+               test/testUserInputOutput.cxx
 )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

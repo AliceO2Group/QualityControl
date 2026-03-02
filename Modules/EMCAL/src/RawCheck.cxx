@@ -57,6 +57,8 @@ void RawCheck::configure()
   loadConfigValueDouble("BunchMinAmpFractionSignalSM", mBunchMinCheckFractionSignalSM);
   loadConfigValueInt("BunchMinAmpMinEntriesFEC", mBunchMinCheckMinEntriesFEC);
   loadConfigValueDouble("BunchMinAmpFractionSignalFEC", mBunchMinCheckFractionSignalFEC);
+
+  mIndicesConverter.Initialize();
 }
 
 Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -90,7 +92,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
             result = Quality::Bad;
             std::stringstream messagebuilder;
             for (auto imod : badModules) {
-              messagebuilder << "Pedestals peak detected in SM " << imod << std::endl;
+              messagebuilder << "Pedestals peak detected in SM " << imod << " " << mIndicesConverter.GetOnlineSMIndex(imod) << std::endl;
             }
             message = messagebuilder.str();
           } else {
@@ -110,10 +112,10 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
             std::stringstream messagebuilder;
             for (int ism = 0; ism < fecsPerSM.size(); ism++) {
               if (badsms.test(ism)) {
-                messagebuilder << "Pedestals not set full SM " << ism << std::endl;
+                messagebuilder << "Pedestals not set full SM " << ism << " " << mIndicesConverter.GetOnlineSMIndex(ism) << std::endl;
               } else {
                 for (auto& fec : fecsPerSM[ism]) {
-                  messagebuilder << "Pedestals not set SM " << ism << " FEC " << fec << std::endl;
+                  messagebuilder << "Pedestals not set SM " << ism << " " << mIndicesConverter.GetOnlineSMIndex(ism) << " FEC " << fec << std::endl;
                 }
               }
             }
