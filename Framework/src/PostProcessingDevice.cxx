@@ -22,6 +22,7 @@
 #include "QualityControl/PostProcessingRunnerConfig.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DataHeaderHelpers.h"
+#include "QualityControl/UserInputOutput.h"
 #include "QualityControl/runnerUtils.h"
 
 #include <Common/Exceptions.h>
@@ -32,8 +33,6 @@
 
 using namespace AliceO2::Common;
 using namespace o2::framework;
-
-constexpr auto outputBinding = "mo";
 
 namespace o2::quality_control::postprocessing
 {
@@ -66,7 +65,7 @@ void PostProcessingDevice::run(framework::ProcessingContext& ctx)
 {
   // we set the publication callback each time, because we cannot be sure that
   // the reference to DataAllocator does not change
-  mRunner->setPublicationCallback(publishToDPL(ctx.outputs(), outputBinding));
+  mRunner->setPublicationCallback(publishToDPL(ctx.outputs(), mRunnerConfig.taskName));
 
   // When run returns false, it has done its processing.
   if (!mRunner->run()) {
@@ -78,34 +77,6 @@ void PostProcessingDevice::run(framework::ProcessingContext& ctx)
 std::string PostProcessingDevice::createPostProcessingDeviceName(const std::string& taskName, const std::string& detectorName)
 {
   return "qc-pp-" + detectorName + "-" + taskName;
-}
-
-header::DataOrigin PostProcessingDevice::createPostProcessingDataOrigin(const std::string& detectorCode)
-{
-  // We need a unique Data Origin, so we can have PP Tasks with the same names for different detectors.
-  // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'P' to the data origin, so it is P<det>.
-  std::string originStr = "P";
-  if (detectorCode.empty()) {
-    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
-    originStr += "DET";
-  } else if (detectorCode.size() > 3) {
-    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
-    originStr += detectorCode.substr(0, 3);
-  } else {
-    originStr += detectorCode;
-  }
-  o2::header::DataOrigin origin;
-  origin.runtimeInit(originStr.c_str());
-  return origin;
-}
-
-header::DataDescription PostProcessingDevice::createPostProcessingDataDescription(const std::string& taskName)
-{
-  if (taskName.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for pp-task's data description"));
-  }
-
-  return quality_control::core::createDataDescription(taskName, PostProcessingDevice::descriptionHashLength);
 }
 
 void PostProcessingDevice::start(ServiceRegistryRef services)
@@ -134,7 +105,7 @@ framework::Inputs PostProcessingDevice::getInputsSpecs()
   timerDescription.runtimeInit(std::string("T-" + mRunner->getID()).substr(0, o2::header::DataDescription::size).c_str());
 
   return { { "timer-pp-" + mRunner->getID(),
-             createPostProcessingDataOrigin(mRunnerConfig.detectorName),
+             createDataOrigin(core::DataSourceType::PostProcessingTask, mRunnerConfig.detectorName),
              timerDescription,
              0,
              Lifetime::Timer } };
@@ -142,7 +113,7 @@ framework::Inputs PostProcessingDevice::getInputsSpecs()
 
 framework::Outputs PostProcessingDevice::getOutputSpecs() const
 {
-  return { { { outputBinding }, createPostProcessingDataOrigin(mRunnerConfig.detectorName), createPostProcessingDataDescription(mRunnerConfig.taskName), 0, Lifetime::Sporadic } };
+  return { createUserOutputSpec(core::DataSourceType::PostProcessingTask, mRunnerConfig.detectorName, mRunnerConfig.taskName) };
 }
 
 framework::Options PostProcessingDevice::getOptions()

@@ -337,7 +337,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
     auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
     workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
 
-    fileSinkInputs.emplace_back(taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic);
+    fileSinkInputs.emplace_back(createUserInputSpec(DataSourceType::Task, taskSpec.detectorName, taskSpec.taskName));
   }
 
   if (!fileSinkInputs.empty()) {
@@ -377,9 +377,8 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     // We create an OutputSpec for moving windows for this task only if they are expected.
     if (!taskConfig.movingWindows.empty()) {
       fileSourceOutputs.push_back(
-        { RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName, true),
-          TaskRunner::createTaskDataOrigin(taskSpec.detectorName, true),
-          TaskRunner::createTaskDataDescription(taskSpec.taskName), 0, Lifetime::Sporadic });
+        createUserOutputSpec(DataSourceType::TaskMovingWindow, taskSpec.detectorName, taskSpec.taskName, 0,
+                             RootFileSource::outputBinding(taskSpec.detectorName, taskSpec.taskName, true)));
     }
   }
   if (!fileSourceOutputs.empty()) {
@@ -530,7 +529,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
   std::string remotePort = std::to_string(taskSpec.remotePort);
   std::string proxyName = taskSpec.detectorName + "-" + taskName + "-proxy";
   std::string channelName = taskSpec.detectorName + "-" + taskName + "-proxy";
-  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName, false), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic };
+  InputSpec proxyInput = createUserInputSpec(DataSourceType::Task, taskSpec.detectorName, taskName, static_cast<SubSpec>(id), channelName);
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" +
                               taskSpec.remoteMachine + ":" + remotePort + ",rateLogging=60,transport=zeromq,sndBufSize=4";
 
@@ -554,7 +553,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   Outputs proxyOutputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     proxyOutputs.emplace_back(
-      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(taskSpec.detectorName, false), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic });
+      createUserOutputSpec(DataSourceType::Task, taskSpec.detectorName, taskName, static_cast<SubSpec>(id), { channelName }));
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
@@ -586,20 +585,14 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     mergerInputs.emplace_back(
-      InputSpec{ { taskName + std::to_string(id) },
-                 TaskRunner::createTaskDataOrigin(detectorName, false),
-                 TaskRunner::createTaskDataDescription(taskName),
-                 static_cast<SubSpec>(id),
-                 Lifetime::Sporadic });
+      createUserInputSpec(DataSourceType::Task, detectorName, taskName, static_cast<SubSpec>(id), taskName + std::to_string(id)));
   }
 
   MergerInfrastructureBuilder mergersBuilder;
   mergersBuilder.setInfrastructureName(taskName);
   mergersBuilder.setInputSpecs(mergerInputs);
-  mergersBuilder.setOutputSpec(
-    { { "main" }, TaskRunner::createTaskDataOrigin(detectorName, false), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic });
-  mergersBuilder.setOutputSpecMovingWindow(
-    { { "main_mw" }, TaskRunner::createTaskDataOrigin(detectorName, true), TaskRunner::createTaskDataDescription(taskName), 0, Lifetime::Sporadic });
+  mergersBuilder.setOutputSpec(createUserOutputSpec(DataSourceType::Task, detectorName, taskName, 0, { "main" }));
+  mergersBuilder.setOutputSpecMovingWindow(createUserOutputSpec(DataSourceType::TaskMovingWindow, detectorName, taskName, 0, { "main_mw" }));
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
@@ -630,23 +623,20 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   // todo: avoid code repetition
   for (const auto& taskSpec : infrastructureSpec.tasks | std::views::filter(&TaskSpec::active)) {
-    InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
+    InputSpec taskOutput{ createUserInputSpec(DataSourceType::Task, taskSpec.detectorName, taskSpec.taskName) };
     tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
 
     bool movingWindowsEnabled = !taskSpec.movingWindows.empty();
     bool synchronousRemote = taskSpec.location == TaskLocationSpec::Local && (infrastructureSpec.workflowType == WorkflowType::Remote || infrastructureSpec.workflowType == WorkflowType::FullChain);
     bool asynchronousRemote = infrastructureSpec.workflowType == WorkflowType::RemoteBatch;
     if (movingWindowsEnabled && (synchronousRemote || asynchronousRemote)) {
-      InputSpec taskMovingWindowOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(taskSpec.detectorName, true), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
+      InputSpec taskMovingWindowOutput{ createUserInputSpec(DataSourceType::TaskMovingWindow, taskSpec.detectorName, taskSpec.taskName) };
       tasksOutputMap.insert({ DataSpecUtils::label(taskMovingWindowOutput), taskMovingWindowOutput });
     }
   }
 
   for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks | std::views::filter(&PostProcessingTaskSpec::active)) {
-    InputSpec ppTaskOutput{ ppTaskSpec.taskName,
-                            PostProcessingDevice::createPostProcessingDataOrigin(ppTaskSpec.detectorName),
-                            PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName),
-                            Lifetime::Sporadic };
+    InputSpec ppTaskOutput{ createUserInputSpec(DataSourceType::PostProcessingTask, ppTaskSpec.detectorName, ppTaskSpec.taskName) };
     tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
   }
 
@@ -779,27 +769,18 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, con
   }
 }
 
-template <typename Type>
-auto createSinkInput(const std::string& detectorName, const std::string& name) -> framework::InputSpec
-{
-  const auto outputSpec = Type::createOutputSpec(detectorName, name);
-  auto input = DataSpecUtils::matchingInput(outputSpec);
-  input.binding = name;
-  return input;
-}
-
 void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
   framework::Inputs sinkInputs{};
 
   for (const auto& checkSpec : infrastructureSpec.checks | std::views::filter(&CheckSpec::active) | std::views::filter(&CheckSpec::exportToBookkeeping)) {
     ILOG(Debug, Support) << "Adding input to BookkeepingSink from check " << checkSpec.checkName << " and detector: " << checkSpec.detectorName << ENDM;
-    sinkInputs.emplace_back(createSinkInput<Check>(checkSpec.detectorName, checkSpec.checkName));
+    sinkInputs.emplace_back(createUserInputSpec(DataSourceType::Check, checkSpec.detectorName, checkSpec.checkName));
   }
 
   for (const auto& aggregatorSpec : infrastructureSpec.aggregators | std::views::filter(&AggregatorSpec::active) | std::views::filter(&AggregatorSpec::exportToBookkeeping)) {
     ILOG(Debug, Support) << "Adding input to BookkeepingSink from aggregator " << aggregatorSpec.aggregatorName << " and detector: " << aggregatorSpec.detectorName << ENDM;
-    sinkInputs.emplace_back(createSinkInput<Aggregator>(aggregatorSpec.detectorName, aggregatorSpec.aggregatorName));
+    sinkInputs.emplace_back(createUserInputSpec(DataSourceType::Aggregator, aggregatorSpec.detectorName, aggregatorSpec.aggregatorName));
   }
 
   if (sinkInputs.empty()) {

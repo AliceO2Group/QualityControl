@@ -51,10 +51,6 @@ struct AggregatorSpec;
 class Aggregator
 {
  public:
-  /// \brief Number of bytes in data description used for hashing of AggregatorRunner names. See HashDataDescription.h for details
-  static constexpr size_t descriptionHashLength = 4;
-  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
-
   /// Constructor
   /**
    * \brief Aggregator constructor
@@ -84,7 +80,6 @@ class Aggregator
   void endOfActivity(const core::Activity& activity);
 
   static AggregatorConfig extractConfig(const core::CommonSpec&, const AggregatorSpec&);
-  static framework::OutputSpec createOutputSpec(const std::string& detector, const std::string& aggregatorName);
 
  private:
   /**

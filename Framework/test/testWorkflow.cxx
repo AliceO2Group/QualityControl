@@ -16,10 +16,12 @@
 
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "QualityControl/UserInputOutput.h"
 
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
+using namespace o2::quality_control::core;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
@@ -70,17 +72,19 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
+  const auto checkName = getFirstCheckName(qcConfigurationSource);
+
   // Finally the receiver
   DataProcessorSpec receiver{
     "receiver",
     Inputs{
-      { "checked-mo", "CTST", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+      createUserInputSpec(DataSourceType::Check, "TST", checkName) },
     Outputs{},
     AlgorithmSpec{
-      [](ProcessingContext& pctx) {
+      [checkName](ProcessingContext& pctx) {
         // If any message reaches this point, the QC workflow should work at least on a basic level.
 
-        auto qo = pctx.inputs().get<QualityObject*>("checked-mo");
+        auto qo = pctx.inputs().get<QualityObject*>(checkName);
         if (!qo) {
           ILOG(Error, Devel) << "Quality Object is a NULL" << ENDM;
           pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
