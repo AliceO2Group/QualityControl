@@ -14,6 +14,8 @@ target_sources(O2QcTRD PRIVATE
               src/RawDataCheck.cxx
               src/DigitsTask.cxx
               src/TRDTrending.cxx
+              src/TrackletsTrending.cxx
+              src/TrdTrySkeltonTask.cxx
               src/TrendingTaskConfigTRD.cxx
               src/PulseHeightPostProcessing.cxx
               src/TRDHelpers.cxx)
@@ -45,6 +47,8 @@ add_root_dictionary(O2QcTRD HEADERS
                     include/TRD/PulseHeightPostProcessing.h
                     include/TRD/DigitsTask.h
                     include/TRD/TRDTrending.h
+                    include/TRD/TrackletsTrending.h
+                    include/TRD/TrdTrySkeltonTask.h
                     include/TRD/TrendingTaskConfigTRD.h
                     LINKDEF include/TRD/LinkDef.h)
 
