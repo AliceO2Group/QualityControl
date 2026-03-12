@@ -18,10 +18,12 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "QualityControl/UserInputOutput.h"
 
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
+using namespace o2::quality_control::core;
 
 const std::string receiverName = "Receiver";
 
@@ -110,7 +112,7 @@ class Receiver : public o2::framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "CTST", Check::createCheckDataDescription(checkName), Lifetime::Sporadic });
+      inputs.push_back({ checkName, createUserDataMatcher(DataSourceType::Check, "TST", checkName), Lifetime::Sporadic });
     }
     return inputs;
   }

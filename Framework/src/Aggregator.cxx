@@ -26,7 +26,7 @@
 #include "QualityControl/Activity.h"
 #include <Common/Exceptions.h>
 #include "QualityControl/CommonSpec.h"
-#include "QualityControl/DataHeaderHelpers.h"
+#include "QualityControl/UserInputOutput.h"
 
 #include <utility>
 #include <algorithm>
@@ -253,31 +253,9 @@ AggregatorConfig Aggregator::extractConfig(const core::CommonSpec& commonSpec, c
     std::move(objectNames),
     checkAllObjects,
     std::move(inputs),
-    createOutputSpec(aggregatorSpec.detectorName, aggregatorSpec.aggregatorName),
+    createUserOutputSpec(DataSourceType::Aggregator, aggregatorSpec.detectorName, aggregatorSpec.aggregatorName),
     sources
   };
-}
-
-o2::header::DataOrigin createAggregatorDataOrigin(const std::string& detector)
-{
-  using Origin = o2::header::DataOrigin;
-  Origin header;
-  header.runtimeInit(std::string{ "A" }.append(detector.substr(0, Origin::size - 1)).c_str());
-  return header;
-}
-
-o2::header::DataDescription createAggregatorDataDescription(const std::string& aggregatorName)
-{
-  if (aggregatorName.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << AliceO2::Common::errinfo_details("Empty aggregatorName for aggregator's data description"));
-  }
-
-  return quality_control::core::createDataDescription(aggregatorName, Aggregator::descriptionHashLength);
-}
-
-framework::OutputSpec Aggregator::createOutputSpec(const std::string& detector, const std::string& aggregatorName)
-{
-  return { createAggregatorDataOrigin(detector), createAggregatorDataDescription(aggregatorName), 0, framework::Lifetime::Sporadic };
 }
 
 void Aggregator::startOfActivity(const core::Activity& activity)

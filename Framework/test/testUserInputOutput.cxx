@@ -28,26 +28,38 @@ namespace o2::quality_control::core
 
 TEST_CASE("ConcreteDataMatcher")
 {
-  auto dataMatcher = createUserDataMatcher(DataSourceType::Task, "TST", "mytask");
+  auto dataMatcher = createUserDataMatcher(DataSourceType::Task, "TST", "mytask", 7);
   CHECK(dataMatcher.origin == DataOrigin{ "QTST" });
   CHECK(dataMatcher.description == DataDescription{ "mytask" });
-  CHECK(dataMatcher.subSpec == 0);
+  CHECK(dataMatcher.subSpec == 7);
 }
 
 TEST_CASE("InputSpec")
 {
-  auto inputSpec = createUserInputSpec(DataSourceType::Task, "TST", "mytask");
-  CHECK(inputSpec.binding == "mytask");
-  CHECK(inputSpec.lifetime == framework::Lifetime::Sporadic);
-  CHECK(framework::DataSpecUtils::match(inputSpec, framework::ConcreteDataMatcher{ DataOrigin{ "QTST" }, DataDescription{ "mytask" }, 0 }));
+  {
+    auto inputSpec = createUserInputSpec(DataSourceType::Task, "TST", "mytask", 3);
+    CHECK(inputSpec.binding == "mytask");
+    CHECK(inputSpec.lifetime == framework::Lifetime::Sporadic);
+    CHECK(framework::DataSpecUtils::match(inputSpec, framework::ConcreteDataMatcher{ DataOrigin{ "QTST" }, DataDescription{ "mytask" }, 3 }));
+  }
+  {
+    auto inputSpec = createUserInputSpec(DataSourceType::Task, "TST", "mytask", 3, "custom_binding");
+    CHECK(inputSpec.binding == "custom_binding");
+  }
 }
 
 TEST_CASE("OutputSpec")
 {
-  auto outputSpec = createUserOutputSpec(DataSourceType::Task, "TST", "mytask");
-  CHECK(outputSpec.binding.value == "mytask");
-  CHECK(outputSpec.lifetime == framework::Lifetime::Sporadic);
-  CHECK(framework::DataSpecUtils::match(outputSpec, framework::ConcreteDataMatcher{ DataOrigin{ "QTST" }, DataDescription{ "mytask" }, 0 }));
+  {
+    auto outputSpec = createUserOutputSpec(DataSourceType::Task, "TST", "mytask", 5);
+    CHECK(outputSpec.binding.value == "mytask");
+    CHECK(outputSpec.lifetime == framework::Lifetime::Sporadic);
+    CHECK(framework::DataSpecUtils::match(outputSpec, framework::ConcreteDataMatcher{ DataOrigin{ "QTST" }, DataDescription{ "mytask" }, 5 }));
+  }
+  {
+    auto outputSpec = createUserOutputSpec(DataSourceType::Task, "TST", "mytask", 5, { "custom_binding" });
+    CHECK(outputSpec.binding.value == "custom_binding");
+  }
 }
 
 } // namespace o2::quality_control::core

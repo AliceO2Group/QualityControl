@@ -79,10 +79,6 @@ struct AggregatorSource;
 /// \author Barthélémy von Haller
 class AggregatorRunner : public framework::Task
 {
-  /// \brief Number of bytes in data description used for hashing of AggregatorRunner names. See HashDataDescription.h for details
-  static constexpr size_t descriptionHashLength = 4;
-  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
-
  public:
   /// Constructor
   /**
@@ -111,7 +107,6 @@ class AggregatorRunner : public framework::Task
   static framework::DataProcessorLabel getLabel() { return { "qc-aggregator" }; }
   static std::string createAggregatorRunnerIdString() { return "qc-aggregator"; };
   static std::string createAggregatorRunnerName();
-  static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
 
   /// \brief Compute the detector name to be used in the infologger for this runner.
   /// Compute the detector name to be used in the infologger for this runner.

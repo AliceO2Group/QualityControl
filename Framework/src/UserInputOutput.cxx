@@ -20,35 +20,36 @@ namespace o2::quality_control::core
 {
 
 framework::ConcreteDataMatcher
-  createUserDataMatcher(DataSourceType dataSourceType, const std::string& detectorName, const std::string& userCodeName)
+  createUserDataMatcher(DataSourceType dataSourceType, const std::string& detectorName, const std::string& userCodeName,
+                        o2::header::DataHeader::SubSpecificationType subSpec)
 {
   return {
     createDataOrigin(dataSourceType, detectorName),
     createDataDescription(userCodeName, dataSourceType),
-    0
+    subSpec
   };
 }
 
 framework::InputSpec
-  createUserInputSpec(DataSourceType dataSourceType, const std::string& detectorName, const std::string& userCodeName)
+  createUserInputSpec(DataSourceType dataSourceType, const std::string& detectorName, const std::string& userCodeName,
+                      o2::header::DataHeader::SubSpecificationType subSpec, const std::string& binding)
 {
   // currently all of our outputs are Lifetime::Sporadic, so we don't allow for customization, but it could be factored out.
-  // we assume using `userCodeName` as a binding in all cases
   return {
-    userCodeName,
-    createUserDataMatcher(dataSourceType, detectorName, userCodeName),
+    binding.empty() ? userCodeName : binding,
+    createUserDataMatcher(dataSourceType, detectorName, userCodeName, subSpec),
     framework::Lifetime::Sporadic
   };
 }
 
 framework::OutputSpec
-  createUserOutputSpec(DataSourceType dataSourceType, const std::string& detectorName, const std::string& userCodeName)
+  createUserOutputSpec(DataSourceType dataSourceType, const std::string& detectorName, const std::string& userCodeName,
+                       o2::header::DataHeader::SubSpecificationType subSpec, const framework::OutputLabel& binding)
 {
   // currently all of our outputs are Lifetime::Sporadic, so we don't allow for customization, but it could be factored out.
-  // we assume using `userCodeName` as a binding in all cases
   return {
-    framework::OutputLabel{ userCodeName },
-    createUserDataMatcher(dataSourceType, detectorName, userCodeName),
+    binding.value.empty() ? framework::OutputLabel{ userCodeName } : binding,
+    createUserDataMatcher(dataSourceType, detectorName, userCodeName, subSpec),
     framework::Lifetime::Sporadic
   };
 }
