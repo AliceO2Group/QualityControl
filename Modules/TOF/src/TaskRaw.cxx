@@ -349,8 +349,8 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise)
         // Fill noise map
         mHistoNoiseMap->SetBinContent(icrate + 1, istrip * 4 + (3 - iFea) + 1, indexcounterFea);
       } // end loop over Feas
-    }   // end loop over strips
-  }     // end loop over sectors
+    } // end loop over strips
+  } // end loop over sectors
 }
 
 // Implement the Task
@@ -580,6 +580,15 @@ void TaskRaw::endOfActivity(const Activity& /*activity*/)
 void TaskRaw::reset()
 {
   // clean all the monitor objects here
+
+  for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) {
+    mDecoderRaw.mCounterRDH[crate].Reset();
+    mDecoderRaw.mCounterDRM[crate].Reset();
+    mDecoderRaw.mCounterLTM[crate].Reset();
+    for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
+      mDecoderRaw.mCounterTRM[crate][j].Reset();
+    }
+  }
 
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   mHistoRDH->Reset();
