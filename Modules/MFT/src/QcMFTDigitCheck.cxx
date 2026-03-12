@@ -488,7 +488,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     if (checkResult == Quality::Good) {
       LOG(info) << "Quality::Good";
       msg1->Clear();
-      msg1->AddText("Quality Good");
+      msg1->AddText("Quality GOOD");
       msg1->SetFillColor(kGreen);
       msg1->Draw();
       msg2->Clear();
@@ -498,7 +498,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
       msg1->Clear();
-      msg1->AddText("Quality medium");
+      msg1->AddText("Quality MEDIUM");
       msg1->SetFillColor(kOrange);
       msg1->Draw();
       msg2->Clear();
@@ -508,7 +508,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad";
       msg1->Clear();
-      msg1->AddText("Quality bad");
+      msg1->AddText("Quality BAD");
       msg1->SetFillColor(kRed);
       msg1->Draw();
       msg2->Clear();

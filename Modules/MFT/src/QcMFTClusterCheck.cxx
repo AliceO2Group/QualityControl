@@ -315,7 +315,7 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     if (checkResult == Quality::Good) {
       LOG(info) << "Quality::Good";
       msg1->Clear();
-      msg1->AddText("Quality Good");
+      msg1->AddText("Quality GOOD");
       msg1->SetFillColor(kGreen);
       msg2->Clear();
       msg2->AddText("No action needed");
@@ -323,7 +323,7 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
       msg1->Clear();
-      msg1->AddText("Quality medium");
+      msg1->AddText("Quality MEDIUM");
       msg1->SetFillColor(kOrange);
       msg2->Clear();
       msg2->AddText("Refer to QC instructions");
@@ -331,7 +331,7 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad";
       msg1->Clear();
-      msg1->AddText("Quality bad");
+      msg1->AddText("Quality BAD");
       msg1->SetFillColor(kRed);
       msg2->Clear();
       msg2->AddText("Call the on-call!");
