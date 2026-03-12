@@ -306,8 +306,8 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
 
   if (mo->getName().find("mClusterOccupancySummary") != std::string::npos) {
     auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
-    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
+    TPaveText* msg1 = new TPaveText(0.10, 0.9, 0.35, 1.0, "NDC NB");
+    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.90, 1.0, "NDC NB");
     hOccupancySummary->GetListOfFunctions()->Add(msg1);
     hOccupancySummary->GetListOfFunctions()->Add(msg2);
     msg1->SetName(Form("%s_msg1", mo->GetName()));

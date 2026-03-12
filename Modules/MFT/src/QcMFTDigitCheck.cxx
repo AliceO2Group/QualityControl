@@ -479,8 +479,8 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
   if (mo->getName().find("mDigitOccupancySummary") != std::string::npos) {
     auto* hDigitOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
-    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
+    TPaveText* msg1 = new TPaveText(0.10, 0.9, 0.35, 1.0, "NDC NB");
+    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.90, 1.0, "NDC NB");
     hDigitOccupancySummary->GetListOfFunctions()->Add(msg1);
     hDigitOccupancySummary->GetListOfFunctions()->Add(msg2);
     msg1->SetName(Form("%s_msg", mo->GetName()));
