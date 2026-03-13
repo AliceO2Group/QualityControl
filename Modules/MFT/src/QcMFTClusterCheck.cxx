@@ -306,8 +306,8 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
 
   if (mo->getName().find("mClusterOccupancySummary") != std::string::npos) {
     auto* hOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
-    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
+    TPaveText* msg1 = new TPaveText(0.10, 0.9, 0.35, 1.0, "NDC NB");
+    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.90, 1.0, "NDC NB");
     hOccupancySummary->GetListOfFunctions()->Add(msg1);
     hOccupancySummary->GetListOfFunctions()->Add(msg2);
     msg1->SetName(Form("%s_msg1", mo->GetName()));
@@ -315,7 +315,7 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     if (checkResult == Quality::Good) {
       LOG(info) << "Quality::Good";
       msg1->Clear();
-      msg1->AddText("Quality Good");
+      msg1->AddText("Quality GOOD");
       msg1->SetFillColor(kGreen);
       msg2->Clear();
       msg2->AddText("No action needed");
@@ -323,15 +323,15 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
       msg1->Clear();
-      msg1->AddText("Quality medium");
+      msg1->AddText("Quality MEDIUM");
       msg1->SetFillColor(kOrange);
       msg2->Clear();
-      msg2->AddText("Write a logbook entry tagging MFT");
+      msg2->AddText("Refer to QC instructions");
       msg2->SetFillColor(kOrange);
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad";
       msg1->Clear();
-      msg1->AddText("Quality bad");
+      msg1->AddText("Quality BAD");
       msg1->SetFillColor(kRed);
       msg2->Clear();
       msg2->AddText("Call the on-call!");

@@ -444,7 +444,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
           msg->AddText("No action needed");
         } else if (mQualityMedium) {
           QualityColor = kOrange;
-          msg->AddText("Write a logbook entry tagging MFT");
+          msg->AddText("Refer to QC instructions");
         } else if (mQualityBad) {
           QualityColor = kRed;
           msg->AddText("Call the on-call!");
@@ -479,8 +479,8 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
   if (mo->getName().find("mDigitOccupancySummary") != std::string::npos) {
     auto* hDigitOccupancySummary = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg1 = new TPaveText(0.05, 0.9, 0.35, 1.0, "NDC NB");
-    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.95, 1.0, "NDC NB");
+    TPaveText* msg1 = new TPaveText(0.10, 0.9, 0.35, 1.0, "NDC NB");
+    TPaveText* msg2 = new TPaveText(0.65, 0.9, 0.90, 1.0, "NDC NB");
     hDigitOccupancySummary->GetListOfFunctions()->Add(msg1);
     hDigitOccupancySummary->GetListOfFunctions()->Add(msg2);
     msg1->SetName(Form("%s_msg", mo->GetName()));
@@ -488,7 +488,7 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     if (checkResult == Quality::Good) {
       LOG(info) << "Quality::Good";
       msg1->Clear();
-      msg1->AddText("Quality Good");
+      msg1->AddText("Quality GOOD");
       msg1->SetFillColor(kGreen);
       msg1->Draw();
       msg2->Clear();
@@ -498,17 +498,17 @@ void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     } else if (checkResult == Quality::Medium) {
       LOG(info) << "Quality::Medium";
       msg1->Clear();
-      msg1->AddText("Quality medium");
+      msg1->AddText("Quality MEDIUM");
       msg1->SetFillColor(kOrange);
       msg1->Draw();
       msg2->Clear();
-      msg2->AddText("Write a logbook entry tagging MFT");
+      msg2->AddText("Refer to QC instructions");
       msg2->SetFillColor(kOrange);
       msg2->Draw();
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad";
       msg1->Clear();
-      msg1->AddText("Quality bad");
+      msg1->AddText("Quality BAD");
       msg1->SetFillColor(kRed);
       msg1->Draw();
       msg2->Clear();
