@@ -186,6 +186,8 @@ void TrendingCalibLHCphase::generatePlots()
         title->SetBBoxCenterX(c->GetBBoxCenter().fX);
         // It will have an effect only after invoking Draw again.
         title->Draw();
+        c->Modified();
+        c->Update();
       } else {
         ILOG(Error, Devel) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
       }
