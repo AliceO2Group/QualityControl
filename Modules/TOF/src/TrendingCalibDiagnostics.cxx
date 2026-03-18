@@ -214,7 +214,6 @@ void TrendingCalibDiagnostics::generatePlots()
       // After the update, the title has a different size and it is not in the center anymore. We have to fix that.
       if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
         title->SetBBoxCenterX(c->GetBBoxCenter().fX);
-        // It will have an effect only after invoking Draw again.
         c->Modified();
         c->Update();
       } else {
