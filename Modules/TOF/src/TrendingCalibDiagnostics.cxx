@@ -215,7 +215,6 @@ void TrendingCalibDiagnostics::generatePlots()
       if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
         title->SetBBoxCenterX(c->GetBBoxCenter().fX);
         // It will have an effect only after invoking Draw again.
-        title->Draw();
         c->Modified();
         c->Update();
       } else {
