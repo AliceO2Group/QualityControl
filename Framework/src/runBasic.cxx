@@ -36,6 +36,7 @@
 
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "QualityControl/UserInputOutput.h"
 #include "Common/Exceptions.h"
 
 using namespace o2;
@@ -121,7 +122,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     DataProcessorSpec printer{
       .name = "printer",
       .inputs = Inputs{
-        { "checked-mo", "CTST", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+        o2::quality_control::core::createUserInputSpec(o2::quality_control::core::DataSourceType::Check, "TST",
+                                                       getFirstCheckName(qcConfigurationSource), 0, "checked-mo") },
       .algorithm = adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>(),
       .labels = { { "resilient" } }
     };
@@ -130,7 +132,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     DataProcessorSpec printer{
       .name = "printer",
       .inputs = Inputs{
-        { "checked-mo", "CTST", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0, Lifetime::Sporadic } },
+        o2::quality_control::core::createUserInputSpec(o2::quality_control::core::DataSourceType::Task, "TST",
+                                                       getFirstTaskName(qcConfigurationSource), 0, "checked-mo") },
       .algorithm = adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>(),
       .labels = { { "resilient" } }
 

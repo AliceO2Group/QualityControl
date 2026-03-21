@@ -36,10 +36,6 @@ struct PostProcessingRunnerConfig;
 /// \author Piotr Konopka
 class PostProcessingDevice : public framework::Task
 {
-  /// \brief Number of bytes in data description used for hashing DataDescription. See HashDataDescription.h for details
-  static constexpr size_t descriptionHashLength = 4;
-  static_assert(descriptionHashLength <= o2::header::DataDescription::size);
-
  public:
   /// \brief Constructor
   ///
@@ -61,10 +57,6 @@ class PostProcessingDevice : public framework::Task
   /// \brief Data Processor Label to identify all Task Runners
   static framework::DataProcessorLabel getLabel() { return { "qc-pp-task-runner" }; }
   static std::string createPostProcessingDeviceName(const std::string& taskName, const std::string& detectorName);
-  /// \brief Unified DataOrigin for Post-processing tasks
-  static header::DataOrigin createPostProcessingDataOrigin(const std::string& detectorCode);
-  /// \brief Unified DataDescription naming scheme for all Post-processing tasks
-  static header::DataDescription createPostProcessingDataDescription(const std::string& taskName);
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
