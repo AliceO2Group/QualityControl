@@ -19,8 +19,7 @@
 #include <DataFormatsITS/TrackITS.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
-#include "ReconstructionDataFormats/Vertex.h"
-#include "ReconstructionDataFormats/PrimaryVertex.h"
+#include "DataFormatsITS/Vertex.h"
 #include "ITStracking/IOUtils.h"
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include "Common/Utils.h"
@@ -138,7 +137,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto trackRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
-  auto vertexArr = ctx.inputs().get<gsl::span<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>>>("Vertices");
+  auto vertexArr = ctx.inputs().get<gsl::span<o2::its::Vertex>>("Vertices");
   auto vertexRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("Verticesrof");
 
   auto clusIdx = ctx.inputs().get<gsl::span<int>>("clusteridx");
