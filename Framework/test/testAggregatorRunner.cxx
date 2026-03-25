@@ -32,7 +32,6 @@ using namespace o2::quality_control::checker;
 using namespace std;
 using namespace o2::framework;
 using namespace o2::configuration;
-using namespace o2::header;
 using namespace o2::quality_control::core;
 
 std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorConfigs(const std::string& configFilePath)
@@ -48,13 +47,6 @@ std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorCo
   auto aggregatorRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
 
   return { aggregatorRunnerConfig, aggregatorConfigs };
-}
-
-TEST_CASE("test_aggregator_runner_static")
-{
-  CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop")));
-  CHECK((AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("012345678901639b")));
-  CHECK_THROWS_AS(AggregatorRunner::createAggregatorRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
 
 TEST_CASE("test_aggregator_runner")

@@ -96,14 +96,6 @@ void AggregatorRunner::prepareOutputs()
   }
 }
 
-header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(const std::string& aggregatorName)
-{
-  if (aggregatorName.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
-  }
-  return quality_control::core::createDataDescription(aggregatorName, AggregatorRunner::descriptionHashLength);
-}
-
 std::string AggregatorRunner::createAggregatorRunnerName()
 {
   return AggregatorRunner::createAggregatorRunnerIdString(); // there is only one thus we can just take the idString

@@ -17,6 +17,7 @@
 #include "getTestDataDirectory.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
+#include "QualityControl/UserInputOutput.h"
 #include <Framework/DataSpecUtils.h>
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureSpecReader.h"
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
 
   BOOST_REQUIRE_EQUAL(taskRunner.outputs.size(), 1);
-  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QXXX", "abcTask", 123, Lifetime::Sporadic }));
+  BOOST_CHECK_EQUAL(taskRunner.outputs[0], createUserOutputSpec(DataSourceType::Task, "XXX", "abcTask", 123));
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
@@ -79,10 +80,6 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
 BOOST_AUTO_TEST_CASE(test_task_runner_static)
 {
-  BOOST_CHECK_EQUAL(TaskRunner::createTaskDataOrigin("DET"), DataOrigin("QDET"));
-  BOOST_CHECK(TaskRunner::createTaskDataDescription("qwertyuiop") == DataDescription("qwertyuiop"));
-  BOOST_CHECK(TaskRunner::createTaskDataDescription("012345678901234567890") == DataDescription("012345678901639b"));
-  BOOST_CHECK_THROW(TaskRunner::createTaskDataDescription(""), AliceO2::Common::FatalException);
   BOOST_CHECK_EQUAL(TaskRunner::createTaskRunnerIdString(), "qc-task");
 }
 
@@ -98,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
   BOOST_CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
 
-  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QXXX", "abcTask", 0, Lifetime::Sporadic }));
+  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), createUserOutputSpec(DataSourceType::Task, "XXX", "abcTask", 0));
 
   BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 3);
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");

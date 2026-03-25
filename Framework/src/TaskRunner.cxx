@@ -49,7 +49,6 @@
 #include "QualityControl/TimekeeperFactory.h"
 #include "QualityControl/ActivityHelpers.h"
 #include "QualityControl/WorkflowType.h"
-#include "QualityControl/DataHeaderHelpers.h"
 #include "QualityControl/runnerUtils.h"
 
 #include <string>
@@ -236,34 +235,6 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 std::string TaskRunner::createTaskRunnerIdString()
 {
   return { "qc-task" };
-}
-
-header::DataOrigin TaskRunner::createTaskDataOrigin(const std::string& detectorCode, bool movingWindows)
-{
-  // We need a unique Data Origin, so we can have QC Tasks with the same names for different detectors.
-  // However, to avoid colliding with data marked as e.g. TPC/CLUSTERS, we add 'Q' to the data origin, so it is Q<det>.
-  std::string originStr = movingWindows ? "W" : "Q";
-  if (detectorCode.empty()) {
-    ILOG(Warning, Support) << "empty detector code for a task data origin, trying to survive with: DET" << ENDM;
-    originStr += "DET";
-  } else if (detectorCode.size() > 3) {
-    ILOG(Warning, Support) << "too long detector code for a task data origin: " + detectorCode + ", trying to survive with: " + detectorCode.substr(0, 3) << ENDM;
-    originStr += detectorCode.substr(0, 3);
-  } else {
-    originStr += detectorCode;
-  }
-  o2::header::DataOrigin origin;
-  origin.runtimeInit(originStr.c_str());
-  return origin;
-}
-
-header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName)
-{
-  if (taskName.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
-  }
-
-  return quality_control::core::createDataDescription(taskName, TaskRunner::taskDescriptionHashLength);
 }
 
 header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)
