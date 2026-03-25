@@ -24,6 +24,7 @@
 #include "CTPReconstruction/RawDataDecoder.h"
 #include "Common/TH1Ratio.h"
 #include <memory>
+#include <unordered_set>
 
 class TH1D;
 
@@ -61,11 +62,10 @@ class CTPRawDataReaderTask final : public TaskInterface
   std::unique_ptr<TH1D> mHistoBCMinBias1 = nullptr;       // histogram of BC positions to check LHC filling scheme
   std::unique_ptr<TH1D> mHistoBCMinBias2 = nullptr;       // histogram of BC positions to check LHC filling scheme
   std::unique_ptr<TH1D> mHistoDecodeError = nullptr;      // histogram of erros from decoder
-  static constexpr int mUsedInputsMax = 18;
-  std::array<TH1D*, mUsedInputsMax> mHisInputs = {};       ///< Array of input histograms, all BCs
-  std::array<TH1D*, mUsedInputsMax> mHisInputsYesLHC = {}; ///< Array of input histograms, LHC BCs
-  std::array<TH1D*, mUsedInputsMax> mHisInputsNotLHC = {}; ///< Array of input histograms, not LHC BCs
-  std::array<std::size_t, mUsedInputsMax> shiftBC = {};    ///< Array of shifts for the BCs for each input
+  std::array<TH1D*, o2::ctp::CTP_NINPUTS> mHisInputs = {};       ///< Array of input histograms, all BCs
+  std::array<TH1D*, o2::ctp::CTP_NINPUTS> mHisInputsYesLHC = {}; ///< Array of input histograms, LHC BCs
+  std::array<TH1D*, o2::ctp::CTP_NINPUTS> mHisInputsNotLHC = {}; ///< Array of input histograms, not LHC BCs
+  std::array<std::size_t, o2::ctp::CTP_NINPUTS> shiftBC = {};    ///< Array of shifts for the BCs for each input
   int mRunNumber;
   int indexMB1 = -1;
   int indexMB2 = -1;
@@ -86,6 +86,7 @@ class CTPRawDataReaderTask final : public TaskInterface
   bool mPerformConsistencyCheck = false;
   std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs; /// LHC filling scheme
   bool lhcDataFileFound = true;
+  std::unordered_set<int> mListOfUsedInputs = {1,2,3, 4,5,6,7,8,9,10,13,15,16,17,18,25,26};
 };
 
 } // namespace o2::quality_control_modules::ctp

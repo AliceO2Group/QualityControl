@@ -88,9 +88,11 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHisInputsNotLHC[i]->SetLineColor(kRed + 1);
     mHisInputsNotLHC[i]->SetFillColor(kRed + 1);
 
-    getObjectsManager()->startPublishing(mHisInputs[i]);
-    getObjectsManager()->startPublishing(mHisInputsYesLHC[i]);
-    // getObjectsManager()->startPublishing(mHisInputsNotLHC[i]);
+    if(mListOfUsedInputs.count(i + 1)) {
+      getObjectsManager()->startPublishing(mHisInputs[i]);
+      getObjectsManager()->startPublishing(mHisInputsYesLHC[i]);
+      // getObjectsManager()->startPublishing(mHisInputsNotLHC[i]);
+    }
   }
 
   mDecoder.setDoLumi(1);
@@ -289,7 +291,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   static constexpr double sOrbitLengthInMS = o2::constants::lhc::LHCOrbitMUS / 1000;
   auto nOrbitsPerTF = 32.;
   //   get the input
-  std::vector<o2::framework::InputSpec> filter{ o2::framework::InputSpec{ "filter", o2::framework::ConcreteDataTypeMatcher{ "DS", "RAWDATA" }, o2::framework::Lifetime::Timeframe } };
+  std::vector<o2::framework::InputSpec> filter{ o2::framework::InputSpec{ "filter", o2::framework::ConcreteDataTypeMatcher{ "DS", "CTPRAWDATA" }, o2::framework::Lifetime::Timeframe } };
   std::vector<o2::ctp::LumiInfo> lumiPointsHBF1;
   std::vector<o2::ctp::CTPDigit> outputDigits;
 
@@ -342,7 +344,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
     if (digit.CTPInputMask.count()) {
-      for (int i = 0; i < mUsedInputsMax; i++) {
+      for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
