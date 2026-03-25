@@ -88,7 +88,7 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHisInputsNotLHC[i]->SetLineColor(kRed + 1);
     mHisInputsNotLHC[i]->SetFillColor(kRed + 1);
 
-    if(mListOfUsedInputs.count(i + 1)) {
+    if (mListOfUsedInputs.count(i + 1)) {
       getObjectsManager()->startPublishing(mHisInputs[i]);
       getObjectsManager()->startPublishing(mHisInputsYesLHC[i]);
       // getObjectsManager()->startPublishing(mHisInputsNotLHC[i]);

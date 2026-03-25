@@ -86,7 +86,7 @@ class CTPRawDataReaderTask final : public TaskInterface
   bool mPerformConsistencyCheck = false;
   std::bitset<o2::constants::lhc::LHCMaxBunches> mLHCBCs; /// LHC filling scheme
   bool lhcDataFileFound = true;
-  std::unordered_set<int> mListOfUsedInputs = {1,2,3, 4,5,6,7,8,9,10,13,15,16,17,18,25,26};
+  std::unordered_set<int> mListOfUsedInputs = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 15, 16, 17, 18, 25, 26 };
 };
 
 } // namespace o2::quality_control_modules::ctp
