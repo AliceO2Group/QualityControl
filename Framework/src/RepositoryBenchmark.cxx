@@ -130,7 +130,7 @@ void RepositoryBenchmark::InitTask()
 
   // start a timer in a thread to send monitoring metrics, if needed
   if (mThreadedMonitoring) {
-    mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(mThreadedMonitoringInterval));
+    mTimer = new boost::asio::system_timer(io, seconds(mThreadedMonitoringInterval));
     mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
     th = new thread([&] { io.run(); });
   }
@@ -141,7 +141,7 @@ void RepositoryBenchmark::checkTimedOut()
   mMonitoring->send({ mTotalNumberObjects, "ccdb_benchmark_objects_sent" }, DerivedMetricMode::RATE);
 
   // restart timer
-  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(mThreadedMonitoringInterval));
+  mTimer->expires_after(seconds(mThreadedMonitoringInterval));
   mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
 }
 
