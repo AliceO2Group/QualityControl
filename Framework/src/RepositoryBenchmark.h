@@ -22,7 +22,7 @@
 #include <TH1.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/system_timer.hpp>
 #include <thread>
 #include <string>
 
@@ -64,7 +64,7 @@ class RepositoryBenchmark : public fair::mq::Device
   //  TH1* mMyHisto;
 
   // variables for the timer
-  boost::asio::deadline_timer* mTimer; /// the asynchronous timer to send monitoring data
+  boost::asio::system_timer* mTimer; /// the asynchronous timer to send monitoring data
   boost::asio::io_context io;
   std::thread* th;
 };
