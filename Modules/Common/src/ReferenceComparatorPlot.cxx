@@ -200,8 +200,9 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
                                 bool scaleReference,
                                 bool drawRatioOnly,
                                 double legendHeight,
+                                bool logScale,
                                 const std::string& drawOption)
-    : ReferenceComparatorPlotImpl(referenceHistogram, scaleReference), mLegendHeight(legendHeight)
+    : ReferenceComparatorPlotImpl(referenceHistogram, scaleReference), mLegendHeight(legendHeight), mLogScale(logScale)
   {
     float labelSize = 0.04;
 
@@ -357,6 +358,9 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
     double histMax = (mLegendHeight > 0) ? (1.0 + mLegendHeight) * max : 1.05 * max;
     mPlot->SetMaximum(histMax);
     mReferencePlot->SetMaximum(histMax);
+    if (mPadHist) {
+      mPadHist->SetLogy(mLogScale ? kTRUE : kFALSE);
+    }
 
     mRatioPlot->Reset();
     mRatioPlot->Add(mPlot.get());
@@ -379,6 +383,7 @@ class ReferenceComparatorPlotImpl1D : public ReferenceComparatorPlotImpl
   std::shared_ptr<TPaveText> mHistogramTitle;
   std::shared_ptr<TLegend> mHistogramLegend;
   double mLegendHeight;
+  bool mLogScale;
 };
 
 template <class HIST>
@@ -390,8 +395,9 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
                                 const std::string& outputPath,
                                 bool scaleReference,
                                 bool drawRatioOnly,
+                                bool logScale,
                                 const std::string& drawOption)
-    : ReferenceComparatorPlotImpl(referenceHistogram, scaleReference)
+    : ReferenceComparatorPlotImpl(referenceHistogram, scaleReference), mLogScale(logScale)
   {
     if (!referenceHistogram) {
       return;
@@ -509,6 +515,13 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
 
     copyAndScaleHistograms(histogram, referenceHistogram, mPlot.get(), mReferencePlot.get(), getScaleReference());
 
+    if (mPadHist) {
+      mPadHist->SetLogz(mLogScale ? kTRUE : kFALSE);
+    }
+    if (mPadHistRef) {
+      mPadHistRef->SetLogz(mLogScale ? kTRUE : kFALSE);
+    }
+
     mRatioPlot->Reset();
     mRatioPlot->Add(mPlot.get());
     mRatioPlot->Divide(mReferencePlot.get());
@@ -525,6 +538,7 @@ class ReferenceComparatorPlotImpl2D : public ReferenceComparatorPlotImpl
   std::shared_ptr<HIST> mReferencePlot;
   std::shared_ptr<HIST> mRatioPlot;
   std::shared_ptr<TPaveText> mQualityLabel;
+  bool mLogScale;
 };
 
 ReferenceComparatorPlot::ReferenceComparatorPlot(TH1* referenceHistogram,
@@ -533,6 +547,7 @@ ReferenceComparatorPlot::ReferenceComparatorPlot(TH1* referenceHistogram,
                                                  bool scaleReference,
                                                  bool drawRatioOnly,
                                                  double legendHeight,
+                                                 bool logScale,
                                                  const std::string& drawOption1D,
                                                  const std::string& drawOption2D)
 {
@@ -540,20 +555,20 @@ ReferenceComparatorPlot::ReferenceComparatorPlot(TH1* referenceHistogram,
 
   // 1-D histograms
   if (referenceHistogram->InheritsFrom("TH1C") || referenceHistogram->InheritsFrom("TH1S") || referenceHistogram->InheritsFrom("TH1F")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1F>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, legendHeight, drawOption1D);
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1F>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, legendHeight, logScale, drawOption1D);
   }
 
   if (referenceHistogram->InheritsFrom("TH1I") || referenceHistogram->InheritsFrom("TH1D")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1D>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, legendHeight, drawOption1D);
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl1D<TH1D>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, legendHeight, logScale, drawOption1D);
   }
 
   // 2-D histograms
   if (referenceHistogram->InheritsFrom("TH2C") || referenceHistogram->InheritsFrom("TH2S") || referenceHistogram->InheritsFrom("TH2F")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2F>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, drawOption2D);
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2F>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, logScale, drawOption2D);
   }
 
   if (referenceHistogram->InheritsFrom("TH2I") || referenceHistogram->InheritsFrom("TH2D")) {
-    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2D>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, drawOption2D);
+    mImplementation = std::make_shared<ReferenceComparatorPlotImpl2D<TH2D>>(referenceHistogram, referenceRun, outputPath, scaleReference, drawRatioOnly, logScale, drawOption2D);
   }
 }
 

@@ -36,7 +36,8 @@ ReferenceComparatorTaskConfig::ReferenceComparatorTaskConfig(std::string name, c
       dataGroupConfig.second.get<bool>("drawRatioOnly", false),
       dataGroupConfig.second.get<double>("legendHeight", 0.2),
       dataGroupConfig.second.get<std::string>("drawOption1D", "HIST"),
-      dataGroupConfig.second.get<std::string>("drawOption2D", "COLZ")
+      dataGroupConfig.second.get<std::string>("drawOption2D", "COLZ"),
+      dataGroupConfig.second.get<bool>("logScale", false)
     };
     if (const auto& inputObjects = dataGroupConfig.second.get_child_optional("inputObjects"); inputObjects.has_value()) {
       for (const auto& inputObject : inputObjects.value()) {

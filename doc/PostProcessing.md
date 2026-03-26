@@ -604,6 +604,7 @@ The input MonitorObjects to be processed are logically divided in **dataGroups**
 * `legendHeight`: space reserved for the legend above the histograms, in fractions of the pad height; if the height is set to zero, the legend is not shown
 * `drawOption1D`: the ROOT draw option to be used for the 1-D histograms
 * `drawOption2D`: the ROOT draw option to be used for the 2-D histograms
+* `logScale`: boolean parameter specifying wether to draw the value axis in log or linear scale (default is `false`)
 
  The input objects are searched within the `inputPath`, and the output plots are stored inside the `outputPath`.
 It is also possible to optionally specify a different path for the reference objects, via the `referencePath` parameter. If not given, the `referencePath` will coincide with the `inputPath`.
@@ -694,6 +695,7 @@ In the example configuration below, the relationship between the input and outpu
             "legendHeight": "0.2",  
             "drawOption1D": "E",
             "drawOption2D": "COL",
+            "logScale": "false",
             "inputObjects": [
               "TrackEta",
               "TrackEtaPhi"

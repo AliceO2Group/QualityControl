@@ -154,6 +154,7 @@ void ReferenceComparatorTask::initialize(quality_control::postprocessing::Trigge
                                                                         group.normalizeReference,
                                                                         group.drawRatioOnly,
                                                                         group.legendHeight,
+                                                                        group.logScale,
                                                                         group.drawOption1D,
                                                                         group.drawOption2D);
       auto* outObject = mHistograms[fullPath]->getMainCanvas();
