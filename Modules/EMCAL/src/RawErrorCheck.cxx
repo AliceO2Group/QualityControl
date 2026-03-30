@@ -271,7 +271,7 @@ Quality RawErrorCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
           }
           result.addFlag(FlagTypeFactory::Unknown(), "Raw error " + std::string(errorhist->GetYaxis()->GetBinLabel(errorcode + 1)) + " above critical threshold: Call oncall!");
 
-        } else if (numErrors > thresholdTotalErrWarn) { // Number of raw error exceeds the threshold but is considered to be okay. Error can be fixed at beam dump
+        } else if (numErrors > thresholdTotalErrWarn && result != Quality::Bad) { // Number of raw error exceeds the threshold but is considered to be okay. Error can be fixed at beam dump
           if (result != Quality::Medium) {
             result = Quality::Medium;
           }
