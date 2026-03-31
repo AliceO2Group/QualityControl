@@ -14,7 +14,7 @@
 /// \author Marek Bombara
 /// \author Lucia Anna Tarasovicova
 /// \author Jan Musinsky
-/// \date   2026-02-17
+/// \date   2026-03-31
 ///
 
 #include <TCanvas.h>
@@ -71,11 +71,19 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoInputRatios.get());
   getObjectsManager()->startPublishing(mHistoBCMinBias1.get());
   getObjectsManager()->startPublishing(mHistoBCMinBias2.get());
-  std::string sTmp1, sTmp2;
+
+  std::string inputName, sTmp1, sTmp2;
+  std::vector<std::string> publishingInputs = {
+    "MT0A", "MT0C", "MTVX", "MTSC", "MTCE", // 5x FT0
+    "MVBA", "MVOR", "MVIR", "MVNC", "MVCH", // 5x FV0
+    "0UCE", "0USC", "0UVX", "0U0C", "0U0A", // 5x FDD
+    "1ZED", "1ZNC"                          // 2x ZDC
+  }; // or std::unordered_set (hash based container) instead of std::vector
   for (std::size_t i = 0; i < mHisInputs.size(); i++) {
+    inputName = o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(i + 1);
+    // index mismatch, getInputNameFromIndex in range [1-48]
     sTmp1 = std::format("input{:02}", i);
-    sTmp2 = std::format("input[{:02}] {}", i, o2::ctp::CTPInputsConfiguration::getInputNameFromIndex(i + 1));
-    // getInputNameFromIndex in range [1-48]
+    sTmp2 = std::format("input[{:02}] {}", i, inputName);
     mHisInputs[i] = new TH1D(sTmp1.c_str(), sTmp2.c_str(), norbits, 0, norbits);
 
     sTmp1 = std::format("input{:02}_yesLHC", i);
@@ -88,9 +96,11 @@ void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHisInputsNotLHC[i]->SetLineColor(kRed + 1);
     mHisInputsNotLHC[i]->SetFillColor(kRed + 1);
 
-    getObjectsManager()->startPublishing(mHisInputs[i]);
-    getObjectsManager()->startPublishing(mHisInputsYesLHC[i]);
-    // getObjectsManager()->startPublishing(mHisInputsNotLHC[i]);
+    if (std::find(publishingInputs.begin(), publishingInputs.end(), inputName) != publishingInputs.end()) {
+      getObjectsManager()->startPublishing(mHisInputs[i]);
+      getObjectsManager()->startPublishing(mHisInputsYesLHC[i]);
+      // getObjectsManager()->startPublishing(mHisInputsNotLHC[i]);
+    }
   }
 
   mDecoder.setDoLumi(1);
@@ -342,7 +352,7 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto const digit : outputDigits) {
     uint16_t bcid = digit.intRecord.bc;
     if (digit.CTPInputMask.count()) {
-      for (int i = 0; i < mUsedInputsMax; i++) {
+      for (int i = 0; i < o2::ctp::CTP_NINPUTS; i++) {
         if (digit.CTPInputMask[i]) {
           mHistoInputs->getNum()->Fill(i);
           mHistoInputRatios->getNum()->Fill(i);
@@ -355,8 +365,8 @@ void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
             int bc = bcid - mShiftInput2 >= 0 ? bcid - mShiftInput2 : bcid - mShiftInput2 + 3564;
             mHistoBCMinBias2->Fill(bc, 1. / mScaleInput2);
           }
-          // int bc = (bcid - shiftBC[i]) >= 0 ? bcid - shiftBC[i] : bcid - shiftBC[i] + o2::constants::lhc::LHCMaxBunches;
-          int bc = bcid - shiftBC[i];
+          int bc = (bcid - shiftBC[i]) >= 0 ? bcid - shiftBC[i] : bcid - shiftBC[i] + o2::constants::lhc::LHCMaxBunches;
+          // int bc = bcid - shiftBC[i];
           mHisInputs[i]->Fill(bc);
         }
       }
