@@ -435,6 +435,10 @@ void CTPRawDataReaderTask::splitSortInputs()
         mHisInputsNotLHC[ih]->SetBinContent(ibc + 1, BCs[ibc].entries);
       }
     }
+    // specific case: NotLHC("red") > YesLHC("green"), i.a. for SYNTHETIC run type
+    if (mHisInputsNotLHC[ih]->GetMaximum() > mHisInputsYesLHC[ih]->GetMaximum()) {
+      mHisInputsYesLHC[ih]->SetMaximum(mHisInputsNotLHC[ih]->GetMaximum() * 1.05);
+    }
 
     TLine* line = nullptr;
     if (!mHisInputsYesLHC[ih]->FindObject(mHisInputsNotLHC[ih])) { // only once
