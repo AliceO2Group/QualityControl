@@ -43,6 +43,7 @@ class ReferenceComparatorPlot
                           bool scaleReference,
                           bool drawRatioOnly,
                           double legendHeight,
+                          bool logScale,
                           const std::string& drawOption1D,
                           const std::string& drawOption2D);
   virtual ~ReferenceComparatorPlot() = default;

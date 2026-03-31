@@ -50,6 +50,8 @@ struct ReferenceComparatorTaskConfig : quality_control::postprocessing::PostProc
     std::string drawOption1D{ "HIST" };
     // ROOT option to be used for drawing 2-D plots ("COLZ" by default)
     std::string drawOption2D{ "COLZ" };
+    // wether to draw the values axis in log scale (Y axis for 1-D plots and Z axis for 2-D plots)
+    bool logScale{ false };
     // list of QCDB objects in this group
     std::vector<std::string> objects;
   };
