@@ -11,6 +11,7 @@ Configuration reference
    * [QC Checks configuration](#qc-checks-configuration)
    * [QC Aggregators configuration](#qc-aggregators-configuration)
    * [QC Post-processing configuration](#qc-post-processing-configuration)
+   * [QC Late Tasks configuration](#qc-late-tasks-configuration)
    * [External tasks configuration](#external-tasks-configuration)
    * [Merging multiple configuration files into one](#merging-multiple-configuration-files-into-one)
    * [Templating config files](#templating-config-files)
@@ -46,6 +47,9 @@ This is the global structure of the configuration in QC.
     },
     "postprocessing": {
       
+    },
+    "lateTasks": {
+
     }
   },
   "dataSamplingPolicies": [
@@ -54,7 +58,7 @@ This is the global structure of the configuration in QC.
 }
 ```
 
-There are six QC-related components:
+There are following QC-related components:
 * "config" - contains global configuration of QC which apply to any component. It is required in any configuration
   file.
 * "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
@@ -65,6 +69,7 @@ There are six QC-related components:
 * "aggregators" - contains declarations of QC Aggregators. It is not mandatory.
 * "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
   run.
+* "lateTasks" - contains declarations of Late Tasks. Not mandatory.
 
 The configuration file can also include a list of Data Sampling Policies.
 Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Utilities/DataSampling) to find more information.
@@ -329,6 +334,7 @@ declared inside in the "postprocessing" path. Please also refer to [the Post-pro
     "postprocessing": {
       "ExamplePostprocessingID": {            "": "ID of the PP Task.",
         "active": "true",                     "": "Activation flag. If not \"true\", the PP Task will not be run.",
+        "critical": "true",                   "": "if false the task is allowed to die without stopping the workflow, default: true",
         "taskName": "MyPPTaskName",           "": ["Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
                                                  "Less than 14 character names are preferred."],
         "className": "namespace::of::PPTask", "": "Class name of the PP Task with full namespace.",
@@ -349,6 +355,35 @@ declared inside in the "postprocessing" path. Please also refer to [the Post-pro
           "implementation": "CCDB",
           "host": "another-test.cern.ch:8080"
         }
+      }
+    }
+  }
+}
+```
+
+## QC Late Tasks configuration
+
+Below the full QC Late Tasks configuration structure is described. Note that more than one Late Task might be
+declared inside in the "lateTasks" path. Please also refer to [the Late Tasks documentation](ModulesDevelopment.md#late-task) for more details.
+
+```json
+{
+  "qc": {
+    "lateTasks": {
+      "ExampleLateTaskID": {
+        "active": "true",                     "": "Activation flag. If not \"true\", the task will not be run.",
+        "critical": "true",                   "": "if false the task is allowed to die without stopping the workflow, default: true",
+        "taskName": "MyLateTaskName",         "": "Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
+        "className": "namespace::of::LTask",  "": "Class name of the Late Task with full namespace.",
+        "moduleName": "QcSkeleton",           "": "Library name. It can be found in CMakeLists of the detector module.",
+        "detectorName": "TST",                "": "3-letter code of the detector.",
+        "dataSources": [{                     "": "List of data sources.",
+          "type": "Task",                     "": "Type of the data source: \"Task\", \"TaskMovingWindow\", \"LateTask\"",
+                                              "": "\"Check\" or \"Aggregator\" are valid.",
+          "name": "Clusters",                 "": "Name of the user component which will provide the data",
+          "MOs": ["example_object"],          "": "List of reuqested MOs. If empty, all are requested.",
+                                              "": " Use \"QOs\" to requested QualityObjects"
+        }]
       }
     }
   }

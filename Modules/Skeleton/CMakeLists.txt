@@ -2,7 +2,7 @@
 
 add_library(O2QcSkeleton)
 
-target_sources(O2QcSkeleton PRIVATE src/SkeletonTask.cxx src/SkeletonCheck.cxx src/SkeletonAggregator.cxx src/SkeletonPostProcessing.cxx)
+target_sources(O2QcSkeleton PRIVATE src/SkeletonTask.cxx src/SkeletonCheck.cxx src/SkeletonAggregator.cxx src/SkeletonPostProcessing.cxx src/SkeletonLateTask.cxx)
 
 target_include_directories(
   O2QcSkeleton
@@ -28,6 +28,7 @@ add_root_dictionary(O2QcSkeleton
                             include/Skeleton/SkeletonCheck.h
                             include/Skeleton/SkeletonAggregator.h
                             include/Skeleton/SkeletonPostProcessing.h
+                            include/Skeleton/SkeletonLateTask.h
                     LINKDEF "include/Skeleton/LinkDef.h")
 
 # ---- Tests ----

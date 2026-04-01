@@ -84,7 +84,7 @@ class UnrequestedAccessActor : public Actor<UnrequestedAccessActor>
   explicit UnrequestedAccessActor(const ServicesConfig& cfg) : Actor<UnrequestedAccessActor>(cfg) {}
 
   template <typename T>
-  consteval void assertNoAccessToServices()
+  constexpr void assertNoAccessToServices()
   {
     static_assert(!(requires(T& t) { t.getMonitoring(); }));
     static_assert(!(requires(T& t) { t.getBookkeeping(); }));

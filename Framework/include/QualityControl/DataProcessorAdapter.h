@@ -112,7 +112,7 @@ struct DataProcessorAdapter {
   static std::string dataProcessorName(std::string_view userCodeName, std::string_view detectorName)
   {
     using traits = ActorTraits<ConcreteActor>;
-    return dataProcessorName(detectorName, userCodeName, traits::sActorTypeKebabCase);
+    return dataProcessorName(userCodeName, detectorName, traits::sActorTypeKebabCase);
   }
 
   /// \brief Produces standardized QC Data Processor name for cases were no user code is ran and it's not detector specific.
