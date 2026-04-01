@@ -9,29 +9,20 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-///
-/// \file   DataSourceType.h
-/// \author Piotr Konopka
-///
-
-#ifndef QUALITYCONTROL_DATASOURCETYPE_H
-#define QUALITYCONTROL_DATASOURCETYPE_H
+#ifndef QUALITYCONTROL_OUTPUTOBJECTVALIDITY_H
+#define QUALITYCONTROL_OUTPUTOBJECTVALIDITY_H
 
 namespace o2::quality_control::core
 {
 
-enum class DataSourceType {
-  DataSamplingPolicy,
-  Direct,
-  Task,
-  TaskMovingWindow,
-  Check,
-  Aggregator,
-  PostProcessingTask,
-  LateTask,
-  ExternalTask,
-  Invalid
+/// This enum lets user select how Activity (incl. validity) of output objects should be calculated
+enum class OutputActivityStrategy {
+  // Output activity contains all activities of input objects
+  Integrated,
+  // Output activity contains only the activity of the last input objects
+  Last
 };
-}
 
-#endif // QUALITYCONTROL_DATASOURCETYPE_H
+} // namespace o2::quality_control::core
+
+#endif // QUALITYCONTROL_OUTPUTOBJECTVALIDITY_H
