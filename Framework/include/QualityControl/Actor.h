@@ -130,7 +130,6 @@ class Actor
 
  private:
   explicit Actor(const ServicesConfig& servicesConfig)
-    requires(std::derived_from<ConcreteActor, Actor<ConcreteActor>>)
     : mServicesConfig{ servicesConfig },
       mActivity{ servicesConfig.activity }
   {
@@ -213,6 +212,7 @@ class Actor
  private:
   static consteval void assertCorrectConcreteActor()
   {
+    static_assert(std::derived_from<ConcreteActor, Actor<ConcreteActor>>);
     // mandatory methods
     static_assert(requires(ConcreteActor& actor, framework::ProcessingContext& pCtx) { { actor.onProcess(pCtx) } -> std::convertible_to<void>; });
     static_assert(requires(ConcreteActor& actor, framework::InitContext& iCtx) { { actor.onInit(iCtx) } -> std::convertible_to<void>; });
