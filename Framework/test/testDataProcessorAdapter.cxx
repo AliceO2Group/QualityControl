@@ -122,7 +122,9 @@ TEST_CASE("DataProcessorAdapter::adapt uses actor critical flag for user-defined
   SECTION("critical actor instance")
   {
     auto spec = DataProcessorAdapter::adapt(UserDefinedCriticalityActor{ true }, "userdefined-critical", Inputs{}, Outputs{}, Options{});
-    CHECK_FALSE(hasLabel(spec.labels, "expendable"));
+    // that's not a mistake, "resilient" means the task itself critical, but can survive crashes of upstream data processors.
+    // this way we allow for upstream data processors to be either critical or expendable and hide this complexity from the user.
+    CHECK(hasLabel(spec.labels, "resilient"));
   }
 
   SECTION("non-critical actor instance")

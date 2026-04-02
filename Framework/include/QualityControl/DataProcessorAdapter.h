@@ -88,7 +88,9 @@ struct DataProcessorAdapter {
       if (!actor.isCritical()) {
         dataProcessor.labels.emplace_back("expendable");
       } else {
-        // that's the default in DPL
+        // we make it resilient so we can support upstream data processors with are either expendable and critical,
+        // and hide the unnecessary complexity from the user.
+        dataProcessor.labels.emplace_back("resilient");
       }
     }
 
