@@ -33,7 +33,7 @@ Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorO
   // "bin1,bin2,bin3,..." not to be checked on the TH2Poly stave overview
   std::vector<int> skipbinsStaveOverview = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "skipbinsStaveOverview", ""));
 
-  // limits to be used as "X,Y" --> BAD if at least X FFEIDs have at least Y chips each into error
+  // limits to be used as "X,Y" --> BAD if at least X FFEIDs have at least a fraction Y of chips each into error
   std::vector<float> feeidlimitsIB = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsIB", ""));
   std::vector<float> feeidlimitsML = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsML", ""));
   std::vector<float> feeidlimitsOL = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsOL", ""));
