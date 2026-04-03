@@ -174,12 +174,12 @@ Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
 
         TString trgname = (TString)(h->GetYaxis()->GetBinLabel(itrg + 1));
 
-        for (int ifee = 1; ifee <= h->GetNbinsX(); ifee++) {
+        for (int ifeebin = 1; ifeebin <= h->GetNbinsX(); ifeebin++) {
 
-          if (std::find(skipfeeid.begin(), skipfeeid.end(), ifee) != skipfeeid.end())
+          if (std::find(skipfeeid.begin(), skipfeeid.end(), ifeebin - 1) != skipfeeid.end())
             continue;
 
-          int bincontent = (int)(h->GetBinContent(ifee, itrg + 1));
+          int bincontent = (int)(h->GetBinContent(ifeebin, itrg + 1));
 
           // checking trigger flags supposed to have at least one entry
           if (TrgAtLeastOne.Contains(trgname)) {
@@ -379,7 +379,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
             tInfoLayers[ilayer]->SetNDC();
             hp->GetListOfFunctions()->Add(tInfoLayers[ilayer]->Clone());
           } // end check result over layer
-        }   // end of loop over layers
+        } // end of loop over layers
       }
       tInfo = std::make_shared<TLatex>(0.05, 0.95, Form("#bf{%s}", status.Data()));
       tInfo->SetTextColor(textColor);

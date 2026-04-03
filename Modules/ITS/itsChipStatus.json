@@ -49,6 +49,7 @@
                 "policy": "OnEachSeparately",
                 "detectorName": "ITS",
 		"checkParameters": {
+		    "skipbinsStaveOverview": "",
 		    "feeidlimitsIB": "1,1",
 		    "feeidlimitsML": "1,0.87",
 		    "feeidlimitsOL": "1,0.92",
@@ -57,7 +58,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSChipStatus",
-                    "MOs": ["StaveStatusOverview"]
+                    "MOs": ["StaveStatusOverview","FEEIDOverview"]
                 }]
             }
        }
