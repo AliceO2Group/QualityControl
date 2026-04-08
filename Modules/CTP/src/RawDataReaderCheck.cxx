@@ -107,6 +107,9 @@ Quality RawDataReaderCheck::check(std::map<std::string, std::shared_ptr<MonitorO
         }
       }
       result.set(setQualityResult(mVecBadBC, mVecMediumBC));
+      if (h->GetEntries() == 0) {
+        result.set(Quality::Bad);
+      }
     } else if (mo->getName() == "inputs") {
       if (mHistInputPrevious) {
         checkChange(h, mHistInputPrevious);
