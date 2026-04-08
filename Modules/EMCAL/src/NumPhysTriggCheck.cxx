@@ -88,9 +88,19 @@ void NumPhysTriggCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     if (Can == nullptr) {
       return;
     }
-
-    Can->cd();
+    TGraph* gr = nullptr;
+    TList* primitives = Can->GetListOfPrimitives();
+    for (TObject* obj : *primitives) {
+      if (obj->InheritsFrom("TGraph")) {
+        gr = (TGraph*)obj;
+        break;
+      }
+    }
+    if (gr == nullptr) {
+      return;
+    }
     TPaveText* msg = new TPaveText(0.17, 0.2, 0.5, 0.3, "NDC");
+
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
@@ -99,15 +109,18 @@ void NumPhysTriggCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       msg->AddText("Data quality: GOOD");
       msg->SetFillColor(kGreen);
       msg->Draw("same");
-      Can->Update();
+      gr->GetListOfFunctions()->Add(msg);
     } else if (checkResult == Quality::Bad) {
       ILOG(Debug, Devel) << "Quality::Bad << ENDM";
       msg->Clear();
       msg->AddText("Data quality: BAD");
       msg->SetFillColor(kRed);
       msg->Draw("same");
-      Can->Update();
+      gr->GetListOfFunctions()->Add(msg);
     }
+    Can->cd();
+    Can->Modified();
+    Can->Update();
   }
 }
 } // namespace o2::quality_control_modules::emcal
