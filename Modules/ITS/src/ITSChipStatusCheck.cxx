@@ -30,7 +30,10 @@ namespace o2::quality_control_modules::its
 Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
-  // limits to be used as "X,Y" --> BAD if at least X FFEIDs have at least Y chips each into error
+  // "bin1,bin2,bin3,..." not to be checked on the TH2Poly stave overview
+  std::vector<int> skipbinsStaveOverview = convertToArray<int>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "skipbinsStaveOverview", ""));
+
+  // limits to be used as "X,Y" --> BAD if at least X FFEIDs have at least a fraction Y of chips each into error
   std::vector<float> feeidlimitsIB = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsIB", ""));
   std::vector<float> feeidlimitsML = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsML", ""));
   std::vector<float> feeidlimitsOL = convertToArray<float>(o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "feeidlimitsOL", ""));
@@ -64,6 +67,9 @@ Quality ITSChipStatusCheck::check(std::map<std::string, std::shared_ptr<MonitorO
       }
       for (int ilayer = 0; ilayer < NLayer; ilayer++) {
         for (int ibin = StaveBoundary[ilayer] + 1; ibin <= StaveBoundary[ilayer + 1]; ++ibin) {
+          if (std::find(skipbinsStaveOverview.begin(), skipbinsStaveOverview.end(), ibin) != skipbinsStaveOverview.end()) {
+            continue;
+          }
           if (abs(h->GetBinContent(ibin) - 1) < 0.01) {
             result = Quality::Bad;
             TString text = Form("BAD: At least one stave is without data");
