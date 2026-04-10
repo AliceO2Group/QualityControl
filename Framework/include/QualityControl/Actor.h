@@ -123,12 +123,7 @@ class Actor
     return actor_helpers::requiresService<ConcreteActor, S>();
   }
 
-  // a trick to prevent bugs like "class TaskRunner : public Actor<CheckRunner>"
-  // by keeping the constructor private, thus allowing only CheckRunner to initialize Actor<CheckRunner>
-  // see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  friend ConcreteActor;
-
- private:
+ public:
   explicit Actor(const ServicesConfig& servicesConfig)
     : mServicesConfig{ servicesConfig },
       mActivity{ servicesConfig.activity }
