@@ -140,6 +140,9 @@ add_library(O2QualityControl
   src/QCInputsAdapters.cxx
   src/QCInputsFactory.cxx
   src/UserInputOutput.cxx
+  src/Actor.cxx
+  src/ActorHelpers.cxx
+  src/DataProcessorAdapter.cxx
 )
 
 target_include_directories(
@@ -270,12 +273,16 @@ endforeach()
 add_executable(o2-qc-test-core
                test/testActivity.cxx
                test/testActivityHelpers.cxx
+               test/testActorHelpers.cxx
+               test/testActorTraits.cxx
+               test/testActor.cxx
                test/testAggregatorInterface.cxx
                test/testAggregatorRunner.cxx
                test/testCheck.cxx
                test/testCheckInterface.cxx
                test/testCheckRunner.cxx
                test/testCustomParameters.cxx
+               test/testDataProcessorAdapter.cxx
                test/testDataHeaderHelpers.cxx
                test/testInfrastructureGenerator.cxx
                test/testMonitorObject.cxx
@@ -295,6 +302,7 @@ add_executable(o2-qc-test-core
                test/testQualitiesToFlagCollectionConverter.cxx
                test/testQCInputs.cxx
                test/testUserInputOutput.cxx
+               test/testStringUtils.cxx
 )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
@@ -310,6 +318,7 @@ target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
 target_include_directories(o2-qc-test-core PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 set(TEST_SRCS
+    test/testActorCallbacks.cxx
     test/testDbFactory.cxx
     test/testPublisher.cxx
     test/testQcInfoLogger.cxx
@@ -325,12 +334,12 @@ set(TEST_SRCS
     test/testWorkflow.cxx
     test/testRepoPathUtils.cxx
     test/testUserCodeInterface.cxx
-    test/testStringUtils.cxx
     test/testRunnerUtils.cxx
     test/testBookkeepingQualitySink.cxx
   )
 
 set(TEST_ARGS
+    "-b --run"
     ""
     ""
     ""
@@ -380,6 +389,8 @@ endforeach()
 
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
+set_property(TEST testActorCallbacks PROPERTY TIMEOUT 30)
+set_property(TEST testActorCallbacks PROPERTY LABELS slow)
 set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
 set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 50)
