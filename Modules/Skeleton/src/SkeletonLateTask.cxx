@@ -17,6 +17,7 @@
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TH1.h>
+#include <TH2I.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/QCInputs.h"
@@ -38,19 +39,20 @@ void SkeletonLateTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
-  // This is how logs are created. QcInfoLogger is used. In production, FairMQ logs will go to InfoLogger as well.
-  ILOG(Debug, Devel) << "initialize SkeletonLateTask" << ENDM;
-  ILOG(Debug, Support) << "A debug targeted for support" << ENDM;
-  ILOG(Info, Ops) << "An Info log targeted for operators" << ENDM;
+  // This creates and registers a graph for publication, we will track "example" histogram mean here
+  mMeanTrend = std::make_unique<TGraph>();
+  mMeanTrend->SetName("mean_trend");
+  mMeanTrend->SetTitle("mean_trend");
+  mMeanTrend->GetXaxis()->SetTimeDisplay(kTRUE);
+  mMeanTrend->SetMarkerStyle(kStar); // star markers
+  mMeanTrend->SetLineStyle(kSolid);  // solid line
+  getObjectsManager()->startPublishing(mMeanTrend.get(), PublicationPolicy::Forever);
 
-  // This creates and registers a histogram for publication at the end of each cycle, until the end of the task lifetime
-  mGraph = std::make_unique<TGraph>();
-  mGraph->SetName("graph_example");
-  mGraph->SetTitle("graph_example");
-  mGraph->SetMarkerStyle(kStar); // star markers
-  mGraph->SetLineStyle(kSolid);  // solid line
-  getObjectsManager()->startPublishing(mGraph.get(), PublicationPolicy::Forever);
+  // This creates and registers a 2D histogram for publication, we will fill it with means of "example" and "example2" histograms
+  mCorrelation = std::make_unique<TH2I>("correlation", "correlation", 20, 0, 10500, 20, 0, 255);
+  getObjectsManager()->startPublishing(mCorrelation.get(), PublicationPolicy::Forever);
 
+  // this demonstrates how to get a property tree of custom parameters
   auto plots = mCustomParameters.getOptionalPtree("plots");
   if (plots.has_value()) {
     ILOG(Info, Support) << "nested param: " << plots.value().get<std::string>("nested") << ENDM;
@@ -62,23 +64,35 @@ void SkeletonLateTask::startOfActivity(const Activity& activity)
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "startOfActivity " << activity.mId << ENDM;
 
-  // remove all existing points
-  mGraph->Set(0);
+  // remove all existing data in plots to have them clean in a start->stop->start sequence
+  reset();
 }
 
 void SkeletonLateTask::process(const quality_control::core::QCInputs& data)
 {
   // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
-  if (auto histoOpt = getMonitorObject<TH1>(data, "example")) {
-    const TH1& histo = histoOpt.value();
+  // this is how a MonitorObject can be obtained, incl. the wrapper itself
+  if (auto moOpt = getMonitorObject(data, "example")) {
+    const MonitorObject& mo = moOpt.value();
+    auto validityEndSeconds = mo.getValidity().getMax() / 1000;
 
-    ILOG(Info, Ops) << "Histogram " << histo.GetName() << " has " << histo.GetEntries() << " entries" << ENDM;
-    mGraph->AddPoint(histo.GetEntries(), histo.GetMean());
+    auto histo = dynamic_cast<TH1*>(mo.getObject());
+    if (histo) {
+      mMeanTrend->AddPoint(validityEndSeconds, histo->GetMean());
+      ILOG(Debug, Devel) << "New point in graph" << ENDM;
+    }
   }
 
-  if (auto qoOpt = getQualityObject(data, "QcCheck")) {
-    ILOG(Info, Ops) << "Got QcCheck result: " << qoOpt.value().get().getQuality() << ENDM;
+  // this is how objects can be retrieved without a MonitorObject wrapper
+  auto example1Opt = getMonitorObject<TH1>(data, "example");
+  auto example2Opt = getMonitorObject<TH1>(data, "example2");
+  if (example1Opt.has_value() && example2Opt.has_value()) {
+    const TH1& example1 = example1Opt.value();
+    const TH1& example2 = example2Opt.value();
+
+    mCorrelation->Fill(example1.GetMean(), example2.GetMean());
+    ILOG(Debug, Devel) << "New entry in correlation" << ENDM;
   }
 }
 
@@ -94,8 +108,11 @@ void SkeletonLateTask::reset()
 
   // Clean all the monitor objects here.
   ILOG(Debug, Devel) << "Resetting the plots" << ENDM;
-  if (mGraph) {
-    mGraph->Clear();
+  if (mMeanTrend) {
+    mMeanTrend->Set(0);
+  }
+  if (mCorrelation) {
+    mCorrelation->Reset();
   }
 }
 

@@ -9,6 +9,7 @@
 #include <memory>
 
 class TGraph;
+class TH2I;
 
 using namespace o2::quality_control::core;
 
@@ -32,7 +33,8 @@ class SkeletonLateTask final : public LateTaskInterface
   void reset() override;
 
  private:
-  std::shared_ptr<TGraph> mGraph = nullptr;
+  std::shared_ptr<TGraph> mMeanTrend = nullptr;
+  std::shared_ptr<TH2I> mCorrelation = nullptr;
 };
 
 } // namespace o2::quality_control_modules::skeleton

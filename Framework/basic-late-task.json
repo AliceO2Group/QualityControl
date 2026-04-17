@@ -40,10 +40,13 @@
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
+        "resetAfterCycles": "1",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
-        }
+        },
+        "movingWindows": ["example"],
+        "location": "local"
       }
     },
     "checks": {
@@ -65,25 +68,6 @@
             }
           }
         }
-      },
-      "latecheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "detectorName": "TST",
-        "dataSource": [{
-          "type": "LateTask",
-          "name": "late",
-          "MOs": ["graph_example"]
-        }],
-        "extendedCheckParameters": {
-          "physics": {
-            "pp": {
-              "myOwnKey1": "myOwnValue1c"
-            }
-          }
-        }
       }
     },
     "lateTasks": {
@@ -95,8 +79,9 @@
         "dataSources": [{
           "type": "Task",
           "name": "QcTask",
-          "MOs": ["example"]
-        }]
+          "MOs": ["example", "example2"]
+        }],
+        "outputActivityStrategy": "integrated"
       }
     }
   },

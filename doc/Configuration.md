@@ -383,7 +383,10 @@ declared inside in the "lateTasks" path. Please also refer to [the Late Tasks do
           "name": "Clusters",                 "": "Name of the user component which will provide the data",
           "MOs": ["example_object"],          "": "List of reuqested MOs. If empty, all are requested.",
                                               "": " Use \"QOs\" to requested QualityObjects"
-        }]
+        }],
+        "outputActivityStrategy": "integrated", "": "Defines how Activity and Validity of objects should be calculated.",
+                                                "": "The default \"integrated\" is a union of all inputs during an activity,",
+                                                "": "while \"last\" copies the Activity of the latest inputs."
       }
     }
   }
