@@ -548,6 +548,16 @@ Post-processing tasks can be marked as critical or non-critical:
 By default, they are critical meaning that their failure will stop the run.
 If they are not critical, they will be `expendable` and will not stop the run if they die.
 
+### QC late tasks
+
+Late tasks can be marked as critical or non-critical:
+```json
+    "lateTasks": {
+      "LateTaskExample": {
+        "active": "true",
+        "critical": "false",   "": "if false the task is allowed to die without stopping the workflow, default: true",
+```
+
 ## QC with DPL Analysis
 
 ### Uploading objects to QCDB
