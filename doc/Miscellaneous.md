@@ -3,7 +3,7 @@ Miscellaneous
 ---
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
+<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Miscellaneous.md -->
 <!--ts-->
 * [Asynchronous Data and Monte Carlo QC operations](#asynchronous-data-and-monte-carlo-qc-operations)
 * [QCG](#qcg)

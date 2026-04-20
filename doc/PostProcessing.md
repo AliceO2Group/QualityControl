@@ -146,7 +146,7 @@ Checks can be applied to the results of Post-processing Tasks just as for normal
 
 A postprocessing task can access custom parameters declared in the configuration file at `qc.postprocessing.<task_id>.extendedTaskParameters`. They are stored inside an object of type `CustomParameters` named `mCustomParameters`, which is a protected member of `TaskInterface`.
 
-[More details](Advanced.md#definition-and-access-of-user-specific-configuration) can be found about this feature in the Tasks (same behaviour).
+[More details](Configuration.md#definition-and-access-of-user-defined-configuration-extendedtaskparameters) can be found about this feature in the Tasks (same behaviour).
 
 #### Triggers configuration
 
@@ -1096,7 +1096,7 @@ up a long-running workflow in Nomad.
 ### I want to run trend a moving window in a synchronous QC
 
 In your QC task, enable the moving window feature on the selected plot.
-More details can be found in [Advanced/Moving window](Advanced.md#moving-window).
+More details can be found in [Moving window](Framework.md#moving-window).
 
 Use the NewObject trigger on the moving window to update the task:
 

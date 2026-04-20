@@ -19,7 +19,7 @@
       * [My objects are not stored due to their size. What can I do ?](#my-objects-are-not-stored-due-to-their-size-what-can-i-do-)
 <!--te-->
 
-[← Go back to Advanced Topics](Advanced.md) | [↑ Go to the Table of Content ↑](../README.md) 
+[↑ Go to the Table of Content ↑](../README.md) 
 
 ## Git
 

@@ -3,7 +3,7 @@ FLP Suite
 ---
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
+<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/FLPsuite.md -->
 <!--ts-->
    * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
    * [Switch detector in the workflow <em>readout-dataflow</em>](#switch-detector-in-the-workflow-readout-dataflow)
