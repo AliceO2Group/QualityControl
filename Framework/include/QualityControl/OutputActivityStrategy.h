@@ -9,27 +9,20 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#ifndef QC_INPUT_UTILS_H
-#define QC_INPUT_UTILS_H
-
-// std
-#include <vector>
-#include <string>
-// o2
-#include <Framework/DataProcessorSpec.h>
-#include <Framework/DataSpecUtils.h>
+#ifndef QUALITYCONTROL_OUTPUTOBJECTVALIDITY_H
+#define QUALITYCONTROL_OUTPUTOBJECTVALIDITY_H
 
 namespace o2::quality_control::core
 {
 
-// fixme: rename to stringifyInputs?
-inline std::vector<std::string> stringifyInput(const o2::framework::Inputs& inputs)
-{
-  std::vector<std::string> vec;
-  for (const auto& input : inputs) {
-    vec.push_back(o2::framework::DataSpecUtils::describe(input));
-  }
-  return vec;
-}
+/// This enum lets user select how Activity (incl. validity) of output objects should be calculated
+enum class OutputActivityStrategy {
+  // Output activity contains all activities of input objects
+  Integrated,
+  // Output activity contains only the activity of the last input objects
+  Last
+};
+
 } // namespace o2::quality_control::core
-#endif
+
+#endif // QUALITYCONTROL_OUTPUTOBJECTVALIDITY_H
