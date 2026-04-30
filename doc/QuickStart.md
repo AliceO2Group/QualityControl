@@ -51,7 +51,7 @@ To load multiple independent packages, list them one after the other, space-sepa
 
 To make sure that your system is correctly setup, we are going to run a basic QC workflow attached to a simple data producer. 
 
-The QC repository and the GUI are central services, thus they don't have to be installed on your machine. If you want to set them up on your computer or in your lab, please have a look [here](Advanced.md#local-ccdb-setup) and [here](Advanced.md#local-qcg-qc-gui-setup).
+The QC repository and the GUI are central services, thus they don't have to be installed on your machine. If you want to set them up on your computer or in your lab, please have a look at the [Local CCDB setup](QCDB.md#local-ccdb-setup) section.
 
 ### Basic workflow
 

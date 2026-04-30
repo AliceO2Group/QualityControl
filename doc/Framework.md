@@ -3,7 +3,7 @@ Framework
 ---
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
+<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Framework.md -->
 <!--ts-->
    * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
    * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)

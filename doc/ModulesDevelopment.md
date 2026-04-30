@@ -200,7 +200,7 @@ cd QualityControl/Modules
 ./o2-qc-module-configurator.sh -m TST -t RawDataQcTask # create the module and a task
 ```
 
-IMPORTANT: Make sure that your detector code is listed in TaskRunner::validateDetectorName. If it is not, feel free to add it. 
+IMPORTANT: Make sure that your detector code is listed in `InfrastructureSpecReader::validateDetectorName()` (in `Framework/src/InfrastructureSpecReader.cxx`). If it is not, feel free to add it. 
 
 We will refer in the following section to the module as `Tst` and the task as `RawDataQcTask`. Make sure to use your own code and names. 
 
@@ -345,7 +345,7 @@ For each MO or group of MOs, `beautify()` is invoked after `check()` if
 Checks return Qualities with associated Flags.
 The framework wraps them with a QualityObject, then makes it available to Aggregators (see the next section) and stores them in the repository.
 It is also possible to propagate Check results to the Run Condition Table (RCT) in Bookkeeping.
-Details are explained at [Propagating Check results to RCT in Bookkeeping](Advanced.md#propagating-check-results-to-rct-in-bookkeeping)
+Details are explained at [Propagating Check results to RCT in Bookkeeping](Framework.md#propagating-check-results-to-rct-in-bookkeeping)
 
 ## Quality Aggregation
 

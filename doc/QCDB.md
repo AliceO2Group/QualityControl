@@ -3,7 +3,7 @@ QCDB
 ---
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/Advanced.md -->
+<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 QualityControl/doc/QCDB.md -->
 <!--ts-->
    * [QCDB vs CCDB](#qcdb-vs-ccdb)
    * [Details on the data storage format in the QCDB](#details-on-the-data-storage-format-in-the-qcdb)
