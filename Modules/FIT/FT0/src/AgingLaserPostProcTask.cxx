@@ -260,6 +260,7 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
         }
         if(h1->GetBinContent(bin) > maxEntries) {
             binMax = bin;
+            maxEntries = h1->GetBinContent(bin);
         }
     }
     if(binMax == -1) {
@@ -268,7 +269,6 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
     }
 
     // global maximum
-    //const int binMax = h1->GetMaximumBin();
     const double xMax = h1->GetBinCenter(binMax);
     const double winLo = TMath::Max(0., (1. - mFracWindowA) * xMax);
     const double winHi = (1. + mFracWindowB) * xMax;
