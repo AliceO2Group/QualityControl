@@ -16,22 +16,47 @@
 
 #include "QualityControl/stringUtils.h"
 
-#define BOOST_TEST_MODULE Triggers test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::core;
 
-BOOST_AUTO_TEST_CASE(test_is_number)
+TEST_CASE("isUnsignedInteger() accepts only unsigned integers")
 {
-  BOOST_CHECK_EQUAL(isUnsignedInteger("1"), true);
-  BOOST_CHECK_EQUAL(isUnsignedInteger("-1"), false);
-  BOOST_CHECK_EQUAL(isUnsignedInteger("1000000"), true);
-  BOOST_CHECK_EQUAL(isUnsignedInteger("0.1"), false);
-  BOOST_CHECK_EQUAL(isUnsignedInteger(".2"), false);
-  BOOST_CHECK_EQUAL(isUnsignedInteger("x"), false);
-  BOOST_CHECK_EQUAL(isUnsignedInteger("1x"), false);
-  BOOST_CHECK_EQUAL(isUnsignedInteger("......"), false);
+  CHECK(isUnsignedInteger("1") == true);
+  CHECK(isUnsignedInteger("-1") == false);
+  CHECK(isUnsignedInteger("1000000") == true);
+  CHECK(isUnsignedInteger("0.1") == false);
+  CHECK(isUnsignedInteger(".2") == false);
+  CHECK(isUnsignedInteger("x") == false);
+  CHECK(isUnsignedInteger("1x") == false);
+  CHECK(isUnsignedInteger("......") == false);
+}
+
+TEST_CASE("test_kebab_case")
+{
+  STATIC_CHECK(isKebabCase("a"));
+  STATIC_CHECK(isKebabCase("asdf-fdsa-321"));
+  STATIC_CHECK(isKebabCase("a-b-c"));
+  STATIC_CHECK_FALSE(isKebabCase("ASDF-fdsa-321"));
+  STATIC_CHECK_FALSE(isKebabCase("ASDF--fdsa-321"));
+  STATIC_CHECK_FALSE(isKebabCase("-asdf"));
+  STATIC_CHECK_FALSE(isKebabCase("asdf-"));
+  STATIC_CHECK_FALSE(isKebabCase(""));
+}
+
+TEST_CASE("isUpperCamelCase() validates UpperCamelCase identifiers")
+{
+  STATIC_CHECK(isUpperCamelCase("TaskRunner"));
+  STATIC_CHECK(isUpperCamelCase("URLParser"));
+  STATIC_CHECK(isUpperCamelCase("A"));
+  STATIC_CHECK(isUpperCamelCase("A1"));
+  STATIC_CHECK(isUpperCamelCase("My2DPlot"));
+
+  STATIC_CHECK(isUpperCamelCase("") == false);
+  STATIC_CHECK(isUpperCamelCase("taskRunner") == false);
+  STATIC_CHECK(isUpperCamelCase("1Task") == false);
+  STATIC_CHECK(isUpperCamelCase("Task_Runner") == false);
+  STATIC_CHECK(isUpperCamelCase("Task-Runner") == false);
+  STATIC_CHECK(isUpperCamelCase("task-runner") == false);
+  STATIC_CHECK(isUpperCamelCase("Task Runner") == false);
 }

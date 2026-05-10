@@ -28,10 +28,10 @@ enum class DataSourceType {
   Check,
   Aggregator,
   PostProcessingTask,
+  LateTask,
   ExternalTask,
   Invalid
 };
-
 }
 
 #endif // QUALITYCONTROL_DATASOURCETYPE_H

@@ -9,27 +9,28 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#ifndef QC_INPUT_UTILS_H
-#define QC_INPUT_UTILS_H
+#ifndef QC_CORE_LATETASKRUNNERCONFIG_H
+#define QC_CORE_LATETASKRUNNERCONFIG_H
 
-// std
-#include <vector>
-#include <string>
-// o2
+///
+/// \file   LateTaskRunnerConfig.h
+/// \author Piotr Konopka
+///
+
 #include <Framework/DataProcessorSpec.h>
-#include <Framework/DataSpecUtils.h>
+
+#include "QualityControl/UserCodeConfig.h"
+#include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/OutputActivityStrategy.h"
 
 namespace o2::quality_control::core
 {
 
-// fixme: rename to stringifyInputs?
-inline std::vector<std::string> stringifyInput(const o2::framework::Inputs& inputs)
-{
-  std::vector<std::string> vec;
-  for (const auto& input : inputs) {
-    vec.push_back(o2::framework::DataSpecUtils::describe(input));
-  }
-  return vec;
-}
+struct LateTaskConfig : public UserCodeConfig {
+  bool critical = true;
+  OutputActivityStrategy outputActivityStrategy = OutputActivityStrategy::Integrated;
+};
+
 } // namespace o2::quality_control::core
-#endif
+
+#endif // QC_CORE_LATETASKRUNNERCONFIG_H
