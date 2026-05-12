@@ -95,8 +95,8 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   int mOnlineQC;
 
   const TString mColors[10] = { "#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#8C564B", "#E377C2", "#9467BD", "#BCBD22", "#7F7F7F", "#17BECF" };
-  TH1F* clonedHistos[10] = { nullptr };
-  bool firstRun = true;
+  TH1F* mClonedHistos[10] = { nullptr };
+  bool mFirstRun = true;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };

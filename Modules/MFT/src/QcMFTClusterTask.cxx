@@ -478,15 +478,15 @@ void QcMFTClusterTask::updateCanvas()
   mClusterRinAllLayers->cd();
   
   for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
-    clonedHistos[nMFTLayer] = static_cast<TH1F*>(mClusterRinLayer[nMFTLayer]->getNum()->Clone());
-    clonedHistos[nMFTLayer]->SetDirectory(nullptr);
-    clonedHistos[nMFTLayer]->SetStats(0);
-    clonedHistos[nMFTLayer]->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
+    mClonedHistos[nMFTLayer] = static_cast<TH1F*>(mClusterRinLayer[nMFTLayer]->getNum()->Clone());
+    mClonedHistos[nMFTLayer]->SetDirectory(nullptr);
+    mClonedHistos[nMFTLayer]->SetStats(0);
+    mClonedHistos[nMFTLayer]->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
   }
   
   double maxY = 0;
   for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
-    double localMax = clonedHistos[nMFTLayer]->GetMaximum();
+    double localMax = mClonedHistos[nMFTLayer]->GetMaximum();
     if (localMax > maxY) {
       maxY = localMax;
     }
@@ -494,14 +494,14 @@ void QcMFTClusterTask::updateCanvas()
   mFrame->SetMaximum(maxY * 1.1);
   mFrame->Draw();
   for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
-    clonedHistos[nMFTLayer]->Draw("hist same");
+    mClonedHistos[nMFTLayer]->Draw("hist same");
   }
-  if (firstRun) {
+  if (mFirstRun) {
     mLegend->Clear();
     for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
-      mLegend->AddEntry(clonedHistos[nMFTLayer], Form("D%dF%d", static_cast<int>(std::floor(nMFTLayer / 2.)), nMFTLayer % 2 == 0 ? 0 : 1), "l");
+      mLegend->AddEntry(mClonedHistos[nMFTLayer], Form("D%dF%d", static_cast<int>(std::floor(nMFTLayer / 2.)), nMFTLayer % 2 == 0 ? 0 : 1), "l");
     }
-    firstRun = false;
+    mFirstRun = false;
   }
   mLegend->Draw();
   mClusterRinAllLayers->Update();
