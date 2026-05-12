@@ -259,6 +259,11 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     // canvas for for cluster R in all layers
     mClusterRinAllLayers = std::make_unique<TCanvas>("mClusterRinAllLayers", "Cluster Radial Position in All MFT Layers");
     getObjectsManager()->startPublishing(mClusterRinAllLayers.get());
+    mFrame = std::make_unique<TH1F>("frame", "Cluster Radial Position in All MFT Layers; r (cm); # entries", 400, 0, 20);
+    mFrame->SetStats(0);
+    mLegend = std::make_unique<TLegend>(0.8, 0.5, 0.9, 0.9);
+    mLegend->SetBorderSize(0);
+    mLegend->SetFillStyle(0);
   }
 }
 
@@ -443,6 +448,8 @@ void QcMFTClusterTask::reset()
       mClusterRinLayer[nMFTLayer]->Reset();
     }
     mClusterRinAllLayers->Clear();
+    mFrame->Reset();
+    mLegend->Clear();
   }
 }
 
@@ -469,6 +476,34 @@ void QcMFTClusterTask::updateCanvas()
 {
   mClusterRinAllLayers->Clear();
   mClusterRinAllLayers->cd();
+  
+  for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+    clonedHistos[nMFTLayer] = static_cast<TH1F*>(mClusterRinLayer[nMFTLayer]->getNum()->Clone());
+    clonedHistos[nMFTLayer]->SetDirectory(nullptr);
+    clonedHistos[nMFTLayer]->SetStats(0);
+    clonedHistos[nMFTLayer]->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
+  }
+  
+  double maxY = 0;
+  for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+    double localMax = clonedHistos[nMFTLayer]->GetMaximum();
+    if (localMax > maxY) {
+      maxY = localMax;
+    }
+  }
+  mFrame->SetMaximum(maxY * 1.1);
+  mFrame->Draw();
+  for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+    clonedHistos[nMFTLayer]->Draw("hist same");
+  }
+  if (firstRun) {
+    mLegend->Clear();
+    for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
+      mLegend->AddEntry(clonedHistos[nMFTLayer], Form("D%dF%d", static_cast<int>(std::floor(nMFTLayer / 2.)), nMFTLayer % 2 == 0 ? 0 : 1), "l");
+    }
+    firstRun = false;
+  }
+  mLegend->Draw();
   mClusterRinAllLayers->Update();
 }
 
