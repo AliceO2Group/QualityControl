@@ -259,12 +259,6 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     // canvas for for cluster R in all layers
     mClusterRinAllLayers = std::make_unique<TCanvas>("mClusterRinAllLayers", "Cluster Radial Position in All MFT Layers");
     getObjectsManager()->startPublishing(mClusterRinAllLayers.get());
-    mClusterRinAllLayersStack = std::make_unique<THStack>("mClusterRinAllLayersStack", "Cluster Radial Position in All MFT Layers; r (cm); # entries");
-    for (auto nMFTLayer = 0; nMFTLayer < 10; nMFTLayer++) {
-      mClusterRinLayer[nMFTLayer]->getNum()->SetLineColor(TColor::GetColor(mColors[nMFTLayer]));
-      mClusterRinLayer[nMFTLayer]->getNum()->SetTitle(Form("D%dF%d", static_cast<int>(std::floor(nMFTLayer / 2.)), nMFTLayer % 2 == 0 ? 0 : 1));
-      mClusterRinAllLayersStack->Add(mClusterRinLayer[nMFTLayer]->getNum());
-    }
   }
 }
 
@@ -473,11 +467,9 @@ void QcMFTClusterTask::getChipMapData()
 
 void QcMFTClusterTask::updateCanvas()
 {
-  mClusterRinAllLayers->cd();
   mClusterRinAllLayers->Clear();
-  mClusterRinAllLayersStack->Draw("nostack hist");
+  mClusterRinAllLayers->cd();
   mClusterRinAllLayers->Update();
-  gPad->BuildLegend(0.83, 0.50, 0.90, 0.90, "", "l");
 }
 
 } // namespace o2::quality_control_modules::mft
