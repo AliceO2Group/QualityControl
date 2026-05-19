@@ -26,6 +26,9 @@
 #include "DataFormatsFV0/LookUpTable.h"
 #include "Common/Utils.h"
 
+#include "DataFormatsParameters/GRPLHCIFData.h"
+#include "CCDB/BasicCCDBManager.h"
+
 #include "FITCommon/HelperHist.h"
 #include "FITCommon/HelperCommon.h"
 
@@ -188,6 +191,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Channel;Amp", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF, 4200, -100, 4100);
   mHistAmp2Ch->SetOption("colz");
   mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
+  mHistBCBeamBeam = std::make_unique<TH1F>("BC_BeamBeam", "Colliding BCs;BC;counts;", sBCperOrbit, 0, sBCperOrbit);
   mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF, mMapPMbits.size(), 0, mMapPMbits.size());
   mHistChDataBits->SetOption("colz");
   for (const auto& entry : mMapPMbits) {
@@ -278,6 +282,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   // mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNCHANNELS_FV0_PLUSREF, 0, sNCHANNELS_FV0_PLUSREF);
   mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1e4, 0, 1e4);
+  mHistSumAmpAOrABeamBeam = std::make_unique<TH1F>("SumAmpAOrABeamBeam", "Sum of amplitudes + OrA + Colliding BC;ADC units;", 2e5, 0, 2e5);
+  mHistSumAmpAOrABeamBeam_by8 = std::make_unique<TH1F>("SumAmpAOrABeamBeam_by8", "Sum of amplitudes + OrA + Colliding BC;ADC/8 units;", 4e4, 0, 4e4);
   // mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1e4, 0, 1e4);
   mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
   // mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
@@ -319,9 +325,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistGateTimeRatio2Ch.get());
   getObjectsManager()->startPublishing(mHistCFDEff.get());
   getObjectsManager()->startPublishing(mHistBC.get());
+  getObjectsManager()->startPublishing(mHistBCBeamBeam.get());
   getObjectsManager()->startPublishing(mHistNchA.get());
   // getObjectsManager()->startPublishing(mHistNchC.get());
   getObjectsManager()->startPublishing(mHistSumAmpA.get());
+  getObjectsManager()->startPublishing(mHistSumAmpAOrABeamBeam.get());
+  getObjectsManager()->startPublishing(mHistSumAmpAOrABeamBeam_by8.get());
   // getObjectsManager()->startPublishing(mHistSumAmpC.get());
   getObjectsManager()->startPublishing(mHistAverageTimeA.get());
   // getObjectsManager()->startPublishing(mHistAverageTimeC.get());
@@ -385,6 +394,7 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
+  mHistBCBeamBeam->Reset();
   mHistChDataBits->Reset();
   mHistGateTimeRatio2Ch->Reset();
   mHistCFDEff->Reset();
@@ -409,6 +419,8 @@ void DigitQcTask::startOfActivity(const Activity& activity)
   mHistNchA->Reset();
   // mHistNchC->Reset();
   mHistSumAmpA->Reset();
+  mHistSumAmpAOrABeamBeam->Reset();
+  mHistSumAmpAOrABeamBeam_by8->Reset();
   // mHistSumAmpC->Reset();
   mHistAverageTimeA->Reset();
   // mHistAverageTimeC->Reset();
@@ -433,11 +445,54 @@ void DigitQcTask::startOfCycle()
   mTimeSum = 0.;
 }
 
+void DigitQcTask::loadBcPatternIfNeeded()
+{
+  if (mBcPatternLoaded) {
+    return;
+  }
+  auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
+  ccdbManager.setTimestamp(mTFcreationTime);
+  ccdbManager.setCaching(true);
+  auto lhcIf = ccdbManager.get<o2::parameters::GRPLHCIFData>("GLO/Config/GRPLHCIF");
+  if (!lhcIf) {
+    ILOG(Error) << "GRPLHCIF missing → no colliding BC mask will be applied" << ENDM;
+    mCollBC.reset();
+    mBcPatternLoaded = true;
+    return;
+  }
+  const auto& pattern = lhcIf->getBunchFilling().getBCPattern();
+  mCollBC.reset();
+  for (size_t bc = 0; bc < pattern.size(); ++bc) {
+    if (pattern.test(bc)) {
+      mCollBC.set(bc);
+    }
+  }
+  mBcPatternLoaded = true;
+}
+
+void DigitQcTask::loadDeadChannelMapIfNeeded()
+{
+  if (mDeadChannelMapLoaded) {
+    return;
+  }
+  auto& ccdbManager = o2::ccdb::BasicCCDBManager::instance();
+  ccdbManager.setTimestamp(mTFcreationTime);
+  mDeadChannelMap = ccdbManager.get<o2::fit::DeadChannelMap>("FV0/Calib/DeadChannelMap");
+  if (!mDeadChannelMap) {
+    ILOG(Error) << "Failed to load FV0 dead channel map" << ENDM;
+    mDeadChannelMapLoaded = true;
+    return;
+  }
+  ILOG(Info) << "Loaded FV0 dead channel map with " << mDeadChannelMap->map.size() << " entries" << ENDM;
+  mDeadChannelMapLoaded = true;
+}
+
 void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   mTFcreationTime = ctx.services().get<o2::framework::TimingInfo>().creation;
-
   mTfCounter++;
+  loadBcPatternIfNeeded();
+  loadDeadChannelMapIfNeeded();
   auto channels = ctx.inputs().get<gsl::span<o2::fv0::ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<o2::fv0::Digit>>("digits");
   if (digits.size() > 0) {
@@ -463,6 +518,12 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistOrbit2BC->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
     mHistBC->Fill(digit.getBC());
 
+    const bool isCollidingBC = mCollBC.test(digit.getBC());
+
+    if (isCollidingBC) {
+      mHistBCBeamBeam->Fill(digit.getBC());
+    }
+
     std::set<uint8_t> setFEEmodules{};
     // reset triggers
     for (auto& entry : mMapTrgSoftware) {
@@ -476,9 +537,15 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     Int_t pmAverTime = 0;
 
     std::map<uint8_t, int> mapPMhash2sumAmpl;
+    std::map<uint8_t, int> mapPMhash2sumAmplAliveChannels;
     for (const auto& entry : mMapPMhash2isInner) {
       mapPMhash2sumAmpl.insert({ entry.first, 0 });
+      mapPMhash2sumAmplAliveChannels.insert({ entry.first, 0 });
     }
+
+    int32_t sumampAOrABeamBeam = 0;
+    int32_t sumampAOrABeamBeam_by8_inner = 0;
+    int32_t sumampAOrABeamBeam_by8_outer = 0;
 
     for (const auto& chData : vecChData) {
       mHistTime2Ch->Fill(static_cast<Double_t>(chData.ChId), static_cast<Double_t>(chData.CFDTime));
@@ -514,7 +581,29 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (chData.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate)) {
         mapPMhash2sumAmpl[mChID2PMhash[static_cast<uint8_t>(chData.ChId)]] += static_cast<Int_t>(chData.QTCAmpl);
       }
+
+      const auto chId = static_cast<uint8_t>(chData.ChId);
+      if (mDeadChannelMap && !mDeadChannelMap->isChannelAlive(chId)) {
+        continue;
+      }
+
+      if (chData.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) && digit.mTriggers.getOrA() && isCollidingBC) {
+        mapPMhash2sumAmplAliveChannels[mChID2PMhash[chId]] += static_cast<Int_t>(chData.QTCAmpl);
+      }
+
+      if (digit.mTriggers.getOrA() && chData.getFlag(o2::fv0::ChannelData::kIsCFDinADCgate) && isCollidingBC) {
+        sumampAOrABeamBeam += chData.QTCAmpl;
+      }
     } // channel data loop
+    mHistSumAmpAOrABeamBeam->Fill(sumampAOrABeamBeam);
+
+    for (const auto& entry : mapPMhash2sumAmplAliveChannels) {
+      if (mMapPMhash2isInner[entry.first]) {
+        sumampAOrABeamBeam_by8_inner += (entry.second >> 3);
+      } else
+        sumampAOrABeamBeam_by8_outer += (entry.second >> 3);
+    }
+    mHistSumAmpAOrABeamBeam_by8->Fill(sumampAOrABeamBeam_by8_inner + sumampAOrABeamBeam_by8_outer);
 
     for (const auto& entry : mapPMhash2sumAmpl) {
       if (mMapPMhash2isInner[entry.first])
@@ -675,6 +764,7 @@ void DigitQcTask::reset()
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistBC->Reset();
+  mHistBCBeamBeam->Reset();
   mHistChDataBits->Reset();
   mHistCFDEff->Reset();
   mHistNumADC->Reset();
@@ -685,6 +775,8 @@ void DigitQcTask::reset()
   mHistNchA->Reset();
   // mHistNchC->Reset();
   mHistSumAmpA->Reset();
+  mHistSumAmpAOrABeamBeam->Reset();
+  mHistSumAmpAOrABeamBeam_by8->Reset();
   // mHistSumAmpC->Reset();
   mHistAverageTimeA->Reset();
   // mHistAverageTimeC->Reset();
