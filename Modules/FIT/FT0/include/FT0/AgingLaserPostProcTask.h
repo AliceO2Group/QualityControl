@@ -66,7 +66,7 @@ class AgingLaserPostProcTask final : public quality_control::postprocessing::Pos
   double mFracWindowB = 0.25; ///< high fractional window parameter b
 
   /// Amplitude cut
-  int mDetectorAmpCut = 1;
+  int mDetectorAmpCut = 0;
   const int mAmplLimit = 4096;
   std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanA;
   std::unique_ptr<TH1F> mAmpVsChNormWeightedMeanC;
