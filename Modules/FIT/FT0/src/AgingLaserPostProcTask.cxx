@@ -45,7 +45,7 @@ void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
   mAgingLaserPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingLaserTaskPath", mAgingLaserPath);
   mAgingLaserPostProcPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingLaserPostProcPath", mAgingLaserPostProcPath);
 
-  mAmplitudeCut = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "agingLaserPostProcAmplitudeCut", mAmplitudeCut);
+  mDetectorAmpCut = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "detectorAmpCut", mDetectorAmpCut);
 
   mDetectorChIDs.resize(208);
   std::iota(mDetectorChIDs.begin(), mDetectorChIDs.end(), 0);
@@ -251,24 +251,9 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
     auto h1 = std::unique_ptr<TH1>(h2AmpPerChannel->ProjectionY(
       Form("proj_%d", chId), chId + 1, chId + 1));
    
-    int binMax = -1;
-    double maxEntries = 0;
-    for(int bin = 1; bin <= h1->GetNbinsX(); bin++) {
-        double x = h1->GetBinCenter(bin);
-        if(x < mAmplitudeCut) {
-            continue;
-        }
-        if(h1->GetBinContent(bin) > maxEntries) {
-            binMax = bin;
-            maxEntries = h1->GetBinContent(bin);
-        }
-    }
-    if(binMax == -1) {
-        ILOG(Warning) << "No data in channel " << chId;
-        return;
-    }
-
     // global maximum
+    h1->GetXaxis()->SetRangeUser(mDetectorAmpCut, mAmplLimit);
+    const int binMax = h1->GetMaximumBin();
     const double xMax = h1->GetBinCenter(binMax);
     const double winLo = TMath::Max(0., (1. - mFracWindowA) * xMax);
     const double winHi = (1. + mFracWindowB) * xMax;
