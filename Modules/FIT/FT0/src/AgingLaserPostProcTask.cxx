@@ -250,7 +250,6 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
   auto processChannel = [&](uint8_t chId) {
     auto h1 = std::unique_ptr<TH1>(h2AmpPerChannel->ProjectionY(
       Form("proj_%d", chId), chId + 1, chId + 1));
-   
     // global maximum
     h1->GetXaxis()->SetRangeUser(mDetectorAmpCut, mAmplLimit);
     const int binMax = h1->GetMaximumBin();
