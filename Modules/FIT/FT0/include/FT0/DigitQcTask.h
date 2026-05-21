@@ -25,6 +25,7 @@
 #include <vector>
 #include <array>
 #include <boost/algorithm/string.hpp>
+#include <bitset>
 
 #include "TH1.h"
 #include "TH2.h"
@@ -32,10 +33,11 @@
 #include "Rtypes.h"
 
 #include "CommonConstants/LHCConstants.h"
-
+#include "CommonDataFormat/BunchFilling.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include "DataFormatsFIT/DeadChannelMap.h"
 #include "FT0Base/Constants.h"
 #include "FT0Base/Geometry.h"
 #include "DataFormatsFT0/Digit.h"
@@ -88,6 +90,15 @@ class DigitQcTask final : public TaskInterface
   void rebinFromConfig();
   bool chIsVertexEvent(const o2::ft0::ChannelData);
 
+  o2::BunchFilling mBcPattern;
+  std::bitset<sBCperOrbit> mCollBC;
+  bool mBcPatternLoaded = false;
+  void loadBcPatternIfNeeded();
+
+  o2::fit::DeadChannelMap* mDeadChannelMap = nullptr;
+  bool mDeadChannelMapLoaded = false;
+  void loadDeadChannelMapIfNeeded();
+
   TList* mListHistGarbage;
   std::set<unsigned int> mSetAllowedChIDs;
   std::set<unsigned int> mSetAllowedChIDsAmpVsTime;
@@ -116,10 +127,17 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH1F> mHistBC;
+  std::unique_ptr<TH1F> mHistBCBeamBeam;
   std::unique_ptr<TH1F> mHistNchA;
   std::unique_ptr<TH1F> mHistNchC;
   std::unique_ptr<TH1F> mHistSumAmpA;
   std::unique_ptr<TH1F> mHistSumAmpC;
+  std::unique_ptr<TH1F> mHistSumAmpAVTXBeamBeam;
+  std::unique_ptr<TH1F> mHistSumAmpCVTXBeamBeam;
+  std::unique_ptr<TH1F> mHistSumAmpACVTXBeamBeam;
+  std::unique_ptr<TH1F> mHistSumAmpAVTXBeamBeam_by8;
+  std::unique_ptr<TH1F> mHistSumAmpCVTXBeamBeam_by8;
+  std::unique_ptr<TH1F> mHistSumAmpACVTXBeamBeam_by8;
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;

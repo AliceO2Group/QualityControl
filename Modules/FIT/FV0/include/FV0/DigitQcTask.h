@@ -25,6 +25,7 @@
 #include <vector>
 #include <array>
 #include <boost/algorithm/string.hpp>
+#include <bitset>
 
 #include "TH1.h"
 #include "TH2.h"
@@ -32,10 +33,11 @@
 #include "Rtypes.h"
 
 #include "CommonConstants/LHCConstants.h"
-
+#include "CommonDataFormat/BunchFilling.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include "DataFormatsFIT/DeadChannelMap.h"
 #include "FV0Base/Constants.h"
 #include "DataFormatsFV0/Digit.h"
 #include "DataFormatsFV0/ChannelData.h"
@@ -83,9 +85,19 @@ class DigitQcTask final : public TaskInterface
   double mTimeSum = 0.;
 
   long mTFcreationTime = 0;
+  long mRunStartTime = 0;
 
   int mMinTimeGate = -192;
   int mMaxTimeGate = 192;
+
+  o2::BunchFilling mBcPattern;
+  std::bitset<sBCperOrbit> mCollBC;
+  bool mBcPatternLoaded = false;
+  void loadBcPatternIfNeeded();
+
+  o2::fit::DeadChannelMap* mDeadChannelMap = nullptr;
+  bool mDeadChannelMapLoaded = false;
+  void loadDeadChannelMapIfNeeded();
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
@@ -162,10 +174,13 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistChDataBits;
   std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH1F> mHistBC;
+  std::unique_ptr<TH1F> mHistBCBeamBeam;
   std::unique_ptr<TH1F> mHistNchA;
   std::unique_ptr<TH1F> mHistNchC;
   std::unique_ptr<TH1F> mHistSumAmpA;
   std::unique_ptr<TH1F> mHistSumAmpC;
+  std::unique_ptr<TH1F> mHistSumAmpAOrABeamBeam;
+  std::unique_ptr<TH1F> mHistSumAmpAOrABeamBeam_by8;
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
