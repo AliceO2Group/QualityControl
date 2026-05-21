@@ -45,6 +45,8 @@ void AgingLaserPostProcTask::configure(const boost::property_tree::ptree& cfg)
   mAgingLaserPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingLaserTaskPath", mAgingLaserPath);
   mAgingLaserPostProcPath = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "agingLaserPostProcPath", mAgingLaserPostProcPath);
 
+  mDetectorAmpCut = o2::quality_control_modules::common::getFromConfig<double>(mCustomParameters, "detectorAmpCut", mDetectorAmpCut);
+
   mDetectorChIDs.resize(208);
   std::iota(mDetectorChIDs.begin(), mDetectorChIDs.end(), 0);
   const std::string detSkip =
@@ -248,8 +250,8 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
   auto processChannel = [&](uint8_t chId) {
     auto h1 = std::unique_ptr<TH1>(h2AmpPerChannel->ProjectionY(
       Form("proj_%d", chId), chId + 1, chId + 1));
-
     // global maximum
+    h1->GetXaxis()->SetRangeUser(mDetectorAmpCut, mAmplLimit);
     const int binMax = h1->GetMaximumBin();
     const double xMax = h1->GetBinCenter(binMax);
     const double winLo = TMath::Max(0., (1. - mFracWindowA) * xMax);
