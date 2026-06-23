@@ -32,7 +32,6 @@
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include "CommonConstants/LHCConstants.h"
-
 using namespace std;
 using namespace o2::quality_control;
 
@@ -81,17 +80,18 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
 
       std::vector<float> allCollPerFeeModule(mo->getMetadataMap().size() + 1, 0);
       int parsedBins = 0;
+      const int numberOfModules = histogram->GetNbinsY();
       for (auto metainfo : mo->getMetadataMap()) {
         int bin = 0;
         float value = 0;
         const char* metaInfoKey = metainfo.first.data();
         const char* metaInfoKeyEnd = metainfo.first.data() + metainfo.first.size();
         if (std::from_chars(metaInfoKey, metaInfoKeyEnd, bin).ptr == metaInfoKeyEnd) {
-          if(bin >= 0 && bin <= constants::lhc::LHCMaxBunches){
+          if(bin >= 0 && bin <= numberOfModules){
           try {
             value = std::stof(metainfo.second);
           } catch (std::invalid_argument& e) {
-            ILOG(Debug, Support) << "Value " << value << " in bin " << bin << " is not convertible to float. Skipping." << ENDM;
+            ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float. Skipping." << ENDM;
             continue;
           }
           parsedBins++;
