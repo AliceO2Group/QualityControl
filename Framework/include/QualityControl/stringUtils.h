@@ -45,6 +45,56 @@ bool parseBoolParam(const CustomParameters& customParameters, const std::string&
  */
 bool isUnsignedInteger(const std::string& s);
 
+/// \brief checks if a string is in kebab-case format
+///
+/// checks if the string is not empty, does not start or end with a dash,
+/// contains only lowercase letters, digits, and dashes. Two dashes in a row
+/// are not allowed.
+constexpr bool isKebabCase(std::string_view str)
+{
+  if (str.empty() || str.front() == '-' || str.back() == '-') {
+    return false;
+  }
+  for (size_t i = 0; i < str.size(); ++i) {
+    char c = str[i];
+    // only lower case, digit or '-' are allowed
+    if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-')) {
+      return false;
+    }
+    // two '-' characters in a row are not allowed
+    if (c == '-' && (i == 0 || i == str.size() - 1 || str[i - 1] == '-')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/// \brief checks if a string is in upper camel case format
+///
+/// checks if the string is not empty, starts with an uppercase ASCII letter and
+/// then contains only ASCII letters and digits. No separators allowed, we
+/// tolerate multiple uppercase letters in a row (e.g. TaskLHC)
+constexpr bool isUpperCamelCase(std::string_view str)
+{
+  if (str.empty()) {
+    return false;
+  }
+  const char first = str.front();
+  if (!(first >= 'A' && first <= 'Z')) {
+    return false;
+  }
+  for (size_t i = 1; i < str.size(); ++i) {
+    const char c = str[i];
+    const bool isUpper = (c >= 'A' && c <= 'Z');
+    const bool isLower = (c >= 'a' && c <= 'z');
+    const bool isDigit = (c >= '0' && c <= '9');
+    if (!(isUpper || isLower || isDigit)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 } // namespace o2::quality_control::core
 
 #endif // QC_STRING_UTILS_H

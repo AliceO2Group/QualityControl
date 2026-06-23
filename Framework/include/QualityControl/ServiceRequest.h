@@ -9,27 +9,26 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#ifndef QC_INPUT_UTILS_H
-#define QC_INPUT_UTILS_H
+///
+/// \file   ServiceRequest.h
+/// \author Piotr Konopka
+///
 
-// std
-#include <vector>
-#include <string>
-// o2
-#include <Framework/DataProcessorSpec.h>
-#include <Framework/DataSpecUtils.h>
+#ifndef QUALITYCONTROL_SERVICEREQUEST_H
+#define QUALITYCONTROL_SERVICEREQUEST_H
 
 namespace o2::quality_control::core
 {
 
-// fixme: rename to stringifyInputs?
-inline std::vector<std::string> stringifyInput(const o2::framework::Inputs& inputs)
-{
-  std::vector<std::string> vec;
-  for (const auto& input : inputs) {
-    vec.push_back(o2::framework::DataSpecUtils::describe(input));
-  }
-  return vec;
-}
+/// \brief Used to specify which services are needed by a concrete Actor
+enum class ServiceRequest {
+  Monitoring,
+  InfoLogger,
+  CCDB,
+  Bookkeeping,
+  QCDB
+};
+
 } // namespace o2::quality_control::core
-#endif
+
+#endif // QUALITYCONTROL_SERVICEREQUEST_H

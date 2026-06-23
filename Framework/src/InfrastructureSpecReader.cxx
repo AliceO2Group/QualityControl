@@ -15,10 +15,16 @@
 
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/TaskRunner.h"
+#include "QualityControl/PostProcessingDevice.h"
+#include "QualityControl/Check.h"
+#include "QualityControl/AggregatorRunner.h"
 #include "QualityControl/UserInputOutput.h"
 
 #include <DataSampling/DataSampling.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+
+#include <ranges>
 
 using namespace o2::utilities;
 using namespace o2::framework;

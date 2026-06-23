@@ -9,27 +9,23 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#ifndef QC_INPUT_UTILS_H
-#define QC_INPUT_UTILS_H
-
-// std
-#include <vector>
-#include <string>
-// o2
-#include <Framework/DataProcessorSpec.h>
-#include <Framework/DataSpecUtils.h>
+///
+/// \file   UserCodeCardinality.h
+/// \author Piotr Konopka
+///
+#ifndef QUALITYCONTROL_USERCODECARDINALITY_H
+#define QUALITYCONTROL_USERCODECARDINALITY_H
 
 namespace o2::quality_control::core
 {
 
-// fixme: rename to stringifyInputs?
-inline std::vector<std::string> stringifyInput(const o2::framework::Inputs& inputs)
-{
-  std::vector<std::string> vec;
-  for (const auto& input : inputs) {
-    vec.push_back(o2::framework::DataSpecUtils::describe(input));
-  }
-  return vec;
-}
+// Indicates whether an Actor runs none, one or multiple user tasks/checks/aggregators/...
+enum class UserCodeCardinality {
+  None = 0,
+  One = 1,
+  Many = 2
+};
+
 } // namespace o2::quality_control::core
-#endif
+
+#endif // QUALITYCONTROL_USERCODECARDINALITY_H
