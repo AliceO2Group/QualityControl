@@ -40,8 +40,9 @@ git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
 mkdir /tmp/installdir
+source /opt/rh/gcc-toolset-14/enable # enable the compiler installed with o2-QualityControl-devel
 cmake -DCMAKE_INSTALL_PREFIX=/tmp/installdir -G Ninja -DCLANG_EXECUTABLE=/opt/o2/bin-safe/clang -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
-ninja -j16 install 
+ninja -j16 install
 ```
 
 _**Compilation on top of a local O2**_
@@ -55,7 +56,10 @@ cd AliceO2
 git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
+source /opt/rh/gcc-toolset-14/enable # enable the compiler installed with o2-QualityControl-devel, it might be more recent
 cmake -DCMAKE_INSTALL_PREFIX=/tmp/installdir -G Ninja -DCLANG_EXECUTABLE=/opt/o2/bin-safe/clang -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
+# if there are errors with FairLogger during compilation, try complementing cmake command with:
+# -DCMAKE_SHARED_LINKER_FLAGS="-L/opt/o2/lib -lFairLogger -lfmt" -DCMAKE_EXE_LINKER_FLAGS="-L/opt/o2/lib -lFairLogger -lfmt"
 ninja -j8 install
 
 # QC
@@ -64,6 +68,7 @@ cd QualityControl
 git checkout <release> # use the release included in the installed FLP suite
 mkdir build
 cd build
+source /opt/rh/gcc-toolset-14/enable # enable the compiler installed with o2-QualityControl-devel, it might be more recent
 cmake -DCMAKE_INSTALL_PREFIX=/tmp/installdir -G Ninja -DCLANG_EXECUTABLE=/opt/o2/bin-safe/clang -DCMAKE_BUILD_TYPE=RelWithDebugInfo -DO2_ROOT=/tmp/installdir ..
 ninja -j8 install
 ```
@@ -74,13 +79,19 @@ In case the workflows will span over several FLPs and/or QC machines, one should
 
 **Use it in aliECS**
 
-In the aliECS gui, in the panel "Advanced Configuration", et an extra variable `extra_env_vars` and set it to
+In the AliECS gui, in the panel "Advanced Configuration", add extra variables `extra_env_vars` and `jit_env_vars` and set both to
 
 ```
 PATH=/tmp/installdir/bin/:$PATH; LD_LIBRARY_PATH=/tmp/installdir/lib/:/tmp/installdir/lib64/:$LD_LIBRARY_PATH; QUALITYCONTROL_ROOT=/tmp/installdir/; echo
 ```
 
-Replace `/tmp/installdir` with your own path. Make sure that the directory is anyway readable and traversable by users `flp` and `qc`
+Check `/etc/profile.d/o2.sh` and ensure PATH is augmented with `/opt/o2/bin` at the end, not at the beginning:
+```
+PATH=$PATH:/opt/o2/bin
+```
+This is important because during JIT template generation the order is `<jit_env_vars> && source /etc/profile.d/o2.sh && <dpl_command> ...`, so `/opt/o2/bin` would take precedence to any installation directory added in `jit_env_vars`.
+
+Replace `/tmp/installdir` with your own path. Make sure that the directory is readable and traversable by users `flp` and `qc`.
 
 ## Switch detector in the workflow _readout-dataflow_
 
