@@ -87,19 +87,18 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
         const char* metaInfoKey = metainfo.first.data();
         const char* metaInfoKeyEnd = metainfo.first.data() + metainfo.first.size();
         if (std::from_chars(metaInfoKey, metaInfoKeyEnd, bin).ptr == metaInfoKeyEnd) {
-          if(bin >= 0 && bin <= numberOfModules){
-          try {
-            value = std::stof(metainfo.second);
-          } catch (std::invalid_argument& e) {
-            ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float. Skipping." << ENDM;
-            continue;
+          if (bin >= 0 && bin <= numberOfModules) {
+            try {
+              value = std::stof(metainfo.second);
+            } catch (std::invalid_argument& e) {
+              ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float. Skipping." << ENDM;
+              continue;
+            }
+            parsedBins++;
+            allCollPerFeeModule[bin] = value;
           }
-          parsedBins++;
-          allCollPerFeeModule[bin] = value;
         }
-          
       }
-     }
       if (parsedBins != histogram->GetNbinsY()) {
         ILOG(Warning, Support) << "Missing bins in OutOfBunchColl_BCvsFeeModules: expected " << histogram->GetNbinsY() << ", get " << parsedBins << ENDM;
       }

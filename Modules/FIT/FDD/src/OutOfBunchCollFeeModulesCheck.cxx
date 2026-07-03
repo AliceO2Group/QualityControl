@@ -82,15 +82,15 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
         const char* metaInfoKey = metainfo.first.data();
         const char* metaInfoKeyEnd = metainfo.first.data() + metainfo.first.size();
         if (std::from_chars(metaInfoKey, metaInfoKeyEnd, bin).ptr == metaInfoKeyEnd) {
-            if(bin >=0 && bin <= modulesNumber) {
+          if (bin >= 0 && bin <= modulesNumber) {
             try {
-                value = std::stof(metainfo.second);
+              value = std::stof(metainfo.second);
             } catch (std::invalid_argument& e) {
-                ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float" << ENDM;
-                continue;
+              ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float" << ENDM;
+              continue;
             }
-            allCollPerFeeModule[bin] = value; 
-            }
+            allCollPerFeeModule[bin] = value;
+          }
         }
       }
 
