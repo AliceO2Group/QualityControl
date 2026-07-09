@@ -140,6 +140,9 @@ add_library(O2QualityControl
   src/QCInputsAdapters.cxx
   src/QCInputsFactory.cxx
   src/UserInputOutput.cxx
+  src/LateTaskRunner.cxx
+  src/LateTaskRunnerFactory.cxx
+  src/LateTaskInterface.cxx
   src/Actor.cxx
   src/ActorHelpers.cxx
   src/DataProcessorAdapter.cxx
@@ -185,6 +188,7 @@ add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
   include/QualityControl/TaskInterface.h
+  include/QualityControl/LateTaskInterface.h
   include/QualityControl/UserCodeInterface.h
   include/QualityControl/AggregatorInterface.h
   include/QualityControl/PostProcessingInterface.h

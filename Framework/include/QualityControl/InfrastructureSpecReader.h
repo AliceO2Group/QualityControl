@@ -22,6 +22,7 @@
 #include "QualityControl/DataSourceSpec.h"
 #include "QualityControl/CheckSpec.h"
 #include "QualityControl/PostProcessingTaskSpec.h"
+#include "QualityControl/LateTaskSpec.h"
 #include "QualityControl/RecoRequestSpecs.h"
 #include <boost/property_tree/ptree_fwd.hpp>
 
@@ -51,6 +52,8 @@ template <>
 checker::AggregatorSpec readSpecEntry<checker::AggregatorSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
 postprocessing::PostProcessingTaskSpec readSpecEntry<postprocessing::PostProcessingTaskSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+template <>
+LateTaskSpec readSpecEntry<LateTaskSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
 ExternalTaskSpec readSpecEntry<ExternalTaskSpec>(const std::string& entryID, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 template <>
