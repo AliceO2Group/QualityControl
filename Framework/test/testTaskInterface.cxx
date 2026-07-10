@@ -201,14 +201,14 @@ TEST_CASE("retrieveCondition")
   bad.addBadChannel(3, o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
   std::map<std::string, std::string> meta;
   o2::ccdb::CcdbApi api;
-  api.init("ccdb-test.cern.ch:8080");
+  api.init("ali-qcdb-test.cern.ch:8080");
   api.storeAsTFileAny<o2::emcal::BadChannelMap>(&bad, "qc/TST/conditions", meta);
 
   // retrieve it
   TaskRunnerConfig taskConfig;
   auto* objectsManager = new ObjectsManager(taskConfig.name, taskConfig.className, taskConfig.detectorName, 0);
   test::TestTask testTask(objectsManager);
-  testTask.setCcdbUrl("ccdb-test.cern.ch:8080");
+  testTask.setCcdbUrl("ali-qcdb-test.cern.ch:8080");
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
   CHECK(bcm->getChannelStatus(1) == o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
   CHECK(bcm->getChannelStatus(3) == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
