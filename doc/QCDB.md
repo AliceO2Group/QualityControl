@@ -185,6 +185,7 @@ The address of the CCDB will have to be updated in the Tasks config file.
 
 At the moment, the description of the REST api can be found in this document : <https://docs.google.com/presentation/d/1PJ0CVW7QHgnFzi0LELc06V82LFGPgmG3vsmmuurPnUg>
 
+And the full documentation for a local CCDB setup is here: https://docs.google.com/document/d/1_GM6yY7ejVEIRi1y8Ooc9ongrGgZyCiks6Ca0OAEav8/edit?tab=t.0
 
 ---
 

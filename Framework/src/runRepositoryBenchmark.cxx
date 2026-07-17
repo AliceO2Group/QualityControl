@@ -29,8 +29,8 @@ void addCustomOptions(bpo::options_description& options)
     "Maximum number of iterations of Run/ConditionalRun/OnData (0 - infinite, default : 3)")(
     "number-tasks", bpo::value<uint64_t>()->default_value(0),
     "Informative only, the number of tasks being ran in parallel.")(
-    "database-url", bpo::value<std::string>()->default_value("ccdb-test.cern.ch:8080"),
-    "Database url (default : ccdb-test.cern.ch:8080")("database-username", bpo::value<std::string>()->default_value(""),
+    "database-url", bpo::value<std::string>()->default_value("ali-qcdb-test.cern.ch:8083"),
+    "Database url (default : ali-qcdb-test.cern.ch:8083")("database-username", bpo::value<std::string>()->default_value(""),
                                                       "Database username (default : <empty>)")(
     "database-password", bpo::value<std::string>()->default_value(""), "Database password (default : <empty>)")(
     "database-name", bpo::value<std::string>()->default_value(""), "Database name (default : <empty>")(

@@ -41,7 +41,7 @@ struct CommonSpec {
   int activityOriginalNumber = 0;
   std::string monitoringUrl = "infologger:///debug?qc";
   std::string consulUrl;
-  std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
+  std::string conditionDBUrl = "http://ali-qcdb-test.cern.ch:8080";
   LogDiscardParameters infologgerDiscardParameters;
   double postprocessingPeriod = 30.0;
   std::string bookkeepingUrl;
