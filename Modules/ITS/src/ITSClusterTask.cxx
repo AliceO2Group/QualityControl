@@ -40,6 +40,8 @@ ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 
 ITSClusterTask::~ITSClusterTask()
 {
+  delete hDcolMapIBSor;
+  delete hDcolMapIBEor;
   delete hTFCounter;
   delete hEmptyLaneFractionGlobal;
   delete hClusterVsBunchCrossing;
@@ -53,6 +55,8 @@ ITSClusterTask::~ITSClusterTask()
       delete hClusterCenterMap[iLayer];
       delete hLongClustersPerChip[iLayer];
       delete hMultPerChipWhenLongClusters[iLayer];
+      delete hDcolMapOBSor[iLayer - NLayerIB];
+      delete hDcolMapOBEor[iLayer - NLayerIB];
     }
 
     else {
@@ -123,6 +127,15 @@ void ITSClusterTask::startOfActivity(const Activity& /*activity*/)
 void ITSClusterTask::startOfCycle()
 {
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
+
+  if (nCycle % nResetCycle == 0) {
+    hDcolMapIBEor->Reset();
+    for (int i = 0; i < NLayerOB; i++) {
+      hDcolMapOBEor[i]->Reset();
+    }
+  }
+
+  nCycle++;
 }
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -248,6 +261,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         hAverageClusterSizeSummaryIB[lay]->getNum()->Fill(chip, sta, (double)npix);
         hAverageClusterSizeSummaryIB[lay]->getDen()->Fill(chip, sta, 1.);
         hClusterCenterMap[lay]->Fill(cluster.getCol(), cluster.getRow());
+
+        if (nCycle < nCycleStop) {
+          hDcolMapIBSor->Fill((int)(cluster.getCol() / 2), ChipID);
+        }
+        hDcolMapIBEor->Fill((int)(cluster.getCol() / 2), ChipID);
+
         if (mDoPublish1DSummary == 1) {
           hClusterTopologySummaryIB[lay][sta][chip]->Fill(ClusterID);
         }
@@ -266,6 +285,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
         }
       } else {
+
+        if (nCycle < nCycleStop) {
+          hDcolMapOBSor[lay - NLayerIB]->Fill((int)(cluster.getCol() / 32), ChipID);
+        }
+        hDcolMapOBEor[lay - NLayerIB]->Fill((int)(cluster.getCol() / 32), ChipID);
+
         hAverageClusterOccupancySummaryOB[lay]->getNum()->Fill(lane, sta, 1. / (mNChipsPerHic[lay] / mNLanePerHic[lay])); // 14 To have occupation per chip -> 7 because we're considering lanes
         hAverageClusterSizeSummaryOB[lay]->getNum()->Fill(lane, sta, (double)npix);
         hAverageClusterSizeSummaryOB[lay]->getDen()->Fill(lane, sta, 1);
@@ -435,6 +460,7 @@ void ITSClusterTask::reset()
 {
   ILOG(Debug, Devel) << "Resetting the histograms" << ENDM;
   hTFCounter->Reset();
+  hDcolMapIBSor->Reset();
   hClusterVsBunchCrossing->Reset();
   hEmptyLaneFractionGlobal->Reset("ICES");
   mGeneralOccupancy->Reset();
@@ -463,6 +489,7 @@ void ITSClusterTask::reset()
         }
       }
     } else {
+      hDcolMapOBSor[iLayer - NLayerIB]->Reset();
       hLongClustersPerStave[iLayer - NLayerIB]->Reset();
       hAverageClusterOccupancySummaryOB[iLayer]->Reset();
       hAverageClusterSizeSummaryOB[iLayer]->Reset();
@@ -485,6 +512,12 @@ void ITSClusterTask::reset()
 
 void ITSClusterTask::createAllHistos()
 {
+  hDcolMapIBSor = new TH2I("hDcolMapIBSor", "Double column hitmap IB chips - SOR;Dcol;ChipID", 512, -0.5, 511.5, mNLanes[0], -0.5, mNLanes[0] - 0.5);
+  addObject(hDcolMapIBSor);
+
+  hDcolMapIBEor = new TH2I("hDcolMapIBEor", "Double column hitmap IB chips - EOR;Dcol;ChipID", 512, -0.5, 511.5, mNLanes[0], -0.5, mNLanes[0] - 0.5);
+  addObject(hDcolMapIBEor);
+
   hTFCounter = new TH1D("TFcounter", "TFcounter", 1, 0, 1);
   hTFCounter->SetTitle("TF counter");
   addObject(hTFCounter);
@@ -535,6 +568,19 @@ void ITSClusterTask::createAllHistos()
       addObject(hLongClustersPerStave[iLayer - NLayerIB]);
       formatAxes(hLongClustersPerStave[iLayer - NLayerIB], "Stave", "number of long clusters", 1, 1.10);
       hLongClustersPerStave[iLayer - NLayerIB]->SetStats(0);
+
+      // dcols maps
+      int chipStart = 0, chipStop = 0;
+      for (int j = 0; j < iLayer; j++) {
+        chipStart += mChips[j];
+      }
+      chipStop = chipStart + mChips[iLayer];
+
+      hDcolMapOBSor[iLayer - NLayerIB] = new TH2I(Form("hDcolMapL%dSor", iLayer), Form("Double column hitmap L%d chips - SOR;RegionID;ChipID", iLayer), 32, -0.5, 31.5, mChips[iLayer], chipStart - 0.5, chipStop - 0.5);
+      addObject(hDcolMapOBSor[iLayer - NLayerIB]);
+
+      hDcolMapOBEor[iLayer - NLayerIB] = new TH2I(Form("hDcolMapL%dEor", iLayer), Form("Double column hitmap L%d chips - EOR;RegionID;ChipID", iLayer), 32, -0.5, 31.5, mChips[iLayer], chipStart - 0.5, chipStop - 0.5);
+      addObject(hDcolMapOBEor[iLayer - NLayerIB]);
     }
 
     hClusterSizeLayerSummary[iLayer] = new TH1L(Form("Layer%d/AverageClusterSizeSummary", iLayer), Form("Layer%dAverageClusterSizeSummary", iLayer), 128 * 128, 0, 128 * 128);
@@ -711,6 +757,9 @@ void ITSClusterTask::getJsonParameters()
   mDoPublish1DSummary = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishSummary1D", mDoPublish1DSummary);
   std::string LayerConfig = o2::quality_control_modules::common::getFromConfig<std::string>(mCustomParameters, "layer", "0000000");
   mDoPublishDetailedSummary = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "publishDetailedSummary", mDoPublishDetailedSummary);
+
+  nCycleStop = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nCycleStop", nCycleStop);
+  nResetCycle = o2::quality_control_modules::common::getFromConfig<int>(mCustomParameters, "nResetCycle", nResetCycle);
 
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (LayerConfig[ilayer] != '0') {
