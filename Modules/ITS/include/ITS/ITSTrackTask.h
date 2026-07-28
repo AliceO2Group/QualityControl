@@ -19,6 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <DataFormatsITSMFT/TopologyDictionary.h>
+#include <DataFormatsCalibration/MeanVertexObject.h>
 #include <ITSBase/GeometryTGeo.h>
 #include <Framework/TimingInfo.h>
 #include <TLine.h>
@@ -125,7 +126,8 @@ class ITSTrackTask : public TaskInterface
   double mCoslBins[25];   // y bins for cos(lambda) plot
   double ptBins[141];     // pt bins
 
-  o2::itsmft::TopologyDictionary* mDict;
+  o2::itsmft::TopologyDictionary* mDict = nullptr;
+  o2::dataformats::MeanVertexObject* mMeanVertex = nullptr;
 
  private:
   // analysis for its-only residual
