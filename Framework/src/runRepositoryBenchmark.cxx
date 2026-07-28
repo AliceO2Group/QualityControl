@@ -31,7 +31,7 @@ void addCustomOptions(bpo::options_description& options)
     "Informative only, the number of tasks being ran in parallel.")(
     "database-url", bpo::value<std::string>()->default_value("ali-qcdb-test.cern.ch:8083"),
     "Database url (default : ali-qcdb-test.cern.ch:8083")("database-username", bpo::value<std::string>()->default_value(""),
-                                                      "Database username (default : <empty>)")(
+                                                          "Database username (default : <empty>)")(
     "database-password", bpo::value<std::string>()->default_value(""), "Database password (default : <empty>)")(
     "database-name", bpo::value<std::string>()->default_value(""), "Database name (default : <empty>")(
     "task-name", bpo::value<std::string>()->default_value("benchmarkTask"),

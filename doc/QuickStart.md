@@ -56,7 +56,7 @@ To access it from CERN, one can simply use the URL `ali-qcdb-test.cern.ch:8083`.
 
    ssh -L 8083:ali-qcdb-test.cern.ch:8083 <your_username>@lxplus.cern.ch
 2. Check that it worked by accessing `http://localhost:8083/browse` in your browser.
-3. Use the URL `localhost:8083` to access the repository, whether in your config files or in the browser to access its web interface.
+3. Use the URL `localhost:8083` in your QC config files.
 
 *It is a test and development instance. Data is regularly cleaned up and there is no guarantee on the data!*
 
