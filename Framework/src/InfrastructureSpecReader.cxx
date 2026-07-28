@@ -268,7 +268,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       // this allows us to have tasks with the same name for different detectors
       dss.name = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".taskName", dss.id);
       auto detectorName = wholeTree.get<std::string>("qc.postprocessing." + dss.id + ".detectorName");
-      dss.inputs = { createUserInputSpec(DataSourceType::PostProcessingTask, detectorName, dss.id, 0, dss.name) };
+      dss.inputs = { createUserInputSpec(DataSourceType::PostProcessingTask, detectorName, dss.name, 0, dss.name) };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
