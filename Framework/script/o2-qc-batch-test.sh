@@ -22,8 +22,8 @@ done
 #trap cleanup EXIT
 
 function delete_data() {
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/BatchTestTask${UNIQUE_ID}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/BatchTestCheck${UNIQUE_ID}*
+  curl -i -L ali-qcdb-test.cern.ch:8083/truncate/qc/TST/MO/BatchTestTask${UNIQUE_ID}*
+  curl -i -L ali-qcdb-test.cern.ch:8083/truncate/qc/TST/QO/BatchTestCheck${UNIQUE_ID}*
 
   rm -f /tmp/batch_test_mergedA${UNIQUE_ID}.root
   rm -f /tmp/batch_test_mergedB${UNIQUE_ID}.root
@@ -46,7 +46,7 @@ fi
 
 # make sure the CCDB is available otherwise we bail (no failure)
 # we do not use ping because it will fail from outside CERN.
-if curl --silent --connect-timeout 1 ccdb-test.cern.ch:8080 > /dev/null 2>&1 ; then
+if curl --silent --connect-timeout 1 ali-qcdb-test.cern.ch:8083 > /dev/null 2>&1 ; then
   echo "CCDB is reachable."
 else
   echo "CCDB not reachable, batch test is cancelled."
@@ -66,7 +66,7 @@ o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_
 
 # check the integrated MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/example/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_obj${UNIQUE_ID}.root)
+code=$(curl -L ali-qcdb-test.cern.ch:8083/qc/TST/MO/BatchTestTask${UNIQUE_ID}/example/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_obj${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the QC Task could not be found."
 #  delete_data
@@ -90,7 +90,7 @@ fi
 
 # check the moving window MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/BatchTestTask${UNIQUE_ID}/mw/example/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_obj_mw${UNIQUE_ID}.root)
+code=$(curl -L ali-qcdb-test.cern.ch:8083/qc/TST/MO/BatchTestTask${UNIQUE_ID}/mw/example/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_obj_mw${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the QC Task could not be found."
   delete_data
@@ -114,7 +114,7 @@ fi
 
 # check QualityObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/QO/BatchTestCheck${UNIQUE_ID}/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_check${UNIQUE_ID}.root)
+code=$(curl -L ali-qcdb-test.cern.ch:8083/qc/TST/QO/BatchTestCheck${UNIQUE_ID}/8000000/PeriodName=LHC9000x/PassName=apass500 --write-out %{http_code} --silent --output /tmp/batch_test_check${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, quality object of the QC Task could not be found."
   delete_data
