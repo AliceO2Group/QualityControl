@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
+        "host": "localhost:8083",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable",
@@ -16,14 +16,11 @@
         "passName": "",             "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",         "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
       },
-      "monitoring": {
-        "url": "infologger:///debug?qc"
-      },
       "consul": {
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+        "url": "localhost:8083"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",

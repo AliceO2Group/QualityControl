@@ -78,4 +78,4 @@ Rules:
 #    policy: 1_per_hour
 
 Ccdb:
-  Url: http://ccdb-test.cern.ch:8080
+  Url: http://ali-qcdb-test.cern.ch:8083

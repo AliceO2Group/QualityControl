@@ -44,10 +44,10 @@ function check_if_port_in_use() {
 }
 
 function delete_data() {
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MNLTest${UNIQUE_PORT_1}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/MO/MNRTest${UNIQUE_PORT_2}*
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MNLTest
-  curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/QO/MNRTest
+  curl -i -L ali-qcdb-test.cern.ch:8083/truncate/qc/TST/MO/MNLTest${UNIQUE_PORT_1}*
+  curl -i -L ali-qcdb-test.cern.ch:8083/truncate/qc/TST/MO/MNRTest${UNIQUE_PORT_2}*
+  curl -i -L ali-qcdb-test.cern.ch:8083/truncate/qc/TST/QO/MNLTest
+  curl -i -L ali-qcdb-test.cern.ch:8083/truncate/qc/TST/QO/MNRTest
 
   cd /tmp
   # mv in /tmp is guaranteed to be atomic
@@ -72,7 +72,7 @@ fi
 
 # make sure the CCDB is available otherwise we bail (no failure)
 # we do not use ping because it will fail from outside CERN.
-if curl --silent --connect-timeout 1 ccdb-test.cern.ch:8080 > /dev/null 2>&1 ; then
+if curl --silent --connect-timeout 1 ali-qcdb-test.cern.ch:8083 > /dev/null 2>&1 ; then
   echo "CCDB is reachable."
 else
   echo "CCDB not reachable, multinode test is cancelled."
@@ -89,7 +89,7 @@ wait
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MNLTest${UNIQUE_PORT_1}/example/8000000 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root)
+code=$(curl -L ali-qcdb-test.cern.ch:8083/qc/TST/MO/MNLTest${UNIQUE_PORT_1}/example/8000000 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_1}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the local QC Task could not be found."
   delete_data
@@ -113,7 +113,7 @@ fi
 
 # check MonitorObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/TST/MO/MNRTest${UNIQUE_PORT_2}/example/8000000 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root)
+code=$(curl -L ali-qcdb-test.cern.ch:8083/qc/TST/MO/MNRTest${UNIQUE_PORT_2}/example/8000000 --write-out %{http_code} --silent --output /tmp/${UNIQUE_TEST_NAME}/multinode_test_obj${UNIQUE_PORT_2}.root)
 if (( $code != 200 )); then
   echo "Error, monitor object of the remote QC Task could not be found."
   delete_data

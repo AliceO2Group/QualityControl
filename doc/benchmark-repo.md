@@ -25,7 +25,7 @@ o2-qc-repo-benchmark --max-iterations 30
                     --database-name ""
                     --database-username ""
                     --database-password ""
-                    --database-url ccdb-test.cern.ch:8080
+                    --database-url ali-qcdb-test.cern.ch:8083
                     --monitoring-threaded 0
                     --monitoring-threaded-interval 5
 ```

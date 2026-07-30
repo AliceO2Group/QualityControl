@@ -65,7 +65,7 @@ struct MyGlobalFixture {
   void teardown()
   {
     auto backend = std::make_unique<CcdbDatabase>();
-    backend->connect("ccdb-test.cern.ch:8080", "", "", "");
+    backend->connect("ali-qcdb-test.cern.ch:8083", "", "", "");
     backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
   }
 };
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   auto taskName = "Test/pid" + pid;
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, taskName, "task", "TST");
   auto backend = std::make_unique<CcdbDatabase>();
-  backend->connect("ccdb-test.cern.ch:8080", "", "", "");
+  backend->connect("ali-qcdb-test.cern.ch:8083", "", "", "");
   backend->storeMO(mo1);
 
   // setting custom parameters should configure
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   BOOST_CHECK_EQUAL(testInterface.configured, true);
   BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");
 
-  testInterface.setCcdbUrl("ccdb-test.cern.ch:8080");
+  testInterface.setCcdbUrl("ali-qcdb-test.cern.ch:8083");
   auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/" + taskName + "/asdf");
   BOOST_CHECK_NE(obj, nullptr);
 }
