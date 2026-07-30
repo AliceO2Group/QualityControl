@@ -310,7 +310,7 @@ TEST_CASE("timekeeper_asynchronous")
   {
     auto tk = std::make_shared<TimekeeperAsynchronous>();
 
-    o2::conf::ConfigurableParam::updateFromString("NameConf.mCCDBServer=http://ccdb-test.cern.ch:8080");
+    o2::conf::ConfigurableParam::updateFromString("NameConf.mCCDBServer=http://ali-qcdb-test.cern.ch:8083");
 
     // CCDB RCT first
     tk->setStartOfActivity(1, 2, 3, activity_helpers::getCcdbSorTimeAccessor(300000));
