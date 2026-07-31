@@ -31,7 +31,7 @@
 #include <algorithm>
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
-
+#include "CommonConstants/LHCConstants.h"
 using namespace std;
 using namespace o2::quality_control;
 
@@ -79,17 +79,28 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
       }
 
       std::vector<float> allCollPerFeeModule(mo->getMetadataMap().size() + 1, 0);
+      int parsedBins = 0;
+      const int numberOfModules = histogram->GetNbinsY();
       for (auto metainfo : mo->getMetadataMap()) {
         int bin = 0;
         float value = 0;
-        try {
-          bin = std::stoi(metainfo.first);
-          value = std::stof(metainfo.second);
-          allCollPerFeeModule[bin] = value;
-        } catch (const std::invalid_argument& e) {
-          ILOG(Warning, Support) << "Could not get value for key " << metainfo.first << ENDM;
-          continue;
+        const char* metaInfoKey = metainfo.first.data();
+        const char* metaInfoKeyEnd = metainfo.first.data() + metainfo.first.size();
+        if (std::from_chars(metaInfoKey, metaInfoKeyEnd, bin).ptr == metaInfoKeyEnd) {
+          if (bin >= 0 && bin <= numberOfModules) {
+            try {
+              value = std::stof(metainfo.second);
+            } catch (std::invalid_argument& e) {
+              ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float. Skipping." << ENDM;
+              continue;
+            }
+            parsedBins++;
+            allCollPerFeeModule[bin] = value;
+          }
         }
+      }
+      if (parsedBins != histogram->GetNbinsY()) {
+        ILOG(Warning, Support) << "Missing bins in OutOfBunchColl_BCvsFeeModules: expected " << histogram->GetNbinsY() << ", get " << parsedBins << ENDM;
       }
 
       // Calculate out-of-bunch-coll fraction for Fee Modules
