@@ -1,0 +1,103 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
+      },
+      "Activity": {
+        "number": "42",
+        "type": "NONE",
+        "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
+        "passName": "",             "": "Pass type - e.g. spass, cpass1",
+        "provenance": "qc",         "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to true to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "12",       "": "Message at this level or above are discarded (default: 21 - Trace)",
+        "filterDiscardFile": "/tmp/_ID_.txt", "": ["If set, the messages discarded because of filterDiscardLevel",
+          "will go to this file (default: <none>); The keyword _ID_ is replaced by the device id. Discarded Debug ",
+          "messages won't go there."]
+      },
+      "bookkeeping": {
+        "url": ""
+      }
+    },
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "10",
+        "resetAfterCycles": "1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst-raw"
+        },
+        "movingWindows": ["example"],
+        "location": "local"
+      }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }],
+        "extendedCheckParameters": {
+          "physics": {
+            "pp": {
+              "myOwnKey1": "myOwnValue1c"
+            }
+          }
+        }
+      }
+    },
+    "lateTasks": {
+      "late": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonLateTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "dataSources": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example", "example2"]
+        }],
+        "outputActivityStrategy": "integrated"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tst-raw",
+      "active": "true",
+      "machines": [],
+      "query": "data:TST/RAWDATA/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ]
+    }
+  ]
+}

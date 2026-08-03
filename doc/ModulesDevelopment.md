@@ -15,13 +15,17 @@
 * [Test run](#test-run)
 * [Modification of the Task](#modification-of-the-task)
 * [Check](#check)
-   * [Configuration](#configuration)
-   * [Implementation](#implementation)
-   * [Results](#results)
+   * [Configuration](#check-configuration)
+   * [Implementation](#check-implementation)
+   * [Results](#check-results)
 * [Quality Aggregation](#quality-aggregation)
-   * [Quick try](#quick-try)
-   * [Configuration](#configuration-1)
-   * [Implementation](#implementation-1)
+   * [Quick try](#qa-quick-try)
+   * [Configuration](#qa-configuration)
+   * [Implementation](#qa-implementation)
+* [Late Task](#late-task)
+   * [Quick try](#late-quick-try)
+   * [Configuration](#late-configuration)
+   * [Implementation](#late-implementation)
 * [Naming convention](#naming-convention)
 * [Committing code](#committing-code)
 * [Data sources](#data-sources)
@@ -37,9 +41,10 @@ Before developing a module, one should have a bare idea of what the QualityContr
 
 ![alt text](images/Architecture.png)
 
-The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, encapsulated in a MonitorObject that are merged (if needed) and then checked. The checkers output a QualityObject along with the MonitorObjects which might have been modified. The MonitorObjects and the QualityObjects are stored in the repository. The QualityObjects can also be aggregated by the Aggregators to produce additional QualityObjects that are also saved in the database. 
+The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, encapsulated in a MonitorObject that are merged (if needed) and then checked. The checkers output a QualityObject along with the MonitorObjects which might have been modified. The MonitorObjects and the QualityObjects are stored in the repository. The QualityObjects can also be aggregated by the Aggregators to produce additional QualityObjects that are also saved in the database. Optionally, Late Tasks can be employed to process MonitorObjects or QualityObjects and produce additional TObjects, typically trends or visualizations requiring merged objects.
 
 Asynchronously, the Post-processing can retrieve MonitorObjects from the database when certain events happen (new version of an object, new run) and produce new TObjects such as a trending plot.
+However, if the objects are available in the same QC workflow, using Late Tasks is recommended.
 
 ### DPL
 
@@ -191,6 +196,7 @@ Options:
  -c CHECK_NAME    create a check named CHECK_NAME
  -p PP_NAME       create a postprocessing task named PP_NAME
  -a AGG_NAME      create an aggregator named AGG_NAME
+ -l LT_NAME       create a late task named LT_NAME
 ```
 
 For example, if your detector 3-letter code is TST you might want to do
@@ -273,8 +279,9 @@ Once done, recompile it (see section above, `make -j8 install` in the build dire
 
 ## Check
 
-A Check is a function (actually `Check::check()`) that determines the quality of the Monitor Objects produced in the previous step (the Task). It can receive multiple Monitor Objects from several Tasks. Along with the `check()` method, the `beautify()` method is a function that can modify the MO itself. It is typically used to add colors or texts on the object to express the quality. 
+A Check is a function (actually `Check::check()`) that determines the quality of the Monitor Objects produced in the previous step (the Task). It can receive multiple Monitor Objects from several Tasks. Along with the `check()` method, the `beautify()` method is a function that can modify the MO itself. It is typically used to add colors or texts on the object to express the quality.
 
+<a id="check-configuration"></a>
 ### Configuration
 
 ```json
@@ -323,6 +330,7 @@ A Check is a function (actually `Check::check()`) that determines the quality of
     * _MOs_ - list of MonitorObjects names or can be omitted to mean that all objects should be taken.
 * __exportToBookkeeping__ - allows to propagate the results of this Check to Bookkeeping, where they are visualized as time-based Flags (disabled by default).
 
+<a id="check-implementation"></a>
 ### Implementation
 After the creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
 ```c++
@@ -340,6 +348,7 @@ For each MO or group of MOs, `beautify()` is invoked after `check()` if
 1. the check() did not raise an exception
 2. there is a single `dataSource` in the configuration of the check
 
+<a id="check-results"></a>
 ### Results
 
 Checks return Qualities with associated Flags.
@@ -353,6 +362,7 @@ The _Aggregators_ are able to collect the QualityObjects produced by the checks 
 
 ![alt text](images/Aggregation.png)
 
+<a id="qa-quick-try"></a>
 ### Quick try
 
 One can try it with this simple example: 
@@ -369,6 +379,7 @@ A more complex example with a producer and the `o2-qc`:
 o2-qc-run-advanced --no-qc --no-debug-output | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced-aggregator.json
 ```
 
+<a id="qa-configuration"></a>
 ### Configuration
 
 ```json
@@ -408,11 +419,12 @@ o2-qc-run-advanced --no-qc --no-debug-output | o2-qc --config json://${QUALITYCO
     * _OnAnyNonZero_ - Triggers if ANY of the declared monitor objects changes, but only after all listed objects have been received at least once. Please see the notes on the dataSource `QOs` below. 
     * _OnAll_ - Triggers if ALL the listed quality objects have changed.
     * In case the list of QualityObject is empty for any of the data sources, the policy is simply ignored for all sources and the `aggregator` will be triggered whenever a new QualityObject is received.
-* __dataSource__ - declaration of the `check` input
+* __dataSource__ - declaration of the `aggregator` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator
     * _QOs_ - list of QualityObjects names or can be omitted to mean that all objects should be taken. In case of `OnAnyNonZero` one must list the objects and if the the check produces only 1 then it should list only an empty string. 
 
+<a id="qa-implementation"></a>
 ### Implementation
 
 With `o2-qc-module-configurator.sh` (see [here](#module-creation)), create a new Aggregator that can be then used in the config file. 
@@ -423,6 +435,99 @@ An aggregator inherits from `AggregatorInterface` and in particular this method:
 ```
 
 The `aggregate` method is called whenever the _policy_ is satisfied. It gets a map with all the declared QualityObjects. It is expected to return a new Quality based on the inputs.
+
+## Late Task
+
+Late Tasks are useful to create new MonitorObjects based on existing ones in the QC workflow.
+They are called "late", because they are typically executed close to the end of the processing chain.
+When running QC workflows distributed over multiple nodes, with Mergers combining the results, they can be used to process the merged results.
+The adequate use cases involve:
+* creating trends and correlations from other MonitorObjects and QualityObjects (trending a histogram average, trending quality)
+* creating plots which can only be constructed from merged objects (ratios, visualizations, ...)
+* creating summary canvases of QualityObjects available in the QC workflow
+
+<a id="late-quick-try"></a>
+### Quick try
+
+One can try it with this simple example:
+
+```c++
+o2-qc-run-basic --config-path ${QUALITYCONTROL_ROOT}/etc/basic-late-task.json
+```
+
+Notice the appearance of `qc-late-task-TEST-late` and an associated CheckRunner.
+The object `qc/TST/MO/late/graph_example` will be updated in the QCG test instace.
+
+<a id="late-configuration"></a>
+### Configuration
+
+Below is an example of a late task configuration.
+
+```json
+{
+  "qc": {
+    "config": {...},
+    "tasks": {...},
+    "lateTasks": {
+      "myLateTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonLateTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "dataSources": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [...]
+}
+```
+
+* __active__ - Boolean to indicate whether the aggregator is active or not
+* __moduleName__ - Name of the module which implements the aggregator class (like in tasks)
+* __className__ - Name and namespace of the class, which is part of the module specified above (like in tasks)
+* __dataSources__ - declaration of the `lateTask` input
+  * _type_ - _Task_, _TaskMovingWindow_, _LateTask_, _Check_ or _Aggregator_
+  * _names_ - name of the user component
+  * _MOs_ or _QOs_ - list of requested objects. If empty, all objects are requested.
+
+Late Tasks outputs can be requested by Checks.
+
+<a id="late-implementation"></a>
+### Implementation
+
+With `o2-qc-module-configurator.sh` (see [here](#module-creation)), create a new Late Task that can be then used in the config file.
+
+A late task inherits from `LateTaskInterface` and in particular from these methods:
+```c++
+  /// Invoked during task initialization
+  virtual void initialize(o2::framework::InitContext& ctx) = 0;
+  /// Invoked at the start of run in synchronous mode and before the first `process()` in asynchronous mode
+  virtual void startOfActivity(const Activity& activity) = 0;
+  /// Invoked each time new data arrive
+  virtual void process(const core::QCInputs& data) = 0;
+  /// Invoked at the end of run in synchronous mode and after the last `process()` in asynchronous mode
+  virtual void endOfActivity(const Activity& activity) = 0;
+  /// Invoked at the reset() transition in synchronous mode and during workflow cleanup in asynchronous mode
+  virtual void reset() = 0;
+```
+Inside the generated sources, you will find examples how to initialize the task, process input data and publish output objects.
+
+The `process()` method is invoked with input objects as soon as they arrive.
+Please note that when several data sources are requested, the objects might not arrive at the same time.
+
+### Further development plans
+
+The Late Tasks were developed to eventually replace post-processing tasks as a less error-prone and simpler to use alternative.
+They should reduce the load on the QCDB, as they receive objects directly within the message passing framework instead of sending requests to the database.
+As the next steps, well-familiar post-processing tasks, such as TrendingTask, SliceTrendingTask, ReferenceComparatorTask, QualityTask, will be rewritten as Late Tasks and usage migration will be encouraged and coordinated.
+
+Post-processing tasks might remain as the only way to monitor objects available in CCDB or to get triggered on rare events.
+
+To support post-processing tasks use-cases in asynchronous mode, we will need to develop QCDB object readers.
 
 ## Naming convention
 
