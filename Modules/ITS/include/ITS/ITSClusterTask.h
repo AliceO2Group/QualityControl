@@ -74,11 +74,11 @@ class ITSClusterTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
+  static constexpr int NLayerOB = 4;
   static constexpr int NStavesIB = 12 + 16 + 20;
   static constexpr int NStavesOB = 24 + 30 + 42 + 48;
 
   std::vector<TObject*> mPublishedObjects;
-
   // Task
   TH1D* hTFCounter = nullptr;
 
@@ -86,6 +86,8 @@ class ITSClusterTask : public TaskInterface
   TH1D* hClusterTopologySummaryIB[NLayer][48][9] = { { { nullptr } } };
   TH1D* hGroupedClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
   TH1D* hClusterSizeSummaryIB[NLayer][48][9] = { { { nullptr } } };
+  TH2I* hDcolMapIBSor = nullptr;
+  TH2I* hDcolMapIBEor = nullptr;
 
   std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryIB[NLayer];
   std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryIB[NLayer];
@@ -97,6 +99,9 @@ class ITSClusterTask : public TaskInterface
 
   std::shared_ptr<TH2DRatio> hAverageClusterOccupancySummaryOB[NLayer];
   std::shared_ptr<TH2DRatio> hAverageClusterSizeSummaryOB[NLayer];
+
+  TH2I* hDcolMapOBSor[NLayerOB] = { nullptr };
+  TH2I* hDcolMapOBEor[NLayerOB] = { nullptr };
 
   // Layer summary
   TH1L* hClusterSizeLayerSummary[NLayer] = { nullptr };
@@ -135,9 +140,13 @@ class ITSClusterTask : public TaskInterface
   int nRphiBinsOB = 1;
   int nZBinsOB = 1;
   static constexpr int NFlags = 4;
+  int nResetCycle = 3; // to reset plots every nResetCycle cycles
+  int nCycle = 0;      // cycle counter
+  int nCycleStop = 3;  // number of cycles after which to stop filling histos
 
   const int mOccUpdateFrequency = 100000;
-  const int mNLanes[4] = { 432, 864, 2520, 3816 }; // IB, ML, OL, TOTAL lane
+  const int mNLanes[4] = { 432, 864, 2520, 3816 };                      // IB, ML, OL, TOTAL lane
+  const int mChips[NLayer] = { 108, 144, 180, 2688, 3360, 8232, 9408 }; // # chips in L0, L2, L2, L3, L4, L5, L6
   int mDoPublish1DSummary = 0;
   int mNThreads = 1;
   int nBCbins = 103;
