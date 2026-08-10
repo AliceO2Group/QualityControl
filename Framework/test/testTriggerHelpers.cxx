@@ -19,7 +19,7 @@
 #include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::postprocessing;
-const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
+const std::string CCDB_ENDPOINT = "ali-qcdb-test.cern.ch:8083";
 
 TEST_CASE("test_factory")
 {

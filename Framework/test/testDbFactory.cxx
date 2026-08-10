@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   auto* ccdb = dynamic_cast<CcdbDatabase*>(database3.get());
   BOOST_CHECK(ccdb);
 
-  ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
+  ccdb->connect("ali-qcdb-test.cern.ch:8083", "", "", "");
 
   // prepare stuff in the db
   string prefixPath = "qc/TST/MO/";

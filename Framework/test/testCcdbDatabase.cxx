@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE(ccdb_test_thread_api, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
 {
   unique_ptr<o2::ccdb::CcdbApi> api = std::make_unique<o2::ccdb::CcdbApi>();
-  string ccdbUrl = "http://ccdb-test.cern.ch:8080";
+  string ccdbUrl = "http://ali-qcdb-test.cern.ch:8083";
   api->init(ccdbUrl);
   cout << "ccdb url: " << ccdbUrl << endl;
   bool hostReachable = api->isHostReachable();
