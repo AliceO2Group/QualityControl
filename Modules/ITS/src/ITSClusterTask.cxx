@@ -55,12 +55,12 @@ ITSClusterTask::~ITSClusterTask()
       delete hClusterCenterMap[iLayer];
       delete hLongClustersPerChip[iLayer];
       delete hMultPerChipWhenLongClusters[iLayer];
-      delete hDcolMapOBSor[iLayer - NLayerIB];
-      delete hDcolMapOBEor[iLayer - NLayerIB];
     }
 
     else {
       delete hLongClustersPerStave[iLayer - NLayerIB];
+      delete hDcolMapOBSor[iLayer - NLayerIB];
+      delete hDcolMapOBEor[iLayer - NLayerIB];
     }
     delete hClusterSizeLayerSummary[iLayer];
     delete hClusterTopologyLayerSummary[iLayer];
@@ -131,7 +131,9 @@ void ITSClusterTask::startOfCycle()
   if (nCycle % nResetCycle == 0) {
     hDcolMapIBEor->Reset();
     for (int i = 0; i < NLayerOB; i++) {
-      hDcolMapOBEor[i]->Reset();
+      if (hDcolMapOBEor[i]) {
+        hDcolMapOBEor[i]->Reset();
+      }
     }
   }
 
