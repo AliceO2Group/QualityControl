@@ -24,6 +24,7 @@
 
 #include <map>
 #include <algorithm>
+#include <charconv>
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
 
@@ -74,16 +75,22 @@ Quality OutOfBunchCollFeeModulesCheck::check(std::map<std::string, std::shared_p
       }
 
       std::vector<float> allCollPerFeeModule(mo->getMetadataMap().size() + 1, 0);
+      const int modulesNumber = histogram->GetNbinsY();
       for (auto metainfo : mo->getMetadataMap()) {
         int bin = 0;
         float value = 0;
-        try {
-          bin = std::stoi(metainfo.first);
-          value = std::stof(metainfo.second);
-          allCollPerFeeModule[bin] = value;
-        } catch (const std::invalid_argument& e) {
-          ILOG(Warning, Support) << "Could not get value for key " << metainfo.first << ENDM;
-          continue;
+        const char* metaInfoKey = metainfo.first.data();
+        const char* metaInfoKeyEnd = metainfo.first.data() + metainfo.first.size();
+        if (std::from_chars(metaInfoKey, metaInfoKeyEnd, bin).ptr == metaInfoKeyEnd) {
+          if (bin >= 0 && bin <= modulesNumber) {
+            try {
+              value = std::stof(metainfo.second);
+            } catch (std::invalid_argument& e) {
+              ILOG(Warning, Support) << "Value " << value << " in bin " << bin << " is not convertible to float" << ENDM;
+              continue;
+            }
+            allCollPerFeeModule[bin] = value;
+          }
         }
       }
 
