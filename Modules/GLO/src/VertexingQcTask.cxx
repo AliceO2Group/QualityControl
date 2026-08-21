@@ -215,7 +215,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTimeUncVsNContrib->Fill(nContr, timeUnc);
     mBeamSpot->Fill(x, y);
 
-    if (mUseMC && mcLbl[i].isSet()) { // make sure the label was set
+    if (mUseMC && mcLbl[i].isSet() && mcLbl[i].getSourceID() == 0) { // make sure the label was set and to use only the underlying event
       auto header = mMCReader.getMCEventHeader(mcLbl[i].getSourceID(), mcLbl[i].getEventID());
       auto purity = mcLbl[i].getCorrWeight();
       auto mult = header.GetNPrim();
