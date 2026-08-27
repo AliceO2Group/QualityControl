@@ -37,7 +37,13 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 
-const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
+// These tests upload, so this has to be a WRITABLE instance -- ccdb-test by
+// default. ALICEO2_CCDB_HOST lets a network-isolated build container reach one
+// through a broker instead; unset, behaviour is unchanged.
+const std::string CCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_CCDB_HOST");
+  return std::string((host && *host) ? host : "ccdb-test.cern.ch:8080");
+}();
 
 BOOST_AUTO_TEST_CASE(test_casting_triggers)
 {
