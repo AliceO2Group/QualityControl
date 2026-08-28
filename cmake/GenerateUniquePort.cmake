@@ -12,15 +12,17 @@ include_guard()
 
 
 #
-# o2_generate_unique_port(VAR_NAME) generates a random TCP/UDP port number in
-# the range 30000 - 59999 and puts it under the name specified in the first argument.
+# o2_generate_unique_port(VAR_NAME) generates a random even TCP/UDP port number
+# in the range 20000 - 29998 and puts it under the name specified in the first
+# argument. Below the ephemeral range (32768+ on Linux, 49152+ on macOS), so
+# kernel-assigned source ports cannot collide with it; even, so callers may use
+# port+1 as a companion.
 
 function(o2_generate_unique_port VAR_NAME)
 
-  string(RANDOM LENGTH 1 ALPHABET 345 FIRST_DIGIT)
   string(RANDOM LENGTH 3 ALPHABET 0123456789 OTHER_DIGITS)
   string(RANDOM LENGTH 1 ALPHABET 02468 LAST_DIGIT)
-  string(CONCAT ${VAR_NAME} ${FIRST_DIGIT} ${OTHER_DIGITS} ${LAST_DIGIT})
+  string(CONCAT ${VAR_NAME} 2 ${OTHER_DIGITS} ${LAST_DIGIT})
 
   set(${VAR_NAME} ${${VAR_NAME}} PARENT_SCOPE)
 
