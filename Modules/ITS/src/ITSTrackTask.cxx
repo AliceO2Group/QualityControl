@@ -16,18 +16,16 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSTrackTask.h"
-#include <DataFormatsITS/TrackITS.h>
-#include <DataFormatsITSMFT/ROFRecord.h>
-#include <Framework/InputRecord.h>
-#include "DataFormatsITS/Vertex.h"
-#include "ITStracking/IOUtils.h"
-#include <DataFormatsITSMFT/ClusterTopology.h>
 #include "Common/Utils.h"
-
 #include <Framework/DataSpecUtils.h>
-#include "ITStracking/Constants.h"
-
-#include "DCAFitter/DCAFitterN.h"
+#include <Framework/InputRecord.h>
+#include <DataFormatsITS/TrackITS.h>
+#include "DataFormatsITSMFT/CompCluster.h"
+#include "DataFormatsITSMFT/TopologyDictionary.h"
+#include <DataFormatsITSMFT/ROFRecord.h>
+#include <DataFormatsITS/Vertex.h>
+#include <DataFormatsITSMFT/ClusterTopology.h>
+#include <DCAFitter/DCAFitterN.h>
 
 using namespace o2::itsmft;
 using namespace o2::its;
