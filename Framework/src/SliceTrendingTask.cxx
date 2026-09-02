@@ -25,6 +25,7 @@
 #include "QualityControl/ActivityHelpers.h"
 
 #include <string>
+#include <set>
 #include <TGraphErrors.h>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
@@ -43,6 +44,72 @@ using namespace o2::quality_control::postprocessing;
 void SliceTrendingTask::configure(const boost::property_tree::ptree& config)
 {
   mConfig = SliceTrendingTaskConfig(getID(), config);
+}
+
+bool SliceTrendingTask::canContinueTrend(TTree* tree)
+{
+  if (tree == nullptr) {
+    return false;
+  }
+
+  size_t expectedNBranches = 1 /* meta */ + 1 /* time */ + mConfig.dataSources.size();
+  if (tree->GetNbranches() != expectedNBranches) {
+    ILOG(Warning, Support) << "The retrieved TTree has different number of branches than expected ("
+                           << tree->GetNbranches() << " vs. " << expectedNBranches << "). "
+                           << "Filling the tree with mismatching branches might produce invalid plots, "
+                           << "thus a new tree will be created" << ENDM;
+    return false;
+  }
+
+  std::set<std::string> expectedBranchNames{ "time", "meta" };
+  for (const auto& dataSource : mConfig.dataSources) {
+    expectedBranchNames.insert(dataSource.name);
+  }
+
+  std::set<std::string> existingBranchNames;
+  for (const auto& branch : *tree->GetListOfBranches()) {
+    existingBranchNames.insert(branch->GetName());
+  }
+
+  if (expectedBranchNames != existingBranchNames) {
+    ILOG(Warning, Support) << "The retrieved TTree has the same number of branches,"
+                           << " but at least one has a different name."
+                           << " Filling the tree with mismatching branches might produce invalid plots, "
+                           << "thus a new tree will be created" << ENDM;
+    return false;
+  }
+
+  // does axisDivision result in the same number of slices?
+  if (tree->GetEntries() > 0) {
+    for (const auto& dataSource : mConfig.dataSources) {
+      std::vector<SliceInfo>* tempVec = nullptr;
+      tree->SetBranchAddress(dataSource.name.c_str(), &tempVec);
+      tree->GetEntry(tree->GetEntries() - 1);
+
+      if (tempVec) {
+        const size_t storedSlices = tempVec->size();
+
+        // slices can be 1D or 2D
+        size_t expectedSlices = 1;
+        for (const auto& axisDim : dataSource.axisDivision) {
+          if (axisDim.size() > 1) {
+            expectedSlices *= (axisDim.size() - 1);
+          }
+        }
+
+        if (storedSlices != expectedSlices) {
+          ILOG(Warning, Support) << "Data source '" << dataSource.name << "': stored " << storedSlices
+                                 << " slices but config expects " << expectedSlices
+                                 << " (axisDivision changed). Creating new tree." << ENDM;
+          tree->ResetBranchAddresses();
+          return false;
+        }
+      }
+    }
+    tree->ResetBranchAddresses();
+  }
+
+  return true;
 }
 
 void SliceTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef services)
@@ -73,7 +140,14 @@ void SliceTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef serv
     } else {
       ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task." << ENDM;
     }
+
+    // Check if the retrieved tree is compatible with current configuration
+    if (mTrend && !canContinueTrend(mTrend.get())) {
+      ILOG(Warning, Support) << "The retrieved TTree is incompatible with current configuration. Creating a new tree." << ENDM;
+      mTrend.reset();
+    }
   }
+
   if (mTrend == nullptr) {
     ILOG(Info, Support) << "Generating new TTree for SliceTrending" << ENDM;
     mTrend = std::make_unique<TTree>();
