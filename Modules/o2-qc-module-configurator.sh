@@ -82,8 +82,8 @@ function create_class() {
   local classname=$2
   local typename=$3
 
-  if [ "$typename" != "Task" ] && [ "$typename" != "Check" ] && [ "$typename" != "PostProcessing" ] && [ "$typename" != "Aggregator" ]; then
-    echo "3rd parameter can only be Task, Check, Aggregator or PostProcessing"
+  if [ "$typename" != "Task" ] && [ "$typename" != "Check" ] && [ "$typename" != "PostProcessing" ] && [ "$typename" != "Aggregator" ] && [ "$typename" != "LateTask" ]; then
+    echo "3rd parameter can only be Task, Check, Aggregator, PostProcessing or LateTask"
     return
   fi
 
@@ -150,8 +150,8 @@ function create_class() {
 function print_usage() {
   echo "Usage: ./o2-qc-module-configurator.sh -m MODULE_NAME [OPTION]
 
-Generate template QC module and/or tasks, checks, aggregators and postprocessing.
-If a module with specified name already exists, new tasks, checks, aggregators and postprocessing are inserted to the existing module.
+Generate template QC module and/or tasks, checks, aggregators, postprocessing and late tasks.
+If a module with specified name already exists, new tasks, checks, aggregators, postprocessing and late tasks are inserted to the existing module.
 Please follow UpperCamelCase convention for modules', tasks' and checks' names.
 
 Example:
@@ -167,11 +167,12 @@ Options:
  -c CHECK_NAME    create a check named CHECK_NAME
  -p PP_NAME       create a postprocessing task named PP_NAME
  -a AGG_NAME      create an aggregator named AGG_NAME
+ -l LT_NAME       create a late task named LT_NAME
 "
 }
 
 MODULE=
-while getopts 'hm:t:c:p:a:' option; do
+while getopts 'hm:t:c:p:a:l:' option; do
   case "${option}" in
   \?)
     print_usage
@@ -213,6 +214,13 @@ while getopts 'hm:t:c:p:a:' option; do
       exit 1
     fi
     create_class ${MODULE} ${OPTARG} Aggregator
+    ;;
+  l)
+    if [ -z ${MODULE} ]; then
+      echo 'Cannot add a late task, module name not specified, exiting...'
+      exit 1
+    fi
+    create_class ${MODULE} ${OPTARG} LateTask
     ;;
   esac
 done

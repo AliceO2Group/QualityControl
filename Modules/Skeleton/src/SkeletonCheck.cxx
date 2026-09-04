@@ -56,7 +56,7 @@ Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
   // get MonitorObject with a given name from generic data object and converts it into requested type (TH1 here)
   const auto histOpt = getMonitorObject<TH1>(data, name);
   if (!histOpt.has_value()) {
-    ILOG(Warning, Support) << "Data object does not contain any MonitorObject with a name: " << name << ", or it couldn't be transformed into TH1" << ENDM;
+    ILOG(Warning, Support) << "QCInputs do not contain any MonitorObject with a name: " << name << ", or it couldn't be transformed into TH1" << ENDM;
     return result;
   }
 

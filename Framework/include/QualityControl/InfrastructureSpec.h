@@ -23,6 +23,7 @@
 #include "QualityControl/AggregatorSpec.h"
 #include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/ExternalTaskSpec.h"
+#include "QualityControl/LateTaskSpec.h"
 
 #include <vector>
 
@@ -37,6 +38,7 @@ struct InfrastructureSpec {
   std::vector<checker::AggregatorSpec> aggregators;
   std::vector<postprocessing::PostProcessingTaskSpec> postProcessingTasks;
   std::vector<ExternalTaskSpec> externalTasks;
+  std::vector<LateTaskSpec> lateTasks;
 };
 
 } // namespace o2::quality_control::core

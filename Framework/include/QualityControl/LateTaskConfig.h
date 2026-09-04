@@ -9,29 +9,28 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+#ifndef QC_CORE_LATETASKRUNNERCONFIG_H
+#define QC_CORE_LATETASKRUNNERCONFIG_H
+
 ///
-/// \file   DataSourceType.h
+/// \file   LateTaskRunnerConfig.h
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_DATASOURCETYPE_H
-#define QUALITYCONTROL_DATASOURCETYPE_H
+#include <Framework/DataProcessorSpec.h>
+
+#include "QualityControl/UserCodeConfig.h"
+#include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/OutputActivityStrategy.h"
 
 namespace o2::quality_control::core
 {
 
-enum class DataSourceType {
-  DataSamplingPolicy,
-  Direct,
-  Task,
-  TaskMovingWindow,
-  Check,
-  Aggregator,
-  PostProcessingTask,
-  LateTask,
-  ExternalTask,
-  Invalid
+struct LateTaskConfig : public UserCodeConfig {
+  bool critical = true;
+  OutputActivityStrategy outputActivityStrategy = OutputActivityStrategy::Integrated;
 };
-}
 
-#endif // QUALITYCONTROL_DATASOURCETYPE_H
+} // namespace o2::quality_control::core
+
+#endif // QC_CORE_LATETASKRUNNERCONFIG_H
