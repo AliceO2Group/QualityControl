@@ -35,6 +35,7 @@
 #include <TROOT.h>
 #include <CCDB/CcdbApi.h>
 #include <cstdlib>
+#include <thread>
 
 namespace utf = boost::unit_test;
 
