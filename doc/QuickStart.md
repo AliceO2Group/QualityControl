@@ -62,7 +62,7 @@ To access it from CERN, one can simply use the URL `ali-qcdb-test.cern.ch:8083`.
 
 #### Alternatives
 
-1. Use the CERN VPN: https://eduvpn.docs.cern.ch/
+1. Use the CERN VPN: https://eduvpn.docs.cern.ch/ (with `ali-qcdb-test.cern.ch:8083`)
 2. the `ccdb-test`, if you have a working grid certificate (`ccdb-test.cern.ch:8080`),
 2. a local instance ([easy installation instructions](QCDB.md#local-ccdb-setup)).
 
