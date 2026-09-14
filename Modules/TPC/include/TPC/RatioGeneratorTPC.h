@@ -37,7 +37,7 @@ namespace o2::quality_control_modules::tpc
 /// It takes two TH1 objects as input, calculates the ratio and stores the ratio TH1 on ccdb/qcg.
 ///
 
-class RatioGeneratorTPC : public PostProcessingInterface
+class RatioGeneratorTPC final : public PostProcessingInterface
 {
  public:
   /// \brief Constructor.

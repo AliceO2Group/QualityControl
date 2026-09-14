@@ -50,7 +50,7 @@ namespace o2::quality_control::postprocessing
 /// and input/output canvas can be dealt with alongside normal histograms.
 ///
 
-class SliceTrendingTask : public PostProcessingInterface
+class SliceTrendingTask final : public PostProcessingInterface
 {
  public:
   /// \brief Constructor.

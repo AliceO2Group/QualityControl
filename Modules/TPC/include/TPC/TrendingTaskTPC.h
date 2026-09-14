@@ -46,7 +46,7 @@ namespace o2::quality_control_modules::tpc
 /// and input/output canvas can be dealt with alongside normal histograms.
 ///
 
-class TrendingTaskTPC : public PostProcessingInterface
+class TrendingTaskTPC final : public PostProcessingInterface
 {
  public:
   /// \brief Constructor.

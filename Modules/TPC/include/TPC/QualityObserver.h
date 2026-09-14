@@ -39,7 +39,7 @@ namespace o2::quality_control_modules::tpc
 /// as ouput.
 ///
 
-class QualityObserver : public PostProcessingInterface
+class QualityObserver final : public PostProcessingInterface
 {
  public:
   /// \brief Constructor.
