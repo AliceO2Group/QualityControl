@@ -31,7 +31,7 @@ SkeletonTask::~SkeletonTask()
 
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
   // This is how logs are created. QcInfoLogger is used. In production, FairMQ logs will go to InfoLogger as well.
   ILOG(Debug, Devel) << "initialize SkeletonTask" << ENDM;
@@ -81,7 +81,7 @@ void SkeletonTask::startOfActivity(const Activity& activity)
 
 void SkeletonTask::startOfCycle()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "startOfCycle" << ENDM;
 }
 
