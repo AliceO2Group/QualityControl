@@ -26,7 +26,7 @@ namespace o2::quality_control_modules::skeleton
 
 void SkeletonAggregator::configure()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   // This method is called whenever CustomParameters are set.
 
   // Example of retrieving a custom parameter
@@ -35,7 +35,7 @@ void SkeletonAggregator::configure()
 
 std::map<std::string, Quality> SkeletonAggregator::aggregate(const o2::quality_control::core::QCInputs& data)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   std::map<std::string, Quality> result;
 
   ILOG(Info, Devel) << "Entered SkeletonAggregator::aggregate" << ENDM;

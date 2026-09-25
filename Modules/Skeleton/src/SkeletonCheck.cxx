@@ -35,7 +35,7 @@ namespace o2::quality_control_modules::skeleton
 
 void SkeletonCheck::configure()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   // This method is called whenever CustomParameters are set.
 
   // Example of retrieving a custom parameter
@@ -44,7 +44,7 @@ void SkeletonCheck::configure()
 
 Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   Quality result = Quality::Null;
 
   // You can get details about the activity via the object mActivity:
@@ -87,7 +87,7 @@ Quality SkeletonCheck::check(const quality_control::core::QCInputs& data)
 
 void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
   // This method lets you decorate the checked object according to the computed Quality
   if (mo->getName() == "example") {
@@ -112,21 +112,21 @@ void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 
 void SkeletonCheck::reset()
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "SkeletonCheck::reset" << ENDM;
   // please reset the state of the check here to allow for reuse between consecutive runs.
 }
 
 void SkeletonCheck::startOfActivity(const Activity& activity)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "SkeletonCheck::start : " << activity.mId << ENDM;
   mActivity = make_shared<Activity>(activity);
 }
 
 void SkeletonCheck::endOfActivity(const Activity& activity)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
   ILOG(Debug, Devel) << "SkeletonCheck::end : " << activity.mId << ENDM;
 }
 
