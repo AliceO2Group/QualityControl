@@ -129,7 +129,7 @@ QCInputs LateTaskRunner::extractInputs(ProcessingContext& pCtx)
         auto mo = dynamic_cast<MonitorObject*>(obj);
         if (mo != nullptr) {
           if (matchingDataSource->subInputs.empty() || std::ranges::find(matchingDataSource->subInputs, mo->getName()) != matchingDataSource->subInputs.end()) {
-            taskInputs.insert(mo->getName(), std::shared_ptr<MonitorObject>(mo));
+            taskInputs.insert(mo->getFullName(), std::shared_ptr<MonitorObject>(mo));
           } else {
             delete mo;
           }
