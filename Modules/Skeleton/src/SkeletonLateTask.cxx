@@ -37,7 +37,7 @@ SkeletonLateTask::~SkeletonLateTask()
 
 void SkeletonLateTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  // THUS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
+  // THIS FUNCTION BODY IS AN EXAMPLE. PLEASE REMOVE EVERYTHING YOU DO NOT NEED.
 
   // This creates and registers a graph for publication, we will track "example" histogram mean here
   mMeanTrend = std::make_unique<TGraph>();

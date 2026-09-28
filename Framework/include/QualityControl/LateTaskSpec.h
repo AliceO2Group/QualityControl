@@ -44,10 +44,6 @@ struct LateTaskSpec {
   bool critical = true;
   OutputActivityStrategy outputActivityStrategy = OutputActivityStrategy::Integrated;
   CustomParameters customParameters;
-
-  // reco
-  // GRPGeomRequestSpec grpGeomRequestSpec;
-  // GlobalTrackingDataRequestSpec globalTrackingDataRequest;
 };
 } // namespace o2::quality_control::core
 #endif // QC_CORE_LATETASKSPEC_H

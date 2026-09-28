@@ -467,13 +467,6 @@ LateTaskSpec
     }
   }
 
-  // if (lateTaskTree.count("grpGeomRequest") > 0) {
-  // lts.grpGeomRequestSpec = readSpecEntry<GRPGeomRequestSpec>(lts.taskName, lateTaskTree.get_child("grpGeomRequest"), wholeTree);
-  // }
-  // if (lateTaskTree.count("globalTrackingDataRequest") > 0) {
-  // lts.globalTrackingDataRequest = readSpecEntry<GlobalTrackingDataRequestSpec>(lts.taskName, lateTaskTree.get_child("globalTrackingDataRequest"), wholeTree);
-  // }
-
   return lts;
 }
 

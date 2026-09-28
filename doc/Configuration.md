@@ -58,7 +58,7 @@ This is the global structure of the configuration in QC.
 }
 ```
 
-There are following QC-related components:
+The following QC-related components are available:
 * "config" - contains global configuration of QC which apply to any component. It is required in any configuration
   file.
 * "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
