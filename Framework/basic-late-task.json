@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
+        "host": "localhost:8083",
         "maxObjectSize": "2097152",       "": "[Bytes, default=2MB] Maximum size allowed, larger objects are rejected."
       },
       "Activity": {
