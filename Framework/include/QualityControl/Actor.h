@@ -175,7 +175,7 @@ class Actor
   void onStart(framework::ServiceRegistryRef services, const Activity& activity) {}
   void onStop(framework::ServiceRegistryRef services, const Activity& activity) {}
   void onReset(framework::ServiceRegistryRef services, const Activity& activity) {}
-  void onEndOfStream(framework::EndOfStreamContext& eosContext) {}
+  void onEndOfStream(framework::EndOfStreamContext& eosContext, const Activity& activity) {}
   void onFinaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj) {}
 
   // service access for concrete actor
@@ -345,7 +345,9 @@ class Actor
     impl::handleExceptions("endOfStream", [&] {
       ILOG(Debug, Trace) << traits::sActorTypeKebabCase << " endOfStream" << ENDM;
 
-      concreteActor().onEndOfStream(eosContext);
+      mActivity = mServicesConfig.activity;
+
+      concreteActor().onEndOfStream(eosContext, mActivity);
     });
   }
   void finaliseCCDB(framework::ConcreteDataMatcher& matcher, void* obj)
