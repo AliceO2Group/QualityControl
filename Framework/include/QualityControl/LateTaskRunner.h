@@ -43,6 +43,7 @@ class LateTaskRunner : public Actor<LateTaskRunner>
   void onStop(framework::ServiceRegistryRef services, const Activity& activity);
   void onInit(framework::InitContext& iCtx);
   void onProcess(framework::ProcessingContext& pCtx);
+  void onEndOfStream(framework::EndOfStreamContext& eosContext, const Activity& activity);
 
   std::string_view getDetectorName() const { return mTaskConfig.detectorName; }
   std::string_view getUserCodeName() const { return mTaskConfig.name; }
@@ -60,6 +61,7 @@ class LateTaskRunner : public Actor<LateTaskRunner>
   std::shared_ptr<LateTaskInterface> mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::optional<Activity> mObjectActivity;
+  bool mReceivedEOS = false;
 };
 
 } // namespace o2::quality_control::core

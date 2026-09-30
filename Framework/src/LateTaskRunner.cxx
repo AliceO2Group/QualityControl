@@ -64,6 +64,7 @@ void LateTaskRunner::onStart(framework::ServiceRegistryRef services, const Activ
   mTask->startOfActivity(activity);
   mObjectsManager->setActivity(activity);
   mObjectActivity = std::nullopt;
+  mReceivedEOS = false;
 }
 
 void LateTaskRunner::onProcess(ProcessingContext& pCtx)
@@ -92,10 +93,34 @@ void LateTaskRunner::onProcess(ProcessingContext& pCtx)
 
 void LateTaskRunner::onStop(framework::ServiceRegistryRef services, const Activity& activity)
 {
-  mTask->endOfActivity(activity);
-  if (mObjectActivity.has_value()) {
-    mObjectsManager->setActivity(mObjectActivity.value());
+  if (mReceivedEOS) {
+    return;
   }
+  ILOG(Warning, Devel) << "Received Stop without EndOfStream. Objects will not be published for the last time" << ENDM;
+
+  mTask->endOfActivity(activity);
+  mObjectsManager->setActivity(mObjectActivity.has_value() ? mObjectActivity.value() : activity);
+  mObjectsManager->stopPublishing(PublicationPolicy::ThroughStop);
+}
+
+void LateTaskRunner::onEndOfStream(framework::EndOfStreamContext& eosContext, const Activity& activity)
+{
+  if (mReceivedEOS) {
+    ILOG(Warning, Devel) << "Received EndOfStream more than once. This is unexpected, please report this to the QC developers" << ENDM;
+    return;
+  }
+  mReceivedEOS = true;
+
+  mTask->endOfActivity(activity);
+  // normally we compute the output object activity out of the processed input objects.
+  // if mObjectActivity is empty, it means we never processed any input objects.
+  // in such case, we attempt to store empty objects with a validity covering the whole run.
+  mObjectsManager->setActivity(mObjectActivity.has_value() ? mObjectActivity.value() : activity);
+
+  // publish objects for the last time
+  std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
+  eosContext.outputs().snapshot(mTaskConfig.name, *array);
+
   mObjectsManager->stopPublishing(PublicationPolicy::ThroughStop);
 }
 
