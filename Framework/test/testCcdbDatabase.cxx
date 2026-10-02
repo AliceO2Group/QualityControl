@@ -295,7 +295,7 @@ void askObject(std::string objectPath)
   auto json = backendGlobal->retrieveJson(objectPath, -1, metadata);
   cout << "std::string::max_size(): " << std::string().max_size() << endl;
   cout << "json string size: " << json.size() << endl;
-  cout << "object " << json.substr(10) << endl;
+  cout << "object " << json.substr(0, 10) << endl;
   BOOST_CHECK(!json.empty());
   cout << "finished " << endl;
 }
