@@ -33,9 +33,20 @@
 #include <QualityControl/RepoPathUtils.h>
 #include <QualityControl/testUtils.h>
 #include <TH1F.h>
+#include <cstdlib>
 
 using namespace std;
 using namespace o2::quality_control::core;
+
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
 
 namespace o2::quality_control::repository
 {
@@ -68,7 +79,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   auto* ccdb = dynamic_cast<CcdbDatabase*>(database3.get());
   BOOST_CHECK(ccdb);
 
-  ccdb->connect("ali-qcdb-test.cern.ch:8083", "", "", "");
+  ccdb->connect(QCDB_ENDPOINT, "", "", "");
 
   // prepare stuff in the db
   string prefixPath = "qc/TST/MO/";

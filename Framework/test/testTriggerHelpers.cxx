@@ -17,9 +17,19 @@
 #include "QualityControl/TriggerHelpers.h"
 #include "QualityControl/PostProcessingConfig.h"
 #include <catch_amalgamated.hpp>
+#include <cstdlib>
 
 using namespace o2::quality_control::postprocessing;
-const std::string CCDB_ENDPOINT = "ali-qcdb-test.cern.ch:8083";
+
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
 
 TEST_CASE("test_factory")
 {
@@ -63,8 +73,8 @@ TEST_CASE("test_factory")
 
   // generating new object trigger
   PostProcessingConfig configWithDBs;
-  configWithDBs.repository["host"] = CCDB_ENDPOINT;
-  configWithDBs.ccdbUrl = CCDB_ENDPOINT;
+  configWithDBs.repository["host"] = QCDB_ENDPOINT;
+  configWithDBs.ccdbUrl = QCDB_ENDPOINT;
   CHECK_NOTHROW(trigger_helpers::triggerFactory("newobject:qcdb:qc/asdf/vcxz", configWithDBs));
   CHECK_NOTHROW(trigger_helpers::triggerFactory("newobject:ccdb:qc/asdf/vcxz", configWithDBs));
   CHECK_NOTHROW(trigger_helpers::triggerFactory("newobject:QCDB:qc/asdf/vcxz", configWithDBs));

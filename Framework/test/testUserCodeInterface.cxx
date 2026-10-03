@@ -28,10 +28,21 @@
 
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/CustomParameters.h>
+#include <cstdlib>
 
 using namespace std;
 using namespace o2::quality_control::repository;
 using namespace o2::quality_control::core;
+
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
 
 namespace o2::quality_control
 {
@@ -65,7 +76,7 @@ struct MyGlobalFixture {
   void teardown()
   {
     auto backend = std::make_unique<CcdbDatabase>();
-    backend->connect("ali-qcdb-test.cern.ch:8083", "", "", "");
+    backend->connect(QCDB_ENDPOINT, "", "", "");
     backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
   }
 };
@@ -82,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   auto taskName = "Test/pid" + pid;
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, taskName, "task", "TST");
   auto backend = std::make_unique<CcdbDatabase>();
-  backend->connect("ali-qcdb-test.cern.ch:8083", "", "", "");
+  backend->connect(QCDB_ENDPOINT, "", "", "");
   backend->storeMO(mo1);
 
   // setting custom parameters should configure
@@ -92,7 +103,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   BOOST_CHECK_EQUAL(testInterface.configured, true);
   BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");
 
-  testInterface.setCcdbUrl("ali-qcdb-test.cern.ch:8083");
+  testInterface.setCcdbUrl(QCDB_ENDPOINT);
   auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/" + taskName + "/asdf");
   BOOST_CHECK_NE(obj, nullptr);
 }

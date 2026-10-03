@@ -50,6 +50,16 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
 
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
+
 // These tests upload, so this has to be a WRITABLE instance -- ccdb-test by
 // default. ALICEO2_CCDB_HOST lets a network-isolated build container reach one
 // through a broker instead; unset, behaviour is unchanged.
@@ -360,7 +370,7 @@ BOOST_AUTO_TEST_CASE(ccdb_test_thread_api, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
 {
   unique_ptr<o2::ccdb::CcdbApi> api = std::make_unique<o2::ccdb::CcdbApi>();
-  string ccdbUrl = "http://ali-qcdb-test.cern.ch:8083";
+  string ccdbUrl = "http://" + QCDB_ENDPOINT;
   api->init(ccdbUrl);
   cout << "ccdb url: " << ccdbUrl << endl;
   bool hostReachable = api->isHostReachable();
