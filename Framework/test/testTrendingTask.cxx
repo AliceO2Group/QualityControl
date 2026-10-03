@@ -30,13 +30,22 @@
 #include <functional>
 
 #include <catch_amalgamated.hpp>
+#include <cstdlib>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::repository;
 using namespace o2::framework;
 
-const std::string CCDB_ENDPOINT = "ali-qcdb-test.cern.ch:8083";
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
 
 struct CleanupAtDestruction {
  public:
@@ -86,7 +95,8 @@ TEST_CASE("test_trending_task")
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "ali-qcdb-test.cern.ch:8083"
+        "host": ")json"
+     << QCDB_ENDPOINT << R"json("
       },
       "Activity": {},
       "monitoring": {
@@ -105,7 +115,7 @@ TEST_CASE("test_trending_task")
           {
             "type": "repository",
             "path": "TST/MO/)json" +
-          taskName + R"json(",
+                           taskName + R"json(",
             "name": "testHistoTrending",
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "reductorParameters": {
@@ -121,7 +131,7 @@ TEST_CASE("test_trending_task")
             "type": "repository-quality",
             "path": "TST/QO",
             "names": [ ")json" +
-          checkName + R"json(" ],
+                           checkName + R"json(" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }
@@ -140,7 +150,7 @@ TEST_CASE("test_trending_task")
             "name": "quality_histogram",
             "title": "Histogram of qualities",
             "varexp": ")json" +
-          checkName + R"json(.level",
+                           checkName + R"json(.level",
             "selection": "",
             "option": ""
           }
@@ -157,7 +167,7 @@ TEST_CASE("test_trending_task")
 
   // clean
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
-  repository->connect(CCDB_ENDPOINT, "", "", "");
+  repository->connect(QCDB_ENDPOINT, "", "", "");
   repository->truncate("qc/TST/MO/" + taskName, "*");
   repository->truncate("qc/TST/QO", checkName);
 

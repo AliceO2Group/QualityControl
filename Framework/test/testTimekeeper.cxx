@@ -22,9 +22,20 @@
 #include <CommonUtils/ConfigurableParam.h>
 
 #include <catch_amalgamated.hpp>
+#include <cstdlib>
 
 using namespace o2::quality_control::core;
 using namespace o2::framework;
+
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
 
 TEST_CASE("timekeeper_synchronous")
 {
@@ -310,7 +321,7 @@ TEST_CASE("timekeeper_asynchronous")
   {
     auto tk = std::make_shared<TimekeeperAsynchronous>();
 
-    o2::conf::ConfigurableParam::updateFromString("NameConf.mCCDBServer=http://ali-qcdb-test.cern.ch:8083");
+    o2::conf::ConfigurableParam::updateFromString("NameConf.mCCDBServer=http://" + QCDB_ENDPOINT);
 
     // CCDB RCT first
     // TODO reactivate but we need the info in ali-qcdb-test (it is only in ccdb-test)

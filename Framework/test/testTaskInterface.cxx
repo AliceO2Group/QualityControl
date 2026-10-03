@@ -52,6 +52,7 @@ o2::framework::ConfigParamRegistry createDummyRegistry()
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ServiceRegistry.h>
 #include <catch_amalgamated.hpp>
+#include <cstdlib>
 
 using namespace o2::quality_control;
 using namespace std;
@@ -61,6 +62,16 @@ namespace o2::quality_control
 {
 
 using namespace core;
+
+// A QC-specific CCDB instance: ali-qcdb-test by default. It holds different
+// objects from ccdb-test -- see the TODO in testTimekeeper.cxx -- so this is
+// deliberately NOT ALICEO2_CCDB_HOST. ALICEO2_QCDB_HOST lets a network-isolated
+// build container reach it through a broker instead; unset, behaviour is
+// unchanged.
+const std::string QCDB_ENDPOINT = [] {
+  const char* host = std::getenv("ALICEO2_QCDB_HOST");
+  return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
+}();
 
 namespace test
 {
@@ -201,14 +212,14 @@ TEST_CASE("retrieveCondition")
   bad.addBadChannel(3, o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
   std::map<std::string, std::string> meta;
   o2::ccdb::CcdbApi api;
-  api.init("ali-qcdb-test.cern.ch:8083");
+  api.init(QCDB_ENDPOINT);
   api.storeAsTFileAny<o2::emcal::BadChannelMap>(&bad, "qc/TST/conditions", meta);
 
   // retrieve it
   TaskRunnerConfig taskConfig;
   auto* objectsManager = new ObjectsManager(taskConfig.name, taskConfig.className, taskConfig.detectorName, 0);
   test::TestTask testTask(objectsManager);
-  testTask.setCcdbUrl("ali-qcdb-test.cern.ch:8083");
+  testTask.setCcdbUrl(QCDB_ENDPOINT);
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
   CHECK(bcm->getChannelStatus(1) == o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
   CHECK(bcm->getChannelStatus(3) == o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
