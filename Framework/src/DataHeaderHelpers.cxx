@@ -33,6 +33,8 @@ constexpr char CharIdFrom(DataSourceType type)
       return 'C';
     case DataSourceType::Aggregator:
       return 'A';
+    case DataSourceType::LateTask:
+      return 'L';
     case DataSourceType::PostProcessingTask:
       return 'P';
     default:
@@ -113,6 +115,7 @@ constexpr size_t descriptionHashLengthFor(DataSourceType type)
     case DataSourceType::Check:
     case DataSourceType::Aggregator:
     case DataSourceType::PostProcessingTask:
+    case DataSourceType::LateTask:
     default:
       hashLength = 4;
   }
