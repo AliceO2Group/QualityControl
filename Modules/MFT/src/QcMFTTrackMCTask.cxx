@@ -132,7 +132,7 @@ void QcMFTTrackMCTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::vector<std::vector<int>> wanted(nEvents);
   for (int itrack = 0; itrack < (int)trackArr.size(); itrack++) {
     const auto& MCinfo = MCTruth[itrack];
-    if (MCinfo.isNoise() || !MCinfo.isValid()) {
+    if (MCinfo.isNoise() || !MCinfo.isValid() || MCinfo.getEventID() >= nEvents) {
       continue;
     }
     wanted[MCinfo.getEventID()].push_back(MCinfo.getTrackID());
@@ -181,7 +181,7 @@ void QcMFTTrackMCTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (int itrack = 0; itrack < (int)trackArr.size(); itrack++) {
     const auto& track = trackArr[itrack];
     const auto& MCinfo = MCTruth[itrack];
-    if (MCinfo.isNoise() || !MCinfo.isValid())
+    if (MCinfo.isNoise() || !MCinfo.isValid() || MCinfo.getEventID() >= nEvents)
       continue;
 
     const auto& w = wanted[MCinfo.getEventID()];

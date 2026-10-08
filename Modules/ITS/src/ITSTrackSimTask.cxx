@@ -155,7 +155,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::vector<int> nTracks(nEvents, 0);
     for (int iCluster = 0; iCluster < (int)clusArr.size(); iCluster++) {
       auto lab = (clusLabArr->getLabels(iCluster))[0];
-      if (!lab.isValid() || lab.getSourceID() != 0 || lab.getTrackID() < 0 || !lab.isCorrect()) {
+      if (!lab.isValid() || lab.getSourceID() != 0 || lab.getTrackID() < 0 || lab.getEventID() >= nEvents || !lab.isCorrect()) {
         continue;
       }
       nTracks[lab.getEventID()] = std::max(nTracks[lab.getEventID()], lab.getTrackID() + 1);
@@ -166,7 +166,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   for (int iCluster = 0; iCluster < (int)clusArr.size(); iCluster++) {
     auto lab = (clusLabArr->getLabels(iCluster))[0];
-    if (!lab.isValid() || lab.getSourceID() != 0 || lab.getTrackID() < 0 || !lab.isCorrect()) {
+    if (!lab.isValid() || lab.getSourceID() != 0 || lab.getTrackID() < 0 || lab.getEventID() >= nEvents || !lab.isCorrect()) {
       continue;
     }
     const auto layer = mGeom->getLayer(clusArr[iCluster].getSensorID());
