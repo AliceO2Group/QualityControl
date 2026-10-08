@@ -42,6 +42,8 @@
 #include "TFile.h"
 #include "TTree.h"
 #include <fstream>
+#include <unordered_map>
+#include <algorithm>
 using namespace o2::constants::math;
 using namespace o2::itsmft;
 using namespace o2::its;
@@ -142,83 +144,84 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
   o2::steer::MCKinematicsReader reader(mCollisionsContextPath.c_str());
-  info.resize(reader.getNEvents(0));
-  for (int i = 0; i < reader.getNEvents(0); ++i) {
-    std::vector<MCTrack> const& mcArr = reader.getTracks(i);
-    info[i].resize(mcArr.size());
-  }
+  const int nEvents = reader.getNEvents(0);
 
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus"); // used to get hit information
-  auto clusLabArr = ctx.inputs().get<const dataformats::MCTruthContainer<MCCompLabel>*>("mcclustruth").release();
+  auto clusLabArr = ctx.inputs().get<const dataformats::MCTruthContainer<MCCompLabel>*>("mcclustruth");
 
-  for (int iCluster = 0; iCluster < clusArr.size(); iCluster++) {
-
+  // layers with a cluster of an MC track, as a bit mask; indexed [event][track], sized from the labels only
+  std::vector<std::vector<unsigned short>> layerMask(nEvents);
+  {
+    std::vector<int> nTracks(nEvents, 0);
+    for (int iCluster = 0; iCluster < (int)clusArr.size(); iCluster++) {
+      auto lab = (clusLabArr->getLabels(iCluster))[0];
+      if (!lab.isValid() || lab.getSourceID() != 0 || lab.getTrackID() < 0 || lab.getEventID() >= nEvents || !lab.isCorrect()) {
+        continue;
+      }
+      nTracks[lab.getEventID()] = std::max(nTracks[lab.getEventID()], lab.getTrackID() + 1);
+    }
+    for (int i = 0; i < nEvents; ++i) {
+      layerMask[i].assign(nTracks[i], 0);
+    }
+  }
+  for (int iCluster = 0; iCluster < (int)clusArr.size(); iCluster++) {
     auto lab = (clusLabArr->getLabels(iCluster))[0];
-    if (!lab.isValid() || lab.getSourceID() != 0)
-      continue;
-
-    int TrackID = lab.getTrackID();
-
-    if (TrackID < 0) {
+    if (!lab.isValid() || lab.getSourceID() != 0 || lab.getTrackID() < 0 || lab.getEventID() >= nEvents || !lab.isCorrect()) {
       continue;
     }
-
-    if (!lab.isCorrect())
-      continue;
-    const auto& Cluster = (clusArr)[iCluster];
-    unsigned short& ok = info[lab.getEventID()][lab.getTrackID()].clusters; // bitmask with track hits at each layer
-    auto layer = mGeom->getLayer(Cluster.getSensorID());
-    float r = 0.f;
-    if (layer == 0)
-      ok |= 0b1;
-    if (layer == 1)
-      ok |= 0b10;
-    if (layer == 2)
-      ok |= 0b100;
-    if (layer == 3)
-      ok |= 0b1000;
-    if (layer == 4)
-      ok |= 0b10000;
-    if (layer == 5)
-      ok |= 0b100000;
-    if (layer == 6)
-      ok |= 0b1000000;
+    const auto layer = mGeom->getLayer(clusArr[iCluster].getSensorID());
+    if (layer >= 0 && layer <= 6) {
+      layerMask[lab.getEventID()][lab.getTrackID()] |= (1 << layer); // bitmask with track hits at each layer
+    }
   }
 
-  for (int i = 0; i < reader.getNEvents(0); ++i) {
-    std::vector<MCTrack> const& mcArr = reader.getTracks(i);
-    auto mcHeader = reader.getMCEventHeader(0, i); // SourceID=0 for ITS
+  // MC truth of the tracks passing the selection, keyed by (event, track); the kinematics are read one event at a time
+  struct SelectedTrack {
+    float r, pt, eta, phi, z;
+    bool isPrimary;
+    int isReco = 0;
+  };
+  std::unordered_map<uint64_t, SelectedTrack> selected;
+  auto keyOf = [](int event, int track) { return (uint64_t(uint32_t(event)) << 32) | uint32_t(track); };
 
-    for (int mc = 0; mc < mcArr.size(); mc++) {
-      const auto& mcTrack = (mcArr)[mc];
+  for (int i = 0; i < nEvents; ++i) {
+    {
+      std::vector<MCTrack> const& mcArr = reader.getTracks(i);
+      auto mcHeader = reader.getMCEventHeader(0, i); // SourceID=0 for ITS
+      const auto& mask = layerMask[i];
 
-      info[i][mc].isFilled = false;
-      if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)
-        continue;
-      if (TMath::Abs(mcTrack.GetPdgCode()) != 211)
-        continue; // Select pions
-      if (TMath::Abs(mcTrack.GetEta()) > 1.2)
-        continue;
-      if (info[i][mc].clusters != 0b1111111)
-        continue;
-      Double_t distance = sqrt(pow(mcHeader.GetX() - mcTrack.Vx(), 2) + pow(mcHeader.GetY() - mcTrack.Vy(), 2) + pow(mcHeader.GetZ() - mcTrack.Vz(), 2));
-      info[i][mc].isFilled = true;
-      info[i][mc].r = distance;
-      info[i][mc].pt = mcTrack.GetPt();
-      info[i][mc].eta = mcTrack.GetEta();
-      info[i][mc].phi = mcTrack.GetPhi();
-      info[i][mc].z = mcTrack.Vz();
-      info[i][mc].isPrimary = mcTrack.isPrimary();
-      if (mcTrack.isPrimary()) {
-        hPrimaryGen_pt->Fill(mcTrack.GetPt());
-        // True Generated primaries: denominator of the efficiency plots
-        hDenTrue_r[4]->Fill(distance);
-        hDenTrue_pt[4]->Fill(mcTrack.GetPt());
-        hDenTrue_eta[4]->Fill(mcTrack.GetEta());
-        hDenTrue_phi[4]->Fill(mcTrack.GetPhi());
-        hDenTrue_z[4]->Fill(mcTrack.Vz());
+      for (int mc = 0; mc < (int)mcArr.size(); mc++) {
+        const auto& mcTrack = (mcArr)[mc];
+
+        if (mc >= (int)mask.size() || mask[mc] != 0b1111111)
+          continue;
+        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)
+          continue;
+        if (TMath::Abs(mcTrack.GetPdgCode()) != 211)
+          continue; // Select pions
+        if (TMath::Abs(mcTrack.GetEta()) > 1.2)
+          continue;
+        Double_t distance = sqrt(pow(mcHeader.GetX() - mcTrack.Vx(), 2) + pow(mcHeader.GetY() - mcTrack.Vy(), 2) + pow(mcHeader.GetZ() - mcTrack.Vz(), 2));
+        SelectedTrack& sel = selected[keyOf(i, mc)];
+        sel.r = distance;
+        sel.pt = mcTrack.GetPt();
+        sel.eta = mcTrack.GetEta();
+        sel.phi = mcTrack.GetPhi();
+        sel.z = mcTrack.Vz();
+        sel.isPrimary = mcTrack.isPrimary();
+        if (mcTrack.isPrimary()) {
+          hPrimaryGen_pt->Fill(mcTrack.GetPt());
+          // True Generated primaries: denominator of the efficiency plots
+          hDenTrue_r[4]->Fill(distance);
+          hDenTrue_pt[4]->Fill(mcTrack.GetPt());
+          hDenTrue_eta[4]->Fill(mcTrack.GetEta());
+          hDenTrue_phi[4]->Fill(mcTrack.GetPhi());
+          hDenTrue_z[4]->Fill(mcTrack.Vz());
+        }
       }
     }
+    reader.releaseTracksForSourceAndEvent(0, i); // the tracks of this event are not needed any more
+    std::vector<unsigned short>().swap(layerMask[i]);
   }
 
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks"); // MC Tracks
@@ -236,104 +239,106 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     hAngularDistribution->Fill(track.getEta(), track.getPhi());
 
-    if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
+    auto selIt = selected.find(keyOf(MCinfo.getEventID(), MCinfo.getTrackID()));
+    if (selIt != selected.end()) {
+      SelectedTrack& rec = selIt->second;
 
-      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
+      if (rec.isPrimary) {
         // True Generated primaries for QoverPt plot, because MCTrack does not have charge function
-        hDenTrue_QoverPt[4]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        hDenTrue_QoverPt[4]->Fill(track.getSign() / rec.pt);
         if (iNClusters == 4) {
-          hDenTrue_QoverPt[0]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_r[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hDenTrue_pt[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_eta[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hDenTrue_phi[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hDenTrue_z[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hDenTrue_QoverPt[0]->Fill(track.getSign() / rec.pt);
+          hDenTrue_r[0]->Fill(rec.r);
+          hDenTrue_pt[0]->Fill(rec.pt);
+          hDenTrue_eta[0]->Fill(rec.eta);
+          hDenTrue_phi[0]->Fill(rec.phi);
+          hDenTrue_z[0]->Fill(rec.z);
         } else if (iNClusters == 5) {
-          hDenTrue_QoverPt[1]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_r[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hDenTrue_pt[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_eta[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hDenTrue_phi[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hDenTrue_z[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hDenTrue_QoverPt[1]->Fill(track.getSign() / rec.pt);
+          hDenTrue_r[1]->Fill(rec.r);
+          hDenTrue_pt[1]->Fill(rec.pt);
+          hDenTrue_eta[1]->Fill(rec.eta);
+          hDenTrue_phi[1]->Fill(rec.phi);
+          hDenTrue_z[1]->Fill(rec.z);
         } else if (iNClusters == 6) {
-          hDenTrue_QoverPt[2]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_r[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hDenTrue_pt[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_eta[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hDenTrue_phi[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hDenTrue_z[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hDenTrue_QoverPt[2]->Fill(track.getSign() / rec.pt);
+          hDenTrue_r[2]->Fill(rec.r);
+          hDenTrue_pt[2]->Fill(rec.pt);
+          hDenTrue_eta[2]->Fill(rec.eta);
+          hDenTrue_phi[2]->Fill(rec.phi);
+          hDenTrue_z[2]->Fill(rec.z);
         } else if (iNClusters == 7) {
-          hDenTrue_QoverPt[3]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_r[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hDenTrue_pt[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hDenTrue_eta[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hDenTrue_phi[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hDenTrue_z[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+          hDenTrue_QoverPt[3]->Fill(track.getSign() / rec.pt);
+          hDenTrue_r[3]->Fill(rec.r);
+          hDenTrue_pt[3]->Fill(rec.pt);
+          hDenTrue_eta[3]->Fill(rec.eta);
+          hDenTrue_phi[3]->Fill(rec.phi);
+          hDenTrue_z[3]->Fill(rec.z);
         }
       }
 
-      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isReco != 0) {
-        hNumDuplicate_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-        hNumDuplicate_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-        hNumDuplicate_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-        hNumDuplicate_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-        hNumDuplicate_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+      if (rec.isReco != 0) {
+        hNumDuplicate_pt->Fill(rec.pt);
+        hNumDuplicate_phi->Fill(rec.phi);
+        hNumDuplicate_eta->Fill(rec.eta);
+        hNumDuplicate_z->Fill(rec.z);
+        hNumDuplicate_r->Fill(rec.r);
         continue;
       }
-      info[MCinfo.getEventID()][MCinfo.getTrackID()].isReco++;
+      rec.isReco++;
 
       if (MCinfo.isFake()) {
-        hNumRecoFake_pt[4]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-        hNumRecoFake_phi[4]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-        hNumRecoFake_eta[4]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-        hNumRecoFake_z[4]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-        hNumRecoFake_r[4]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-        hNumRecoFake_QoverPt[4]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        hNumRecoFake_pt[4]->Fill(rec.pt);
+        hNumRecoFake_phi[4]->Fill(rec.phi);
+        hNumRecoFake_eta[4]->Fill(rec.eta);
+        hNumRecoFake_z[4]->Fill(rec.z);
+        hNumRecoFake_r[4]->Fill(rec.r);
+        hNumRecoFake_QoverPt[4]->Fill(track.getSign() / rec.pt);
         if (iNClusters == 4) {
-          hNumRecoFake_pt[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hNumRecoFake_phi[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hNumRecoFake_eta[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hNumRecoFake_z[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-          hNumRecoFake_r[0]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hNumRecoFake_QoverPt[0]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_pt[0]->Fill(rec.pt);
+          hNumRecoFake_phi[0]->Fill(rec.phi);
+          hNumRecoFake_eta[0]->Fill(rec.eta);
+          hNumRecoFake_z[0]->Fill(rec.z);
+          hNumRecoFake_r[0]->Fill(rec.r);
+          hNumRecoFake_QoverPt[0]->Fill(track.getSign() / rec.pt);
         } else if (iNClusters == 5) {
-          hNumRecoFake_pt[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hNumRecoFake_phi[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hNumRecoFake_eta[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hNumRecoFake_z[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-          hNumRecoFake_r[1]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hNumRecoFake_QoverPt[1]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_pt[1]->Fill(rec.pt);
+          hNumRecoFake_phi[1]->Fill(rec.phi);
+          hNumRecoFake_eta[1]->Fill(rec.eta);
+          hNumRecoFake_z[1]->Fill(rec.z);
+          hNumRecoFake_r[1]->Fill(rec.r);
+          hNumRecoFake_QoverPt[1]->Fill(track.getSign() / rec.pt);
         } else if (iNClusters == 6) {
-          hNumRecoFake_pt[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hNumRecoFake_phi[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hNumRecoFake_eta[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hNumRecoFake_z[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-          hNumRecoFake_r[2]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hNumRecoFake_QoverPt[2]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_pt[2]->Fill(rec.pt);
+          hNumRecoFake_phi[2]->Fill(rec.phi);
+          hNumRecoFake_eta[2]->Fill(rec.eta);
+          hNumRecoFake_z[2]->Fill(rec.z);
+          hNumRecoFake_r[2]->Fill(rec.r);
+          hNumRecoFake_QoverPt[2]->Fill(track.getSign() / rec.pt);
         } else if (iNClusters == 7) {
-          hNumRecoFake_pt[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hNumRecoFake_phi[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hNumRecoFake_eta[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hNumRecoFake_z[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-          hNumRecoFake_r[3]->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
-          hNumRecoFake_QoverPt[3]->Fill(track.getSign() / info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hNumRecoFake_pt[3]->Fill(rec.pt);
+          hNumRecoFake_phi[3]->Fill(rec.phi);
+          hNumRecoFake_eta[3]->Fill(rec.eta);
+          hNumRecoFake_z[3]->Fill(rec.z);
+          hNumRecoFake_r[3]->Fill(rec.r);
+          hNumRecoFake_QoverPt[3]->Fill(track.getSign() / rec.pt);
         }
 
-        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
+        if (rec.isPrimary) {
           hTrackImpactTransvFake->Fill(ip[0]);
-          hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hPrimaryReco_pt->Fill(rec.pt);
         }
       } else {
-        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
+        if (rec.isPrimary) {
           // True primaries reconstructed: numerator of efficiency plots
-          hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-          hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-          hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
-          hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+          hNumRecoValid_pt->Fill(rec.pt);
+          hNumRecoValid_phi->Fill(rec.phi);
+          hNumRecoValid_eta->Fill(rec.eta);
+          hNumRecoValid_z->Fill(rec.z);
+          hNumRecoValid_r->Fill(rec.r);
 
           hTrackImpactTransvValid->Fill(ip[0]);
-          hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+          hPrimaryReco_pt->Fill(rec.pt);
         }
       }
     }

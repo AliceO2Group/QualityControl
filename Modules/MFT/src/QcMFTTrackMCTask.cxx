@@ -26,6 +26,7 @@
 #include <SimulationDataFormat/MCCompLabel.h>
 #include <SimulationDataFormat/MCTruthContainer.h>
 #include <SimulationDataFormat/ConstMCTruthContainer.h>
+#include <algorithm>
 #include <Steer/MCKinematicsReader.h> //ADDED FOR MC FILE READING
 #include <GPUCommonDef.h>
 #include <CommonDataFormat/RangeReference.h>
@@ -122,57 +123,86 @@ void QcMFTTrackMCTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Debug, Devel) << "START DOING QC General" << ENDM;
   o2::steer::MCKinematicsReader reader(mCollisionsContextPath.c_str());
-  info.resize(reader.getNEvents(0));
-  for (int i = 0; i < reader.getNEvents(0); ++i) {
-    std::vector<MCTrack> const& mcArr = reader.getTracks(i);
-    info[i].resize(mcArr.size());
-  }
-
-  for (int i = 0; i < reader.getNEvents(0); ++i) {
-    std::vector<MCTrack> const& mcArr = reader.getTracks(i);
-    auto mcHeader = reader.getMCEventHeader(0, i);
-    for (int mc = 0; mc < mcArr.size(); mc++) {
-      const auto& mcTrack = (mcArr)[mc];
-      info[i][mc].isFilled = false;
-      info[i][mc].isFilled = true;
-      info[i][mc].pt = mcTrack.GetPt();
-      info[i][mc].eta = mcTrack.GetEta();
-      info[i][mc].phi = TMath::ATan2(mcTrack.Py(), mcTrack.Px());
-      info[i][mc].isPrimary = mcTrack.isPrimary();
-      if (mcTrack.isPrimary()) {
-        hPrimaryGen_pt->Fill(mcTrack.GetPt());
-      }
-      hTrue_pt->Fill(mcTrack.GetPt());
-      hTrue_eta->Fill(mcTrack.GetEta());
-      hTrue_phi->Fill(TMath::ATan2(mcTrack.Py(), mcTrack.Px()));
-    }
-  }
+  const int nEvents = reader.getNEvents(0);
 
   auto trackArr = ctx.inputs().get<gsl::span<o2::mft::TrackMFT>>("tracks"); // MFT Tracks
   auto MCTruth = ctx.inputs().get<gsl::span<o2::MCCompLabel>>("mctruth");   // MC track label, contains info about EventID, TrackID, SourceID etc
 
-  for (int itrack = 0; itrack < trackArr.size(); itrack++) {
+  // the MC tracks referenced by the reconstructed tracks, per event and sorted by track ID
+  std::vector<std::vector<int>> wanted(nEvents);
+  for (int itrack = 0; itrack < (int)trackArr.size(); itrack++) {
+    const auto& MCinfo = MCTruth[itrack];
+    if (MCinfo.isNoise() || !MCinfo.isValid() || MCinfo.getEventID() >= nEvents) {
+      continue;
+    }
+    wanted[MCinfo.getEventID()].push_back(MCinfo.getTrackID());
+  }
+  for (auto& w : wanted) {
+    std::sort(w.begin(), w.end());
+    w.erase(std::unique(w.begin(), w.end()), w.end());
+  }
+
+  // MC truth of the referenced tracks, parallel to 'wanted'; the kinematics are read one event at a time
+  struct MCTruthInfo {
+    float pt = 0, eta = 0, phi = 0;
+    bool isPrimary = false;
+    bool isFilled = false;
+    int isReco = 0;
+  };
+  std::vector<std::vector<MCTruthInfo>> truth(nEvents);
+
+  for (int i = 0; i < nEvents; ++i) {
+    {
+      std::vector<MCTrack> const& mcArr = reader.getTracks(i);
+      truth[i].resize(wanted[i].size());
+      size_t iw = 0;
+      for (int mc = 0; mc < (int)mcArr.size(); mc++) {
+        const auto& mcTrack = (mcArr)[mc];
+        const double phi = TMath::ATan2(mcTrack.Py(), mcTrack.Px());
+        if (iw < wanted[i].size() && wanted[i][iw] == mc) {
+          auto& t = truth[i][iw++];
+          t.isFilled = true;
+          t.pt = mcTrack.GetPt();
+          t.eta = mcTrack.GetEta();
+          t.phi = phi;
+          t.isPrimary = mcTrack.isPrimary();
+        }
+        if (mcTrack.isPrimary()) {
+          hPrimaryGen_pt->Fill(mcTrack.GetPt());
+        }
+        hTrue_pt->Fill(mcTrack.GetPt());
+        hTrue_eta->Fill(mcTrack.GetEta());
+        hTrue_phi->Fill(phi);
+      }
+    }
+    reader.releaseTracksForSourceAndEvent(0, i); // the tracks of this event are not needed any more
+  }
+
+  for (int itrack = 0; itrack < (int)trackArr.size(); itrack++) {
     const auto& track = trackArr[itrack];
     const auto& MCinfo = MCTruth[itrack];
-    if (MCinfo.isNoise())
+    if (MCinfo.isNoise() || !MCinfo.isValid() || MCinfo.getEventID() >= nEvents)
       continue;
 
-    if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
-      info[MCinfo.getEventID()][MCinfo.getTrackID()].isReco++;
+    const auto& w = wanted[MCinfo.getEventID()];
+    const auto iw = std::lower_bound(w.begin(), w.end(), MCinfo.getTrackID()) - w.begin();
+    auto& rec = truth[MCinfo.getEventID()][iw];
+    if (rec.isFilled) {
+      rec.isReco++;
       if (MCinfo.isFake()) {
-        hRecoFake_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-        hRecoFake_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-        hRecoFake_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
-          hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+        hRecoFake_pt->Fill(rec.pt);
+        hRecoFake_phi->Fill(rec.phi);
+        hRecoFake_eta->Fill(rec.eta);
+        if (rec.isPrimary) {
+          hPrimaryReco_pt->Fill(rec.pt);
         }
       } else {
-        hRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-        hRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
-        hRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
-        if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) {
-          hPrimaryReco_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
-          hResolution_pt->Fill(1 / (track.getPt()) - 1 / (info[MCinfo.getEventID()][MCinfo.getTrackID()].pt));
+        hRecoValid_pt->Fill(rec.pt);
+        hRecoValid_phi->Fill(rec.phi);
+        hRecoValid_eta->Fill(rec.eta);
+        if (rec.isPrimary) {
+          hPrimaryReco_pt->Fill(rec.pt);
+          hResolution_pt->Fill(1 / (track.getPt()) - 1 / (rec.pt));
         }
       }
     }
