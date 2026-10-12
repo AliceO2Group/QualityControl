@@ -230,6 +230,7 @@ class InfrastructureGenerator
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateBookkeepingQualitySink(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generateLateTasks(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
 };
 
 } // namespace core

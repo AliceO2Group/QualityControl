@@ -30,8 +30,11 @@
 #include "QualityControl/RootFileSource.h"
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/LateTaskRunner.h"
+#include "QualityControl/LateTaskRunnerFactory.h"
 #include "QualityControl/Version.h"
 #include "QualityControl/UserInputOutput.h"
+#include "QualityControl/ActorHelpers.h"
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DataRefUtils.h>
@@ -107,6 +110,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateLateTasks(workflow, infrastructureSpec);
   generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
@@ -151,6 +155,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateFullChainInfrastructure
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateLateTasks(workflow, infrastructureSpec);
   generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
@@ -312,6 +317,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateLateTasks(workflow, infrastructureSpec);
   generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
@@ -388,6 +394,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, infrastructureSpec);
   generatePostProcessing(workflow, infrastructureSpec);
+  generateLateTasks(workflow, infrastructureSpec);
   generateBookkeepingQualitySink(workflow, infrastructureSpec);
 
   return workflow;
@@ -407,6 +414,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
   AggregatorRunnerFactory::customizeInfrastructure(policies);
   RootFileSink::customizeInfrastructure(policies);
   BookkeepingQualitySink::customizeInfrastructure(policies);
+  LateTaskRunnerFactory::customizeInfrastructure(policies);
 }
 
 void InfrastructureGenerator::printVersion()
@@ -640,6 +648,11 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
   }
 
+  for (const auto& lateTaskSpec : infrastructureSpec.lateTasks | std::views::filter(&LateTaskSpec::active)) {
+    InputSpec lateTaskOutput = createUserInputSpec(DataSourceType::LateTask, lateTaskSpec.detectorName, lateTaskSpec.taskName);
+    tasksOutputMap.insert({ DataSpecUtils::label(lateTaskOutput), lateTaskOutput });
+  }
+
   for (const auto& externalTaskSpec : infrastructureSpec.externalTasks | std::views::filter(&ExternalTaskSpec::active)) {
     auto query = externalTaskSpec.query;
     Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
@@ -798,6 +811,22 @@ void InfrastructureGenerator::generateBookkeepingQualitySink(WorkflowSpec& workf
     .labels = { { "resilient" }, BookkeepingQualitySink::getLabel() }
   };
   workflow.emplace_back(std::move(sinkDataProcessor));
+}
+
+void InfrastructureGenerator::generateLateTasks(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
+{
+  if (infrastructureSpec.lateTasks.empty()) {
+    ILOG(Debug, Trace) << "No \"lateTasks\" structure found in the config file. If no late tasks are expected, then it is completely fine." << ENDM;
+    return;
+  }
+
+  for (const auto& lateTaskSpec : infrastructureSpec.lateTasks | std::views::filter(&LateTaskSpec::active)) {
+    auto servicesConfig = actor_helpers::extractConfig(infrastructureSpec.common);
+    auto lateTaskConfig = LateTaskRunnerFactory::extractConfig(infrastructureSpec.common, lateTaskSpec);
+
+    DataProcessorSpec spec = LateTaskRunnerFactory::create(servicesConfig, lateTaskConfig);
+    workflow.emplace_back(std::move(spec));
+  }
 }
 
 } // namespace o2::quality_control::core
