@@ -23,6 +23,7 @@ import argparse
 import importlib
 import logging
 import multiprocessing as mp
+import os
 import re
 import socket
 import sys
@@ -106,6 +107,8 @@ def parse_args():
                         help='Do not check when was the last execution, run from timestamp 0.')
     parser.add_argument('--print-versions-details', dest='print_versions_details', action='store_true', default=False,
                         help='Print extra details about the versions if enabled..')
+    parser.add_argument('--instance-name', dest='instance_name', action='store', default=None,
+                        help='Instance name used to differentiate execution state files (timestamp and PID). If omitted, inferred from configuration.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -215,42 +218,79 @@ def find_matching_rules(rules, object_path):
     return result
 
 
-filepath = tempfile.gettempdir() + "/repoCleaner.txt"
+def get_instance_name(args=None):
+    """
+    Determine the instance identifier based on args or config.
+    """
+    if args is None:
+        return "default"
+    if getattr(args, 'instance_name', None):
+        return args.instance_name
+    if getattr(args, 'config_consul', None):
+        items = args.config_consul.split(':')
+        if len(items) >= 3:
+            return Path(items[2]).stem
+    if getattr(args, 'config_git', None):
+        return "git"
+    if getattr(args, 'config', None):
+        config_stem = Path(args.config).stem
+        if getattr(args, 'only_path', None) and args.only_path != "":
+            sanitized_path = re.sub(r'[^a-zA-Z0-9_-]', '_', args.only_path.strip('/'))
+            return f"{config_stem}_{sanitized_path}"
+        return config_stem
+    return "default"
+
+
+def get_timestamp_filepath(instance_name: str = None) -> str:
+    """
+    Returns the path to the file where the timestamp of the last execution is stored for a given instance.
+    """
+    if instance_name:
+        sanitized = re.sub(r'[^a-zA-Z0-9_-]', '_', instance_name)
+        return os.path.join(tempfile.gettempdir(), f"repoCleaner_{sanitized}.txt")
+    else:
+        return os.path.join(tempfile.gettempdir(), "repoCleaner.txt")
+
+
+filepath = get_timestamp_filepath()
 currentTimeStamp = int(time.time() * 1000)
 
 
-def get_ts_last_execution(ignore_last_execution: bool):
+def get_ts_last_execution(ignore_last_execution: bool, filepath_override: str = None):
     """
     Returns the timestamp of the last execution.
-    It is stored in a file in $TMP/repoCleaner.txt.
+    It is stored in a file in $TMP/repoCleaner_<instance>.txt.
     :return: the timestamp of the last execution or 0 if it cannot find it.
     """
     if ignore_last_execution:
         logging.info(f"Option ignore_last_execution set, we return 0 as timestamp.")
         return 0
 
+    target_filepath = filepath_override if filepath_override is not None else filepath
     try:
-        f = open(filepath, "r")
+        f = open(target_filepath, "r")
     except IOError:
-        logging.info(f"File {filepath} not readable, we return 0 as timestamp.")
+        logging.info(f"File {target_filepath} not readable, we return 0 as timestamp.")
         return 0
     timestamp = f.read()
-    logging.info(f"Timestamp retrieved from {filepath}: {timestamp}")
+    logging.info(f"Timestamp retrieved from {target_filepath}: {timestamp}")
     f.close()
     return timestamp
 
 
-def store_saved_timestamp():
+def store_saved_timestamp(filepath_override: str = None, timestamp: int = None):
     """
     Store the timestamp we saved at the beginning of the execution of this script.
     """
+    target_filepath = filepath_override if filepath_override is not None else filepath
+    ts = timestamp if timestamp is not None else currentTimeStamp
     try:
-        f = open(filepath, "w+")
+        f = open(target_filepath, "w+")
     except IOError:
-        logging.error(f"Could not write the saved timestamp to {filepath}")
+        logging.error(f"Could not write the saved timestamp to {target_filepath}")
         return
-    f.write(str(currentTimeStamp))
-    logging.info(f"Stored timestamp {currentTimeStamp} in {filepath}")
+    f.write(str(ts))
+    logging.info(f"Stored timestamp {ts} in {target_filepath}")
     f.close()
 
 
@@ -376,13 +416,15 @@ def process_object(object_path, rules, ccdb, args):
 
 
 def run(args, ccdb_url, rules):
+    instance_name = get_instance_name(args)
+    ts_filepath = get_timestamp_filepath(instance_name)
 
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url, args.print_versions_details)
     ccdb.logger = logging.getLogger
     ccdb.set_adjustable_eov = args.set_adjustableEOV
     logging.info(f"ccdb.set_adjustable_eov: {ccdb.set_adjustable_eov}")
-    paths = ccdb.get_objects_list(get_ts_last_execution(args.ignore_last_execution), args.only_path, args.only_path_no_subdir)
+    paths = ccdb.get_objects_list(get_ts_last_execution(args.ignore_last_execution, ts_filepath), args.only_path, args.only_path_no_subdir)
     if args.only_path != '':
         paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
@@ -399,7 +441,7 @@ def run(args, ccdb_url, rules):
     message = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
     store_crucial_log(message + f" - End of the cleaner (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     if not args.dry_run and not args.ignore_last_execution:
-        store_saved_timestamp()
+        store_saved_timestamp(ts_filepath)
 
 # ****************
 # We start here !
@@ -413,8 +455,11 @@ def main():
     args = parse_args()
     logging.getLogger().setLevel(int(args.log_level))
 
+    instance_name = get_instance_name(args)
+    pid_filename = f'o2-qc-repo-cleaner_{instance_name}.pid' if instance_name else 'o2-qc-repo-cleaner.pid'
+
     try:
-        with PIDFile(filename='o2-qc-repo-cleaner.pid'):
+        with PIDFile(filename=pid_filename):
             ccdb_url, rules = read_config(args)
             run(args, ccdb_url, rules)
     except AlreadyRunningError:

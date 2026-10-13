@@ -1,7 +1,7 @@
 # Release notes
 
-New
-- 
+1.11
+- [QC-1262] - different repo_cleaner must use a different file for the last run
 
 1.10
 - Revive and clean up repocleaner tests
