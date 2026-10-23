@@ -1,4 +1,4 @@
-certifi==2024.7.4
+certifi==2026.10.19
 chardet==5.2.0
 charset-normalizer==3.3.2
 dryable==1.2.0
