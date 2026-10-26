@@ -24,6 +24,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <unordered_map>
 #include <unordered_set>
 // O2
 #include <Common/Timer.h>
@@ -100,8 +101,9 @@ class CheckRunner : public framework::Task
    *
    * @param checkRunnerConfig configuration of CheckRunner
    * @param input Monitor Object input spec.
+   * @param detectorName detector override for raw objects, or empty to use the input origin.
    */
-  CheckRunner(CheckRunnerConfig, o2::framework::InputSpec input);
+  CheckRunner(CheckRunnerConfig, o2::framework::InputSpec input, std::string detectorName = {});
 
   /// Destructor
   ~CheckRunner() override;
@@ -215,6 +217,7 @@ class CheckRunner : public framework::Task
   std::string mDeviceName;
   std::map<std::string, Check> mChecks;
   std::string mDetectorName;
+  std::unordered_map<std::string, std::string> mExternalTaskDetectorNames;
   std::shared_ptr<Activity> mActivity; // shareable with the Checks
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
