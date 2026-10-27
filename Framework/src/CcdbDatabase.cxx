@@ -524,7 +524,12 @@ core::ValidityInterval CcdbDatabase::getLatestObjectValidity(const std::string& 
 
 std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(const std::string& path)
 {
-  const auto& objects = getListingAsPtree(path).get_child("objects");
+  const auto listing = getListingAsPtree(path);
+  if (listing.count("objects") == 0) {
+    ILOG(Warning, Support) << "Could not get a valid listing from db '" << mUrl << "' for timestamps of '" << path << "'" << ENDM;
+    return {};
+  }
+  const auto& objects = listing.get_child("objects");
   std::vector<uint64_t> timestamps;
   timestamps.reserve(objects.size());
 
@@ -551,7 +556,13 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   try {
     boost::property_tree::read_json(ss, pt);
   } catch (const boost::property_tree::json_parser::json_parser_error&) {
-    ILOG(Error, Support) << "Failed to parse json in CcdbDatabase::getTimestampsForObject from data: " << ss.str() << ENDM;
+    ILOG(Error, Support) << "Failed to parse json in CcdbDatabase::getPublishedObjectNames from data: " << listing << ENDM;
+    return result;
+  }
+
+  if (pt.count("objects") == 0) {
+    ILOG(Warning, Support) << "Could not get a valid listing from db '" << mUrl << "' for published objects of '" << taskName << "'" << ENDM;
+    return result;
   }
 
   BOOST_FOREACH (boost::property_tree::ptree::value_type& v, pt.get_child("objects")) {
