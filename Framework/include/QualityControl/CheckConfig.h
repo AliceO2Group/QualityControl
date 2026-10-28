@@ -18,6 +18,7 @@
 #define QC_CORE_CHECKCONFIG_H
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <Framework/DataProcessorSpec.h>
@@ -35,6 +36,7 @@ struct CheckConfig : public o2::quality_control::core::UserCodeConfig {
   bool allowBeautify = false;
   framework::Inputs inputSpecs{};
   framework::OutputSpec qoSpec{ "XXX", "INVALID" };
+  std::unordered_map<std::string, std::string> externalTaskDetectorNames;
 };
 
 } // namespace o2::quality_control::checker
