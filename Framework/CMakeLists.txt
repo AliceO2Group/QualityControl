@@ -329,6 +329,7 @@ set(TEST_SRCS
     test/testTaskRunner.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
+    test/testCcdbDatabaseListingErrors.cxx
     test/testCcdbDatabaseExtra.cxx
     test/testTriggers.cxx
     test/testPostProcessingInterface.cxx
@@ -344,6 +345,7 @@ set(TEST_SRCS
 
 set(TEST_ARGS
     "-b --run"
+    ""
     ""
     ""
     ""
