@@ -189,11 +189,10 @@ void initInfologger(framework::InitContext& iCtx, core::LogDiscardParameters inf
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
+  if (iCtx.services().active<AliceO2::InfoLogger::InfoLoggerContext>() &&
+      iCtx.services().active<AliceO2::InfoLogger::InfoLogger>()) {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
     il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const framework::RuntimeErrorRef& err) {
-    ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
 
   infologgerDiscardParameters.file = templateILDiscardFile(infologgerDiscardParameters.file, iCtx);
