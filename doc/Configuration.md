@@ -404,6 +404,7 @@ Below the external task configuration structure is described. Note that more tha
       "External-1": {                       "": "ID of the task",
         "active": "true",                   "": "Activation flag. If not \"true\", the Task will not be created.",
         "taskName": "External-1",           "": "Name of the task, used e.g. in the QCDB. If empty, the ID is used.",
+        "detectorName": "TST",              "": "Detector name used when wrapping raw objects as MonitorObjects. If omitted, the query origin is used.",
         "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding."
       }
     }

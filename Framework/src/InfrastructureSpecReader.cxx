@@ -332,6 +332,10 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(const std
       dss.id = dataSourceTree.get<std::string>("name");
       dss.name = dss.id;
       auto query = wholeTree.get<std::string>("qc.externalTasks." + dss.name + ".query");
+      dss.detectorName = wholeTree.get<std::string>("qc.externalTasks." + dss.name + ".detectorName", "");
+      if (!dss.detectorName.empty()) {
+        dss.detectorName = InfrastructureSpecReader::validateDetectorName(dss.detectorName);
+      }
       dss.inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
       break;
     }
@@ -478,6 +482,12 @@ ExternalTaskSpec
 
   ets.taskName = externalTaskName;
   ets.query = externalTaskTree.get<std::string>("query");
+  ets.detectorName = externalTaskTree.get<std::string>("detectorName", "");
+  if (ets.detectorName.empty()) {
+    ILOG(Warning, Ops) << "External task " << externalTaskName << " has no detectorName configured. The detector will be inferred from the query origin when wrapping raw objects." << ENDM;
+  } else {
+    ets.detectorName = InfrastructureSpecReader::validateDetectorName(ets.detectorName);
+  }
   ets.active = externalTaskTree.get<bool>("active", ets.active);
 
   return ets;
