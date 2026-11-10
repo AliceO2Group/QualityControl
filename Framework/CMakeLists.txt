@@ -107,6 +107,7 @@ add_library(O2QualityControl
   src/PostProcessingInterface.cxx
   src/PostProcessingDevice.cxx
   src/TrendingTask.cxx
+  src/TrendingMachineConfig.cxx
   src/TrendingTaskConfig.cxx
   src/DummyDatabase.cxx
   src/DataProducer.cxx
@@ -143,6 +144,7 @@ add_library(O2QualityControl
   src/LateTaskRunner.cxx
   src/LateTaskRunnerFactory.cxx
   src/LateTaskInterface.cxx
+  src/TrendingMachine.cxx
   src/Actor.cxx
   src/ActorHelpers.cxx
   src/DataProcessorAdapter.cxx
@@ -301,6 +303,8 @@ add_executable(o2-qc-test-core
                test/testVersion.cxx
                test/testMonitorObjectCollection.cxx
                test/testTrendingTask.cxx
+               test/testTrendingMachine.cxx
+               test/testTrendingMachineConfig.cxx
                test/testKafkaTests.cxx
                test/testFlagHelpers.cxx
                test/testQualitiesToFlagCollectionConverter.cxx

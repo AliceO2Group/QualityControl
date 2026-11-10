@@ -16,6 +16,7 @@
 
 #include "Framework/include/QualityControl/Reductor.h"
 #include "QualityControl/TrendingTask.h"
+#include "QualityControl/TrendingMachine.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Triggers.h"
@@ -23,6 +24,7 @@
 #include <Framework/ServiceRegistry.h>
 #include <TH1I.h>
 #include <TCanvas.h>
+#include <TTree.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <sstream>
@@ -67,9 +69,14 @@ struct DeclareGlobalGet {
   friend typename Accessor::type get(Accessor) { return Member; }
 };
 
-struct TrendingTaskReductorAccessor {
-  using type = std::unordered_map<std::string, std::unique_ptr<Reductor>> TrendingTask::*;
-  friend type get(TrendingTaskReductorAccessor);
+struct TrendingTaskMachineAccessor {
+  using type = std::unique_ptr<TrendingMachine> TrendingTask::*;
+  friend type get(TrendingTaskMachineAccessor);
+};
+
+struct TrendingMachineReductorAccessor {
+  using type = std::unordered_map<std::string, std::unique_ptr<Reductor>> TrendingMachine::*;
+  friend type get(TrendingMachineReductorAccessor);
 };
 
 struct ReductorConfigAccessor {
@@ -77,7 +84,8 @@ struct ReductorConfigAccessor {
   friend type get(ReductorConfigAccessor);
 };
 
-template struct DeclareGlobalGet<TrendingTaskReductorAccessor, &TrendingTask::mReductors>;
+template struct DeclareGlobalGet<TrendingTaskMachineAccessor, &TrendingTask::mTrendingMachine>;
+template struct DeclareGlobalGet<TrendingMachineReductorAccessor, &TrendingMachine::mReductors>;
 template struct DeclareGlobalGet<ReductorConfigAccessor, &Reductor::mCustomParameters>;
 
 TEST_CASE("test_trending_task")
@@ -184,7 +192,9 @@ TEST_CASE("test_trending_task")
     REQUIRE_NOTHROW(task.configure(config));
 
     {
-      auto& reductors = task.*get(TrendingTaskReductorAccessor());
+      auto& machine = task.*get(TrendingTaskMachineAccessor());
+      REQUIRE(machine != nullptr);
+      auto& reductors = *machine.*get(TrendingMachineReductorAccessor());
       size_t foundCount{};
       for (const auto& reductor : reductors) {
         auto& config = (*reductor.second.get()).*get(ReductorConfigAccessor());
