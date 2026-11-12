@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/TrendingTask.h"
+#include "QualityControl/TrendingMachine.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/Reductor.h"
@@ -30,6 +31,7 @@
 #include <TPoint.h>
 #include <TStyle.h>
 #include <TLegend.h>
+#include <TTree.h>
 
 #include <boost/algorithm/string.hpp>
 #include <set>
@@ -38,71 +40,25 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
+TrendingTask::TrendingTask() = default;
+TrendingTask::~TrendingTask() = default;
+
 void TrendingTask::configure(const boost::property_tree::ptree& config)
 {
   // we clear any existing objects, which would be there only in case of reconfiguration
   // at the time of writing, this not even supported by ECS
-  mReductors.clear();
-  mTrend.reset();
+  mTrendingMachine.reset();
 
   // configuration
   mConfig = TrendingTaskConfig(getID(), config);
-  for (const auto& source : mConfig.dataSources) {
-    auto&& [emplaced, _] = mReductors.emplace(source.name, root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
-    emplaced->second->setCustomConfig(source.reductorParameters);
-  }
-}
-
-bool TrendingTask::canContinueTrend(TTree* tree)
-{
-  if (tree == nullptr) {
-    return false;
-  }
-
-  size_t expectedNBranches = 1 /* meta */ + 1 /* time */ + mConfig.dataSources.size();
-  if (tree->GetNbranches() != expectedNBranches) {
-    ILOG(Warning, Support) << "The retrieved TTree has different number of branches than expected ("
-                           << tree->GetNbranches() << " vs. " << expectedNBranches << "). "
-                           << "Filling the tree with mismatching branches might produce invalid plots, "
-                           << "thus a new tree will be created" << ENDM;
-    return false;
-  }
-
-  std::set<std::string> expectedBranchNames{ "time", "meta" };
-  for (const auto& dataSource : mConfig.dataSources) {
-    expectedBranchNames.insert(dataSource.name);
-  }
-
-  std::set<std::string> existingBranchNames;
-  for (const auto& branch : *tree->GetListOfBranches()) {
-    existingBranchNames.insert(branch->GetName());
-  }
-
-  if (expectedBranchNames != existingBranchNames) {
-    ILOG(Warning, Support) << "The retrieved TTree has the same number of branches,"
-                           << " but at least one has a different name."
-                           << " Filling the tree with mismatching branches might produce invalid plots, "
-                           << "thus a new tree will be created" << ENDM;
-    return false;
-  }
-
-  return true;
+  mTrendingMachine = std::make_unique<TrendingMachine>(mConfig.machine);
 }
 
 void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInterface& qcdb)
 {
-  // tree exists and we can reuse it
-  if (canContinueTrend(mTrend.get())) {
-    if (mConfig.resumeTrend == false) {
-      mTrend->Reset();
-    } else {
-      ILOG(Info, Support) << "Will continue the trend from the previous run." << ENDM;
-    }
-    return;
-  }
+  std::unique_ptr<TTree> existingTree;
 
-  // tree is not reusable or does not exist => if we want to reuse the latest, we look for it in QCDB
-  mTrend.reset();
+  // Try to retrieve existing tree from QCDB if resuming
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
@@ -110,70 +66,15 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {
-        mTrend = std::unique_ptr<TTree>(tree);
-        mo->setIsOwner(false);
+        mo->setIsOwner(false); // TrendingMachine will take ownership
+        existingTree.reset(tree);
       }
     } else {
       ILOG(Warning, Support) << "Could not retrieve an existing TTree for this task" << ENDM;
     }
-    if (canContinueTrend(mTrend.get())) {
-      mTrend->SetBranchAddress("meta", &mMetaData);
-      mTrend->SetBranchAddress("time", &mTime);
-      for (const auto& [sourceName, reductor] : mReductors) {
-        mTrend->SetBranchAddress(sourceName.c_str(), reductor->getBranchAddress());
-      }
-      ILOG(Info, Support) << "Will use the latest TTree from QCDB for this task to continue the trend." << ENDM;
-      return;
-    } else {
-      mTrend.reset();
-    }
   }
 
-  // we could not reuse the tree or never had one => we create a new one
-  if (mTrend == nullptr) {
-    mTrend = std::make_unique<TTree>();
-    mTrend->SetName(PostProcessingInterface::getName().c_str());
-
-    mTrend->Branch("meta", &mMetaData, mMetaData.getBranchLeafList());
-    mTrend->Branch("time", &mTime);
-    for (const auto& [sourceName, reductor] : mReductors) {
-      mTrend->Branch(sourceName.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
-    }
-  }
-}
-
-void TrendingTask::applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style)
-{
-  if (!graph) {
-    return;
-  }
-
-  if (style.lineColor >= 0) {
-    graph->SetLineColor(style.lineColor);
-  }
-  if (style.lineStyle >= 0) {
-    graph->SetLineStyle(style.lineStyle);
-  }
-  if (style.lineWidth >= 0) {
-    graph->SetLineWidth(style.lineWidth);
-  }
-
-  if (style.markerColor >= 0) {
-    graph->SetMarkerColor(style.markerColor);
-  }
-  if (style.markerStyle >= 0) {
-    graph->SetMarkerStyle(style.markerStyle);
-  }
-  if (style.markerSize >= 0.f) {
-    graph->SetMarkerSize(style.markerSize);
-  }
-
-  if (style.fillColor >= 0) {
-    graph->SetFillColor(style.fillColor);
-  }
-  if (style.fillStyle >= 0) {
-    graph->SetFillStyle(style.fillStyle);
-  }
+  mTrendingMachine->initializeTrend(PostProcessingInterface::getName(), std::move(existingTree));
 }
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
@@ -184,7 +85,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistryRef services)
   initializeTrend(services.get<repository::DatabaseInterface>());
 
   if (mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get(), PublicationPolicy::ThroughStop);
+    getObjectsManager()->startPublishing(mTrendingMachine->getTrend(), PublicationPolicy::ThroughStop);
   }
 }
 
@@ -202,296 +103,47 @@ void TrendingTask::update(Trigger t, framework::ServiceRegistryRef services)
 void TrendingTask::finalize(Trigger, framework::ServiceRegistryRef)
 {
   if (!mConfig.producePlotsOnUpdate) {
-    getObjectsManager()->startPublishing(mTrend.get());
+    getObjectsManager()->startPublishing(mTrendingMachine->getTrend());
   }
   generatePlots();
 }
 
 bool TrendingTask::trendValues(const Trigger& t, repository::DatabaseInterface& qcdb)
 {
+  UInt_t timestamp;
   if (mConfig.trendingTimestamp == "trigger") {
     // ROOT expects seconds since epoch.
-    mTime = t.timestamp / 1000;
+    timestamp = t.timestamp / 1000;
   } else if (mConfig.trendingTimestamp == "validFrom") {
-    mTime = t.activity.mValidity.getMin() / 1000;
+    timestamp = t.activity.mValidity.getMin() / 1000;
   } else { // validUntil
-    mTime = t.activity.mValidity.getMax() / 1000;
+    timestamp = t.activity.mValidity.getMax() / 1000;
   }
-  mMetaData.runNumber = t.activity.mId;
-  std::snprintf(mMetaData.runNumberStr, MaxRunNumberStringLength + 1, "%d", t.activity.mId);
 
-  bool wereAllSourcesInvoked = true;
-  for (auto& dataSource : mConfig.dataSources) {
-    if (!reductor_helpers::updateReductor(mReductors[dataSource.name].get(), t, dataSource, qcdb, *this)) {
-      wereAllSourcesInvoked = false;
-      ILOG(Error, Support) << "Failed to update reductor for data sources with path '" << dataSource.path
-                           << "', name '" << dataSource.name
-                           << "', type '" << dataSource.type << "'." << ENDM;
-    }
-  }
+  mTrendingMachine->setMetadata(timestamp, t.activity.mId);
+
+  const bool wereAllSourcesInvoked = mTrendingMachine->updateReductors([&](const auto& dataSource, Reductor& reductor) {
+    return reductor_helpers::updateReductor(&reductor, t, dataSource, qcdb, (core::ConditionAccess&)*this);
+  });
 
   if (!mConfig.trendIfAllInputs || wereAllSourcesInvoked) {
-    mTrend->Fill();
+    mTrendingMachine->fillTrend();
   }
 
   return wereAllSourcesInvoked;
 }
 
-void TrendingTask::setUserAxesLabels(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxesLabels)
-{
-  // todo if we keep adding this method to pp classes we should move it up somewhere
-  if (std::count(graphAxesLabels.begin(), graphAxesLabels.end(), ':') != 1 && graphAxesLabels != "") {
-    ILOG(Error, Support) << "In setup of graphAxesLabels yLabel:xLabel should be divided by one ':'" << ENDM;
-    return;
-  }
-  const std::size_t posDivider = graphAxesLabels.find(':');
-  const std::string yLabel(graphAxesLabels.substr(0, posDivider));
-  const std::string xLabel(graphAxesLabels.substr(posDivider + 1));
-
-  xAxis->SetTitle(xLabel.data());
-  yAxis->SetTitle(yLabel.data());
-}
-
-void TrendingTask::setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange)
-{
-  if (std::count(graphYAxisRange.begin(), graphYAxisRange.end(), ':') != 1 && graphYAxisRange != "") {
-    ILOG(Error, Support) << "In setup of graphYRange yMin:yMax should be divided by one ':'" << ENDM;
-    return;
-  }
-  const std::size_t posDivider = graphYAxisRange.find(':');
-  const std::string minString(graphYAxisRange.substr(0, posDivider));
-  const std::string maxString(graphYAxisRange.substr(posDivider + 1));
-
-  const float yMin = std::stof(minString);
-  const float yMax = std::stof(maxString);
-  hist->GetYaxis()->SetLimits(yMin, yMax);
-}
-
-void TrendingTask::formatRunNumberXAxis(TH1* background)
-{
-  background->GetXaxis()->SetNoExponent(true);
-}
-
-void TrendingTask::formatTimeXAxis(TH1* background)
-{
-  background->GetXaxis()->SetTimeDisplay(1);
-  // It deals with highly congested dates labels
-  background->GetXaxis()->SetNdivisions(505);
-  // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
-  background->GetXaxis()->SetTimeOffset(0.0);
-  background->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
-}
-
 void TrendingTask::generatePlots()
 {
-  if (mTrend == nullptr) {
-    ILOG(Info, Support) << "The trend object is not there, won't generate any plots." << ENDM;
-    return;
+  // Before we generate any new plots, we have to delete existing under the same names.
+  // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
+  mPlots.clear();
+
+  auto plots = mTrendingMachine->generatePlots();
+  for (auto& plot : plots) {
+    // Store plots to keep them alive
+    auto* published = plot.get();
+    mPlots[published->GetName()] = std::move(plot);
+    getObjectsManager()->startPublishing(published, PublicationPolicy::Once);
   }
-
-  if (mTrend->GetEntries() < 1) {
-    ILOG(Info, Support) << "No entries in the trend so far, won't generate any plots." << ENDM;
-    return;
-  }
-
-  ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
-  for (const auto& plotConfig : mConfig.plots) {
-
-    // Before we generate any new plots, we have to delete existing under the same names.
-    // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
-    if (mPlots.count(plotConfig.name)) {
-      mPlots[plotConfig.name].reset();
-    }
-    auto c = drawPlot(plotConfig);
-    mPlots[plotConfig.name].reset(c);
-    getObjectsManager()->startPublishing(c, PublicationPolicy::Once);
-  }
-}
-
-std::string TrendingTask::deduceGraphLegendOptions(const TrendingTaskConfig::Graph& graphConfig)
-{
-  // Looking at TGraphPainter documentation, the number of TGraph options is rather small,
-  // so we can try to be smart and deduce the corresponding legend options.
-  // I am not aware of any ROOT helper which can do this.
-  std::string options = graphConfig.option;
-  boost::algorithm::to_lower(options);
-  // these three options have only an influence on colours but not what is drawn and what not.
-  for (const auto& toRemove : { "pfc", "plc", "pmc" }) {
-    if (size_t pos = options.find(toRemove); pos != std::string::npos) {
-      options.erase(pos, 3);
-    }
-  }
-  auto optionsHave = [&](std::string_view seq) {
-    return options.find(seq) != std::string::npos;
-  };
-
-  std::string out;
-  if (optionsHave("l") || optionsHave("c")) {
-    out += "l"; // line
-  }
-  if (optionsHave("*") || optionsHave("p")) {
-    out += "p"; // point
-  }
-  if (optionsHave("f") || optionsHave("b")) {
-    out += "f"; // fill
-  }
-  if (!graphConfig.errors.empty()) {
-    out += "e"; // error bars
-  }
-  return out;
-}
-
-TCanvas* TrendingTask::drawPlot(const TrendingTaskConfig::Plot& plotConfig)
-{
-  auto* c = new TCanvas();
-
-  // Legend
-  TLegend* legend = nullptr;
-  if (plotConfig.legend.x1 >= 0 && plotConfig.legend.y1 >= 0 && plotConfig.legend.x2 >= 0 && plotConfig.legend.y2 >= 0) {
-    legend = new TLegend(plotConfig.legend.x1, plotConfig.legend.y1,
-                         plotConfig.legend.x2, plotConfig.legend.y2,
-                         nullptr, "NDC");
-    if (plotConfig.legend.nColumns > 0) {
-      legend->SetNColumns(plotConfig.legend.nColumns);
-    }
-  } else {
-    legend = new TLegend(0.3, 0.2);
-  }
-  legend->SetBorderSize(0);
-  legend->SetFillStyle(0);
-  legend->SetTextSize(0.03);
-  legend->SetMargin(0.15);
-
-  // Keep palette behavior unless user forces explicit colors via per-graph style
-  if (plotConfig.colorPalette != 0) {
-    gStyle->SetPalette(plotConfig.colorPalette);
-    // This makes ROOT store the selected palette for each generated plot.
-    // TColor::DefinedColors(1); // TODO enable when available
-  } else {
-    gStyle->SetPalette(); // default
-  }
-
-  // regardless whether we draw a graph or a histogram, a histogram is always used by TTree::Draw to draw axes and title
-  // we attempt to keep it to do some modifications later
-  TH1* background = nullptr;
-  bool firstGraphInPlot = true;
-  // by "graph" we consider anything we can draw, not necessarily TGraph, and we draw all on the same canvas
-  for (const auto& graphConfig : plotConfig.graphs) {
-    // we determine the order of the plotConfig, i.e. if it is a histogram (1), graphConfig (2), or any higher dimension.
-    const size_t plotOrder = std::count(graphConfig.varexp.begin(), graphConfig.varexp.end(), ':') + 1;
-
-    // having "SAME" at the first TTree::Draw() call will not work, we have to add it only in subsequent Draw calls
-    std::string option = firstGraphInPlot ? graphConfig.option : "SAME " + graphConfig.option;
-
-    // Draw main series
-    mTrend->Draw(graphConfig.varexp.c_str(), graphConfig.selection.c_str(), option.c_str());
-
-    // For graphs, we allow to draw errors if they are specified.
-    TGraphErrors* graphErrors = nullptr;
-    if (!graphConfig.errors.empty()) {
-      if (plotOrder != 2) {
-        ILOG(Error, Support) << "Non empty graphErrors seen for the plotConfig '" << plotConfig.name << "', which is not a graphConfig, ignoring." << ENDM;
-      } else {
-        // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
-        std::string varexpWithErrors(graphConfig.varexp + ":" + graphConfig.errors);
-        mTrend->Draw(varexpWithErrors.c_str(), graphConfig.selection.c_str(), "goff");
-        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0),
-                                       mTrend->GetVal(2), mTrend->GetVal(3));
-        graphErrors->SetName((graphConfig.name + "_errors").c_str());
-        graphErrors->SetTitle((graphConfig.title + " errors").c_str());
-        // We draw on the same plotConfig as the main graphConfig, but only error bars
-        graphErrors->Draw("SAME E");
-      }
-    }
-
-    // Legend entry and styling for graphs
-    if (auto graph = dynamic_cast<TGraph*>(c->FindObject("Graph"))) {
-      if (plotOrder >= 2) {
-        // Style objects after Draw so we override palette/auto styling when requested
-        applyStyleToGraph(graph, graphConfig.style);
-        // Keep errors visually consistent with the main series
-        if (graphErrors) {
-          applyStyleToGraph(graphErrors, graphConfig.style);
-        }
-      }
-      graph->SetName(graphConfig.name.c_str());
-      graph->SetTitle(graphConfig.title.c_str());
-      legend->AddEntry(graph, graphConfig.title.c_str(),
-                       deduceGraphLegendOptions(graphConfig).c_str());
-    }
-
-    // Legend entry and styling for histograms
-    if (auto htemp = dynamic_cast<TH1*>(c->FindObject("htemp"))) {
-      if (plotOrder == 1) {
-        htemp->SetName(graphConfig.name.c_str());
-        htemp->SetTitle(graphConfig.title.c_str());
-        legend->AddEntry(htemp, graphConfig.title.c_str(), "lpf");
-      } else {
-        htemp->SetName("background");
-        htemp->SetTitle("background");
-        // htemp was used by TTree::Draw only to draw axes and title, not to plot data, no need to add it to legend
-      }
-      // QCG doesn't empty the buffers before visualizing the plotConfig, nor does ROOT when saving the file,
-      // so we have to do it here.
-      htemp->BufferEmpty();
-      // we keep the pointer to bg histogram for later postprocessing
-      if (!background) {
-        background = htemp;
-      }
-    }
-
-    firstGraphInPlot = false;
-  }
-
-  c->SetName(plotConfig.name.c_str());
-  c->SetTitle(plotConfig.title.c_str());
-
-  // Postprocessing the plotConfig - adding specified titles, configuring time-based plots, flushing buffers.
-  // Notice that axes and title are drawn using a histogram, even in the case of graphs.
-  if (background) {
-    // The title of background histogram is printed, not the title of canvas => we set it as well.
-    background->SetTitle(plotConfig.title.c_str());
-    // We have to update the canvas to make the title appear and access it in the next step.
-    c->Update();
-
-    // After the update, the title has a different size and it is not in the center anymore. We have to fix that.
-    if (auto title = dynamic_cast<TPaveText*>(c->GetPrimitive("title"))) {
-      title->SetBBoxCenterX(c->GetBBoxCenter().fX);
-      c->Modified();
-      c->Update();
-    } else {
-      ILOG(Error, Devel) << "Could not get the title TPaveText of the plotConfig '" << plotConfig.name << "'." << ENDM;
-    }
-
-    if (!plotConfig.graphAxisLabel.empty()) {
-      setUserAxesLabels(background->GetXaxis(), background->GetYaxis(), plotConfig.graphAxisLabel);
-    }
-
-    if (plotConfig.graphs.back().varexp.find(":time") != std::string::npos) {
-      // We have to explicitly configure showing time on x axis.
-      formatTimeXAxis(background);
-    } else if (plotConfig.graphs.back().varexp.find(":meta.runNumber") != std::string::npos) {
-      formatRunNumberXAxis(background);
-    }
-
-    // Set the user-defined range on the y axis if needed.
-    if (!plotConfig.graphYRange.empty()) {
-      setUserYAxisRange(background, plotConfig.graphYRange);
-      c->Modified();
-      c->Update();
-    }
-  } else {
-    ILOG(Error, Devel) << "Could not get the htemp histogram of the plotConfig '" << plotConfig.name << "'." << ENDM;
-  }
-
-  if (plotConfig.graphs.size() > 1) {
-    legend->Draw();
-  } else {
-    delete legend;
-  }
-
-  c->Modified();
-  c->Update();
-
-  return c;
 }

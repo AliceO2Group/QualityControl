@@ -18,15 +18,12 @@
 #define QUALITYCONTROL_TRENDINGTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "QualityControl/Reductor.h"
 #include "QualityControl/TrendingTaskConfig.h"
 
 #include <memory>
-#include <unordered_map>
-#include <TTree.h>
+#include <map>
 
-class TAxis;
-class TCanvas;
+class TObject;
 
 namespace o2::quality_control::repository
 {
@@ -35,6 +32,8 @@ class DatabaseInterface;
 
 namespace o2::quality_control::postprocessing
 {
+
+class TrendingMachine;
 
 /// \brief  A post-processing task which trends values, stores them in a TTree and produces plots.
 ///
@@ -47,8 +46,8 @@ namespace o2::quality_control::postprocessing
 class TrendingTask : public PostProcessingInterface
 {
  public:
-  TrendingTask() = default;
-  ~TrendingTask() override = default;
+  TrendingTask();
+  ~TrendingTask() override;
 
   void configure(const boost::property_tree::ptree& config) override;
   void initialize(Trigger, framework::ServiceRegistryRef) override;
@@ -56,37 +55,14 @@ class TrendingTask : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistryRef) override;
 
  private:
-  static constexpr size_t MaxRunNumberStringLength = 6;
-  struct {
-    // we store run numbers both as an integer and as a string to allow users to select whether they need
-    // a trend in integer or label domain (the latter will contain evenly-spaced data points)
-    Long64_t runNumber = 0;
-    char runNumberStr[MaxRunNumberStringLength + 1] = { 0 }; // 6 characters + null terminator
-    static const char* getBranchLeafList()
-    {
-      return "runNumber/L:runNumberStr/C";
-    }
-  } mMetaData;
-
-  static void setUserAxesLabels(TAxis* xAxis, TAxis* yAxis, const std::string& graphAxesLabels);
-  static void setUserYAxisRange(TH1* hist, const std::string& graphYAxisRange);
-  static void formatTimeXAxis(TH1* background);
-  static void formatRunNumberXAxis(TH1* background);
-  static std::string deduceGraphLegendOptions(const TrendingTaskConfig::Graph& graphConfig);
-  static void applyStyleToGraph(TGraph* graph, const TrendingTaskConfig::GraphStyle& style);
-
   /// returns true only if all datasources were available to update reductor
   bool trendValues(const Trigger& t, repository::DatabaseInterface&);
   void generatePlots();
-  TCanvas* drawPlot(const TrendingTaskConfig::Plot& plotConfig);
   void initializeTrend(repository::DatabaseInterface& qcdb);
-  bool canContinueTrend(TTree* tree);
 
   TrendingTaskConfig mConfig;
-  UInt_t mTime;
-  std::unique_ptr<TTree> mTrend;
+  std::unique_ptr<TrendingMachine> mTrendingMachine;
   std::map<std::string, std::unique_ptr<TObject>> mPlots;
-  std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 };
 
 } // namespace o2::quality_control::postprocessing
