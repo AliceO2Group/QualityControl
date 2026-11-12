@@ -46,9 +46,9 @@
 #include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::postprocessing;
+using Catch::Approx;
 using o2::quality_control::core::Quality;
 using o2::quality_control::core::QualityObject;
-using Catch::Approx;
 
 namespace
 {
