@@ -21,19 +21,14 @@
 #include "QualityControl/MySqlDatabase.h"
 #endif
 
-#define BOOST_TEST_MODULE DbFactory test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
-
 #include <QualityControl/DummyDatabase.h>
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <QualityControl/RepoPathUtils.h>
-#include <QualityControl/testUtils.h>
+#include <Common/Exceptions.h>
 #include <TH1F.h>
 #include <cstdlib>
+#include <catch_amalgamated.hpp>
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -51,33 +46,33 @@ const std::string QCDB_ENDPOINT = [] {
 namespace o2::quality_control::repository
 {
 
-BOOST_AUTO_TEST_CASE(db_factory_test)
+TEST_CASE("db_factory_test")
 {
 #ifdef _WITH_MYSQL
   std::unique_ptr<DatabaseInterface> database = DatabaseFactory::create("MySql");
-  BOOST_CHECK(database);
-  BOOST_CHECK(dynamic_cast<MySqlDatabase*>(database.get()));
+  CHECK(database);
+  CHECK(dynamic_cast<MySqlDatabase*>(database.get()));
 #endif
 
   std::unique_ptr<DatabaseInterface> database2 = nullptr;
-  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, o2::quality_control::test::do_nothing);
-  BOOST_CHECK(!database2);
+  CHECK_THROWS_AS(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException);
+  CHECK(!database2);
 
   std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
-  BOOST_CHECK(database3);
-  BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3.get()));
+  CHECK(database3);
+  CHECK(dynamic_cast<CcdbDatabase*>(database3.get()));
 
   std::unique_ptr<DatabaseInterface> database4 = DatabaseFactory::create("Dummy");
-  BOOST_CHECK(database4);
-  BOOST_CHECK(dynamic_cast<DummyDatabase*>(database4.get()));
+  CHECK(database4);
+  CHECK(dynamic_cast<DummyDatabase*>(database4.get()));
 }
 
-BOOST_AUTO_TEST_CASE(db_ccdb_listing)
+TEST_CASE("db_ccdb_listing", "[ccdb]")
 {
   std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
-  BOOST_CHECK(database3);
+  CHECK(database3);
   auto* ccdb = dynamic_cast<CcdbDatabase*>(database3.get());
-  BOOST_CHECK(ccdb);
+  CHECK(ccdb);
 
   ccdb->connect(QCDB_ENDPOINT, "", "", "");
 
@@ -102,7 +97,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   for (const auto& item : list) {
     ILOG(Info, Support) << "task : " << item << ENDM;
   }
-  BOOST_CHECK(std::find(list.begin(), list.end(), RepoPathUtils::getMoPath(mo1.get())) != list.end());
+  CHECK(std::find(list.begin(), list.end(), RepoPathUtils::getMoPath(mo1.get())) != list.end());
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames(prefixPath + "functional_test");
@@ -110,9 +105,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   //  for (auto name : objectNames) {
   //      ILOG(Info, Support) << " - object : " << name << ENDM;
   //  }
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path/to/object3") != objectNames.end());
+  CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
+  CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
+  CHECK(std::find(objectNames.begin(), objectNames.end(), "/path/to/object3") != objectNames.end());
 }
 
 } // namespace o2::quality_control::repository

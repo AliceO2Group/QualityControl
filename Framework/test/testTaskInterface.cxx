@@ -203,7 +203,7 @@ TEST_CASE("test_task_factory")
   delete task;
 }
 
-TEST_CASE("retrieveCondition")
+TEST_CASE("retrieveCondition", "[ccdb]")
 {
   // first store a condition
   o2::emcal::BadChannelMap bad;

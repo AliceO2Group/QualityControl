@@ -16,12 +16,8 @@
 
 #include "QualityControl/ObjectsManager.h"
 
-#define BOOST_TEST_MODULE Publisher test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
 #include <TObjString.h>
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -31,7 +27,7 @@ namespace o2::quality_control::core
 {
 
 // fixme: unify with testObjectManager?
-BOOST_AUTO_TEST_CASE(publisher_test)
+TEST_CASE("publisher_test")
 {
   std::string taskName = "test";
   std::string detectorName = "TST";
@@ -41,10 +37,10 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   objectsManager.startPublishing<true>(&s, PublicationPolicy::Forever);
 
   TObjString* s2 = (TObjString*)(objectsManager.getMonitorObject("content")->getObject());
-  BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
+  CHECK(s.GetString() == s2->GetString());
   MonitorObject* mo = nullptr;
-  BOOST_CHECK_THROW(mo = objectsManager.getMonitorObject("test"), AliceO2::Common::ObjectNotFoundError);
-  BOOST_CHECK_EQUAL(mo, nullptr);
+  CHECK_THROWS_AS(mo = objectsManager.getMonitorObject("test"), AliceO2::Common::ObjectNotFoundError);
+  CHECK(mo == nullptr);
   mo = objectsManager.getMonitorObject("content");
 }
 

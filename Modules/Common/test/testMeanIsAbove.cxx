@@ -17,19 +17,15 @@
 //#define private public // hack to have access to everything
 #include "Common/MeanIsAbove.h"
 
-#define BOOST_TEST_MODULE MO test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
 #include "QualityControl/MonitorObject.h"
 #include <TH1F.h>
 #include <TList.h>
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 namespace o2::quality_control_modules::common
 {
 
-BOOST_AUTO_TEST_CASE(test_checks)
+TEST_CASE("test_checks")
 {
   std::shared_ptr<MonitorObject> mo(new MonitorObject()); // here we are the owner of the histo
   TH1F th1f("h1", "h1", 10, 0, 9);
@@ -43,25 +39,25 @@ BOOST_AUTO_TEST_CASE(test_checks)
   customParameters["meanThreshold"] = "1.0";
   check.setCustomParameters(customParameters);
   Quality quality = check.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Bad);
+  CHECK(quality == Quality::Bad);
 
   th1f.Fill(1); // the threshold is set to 1 -> bad
   quality = check.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Bad);
+  CHECK(quality == Quality::Bad);
 
   th1f.Fill(2); // the threshold is set to 1 -> good
   quality = check.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Good);
+  CHECK(quality == Quality::Good);
 
   check.beautify(mo, Quality::Null); // add a line
-  BOOST_CHECK_EQUAL(1, th1f.GetListOfFunctions()->GetEntries());
+  CHECK(1 == th1f.GetListOfFunctions()->GetEntries());
 
   check.beautify(mo, Quality::Null);
   // Should update the line, not add one --> TODO THIS FAILS
-  //  BOOST_CHECK_EQUAL(numberFunctions, th1f.GetListOfFunctions()->GetEntries()); // no modifications to the plot
+  //  CHECK(numberFunctions == th1f.GetListOfFunctions()->GetEntries()); // no modifications to the plot
 }
 
-BOOST_AUTO_TEST_CASE(test_types)
+TEST_CASE("test_types")
 {
   std::shared_ptr<MonitorObject> mo(new MonitorObject()); // here we are the owner of the histo
   TObject obj;
@@ -73,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_types)
   MeanIsAbove check;
 
   Quality quality = check.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Null);
+  CHECK(quality == Quality::Null);
 }
 
 } // namespace o2::quality_control_modules::common
