@@ -16,18 +16,14 @@
 
 #include "Common/NonEmpty.h"
 
-#define BOOST_TEST_MODULE Publisher test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-
 #include "QualityControl/MonitorObject.h"
 #include <TH1.h>
+#include <catch_amalgamated.hpp>
 
 namespace o2::quality_control_modules::common
 {
 
-BOOST_AUTO_TEST_CASE(checkable)
+TEST_CASE("checkable")
 {
   TH1F histo("testObject", "test", 100, 0, 99);
   MonitorObject monitorObject(&histo, "task", "testClass", "TST");
@@ -35,26 +31,26 @@ BOOST_AUTO_TEST_CASE(checkable)
   NonEmpty myCheck;
 }
 
-BOOST_AUTO_TEST_CASE(beautify)
+TEST_CASE("beautify")
 {
   auto* histo = new TH1F("testObject", "test", 100, 0, 99);
   std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(histo, "task", "testClass", "TST")); // here we are the owner of the histo
   NonEmpty myCheck;
 
   myCheck.beautify(monitorObject, Quality::Null);
-  BOOST_CHECK_EQUAL(histo->GetFillColor(), kWhite);
+  CHECK(histo->GetFillColor() == kWhite);
 
   /*myCheck.beautify(&monitorObject, Quality::Bad);
-  BOOST_CHECK_EQUAL(histo->GetFillColor(), kRed);
+  CHECK(histo->GetFillColor() == kRed);
 
   myCheck.beautify(&monitorObject, Quality::Good);
-  BOOST_CHECK_EQUAL(histo->GetFillColor(), kGreen);
+  CHECK(histo->GetFillColor() == kGreen);
 
   myCheck.beautify(&monitorObject, Quality::Medium);
-  BOOST_CHECK_EQUAL(histo->GetFillColor(), kOrange);*/
+  CHECK(histo->GetFillColor() == kOrange);*/
 }
 
-BOOST_AUTO_TEST_CASE(nonempty)
+TEST_CASE("nonempty")
 {
   TH1F histo("testObject", "test", 100, 0, 99);
   std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(&histo, "task", "testClass", "TST")); // here we are the owner of the histo
@@ -64,15 +60,15 @@ BOOST_AUTO_TEST_CASE(nonempty)
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", monitorObject } };
 
   Quality quality = myCheck.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Bad);
+  CHECK(quality == Quality::Bad);
 
   histo.Fill(1);
   quality = myCheck.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Good);
+  CHECK(quality == Quality::Good);
 
   histo.Reset();
   quality = myCheck.check(&moMap);
-  BOOST_CHECK_EQUAL(quality, Quality::Bad);
+  CHECK(quality == Quality::Bad);
 }
 
 } // namespace o2::quality_control_modules::common

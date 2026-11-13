@@ -16,11 +16,6 @@
 
 #include "QualityControl/UserCodeInterface.h"
 
-#define BOOST_TEST_MODULE CommonInterface test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include <TObject.h>
 #include <string>
 #include <TROOT.h>
@@ -29,6 +24,8 @@
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/CustomParameters.h>
 #include <cstdlib>
+#include <unistd.h>
+#include <catch_amalgamated.hpp>
 
 using namespace std;
 using namespace o2::quality_control::repository;
@@ -50,6 +47,9 @@ namespace o2::quality_control
 namespace test
 {
 
+// anonymous namespace to keep this class symbols visible only to this file (instead of all files combined into o2-qc-test-ccdb)
+namespace
+{
 class TestInterface : public core::UserCodeInterface
 {
  public:
@@ -72,26 +72,38 @@ class TestInterface : public core::UserCodeInterface
   bool configured = false;
 };
 
-struct MyGlobalFixture {
-  void teardown()
+// Cleans up the objects stored by the tests in this file once the whole test run is over
+class UserCodeInterfaceCleanupListener : public Catch::EventListenerBase
+{
+ public:
+  using Catch::EventListenerBase::EventListenerBase;
+
+  void testRunEnded(Catch::TestRunStats const&) override
   {
-    auto backend = std::make_unique<CcdbDatabase>();
-    backend->connect(QCDB_ENDPOINT, "", "", "");
-    backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+    try {
+      auto backend = std::make_unique<CcdbDatabase>();
+      backend->connect(QCDB_ENDPOINT, "", "", "");
+      backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+    } catch (...) {
+    }
   }
 };
-BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
+} // namespace
 
-BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
+CATCH_REGISTER_LISTENER(UserCodeInterfaceCleanupListener)
+
+TEST_CASE("UserCodeInterface_test_invoke_all_methods", "[ccdb]")
 {
   test::TestInterface testInterface;
 
-  BOOST_CHECK_EQUAL(testInterface.configured, false);
+  CHECK(testInterface.configured == false);
 
   TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
   auto pid = std::to_string(getpid());
   auto taskName = "Test/pid" + pid;
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, taskName, "task", "TST");
+  // explicit validity, so that the object can be retrieved with an explicit timestamp below
+  mo1->setValidity({ 10000, 20000 });
   auto backend = std::make_unique<CcdbDatabase>();
   backend->connect(QCDB_ENDPOINT, "", "", "");
   backend->storeMO(mo1);
@@ -100,12 +112,12 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   CustomParameters customParameters;
   customParameters["test"] = "asdf";
   testInterface.setCustomParameters(customParameters);
-  BOOST_CHECK_EQUAL(testInterface.configured, true);
-  BOOST_CHECK_EQUAL(testInterface.get("test"), "asdf");
+  CHECK(testInterface.configured == true);
+  CHECK(testInterface.get("test") == "asdf");
 
   testInterface.setCcdbUrl(QCDB_ENDPOINT);
-  auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/" + taskName + "/asdf");
-  BOOST_CHECK_NE(obj, nullptr);
+  auto obj = testInterface.retrieveConditionAny<TObject>("qc/TST/MO/" + taskName + "/asdf", {}, 15000);
+  CHECK(obj != nullptr);
 }
 } /* namespace test */
 } /* namespace o2::quality_control */

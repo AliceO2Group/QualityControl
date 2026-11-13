@@ -19,17 +19,15 @@
 #include "QualityControl/PostProcessingFactory.h"
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/ServiceRegistry.h>
-
-#define BOOST_TEST_MODULE PostProcessingRunner test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::test
 {
 
+// anonymous namespace to keep this class symbols visible only to this file (instead of all files combined into o2-qc-test-core)
+namespace
+{
 class TestTask : public PostProcessingInterface
 {
  public:
@@ -60,30 +58,31 @@ class TestTask : public PostProcessingInterface
   int test;
 };
 
+} // namespace
 } /* namespace o2::quality_control_modules::test */
 
 using namespace o2::configuration;
 
-BOOST_AUTO_TEST_CASE(test_factory)
+TEST_CASE("PostProcessingInterface_test_factory")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto configFile = ConfigurationFactory::getConfiguration(configFilePath);
 
   o2::quality_control_modules::test::TestTask task;
-  BOOST_CHECK_EQUAL(task.test, 0);
+  CHECK(task.test == 0);
 
   task.setName("asfd");
-  BOOST_CHECK_EQUAL(task.getName(), "asfd");
+  CHECK(task.getName() == "asfd");
 
   task.configure(configFile->getRecursive());
-  BOOST_CHECK_EQUAL(task.test, 1);
+  CHECK(task.test == 1);
 
   o2::framework::ServiceRegistry services;
 
   task.initialize({ TriggerType::No }, services);
-  BOOST_CHECK_EQUAL(task.test, 2);
+  CHECK(task.test == 2);
   task.update({ TriggerType::No }, services);
-  BOOST_CHECK_EQUAL(task.test, 3);
+  CHECK(task.test == 3);
   task.finalize({ TriggerType::No }, services);
-  BOOST_CHECK_EQUAL(task.test, 4);
+  CHECK(task.test == 4);
 }

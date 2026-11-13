@@ -307,6 +307,17 @@ add_executable(o2-qc-test-core
                test/testQCInputs.cxx
                test/testUserInputOutput.cxx
                test/testStringUtils.cxx
+               test/testPublisher.cxx
+               test/testQcInfoLogger.cxx
+               test/testTaskRunner.cxx
+               test/testObjectsManager.cxx
+               test/testCcdbDatabaseListingErrors.cxx
+               test/testTriggers.cxx
+               test/testPostProcessingInterface.cxx
+               test/testPostProcessingConfig.cxx
+               test/testReductor.cxx
+               test/testRepoPathUtils.cxx
+               test/testRunnerUtils.cxx
 )
 set_property(TARGET o2-qc-test-core
              PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
@@ -315,55 +326,40 @@ target_link_libraries(o2-qc-test-core PRIVATE O2::EMCALBase O2::EMCALCalib)
 target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
 
 add_test(NAME o2-qc-test-core COMMAND o2-qc-test-core)
-set_tests_properties(o2-qc-test-core PROPERTIES TIMEOUT 30)
+set_tests_properties(o2-qc-test-core PROPERTIES TIMEOUT 60)
 target_sources(o2-qc-test-core PRIVATE
                ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
 target_include_directories(o2-qc-test-core PRIVATE ${CMAKE_SOURCE_DIR})
 target_include_directories(o2-qc-test-core PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
+# Tests which require access to CCDB, they are in a separate executable to allow excluding them with `ctest -LE CCDB`.
+# Test cases tagged with [.manual] are hidden, thus they are not run by default and have to be requested explicitly.
+add_executable(o2-qc-test-ccdb
+               test/testCcdbDatabase.cxx
+               test/testCcdbDatabaseExtra.cxx
+               test/testDbFactory.cxx
+               test/testUserCodeInterface.cxx
+)
+set_property(TARGET o2-qc-test-ccdb
+             PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+target_link_libraries(o2-qc-test-ccdb PRIVATE O2QualityControl O2::Catch2)
+target_include_directories(o2-qc-test-ccdb PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(o2-qc-test-ccdb PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+
+add_test(NAME o2-qc-test-ccdb COMMAND o2-qc-test-ccdb)
+set_tests_properties(o2-qc-test-ccdb PROPERTIES TIMEOUT 60 LABELS "slow;CCDB")
+
 set(TEST_SRCS
     test/testActorCallbacks.cxx
-    test/testDbFactory.cxx
-    test/testPublisher.cxx
-    test/testQcInfoLogger.cxx
-    test/testTaskRunner.cxx
-    test/testObjectsManager.cxx
-    test/testCcdbDatabase.cxx
-    test/testCcdbDatabaseListingErrors.cxx
-    test/testCcdbDatabaseExtra.cxx
-    test/testTriggers.cxx
-    test/testPostProcessingInterface.cxx
-    test/testPostProcessingConfig.cxx
-    test/testReductor.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
-    test/testRepoPathUtils.cxx
-    test/testUserCodeInterface.cxx
-    test/testRunnerUtils.cxx
     test/testBookkeepingQualitySink.cxx
   )
 
 set(TEST_ARGS
     "-b --run"
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
-    ""
     "-b --run"
     "-b --run"
-    ""
-    ""
-    ""
-    ""
-    ""
     ""
   )
 
@@ -381,19 +377,16 @@ foreach(i RANGE ${count})
   set_property(TARGET ${test_name}
                PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   target_link_libraries(${test_name}
-                        PRIVATE O2QualityControl Boost::unit_test_framework)
+                        PRIVATE O2QualityControl)
   add_test(NAME ${test_name} COMMAND ${test_name} ${arg})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testWorkflow testTaskRunner testCheckWorkflow
-        testPostProcessingConfig testPostProcessingInterface)
+foreach(t testWorkflow testCheckWorkflow)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
-
-target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 set_property(TEST testActorCallbacks PROPERTY TIMEOUT 30)
 set_property(TEST testActorCallbacks PROPERTY LABELS slow)
@@ -401,13 +394,6 @@ set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
 set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 50)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
-set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
-set_property(TEST testObjectsManager PROPERTY LABELS slow)
-set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
-set_property(TEST testCcdbDatabase PROPERTY LABELS slow CCDB)
-set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual CCDB)
-set_property(TEST testDbFactory PROPERTY LABELS CCDB)
-set_property(TEST testUserCodeInterface PROPERTY LABELS CCDB)
 
 # Add a functional test (QC-336)
 string(RANDOM UNIQUE_ID)

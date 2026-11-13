@@ -17,11 +17,6 @@
 
 #include "QualityControl/CcdbDatabase.h"
 
-#define BOOST_TEST_MODULE CcdbDatabase listing errors test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <arpa/inet.h>
@@ -33,9 +28,11 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::repository;
 
+// anonymous namespace to these symbols visible only to this file (instead of all files combined into o2-qc-test-core)
 namespace
 {
 
@@ -119,24 +116,24 @@ class Html503Server
 
 } // namespace
 
-BOOST_AUTO_TEST_CASE(getPublishedObjectNames_handles_html_503)
+TEST_CASE("getPublishedObjectNames_handles_html_503")
 {
   Html503Server server;
   CcdbDatabase db;
   db.connect(server.url(), "", "", "");
 
   std::vector<std::string> names;
-  BOOST_CHECK_NO_THROW(names = db.getPublishedObjectNames("qc/TST/MO/SomeTask"));
-  BOOST_TEST(names.empty());
+  CHECK_NOTHROW(names = db.getPublishedObjectNames("qc/TST/MO/SomeTask"));
+  CHECK(names.empty());
 }
 
-BOOST_AUTO_TEST_CASE(getListingAsPtree_handles_html_503)
+TEST_CASE("getListingAsPtree_handles_html_503")
 {
   Html503Server server;
   CcdbDatabase db;
   db.connect(server.url(), "", "", "");
 
   boost::property_tree::ptree listing;
-  BOOST_CHECK_NO_THROW(listing = db.getListingAsPtree("qc/TST/MO/SomeTask"));
-  BOOST_TEST(listing.count("objects") == 0);
+  CHECK_NOTHROW(listing = db.getListingAsPtree("qc/TST/MO/SomeTask"));
+  CHECK(listing.count("objects") == 0);
 }

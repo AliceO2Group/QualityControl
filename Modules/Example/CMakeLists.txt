@@ -36,19 +36,13 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Example
 
 # ---- Tests ----
 
-set(TEST_SRCS test/testFactory.cxx test/testQcExample.cxx)
-
-foreach(test ${TEST_SRCS})
-  get_filename_component(test_name ${test} NAME)
-  string(REGEX REPLACE ".cxx" "" test_name ${test_name})
-  add_executable(${test_name} ${test})
-  target_link_libraries(${test_name}
-                        PRIVATE O2QcExample Boost::unit_test_framework)
-  add_test(NAME ${test_name} COMMAND ${test_name})
-  set_property(TARGET ${test_name}
-               PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
-endforeach()
-
-target_sources(testFactory PRIVATE ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
-target_include_directories(testFactory PRIVATE ${CMAKE_SOURCE_DIR})
+add_executable(o2-qc-test-example
+               test/testFactory.cxx
+               test/testQcExample.cxx)
+target_link_libraries(o2-qc-test-example PRIVATE O2QcExample O2::Catch2)
+target_sources(o2-qc-test-example PRIVATE ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
+target_include_directories(o2-qc-test-example PRIVATE ${CMAKE_SOURCE_DIR})
+set_property(TARGET o2-qc-test-example
+             PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+add_test(NAME o2-qc-test-example COMMAND o2-qc-test-example)
+set_tests_properties(o2-qc-test-example PROPERTIES TIMEOUT 20)
