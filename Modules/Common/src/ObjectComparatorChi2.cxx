@@ -20,6 +20,7 @@
 #include <TH1.h>
 
 #include <fmt/core.h>
+#include <fmt/format.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;

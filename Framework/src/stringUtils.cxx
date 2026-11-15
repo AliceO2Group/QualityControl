@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <sstream>
 #include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace o2::quality_control::core
 {
