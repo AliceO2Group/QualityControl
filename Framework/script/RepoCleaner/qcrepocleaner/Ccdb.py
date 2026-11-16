@@ -47,7 +47,7 @@ class ObjectVersion:
         else:
             run_number = "None"
 
-        rperesentation = f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number}, (uuid {self.uuid})"
+        representation = f"Version of object {self.path} created at {self.created_at_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, valid from {self.valid_from_as_dt.strftime('%Y-%m-%d %H:%M:%S')}, run {run_number}, (uuid {self.uuid})"
         if ObjectVersion.print_details:
             representation += f", metadata: {self.metadata}"
         return representation
