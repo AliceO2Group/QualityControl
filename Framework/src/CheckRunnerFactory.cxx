@@ -15,6 +15,7 @@
 ///
 #include <vector>
 #include <unordered_set>
+#include <utility>
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DeviceSpec.h>
@@ -49,9 +50,9 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
   return newCheckRunner;
 }
 
-DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& checkRunnerConfig, const o2::framework::InputSpec& input)
+DataProcessorSpec CheckRunnerFactory::createSinkDevice(const CheckRunnerConfig& checkRunnerConfig, const o2::framework::InputSpec& input, std::string detectorName)
 {
-  CheckRunner qcCheckRunner{ checkRunnerConfig, input };
+  CheckRunner qcCheckRunner{ checkRunnerConfig, input, std::move(detectorName) };
   qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),

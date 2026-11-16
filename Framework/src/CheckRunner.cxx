@@ -143,11 +143,12 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalQOSent(0)
 {
   for (auto& checkConfig : checkConfigs) {
+    mExternalTaskDetectorNames.insert(checkConfig.externalTaskDetectorNames.begin(), checkConfig.externalTaskDetectorNames.end());
     mChecks.emplace(checkConfig.name, checkConfig);
   }
 }
 
-CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
+CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input, std::string detectorName)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mConfig(std::move(checkRunnerConfig)),
     mInputs{ input },
@@ -158,6 +159,9 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
     mTotalNumberMOStored(0),
     mTotalQOSent(0)
 {
+  if (!detectorName.empty()) {
+    mExternalTaskDetectorNames.emplace(DataSpecUtils::label(input), std::move(detectorName));
+  }
 }
 
 CheckRunner::~CheckRunner()
@@ -262,7 +266,11 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
           ILOG(Debug, Devel) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
           ILOG(Debug, Devel) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
-          mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
+          std::string detectorName = origin.str;
+          if (auto detector = mExternalTaskDetectorNames.find(DataSpecUtils::label(input)); detector != mExternalTaskDetectorNames.end()) {
+            detectorName = detector->second;
+          }
+          mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", detectorName);
           mo->setActivity(*mActivity);
         }
 

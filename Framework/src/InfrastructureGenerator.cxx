@@ -626,6 +626,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   typedef std::vector<std::string> InputNames;
   typedef std::vector<CheckConfig> CheckConfigs;
   std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
+  std::map<std::string, std::string> externalTaskDetectorNames;
   std::map<InputNames, CheckConfigs> checksMap;                   // all the Checks defined in the config mapped keyed by their sorted inputNames
   std::map<InputNames, InputNames> storeVectorMap;
 
@@ -658,6 +659,9 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
     for (const auto& taskOutput : inputs) {
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+      if (!externalTaskSpec.detectorName.empty()) {
+        externalTaskDetectorNames[DataSpecUtils::label(taskOutput)] = externalTaskSpec.detectorName;
+      }
     }
   }
 
@@ -711,8 +715,11 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       ILOG(Debug, Devel) << input << " ";
     ILOG(Debug, Devel) << ENDM;
 
+    auto detectorName = externalTaskDetectorNames.find(inputNames[0]);
     DataProcessorSpec spec = checkConfigs.empty()
-                               ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
+                               ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig,
+                                                                      tasksOutputMap.find(inputNames[0])->second,
+                                                                      detectorName == externalTaskDetectorNames.end() ? std::string{} : detectorName->second)
                                : CheckRunnerFactory::create(checkRunnerConfig, checkConfigs, storeVectorMap[inputNames]);
     workflow.emplace_back(spec);
     checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());

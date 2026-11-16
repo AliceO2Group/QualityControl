@@ -1,3 +1,4 @@
+#include <string>
 #include <utility>
 
 // Copyright 2019-2020 CERN and copyright holders of ALICE O2.
@@ -31,6 +32,7 @@ struct ExternalTaskSpec {
 
   std::string taskName;
   std::string query;
+  std::string detectorName;
   bool active = true;
 };
 

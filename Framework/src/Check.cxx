@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <Framework/DataSpecUtils.h>
 #include <string>
 #include <utility>
 #include <ranges>
@@ -213,6 +214,7 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
 {
   framework::Inputs inputs;
   std::vector<std::string> objectNames;
+  std::unordered_map<std::string, std::string> externalTaskDetectorNames;
   UpdatePolicyType updatePolicy = checkSpec.updatePolicy;
   bool checkAllObjects = false;
   for (const auto& dataSource : checkSpec.dataSources) {
@@ -221,6 +223,11 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
         "Unsupported dataSource '" + dataSource.name + "' for a Check '" + checkSpec.checkName + "'");
     }
     inputs.insert(inputs.end(), dataSource.inputs.begin(), dataSource.inputs.end());
+    if (dataSource.type == DataSourceType::ExternalTask && !dataSource.detectorName.empty()) {
+      for (const auto& input : dataSource.inputs) {
+        externalTaskDetectorNames[framework::DataSpecUtils::label(input)] = dataSource.detectorName;
+      }
+    }
 
     // Subscribe on predefined MOs.
     // If "MOs" are not set, the check function will be triggered whenever a new MO appears.
@@ -264,6 +271,7 @@ CheckConfig Check::extractConfig(const CommonSpec& commonSpec, const CheckSpec& 
     allowBeautify,
     std::move(inputs),
     createUserOutputSpec(DataSourceType::Check, checkSpec.detectorName, checkSpec.checkName),
+    std::move(externalTaskDetectorNames),
   };
 }
 
