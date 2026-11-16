@@ -22,6 +22,7 @@
 #include <utility>
 #include <ranges>
 #include "fmt/core.h"
+#include "fmt/format.h"
 #include "QualityControl/QualityObject.h"
 // #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/FlagHelpers.h"
