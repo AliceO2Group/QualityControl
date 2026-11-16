@@ -25,6 +25,8 @@
 #include <TCanvas.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <exception>
+#include <iostream>
 #include <sstream>
 #include <utility>
 #include <functional>
@@ -214,6 +216,22 @@ TEST_CASE("test_trending_task")
     REQUIRE(tree->GetEntries() == 0);
   }
 
+  // From here on, we clean up the database if we exit. The guard is created *before* storing anything,
+  // so that objects are removed also if one of the store calls throws half way through.
+  // The callback must not throw: it runs in a destructor (implicitly noexcept), so an exception would terminate the process.
+  CleanupAtDestruction cleanTestObjects([repository, taskName, checkName]() {
+    if (repository) {
+      try {
+        repository->truncate("qc/TST/MO/" + taskName, "*");
+        repository->truncate("qc/TST/QO", checkName);
+      } catch (const std::exception& e) {
+        std::cerr << "Failed to clean up the test objects: " << e.what() << std::endl;
+      } catch (...) {
+        std::cerr << "Failed to clean up the test objects (unknown exception)" << std::endl;
+      }
+    }
+  });
+
   // Putting the objects to trend into the database
   {
     TH1I* histo = new TH1I("testHistoTrending", "testHistoTrending", 10, 0, 10.0);
@@ -236,14 +254,6 @@ TEST_CASE("test_trending_task")
     qo->setValidity({ 100001, 200000 });
     repository->storeQO(qo);
   }
-
-  // from here on, we clean up the database if we exit
-  CleanupAtDestruction cleanTestObjects([repository, taskName, checkName]() {
-    if (repository) {
-      repository->truncate("qc/TST/MO/" + taskName, "*");
-      repository->truncate("qc/TST/QO", checkName);
-    }
-  });
 
   // Running the task
   ServiceRegistry services;
@@ -272,10 +282,13 @@ TEST_CASE("test_trending_task")
   REQUIRE(objectManager->getNumberPublishedObjects() == 3);
   REQUIRE(tree->GetEntries() == 2);
   auto varexp = "testHistoTrending.mean:testHistoTrending.entries:" + checkName + ".level";
-  tree->Draw(varexp.c_str(), "", "goff");
+  REQUIRE(tree->Draw(varexp.c_str(), "", "goff") == 2);
   Double_t* means = tree->GetVal(0);
   Double_t* entries = tree->GetVal(1);
   Double_t* qualityLevels = tree->GetVal(2);
+  REQUIRE(means != nullptr);
+  REQUIRE(entries != nullptr);
+  REQUIRE(qualityLevels != nullptr);
   CHECK_THAT(means[0], Catch::Matchers::WithinAbs(5, 0.01));
   CHECK_THAT(entries[0], Catch::Matchers::WithinAbs(3, 0.01));
   CHECK_THAT(qualityLevels[0], Catch::Matchers::WithinAbs(3, 0.01));
