@@ -80,7 +80,7 @@ struct ReductorConfigAccessor {
 template struct DeclareGlobalGet<TrendingTaskReductorAccessor, &TrendingTask::mReductors>;
 template struct DeclareGlobalGet<ReductorConfigAccessor, &Reductor::mCustomParameters>;
 
-TEST_CASE("test_trending_task")
+TEST_CASE("test_trending_task", "[ccdb]")
 {
   const std::string pid = std::to_string(getpid());
   const std::string trendingTaskName = "TestTrendingTask";

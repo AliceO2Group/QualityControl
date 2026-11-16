@@ -31,7 +31,7 @@ const std::string QCDB_ENDPOINT = [] {
   return std::string((host && *host) ? host : "ali-qcdb-test.cern.ch:8083");
 }();
 
-TEST_CASE("test_factory")
+TEST_CASE("test_factory", "[ccdb]")
 {
   PostProcessingConfig dummyConfig;
   // check if it ignores letter case

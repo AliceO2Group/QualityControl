@@ -27,12 +27,7 @@
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ConfigParamStore.h>
 #include <Common/Exceptions.h>
-
-#define BOOST_TEST_MODULE TaskRunner test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::core;
 using namespace std;
@@ -41,6 +36,9 @@ using namespace o2::header;
 using namespace o2::utilities;
 using namespace o2::configuration;
 
+// anonymous namespace to keep these symbols visible only to this file (instead of all files combined into o2-qc-test-core)
+namespace
+{
 TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::string& taskName, size_t id)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
@@ -56,49 +54,51 @@ TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::str
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_factory)
+} // namespace
+
+TEST_CASE("TaskRunner_test_factory")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask", 123));
 
-  BOOST_CHECK_EQUAL(taskRunner.name, "qc-task-MISC-abcTask");
+  CHECK(taskRunner.name == "qc-task-MISC-abcTask");
 
   auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
-  BOOST_REQUIRE_EQUAL(taskRunner.inputs.size(), 2);
-  BOOST_CHECK_EQUAL(taskRunner.inputs[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
-  BOOST_CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
+  REQUIRE(taskRunner.inputs.size() == 2);
+  CHECK(taskRunner.inputs[0] == DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
+  CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
 
-  BOOST_REQUIRE_EQUAL(taskRunner.outputs.size(), 1);
-  BOOST_CHECK_EQUAL(taskRunner.outputs[0], createUserOutputSpec(DataSourceType::Task, "XXX", "abcTask", 123));
+  REQUIRE(taskRunner.outputs.size() == 1);
+  CHECK(taskRunner.outputs[0] == createUserOutputSpec(DataSourceType::Task, "XXX", "abcTask", 123));
 
-  BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
+  CHECK(taskRunner.algorithm.onInit != nullptr);
 
-  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 3);
-  BOOST_CHECK_EQUAL(taskRunner.options[0].name, "period-timer-cycle");
+  REQUIRE(taskRunner.options.size() == 3);
+  CHECK(taskRunner.options[0].name == "period-timer-cycle");
 }
 
-BOOST_AUTO_TEST_CASE(test_task_runner_static)
+TEST_CASE("test_task_runner_static")
 {
-  BOOST_CHECK_EQUAL(TaskRunner::createTaskRunnerIdString(), "qc-task");
+  CHECK(TaskRunner::createTaskRunnerIdString() == "qc-task");
 }
 
-BOOST_AUTO_TEST_CASE(test_task_runner)
+TEST_CASE("test_task_runner")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   TaskRunner qcTask{ getTaskConfig(configFilePath, "abcTask", 0) };
 
-  BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "qc-task-MISC-abcTask");
+  CHECK(qcTask.getDeviceName() == "qc-task-MISC-abcTask");
 
   auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
-  BOOST_REQUIRE_EQUAL(qcTask.getInputsSpecs().size(), 2);
-  BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
-  BOOST_CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
+  REQUIRE(qcTask.getInputsSpecs().size() == 2);
+  CHECK(qcTask.getInputsSpecs()[0] == DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
+  CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
 
-  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), createUserOutputSpec(DataSourceType::Task, "XXX", "abcTask", 0));
+  CHECK(qcTask.getOutputSpec() == createUserOutputSpec(DataSourceType::Task, "XXX", "abcTask", 0));
 
-  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 3);
-  BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");
+  REQUIRE(qcTask.getOptions().size() == 3);
+  CHECK(qcTask.getOptions()[0].name == "period-timer-cycle");
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   // TODO: When it is possible, we should try calling run() and init()
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   qcTask.init(initContext);
 }
 
-BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)
+TEST_CASE("test_task_wrong_detector_name")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)
   //  cout << "It should print an error message" << endl;
 }
 
-BOOST_AUTO_TEST_CASE(test_task_good_detector_name)
+TEST_CASE("test_task_good_detector_name")
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 

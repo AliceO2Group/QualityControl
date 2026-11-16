@@ -45,6 +45,7 @@ function create_module() {
     sed 's/.testEmpty/test'$1'/; s/'${DONOR_LC}'/'${MODULE_LC}'/' ${DONOR}/test/.testEmpty.cxx >$1'/test/testQc'$1'.cxx'
 
     inplace_sed '/testQcSkeleton/s/Skeleton/'$1'/g' $1/CMakeLists.txt
+    inplace_sed 's/o2-qc-test-'${DONOR_LC}'/o2-qc-test-'${MODULE_LC}'/g' $1/CMakeLists.txt
 
     # add new module to the project
     if ! grep -c $1 CMakeLists.txt; then

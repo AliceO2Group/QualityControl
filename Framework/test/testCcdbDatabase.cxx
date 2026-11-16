@@ -20,11 +20,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Version.h"
 
-#define BOOST_TEST_MODULE CcdbDatabase test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <TH1F.h>
 #include "QualityControl/RepoPathUtils.h"
@@ -34,14 +29,16 @@
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
 #include <TROOT.h>
 #include <CCDB/CcdbApi.h>
+#include <atomic>
 #include <cstdlib>
 #include <thread>
-
-namespace utf = boost::unit_test;
+#include <unistd.h>
+#include <catch_amalgamated.hpp>
 
 namespace o2::quality_control::core
 {
 
+// anonymous namespace to keep these symbols visible only to this file (instead of all files combined into o2-qc-test-ccdb)
 namespace
 {
 
@@ -78,7 +75,7 @@ struct test_fixture {
     backend->connect(CCDB_ENDPOINT, "", "", "");
     pid = std::to_string(getpid());
     taskName = "Test/pid" + pid;
-    ILOG(Info, Support) << "*** " << boost::unit_test::framework::current_test_case().p_name << " (" << pid
+    ILOG(Info, Support) << "*** " << Catch::getResultCapture().getCurrentTestName() << " (" << pid
                         << ") ***" << ENDM;
   }
 
@@ -112,24 +109,32 @@ struct test_fixture {
   std::string taskName;
 };
 
-struct MyGlobalFixture {
-  void teardown()
+// Cleans up the objects stored by the tests in this file once the whole test run is over
+class CcdbDatabaseCleanupListener : public Catch::EventListenerBase
+{
+ public:
+  using Catch::EventListenerBase::EventListenerBase;
+
+  void testRunEnded(Catch::TestRunStats const&) override
   {
-    std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
-    backend->connect(CCDB_ENDPOINT, "", "", "");
-    // cannot use the test_fixture because we are tearing down
-    backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
-    backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
-    backend->truncate("qc/TST/QCFC/Test_pid" + std::to_string(getpid()), "*");
-    backend->truncate("qc_hello/TST/MO/Test/pid" + std::to_string(getpid()), "*");
-    backend->truncate("qc_hello/TST/QO/Test/pid" + std::to_string(getpid()), "*");
+    try {
+      std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
+      backend->connect(CCDB_ENDPOINT, "", "", "");
+      backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+      backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
+      backend->truncate("qc/TST/QCFC/Test_pid" + std::to_string(getpid()), "*");
+      backend->truncate("qc_hello/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+      backend->truncate("qc_hello/TST/QO/Test/pid" + std::to_string(getpid()), "*");
+    } catch (...) {
+    }
   }
 };
-BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
 
+// NOTE: the tests below depend on the objects stored by "ccdb_store" and rely on Catch2 running the test cases
+// of a file in the order of their declaration, which is true by default (argument --order=decl).
 long oldTimestamp;
 
-BOOST_AUTO_TEST_CASE(ccdb_store)
+TEST_CASE("ccdb_store", "[ccdb]")
 {
   test_fixture f;
 
@@ -191,7 +196,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->storeMO(mo3); // should fail
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
+TEST_CASE("ccdb_store_for_future_tests", "[ccdb]")
 {
   // this test is storing a version of the objects in a different directory.
   // The goal is to keep old versions of the objects, in old formats, for future backward compatibility testing.
@@ -208,94 +213,96 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
   f.backend->storeQO(qo1);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_retrieve_mo", "[ccdb]")
 {
   test_fixture f;
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("quarantine"), "quarantine");
-  BOOST_REQUIRE_NE(mo, nullptr);
-  BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
-  BOOST_CHECK_EQUAL(mo->getActivity().mId, 1234);
-  BOOST_CHECK_EQUAL(mo->getActivity().mPeriodName, "LHC66");
-  BOOST_CHECK_EQUAL(mo->getActivity().mPassName, "passName1");
-  BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc");
+  REQUIRE(mo != nullptr);
+  CHECK(mo->getName() == "quarantine");
+  CHECK(mo->getActivity().mId == 1234);
+  CHECK(mo->getActivity().mPeriodName == "LHC66");
+  CHECK(mo->getActivity().mPassName == "passName1");
+  CHECK(mo->getActivity().mProvenance == "qc");
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_retrieve_timestamps", "[ccdb]")
 {
   test_fixture f;
 
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("short"), "short", 15000);
-  BOOST_REQUIRE_NE(mo, nullptr);
-  BOOST_CHECK_EQUAL(mo->getName(), "short");
+  REQUIRE(mo != nullptr);
+  CHECK(mo->getName() == "short");
 
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(f.getQoPath("short", "", false), 15000);
-  BOOST_REQUIRE_NE(qo, nullptr);
-  BOOST_CHECK_EQUAL(qo->getName(), f.taskName + "/short");
+  REQUIRE(qo != nullptr);
+  CHECK(qo->getName() == f.taskName + "/short");
 
   auto qoValidity = f.backend->getLatestObjectValidity(f.getQoPath("short", "qc", true), {});
   ValidityInterval expectedValidity{ 10000, 20000 };
-  BOOST_CHECK(qoValidity == expectedValidity);
+  CHECK(qoValidity == expectedValidity);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)
+TEST_CASE("ccdb_retrieve_inexisting_mo", "[ccdb]")
 {
   test_fixture f;
 
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("non/existing", "object");
-  BOOST_CHECK(mo == nullptr);
+  CHECK(mo == nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_with_cycle, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_retrieve_mo_with_cycle", "[ccdb]")
 {
   test_fixture f;
   std::shared_ptr<MonitorObject> mo{};
   mo = f.backend->retrieveMO(f.getMoFolder("cycle"), "cycle",
                              15000, Activity{}, { { metadata_keys::cycleNumber, "1" } });
-  BOOST_REQUIRE(mo.get() != nullptr);
-  BOOST_REQUIRE_NO_THROW(mo->getMetadata(metadata_keys::cycleNumber));
-  BOOST_REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "1");
+  REQUIRE(mo.get() != nullptr);
+  REQUIRE_NOTHROW(mo->getMetadata(metadata_keys::cycleNumber));
+  REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "1");
 
   mo = f.backend->retrieveMO(f.getMoFolder("cycle"), "cycle",
                              15000, Activity{}, { { metadata_keys::cycleNumber, "2" } });
-  BOOST_REQUIRE(mo.get() != nullptr);
-  BOOST_REQUIRE_NO_THROW(mo->getMetadata(metadata_keys::cycleNumber));
-  BOOST_REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "2");
+  REQUIRE(mo.get() != nullptr);
+  REQUIRE_NOTHROW(mo->getMetadata(metadata_keys::cycleNumber));
+  REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "2");
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_retrieve_qo", "[ccdb]")
 {
   test_fixture f;
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/test-ccdb-check", "", {}, "", false));
-  BOOST_REQUIRE_NE(qo, nullptr);
+  REQUIRE(qo != nullptr);
   Quality q = qo->getQuality();
-  BOOST_CHECK_EQUAL(q.getLevel(), 3);
-  BOOST_CHECK_EQUAL(qo->getActivity().mId, 1234);
-  BOOST_CHECK_EQUAL(qo->getActivity().mPeriodName, "LHC66");
-  BOOST_CHECK_EQUAL(qo->getActivity().mPassName, "passName1");
-  BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc");
+  CHECK(q.getLevel() == 3);
+  CHECK(qo->getActivity().mId == 1234);
+  CHECK(qo->getActivity().mPeriodName == "LHC66");
+  CHECK(qo->getActivity().mPassName == "passName1");
+  CHECK(qo->getActivity().mProvenance == "qc");
 
   qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/metadata", "", {}, "", false), repository::CcdbDatabase::Timestamp::Current, {}, { { "my_meta", "is_good" } });
-  BOOST_REQUIRE_NE(qo, nullptr);
-  BOOST_REQUIRE_NO_THROW(qo->getMetadata("my_meta"));
-  BOOST_CHECK_EQUAL(qo->getMetadata("my_meta"), "is_good");
+  REQUIRE(qo != nullptr);
+  REQUIRE_NOTHROW(qo->getMetadata("my_meta"));
+  CHECK(qo->getMetadata("my_meta") == "is_good");
 
   qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/metadata", "", {}, "", false), repository::CcdbDatabase::Timestamp::Current, {}, { { "my_meta", "nonexistent" } });
-  BOOST_REQUIRE_EQUAL(qo, nullptr);
+  REQUIRE(qo == nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_provenance", "[ccdb]")
 {
   test_fixture f;
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "", false), -1, { 0, "NONE", "", "", "qc_hello" });
-  BOOST_REQUIRE_NE(qo, nullptr);
-  BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
+  REQUIRE(qo != nullptr);
+  CHECK(qo->getActivity().mProvenance == "qc_hello");
 
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, "NONE", "", "", "qc_hello" });
-  BOOST_REQUIRE_NE(mo, nullptr);
-  BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
+  REQUIRE(mo != nullptr);
+  CHECK(mo->getActivity().mProvenance == "qc_hello");
 }
 
 unique_ptr<CcdbDatabase> backendGlobal = std::make_unique<CcdbDatabase>();
+// Catch2 assertions are not thread-safe, so the worker threads only count the failures and the test case checks them.
+std::atomic<int> emptyResultsGlobal{ 0 };
 
 void askObject(std::string objectPath)
 {
@@ -306,11 +313,13 @@ void askObject(std::string objectPath)
   cout << "std::string::max_size(): " << std::string().max_size() << endl;
   cout << "json string size: " << json.size() << endl;
   cout << "object " << json.substr(0, 10) << endl;
-  BOOST_CHECK(!json.empty());
+  if (json.empty()) {
+    emptyResultsGlobal++;
+  }
   cout << "finished " << endl;
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_test_thread, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_test_thread", "[ccdb]")
 {
   ROOT::EnableThreadSafety();
   string pid = std::to_string(getpid());
@@ -329,9 +338,12 @@ BOOST_AUTO_TEST_CASE(ccdb_test_thread, *utf::depends_on("ccdb_store"))
     t.join();
   }
   threads.clear();
+  CHECK(emptyResultsGlobal.load() == 0);
 }
 
 unique_ptr<o2::ccdb::CcdbApi> apiGlobal = std::make_unique<o2::ccdb::CcdbApi>();
+// Catch2 assertions are not thread-safe, so the worker threads only count the failures and the test case checks them.
+std::atomic<int> missingObjectsGlobal{ 0 };
 
 void askObjectApi(std::string objectPath)
 {
@@ -340,11 +352,13 @@ void askObjectApi(std::string objectPath)
   map<string, string> headers;
 
   auto* object = apiGlobal->retrieveFromTFileAny<TObject>(objectPath, metadata, -1, &headers);
-  BOOST_CHECK(object != nullptr);
+  if (object == nullptr) {
+    missingObjectsGlobal++;
+  }
   cout << "finished " << endl;
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_test_thread_api, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_test_thread_api", "[ccdb]")
 {
   ROOT::EnableThreadSafety();
   string pid = std::to_string(getpid());
@@ -365,9 +379,10 @@ BOOST_AUTO_TEST_CASE(ccdb_test_thread_api, *utf::depends_on("ccdb_store"))
     t.join();
   }
   threads.clear();
+  CHECK(missingObjectsGlobal.load() == 0);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
+TEST_CASE("ccdb_test_no_thread_api", "[ccdb]")
 {
   unique_ptr<o2::ccdb::CcdbApi> api = std::make_unique<o2::ccdb::CcdbApi>();
   string ccdbUrl = "http://" + QCDB_ENDPOINT;
@@ -387,7 +402,7 @@ BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
   }
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_metadata", "[ccdb]")
 {
   test_fixture f;
 
@@ -400,37 +415,37 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   std::map<std::string, std::string> headers2;
   TObject* obj1 = f.backend->retrieveTObject(pathQuarantine, f.metadata, -1, &headers1);
   TObject* obj2 = f.backend->retrieveTObject(pathMetadata, f.metadata, -1, &headers2);
-  BOOST_CHECK_NE(obj1, nullptr);
-  BOOST_CHECK_NE(obj2, nullptr);
-  BOOST_CHECK(headers1.size() > 0);
-  BOOST_CHECK(headers2.size() > 1);
-  BOOST_CHECK_EQUAL(headers1.count("my_meta"), 0);
-  BOOST_CHECK_EQUAL(headers2.count("my_meta"), 1);
-  BOOST_CHECK_EQUAL(headers2.at("my_meta"), "is_good");
+  CHECK(obj1 != nullptr);
+  CHECK(obj2 != nullptr);
+  CHECK(headers1.size() > 0);
+  CHECK(headers2.size() > 1);
+  CHECK(headers1.count("my_meta") == 0);
+  CHECK(headers2.count("my_meta") == 1);
+  CHECK(headers2.at("my_meta") == "is_good");
 
   // get the path without the objectName because of the interface retrieveMO
   auto obj1a = f.backend->retrieveMO(f.getMoFolder("quarantine"), "quarantine");
   auto obj2a = f.backend->retrieveMO(f.getQoFolder(""), "metadata");
-  BOOST_REQUIRE_NE(obj1a, nullptr);
-  BOOST_REQUIRE_NE(obj2a, nullptr);
-  BOOST_CHECK(obj1a->getMetadataMap().size() > 0);
-  BOOST_CHECK(obj2a->getMetadataMap().size() > 1);
-  BOOST_CHECK_EQUAL(obj1a->getMetadataMap().count("my_meta"), 0);
-  BOOST_CHECK_EQUAL(obj2a->getMetadataMap().count("my_meta"), 1);
-  BOOST_CHECK_EQUAL(obj2a->getMetadataMap().at("my_meta"), "is_good");
+  REQUIRE(obj1a != nullptr);
+  REQUIRE(obj2a != nullptr);
+  CHECK(obj1a->getMetadataMap().size() > 0);
+  CHECK(obj2a->getMetadataMap().size() > 1);
+  CHECK(obj1a->getMetadataMap().count("my_meta") == 0);
+  CHECK(obj2a->getMetadataMap().count("my_meta") == 1);
+  CHECK(obj2a->getMetadataMap().at("my_meta") == "is_good");
 
   auto obj3 = f.backend->retrieveQO(pathQuality.substr(3));
   auto obj4 = f.backend->retrieveQO(pathQualityMetadata.substr(3));
-  BOOST_REQUIRE_NE(obj3, nullptr);
-  BOOST_REQUIRE_NE(obj4, nullptr);
-  BOOST_CHECK(obj3->getMetadataMap().size() > 0);
-  BOOST_CHECK(obj4->getMetadataMap().size() > 1);
-  BOOST_CHECK_EQUAL(obj3->getMetadataMap().count("my_meta"), 0);
-  BOOST_CHECK_EQUAL(obj4->getMetadataMap().count("my_meta"), 1);
-  BOOST_CHECK_EQUAL(obj4->getMetadataMap().at("my_meta"), "is_good");
+  REQUIRE(obj3 != nullptr);
+  REQUIRE(obj4 != nullptr);
+  CHECK(obj3->getMetadataMap().size() > 0);
+  CHECK(obj4->getMetadataMap().size() > 1);
+  CHECK(obj3->getMetadataMap().count("my_meta") == 0);
+  CHECK(obj4->getMetadataMap().count("my_meta") == 1);
+  CHECK(obj4->getMetadataMap().at("my_meta") == "is_good");
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_any)
+TEST_CASE("ccdb_store_retrieve_any", "[ccdb]")
 {
   test_fixture f;
 
@@ -443,13 +458,13 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_any)
   meta.clear();
   void* rawResult = f.backend->retrieveAny(typeid(TH1F), f.getMoPath("storeAny"), meta);
   auto h1_back = static_cast<TH1F*>(rawResult);
-  BOOST_CHECK(rawResult != nullptr);
-  BOOST_CHECK(h1_back != nullptr);
-  BOOST_CHECK(h1_back->GetNbinsX() == 100);
-  BOOST_CHECK(h1_back->GetEntries() > 0);
+  CHECK(rawResult != nullptr);
+  CHECK(h1_back != nullptr);
+  CHECK(h1_back->GetNbinsX() == 100);
+  CHECK(h1_back->GetEntries() > 0);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_latest)
+TEST_CASE("ccdb_store_retrieve_latest", "[ccdb]")
 {
   test_fixture f;
 
@@ -471,11 +486,14 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_latest)
   f.backend->storeMO(mo1);
 
   std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, "NONE", "LHC66", "passName1", "qc" });
-  BOOST_REQUIRE(moBack != nullptr);
+  REQUIRE(moBack != nullptr);
   auto h1Back = dynamic_cast<TH1F*>(moBack->getObject());
-  BOOST_REQUIRE(h1Back != nullptr);
-  BOOST_CHECK_EQUAL(h1Back->GetEntries(), 20000);
+  REQUIRE(h1Back != nullptr);
+  CHECK(h1Back->GetEntries() == 20000);
 }
 
 } // namespace
+
+CATCH_REGISTER_LISTENER(CcdbDatabaseCleanupListener)
+
 } // namespace o2::quality_control::core

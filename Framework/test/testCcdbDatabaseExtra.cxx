@@ -20,19 +20,14 @@
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#define BOOST_TEST_MODULE CcdbDatabaseExtra test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include <TH1F.h>
 #include <cstdlib>
-
-namespace utf = boost::unit_test;
+#include <catch_amalgamated.hpp>
 
 namespace o2::quality_control::core
 {
 
+// anonymous namespace to keep these symbols visible only to this file (instead of all files combined into o2-qc-test-ccdb)
 namespace
 {
 
@@ -57,7 +52,7 @@ struct test_fixture {
   {
     backend = DatabaseFactory::create("CCDB");
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    ILOG(Info, Support) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
+    ILOG(Info, Support) << "*** " << Catch::getResultCapture().getCurrentTestName() << " ***" << ENDM;
   }
 
   ~test_fixture() = default;
@@ -68,8 +63,10 @@ struct test_fixture {
 
 // These tests should not be executed automatically, too much error prone.
 // It depends on what is in the database.
+// They are hidden (tag "[ccdb][.manual]") and have to be requested explicitly:
+// o2-qc-test-ccdb [ccdb][.manual]
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
+TEST_CASE("ccdb_retrieve_all", "[ccdb][.manual]")
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
@@ -85,7 +82,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
 
 long oldTimestamp;
 
-BOOST_AUTO_TEST_CASE(ccdb_store)
+TEST_CASE("ccdb_extra_store", "[ccdb][.manual]")
 {
   test_fixture f;
 
@@ -99,7 +96,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->storeQO(qo);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
+TEST_CASE("ccdb_retrieve_former_versions", "[ccdb][.manual]")
 {
   // store a new object
   test_fixture f;
@@ -110,37 +107,37 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store
 
   // Retrieve old object stored at timestampStorage
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf", oldTimestamp);
-  BOOST_CHECK(mo);
+  CHECK(mo);
   TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
-  BOOST_CHECK_NE(old, nullptr);
-  BOOST_CHECK_EQUAL(old->GetEntries(), 10000);
+  CHECK(old != nullptr);
+  CHECK(old->GetEntries() == 10000);
 
   // Retrieve latest object with timestamp
   std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
-  BOOST_CHECK(mo2);
+  CHECK(mo2);
   TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
-  BOOST_CHECK_NE(latest, nullptr);
-  BOOST_CHECK_EQUAL(latest->GetEntries(), 10001);
+  CHECK(latest != nullptr);
+  CHECK(latest->GetEntries() == 10001);
 
   // Retrieve latest object without timetsamp
   std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf");
-  BOOST_CHECK(mo3);
+  CHECK(mo3);
   TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
-  BOOST_CHECK_NE(latest2, nullptr);
-  BOOST_CHECK_EQUAL(latest2->GetEntries(), 10001);
+  CHECK(latest2 != nullptr);
+  CHECK(latest2->GetEntries() == 10001);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
+TEST_CASE("ccdb_getobjects_name", "[ccdb][.manual]")
 {
   test_fixture f;
 
   CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
   ILOG(Info, Support) << "getListing()" << ENDM;
   auto tasks = ccdb->getListing("/qc");
-  BOOST_CHECK_GT(tasks.size(), 0); // we know that there are a few
+  CHECK(tasks.size() > 0); // we know that there are a few
   // print but only for TST
   auto objects = f.backend->getPublishedObjectNames("/qc/TST");
-  BOOST_CHECK_GT(objects.size(), 0);
+  CHECK(objects.size() > 0);
 }
 } // namespace
 } // namespace o2::quality_control::core

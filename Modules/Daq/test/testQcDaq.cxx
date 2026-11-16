@@ -7,12 +7,8 @@
 //#include "QualityControl/TaskFactory.h"
 //#include <TSystem.h>
 
-#define BOOST_TEST_MODULE Publisher test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
 //#include <TH1.h>
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace std;
 
@@ -25,7 +21,7 @@ struct Config {
   std::string consulUrl = "invalid";
 };
 
-BOOST_AUTO_TEST_CASE(instantiate_task)
+TEST_CASE("instantiate_task")
 {
   DaqTask task;
   Config config;
@@ -37,7 +33,7 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   //  o2::framework::InitContext ctx;
   //  task.initialize(ctx); // TODO
 
-  //  BOOST_CHECK(manager->getMonitorObject("payloadSize")->getObject() != nullptr);
+  //  CHECK(manager->getMonitorObject("payloadSize")->getObject() != nullptr);
 
   //  Activity activity;
   //  task.startOfActivity(activity);
@@ -47,7 +43,7 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   //  task.monitorDataBlock(dataSet);// TODO
 
   //  TH1F* histo = (TH1F*)manager->getMonitorObject("payloadSize")->getObject();
-  //  BOOST_CHECK(histo->GetEntries() == 1);
+  //  CHECK(histo->GetEntries() == 1);
 
   //  task.endOfCycle();
   //  task.endOfActivity(activity);

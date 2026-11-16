@@ -25,12 +25,9 @@
 #include <TH1I.h>
 #include <TTree.h>
 
-#define BOOST_TEST_MODULE Reductor test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
-#include <boost/test/unit_test.hpp>
 #include <cstdlib>
+#include <unistd.h>
+#include <catch_amalgamated.hpp>
 
 // These tests upload, so this has to be a WRITABLE instance -- ccdb-test by
 // default. ALICEO2_CCDB_HOST lets a network-isolated build container reach one
@@ -45,6 +42,9 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control::repository;
 
+// anonymous namespace to keep this class symbols visible only to this file (instead of all files combined into o2-qc-test-core)
+namespace
+{
 class MyReductor : public ReductorTObject
 {
  public:
@@ -73,7 +73,9 @@ class MyReductor : public ReductorTObject
   } mStats;
 };
 
-BOOST_AUTO_TEST_CASE(test_ReductorTObjectInterface)
+} // namespace
+
+TEST_CASE("test_ReductorTObjectInterface")
 {
   auto histo = std::make_unique<TH1I>("test", "test", 10, 0, 1000);
   auto reductor = std::make_unique<MyReductor>();
@@ -95,16 +97,19 @@ BOOST_AUTO_TEST_CASE(test_ReductorTObjectInterface)
   reductor->update(histo.get());
   tree->Fill();
 
-  BOOST_REQUIRE_EQUAL(tree->GetEntries(), 4);
+  REQUIRE(tree->GetEntries() == 4);
   tree->Draw("histo.integral", "", "goff");
   Double_t* integrals = tree->GetVal(0);
 
-  BOOST_CHECK_EQUAL(integrals[0], 0);
-  BOOST_CHECK_EQUAL(integrals[1], 1);
-  BOOST_CHECK_EQUAL(integrals[2], 2);
-  BOOST_CHECK_EQUAL(integrals[3], 5);
+  CHECK(integrals[0] == 0);
+  CHECK(integrals[1] == 1);
+  CHECK(integrals[2] == 2);
+  CHECK(integrals[3] == 5);
 }
 
+// anonymous namespace to keep this class symbols visible only to this file (instead of all files combined into o2-qc-test-core)
+namespace
+{
 class MyReductorAny : public ReductorConditionAny
 {
  public:
@@ -148,18 +153,27 @@ std::string fullTestObjectPath()
   return pathToTestObject() + "/string";
 }
 
-struct MyGlobalFixture {
-  void teardown()
+// Cleans up the objects stored by the tests in this file once the whole test run is over
+class ReductorCleanupListener : public Catch::EventListenerBase
+{
+ public:
+  using Catch::EventListenerBase::EventListenerBase;
+
+  void testRunEnded(Catch::TestRunStats const&) override
   {
-    std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
-    backend->connect(CCDB_ENDPOINT, "", "", "");
-    // cannot use the test_fixture because we are tearing down
-    backend->truncate(pathToTestObject(), "*");
+    try {
+      std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
+      backend->connect(CCDB_ENDPOINT, "", "", "");
+      backend->truncate(pathToTestObject(), "*");
+    } catch (...) {
+    }
   }
 };
-BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
+} // namespace
 
-BOOST_AUTO_TEST_CASE(test_ReductorAnyInterface)
+CATCH_REGISTER_LISTENER(ReductorCleanupListener)
+
+TEST_CASE("test_ReductorAnyInterface", "[ccdb]")
 {
   std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
   backend->connect(CCDB_ENDPOINT, "", "", "");
@@ -175,14 +189,14 @@ BOOST_AUTO_TEST_CASE(test_ReductorAnyInterface)
   tree->Branch("numbers", reductor->getBranchAddress(), reductor->getBranchLeafList());
   reductor->update(conditionAccess, 5, fullTestObjectPath());
   tree->Fill();
-  BOOST_REQUIRE_EQUAL(tree->GetEntries(), 1);
+  REQUIRE(tree->GetEntries() == 1);
   tree->Draw("numbers.a", "", "goff");
   Double_t* integrals = tree->GetVal(0);
 
-  BOOST_CHECK_EQUAL(integrals[0], secret.Length());
+  CHECK(integrals[0] == secret.Length());
 }
 
-BOOST_AUTO_TEST_CASE(test_ReductorConfigurable)
+TEST_CASE("test_ReductorConfigurable")
 {
   class ReductorTest : public Reductor
   {
@@ -205,5 +219,5 @@ BOOST_AUTO_TEST_CASE(test_ReductorConfigurable)
   params.set("key", "value");
   Reductor& r = reductor;
   r.setCustomConfig(params);
-  BOOST_REQUIRE_EQUAL(r.getBranchLeafList(), "value");
+  REQUIRE(std::string(r.getBranchLeafList()) == "value");
 }

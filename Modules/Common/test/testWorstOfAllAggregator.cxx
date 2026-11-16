@@ -16,14 +16,10 @@
 
 #include "Common/WorstOfAllAggregator.h"
 
-#define BOOST_TEST_MODULE WorstOfAllAggregator test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-
 #include <QualityControl/Quality.h>
 #include <DataFormatsQualityControl/FlagType.h>
 #include <DataFormatsQualityControl/FlagTypeFactory.h>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
@@ -32,7 +28,7 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::common
 {
 
-BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
+TEST_CASE("test_WorstOfAllAggregator")
 {
   WorstOfAllAggregator agg1;
   agg1.configure();
@@ -48,38 +44,38 @@ BOOST_AUTO_TEST_CASE(test_WorstOfAllAggregator)
   QualityObjectsMapType input;
 
   std::map<std::string, Quality> result1 = agg1.aggregate(input);
-  BOOST_REQUIRE_EQUAL(result1.size(), 1);
-  BOOST_CHECK_EQUAL(result1["agg1"], Quality::Null); // because empty vector passed
-  BOOST_REQUIRE_EQUAL(result1["agg1"].getFlags().size(), 1);
-  BOOST_CHECK_EQUAL(result1["agg1"].getFlags().at(0).first, FlagTypeFactory::UnknownQuality());
+  REQUIRE(result1.size() == 1);
+  CHECK(result1["agg1"] == Quality::Null); // because empty vector passed
+  REQUIRE(result1["agg1"].getFlags().size() == 1);
+  CHECK(result1["agg1"].getFlags().at(0).first == FlagTypeFactory::UnknownQuality());
 
   input[qoGood->getName()] = qoGood;
   std::map<std::string, Quality> result2 = agg1.aggregate(input);
-  BOOST_REQUIRE_EQUAL(result2.size(), 1);
-  BOOST_CHECK_EQUAL(result2["agg1"], Quality::Good);
-  BOOST_CHECK_EQUAL(result2["agg1"].getFlags().size(), 0);
+  REQUIRE(result2.size() == 1);
+  CHECK(result2["agg1"] == Quality::Good);
+  CHECK(result2["agg1"].getFlags().size() == 0);
 
   input[qoMedium->getName()] = qoMedium;
   std::map<std::string, Quality> result3 = agg1.aggregate(input);
-  BOOST_REQUIRE_EQUAL(result3.size(), 1);
-  BOOST_CHECK_EQUAL(result3["agg1"], Quality::Medium);
-  BOOST_REQUIRE_EQUAL(result3["agg1"].getFlags().size(), 1);
-  BOOST_CHECK_EQUAL(result3["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
+  REQUIRE(result3.size() == 1);
+  CHECK(result3["agg1"] == Quality::Medium);
+  REQUIRE(result3["agg1"].getFlags().size() == 1);
+  CHECK(result3["agg1"].getFlags().at(0).first == FlagTypeFactory::BadPID());
 
   input[qoBad->getName()] = qoBad;
   std::map<std::string, Quality> result4 = agg1.aggregate(input);
-  BOOST_REQUIRE_EQUAL(result4.size(), 1);
-  BOOST_CHECK_EQUAL(result4["agg1"], Quality::Bad);
-  BOOST_REQUIRE_EQUAL(result4["agg1"].getFlags().size(), 1);
-  BOOST_CHECK_EQUAL(result4["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
+  REQUIRE(result4.size() == 1);
+  CHECK(result4["agg1"] == Quality::Bad);
+  REQUIRE(result4["agg1"].getFlags().size() == 1);
+  CHECK(result4["agg1"].getFlags().at(0).first == FlagTypeFactory::BadPID());
 
   input[qoNull->getName()] = qoNull;
   std::map<std::string, Quality> result5 = agg1.aggregate(input);
-  BOOST_REQUIRE_EQUAL(result5.size(), 1);
-  BOOST_CHECK_EQUAL(result5["agg1"], Quality::Null);
-  BOOST_REQUIRE_EQUAL(result5["agg1"].getFlags().size(), 2);
-  BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(0).first, FlagTypeFactory::BadPID());
-  BOOST_CHECK_EQUAL(result5["agg1"].getFlags().at(1).first, FlagTypeFactory::BadTracking());
+  REQUIRE(result5.size() == 1);
+  CHECK(result5["agg1"] == Quality::Null);
+  REQUIRE(result5["agg1"].getFlags().size() == 2);
+  CHECK(result5["agg1"].getFlags().at(0).first == FlagTypeFactory::BadPID());
+  CHECK(result5["agg1"].getFlags().at(1).first == FlagTypeFactory::BadTracking());
 }
 
 } // namespace o2::quality_control_modules::common

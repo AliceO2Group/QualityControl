@@ -16,13 +16,10 @@
 
 #include "QualityControl/QcInfoLogger.h"
 
-#define BOOST_TEST_MODULE InfoLogger test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
 #include <fairlogger/Logger.h>
 #include <cstdlib>
 #include <InfoLogger/InfoLoggerMacros.hxx>
+#include <catch_amalgamated.hpp>
 
 using namespace std;
 using namespace AliceO2::InfoLogger;
@@ -30,15 +27,15 @@ using namespace AliceO2::InfoLogger;
 namespace o2::quality_control::core
 {
 
-BOOST_AUTO_TEST_CASE(qc_info_logger)
+TEST_CASE("qc_info_logger")
 {
   AliceO2::InfoLogger::InfoLogger& qc1 = QcInfoLogger::GetInfoLogger();
   AliceO2::InfoLogger::InfoLogger& qc2 = QcInfoLogger::GetInfoLogger();
-  BOOST_CHECK_EQUAL(&qc1, &qc2);
+  CHECK(&qc1 == &qc2);
   qc1 << "test" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-BOOST_AUTO_TEST_CASE(qc_info_logger_2)
+TEST_CASE("qc_info_logger_2")
 {
   // Decreasing verbosity of the code
   QcInfoLogger::GetInfoLogger() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -74,7 +71,7 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   ILOG(Info, Trace) << "LogInfoTrace" << ENDM;
 }
 
-BOOST_AUTO_TEST_CASE(qc_info_logger_fields)
+TEST_CASE("qc_info_logger_fields")
 {
   ILOG(Info, Support) << "No fields set, facility=QC, system=QC, detector=<none>" << ENDM;
   QcInfoLogger::setDetector("ITS");
@@ -87,13 +84,15 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_fields)
   ILOG(Info, Support) << "Partition set to physics_1, facility=Test, system=QC, detector=ITS" << ENDM;
 }
 
-BOOST_AUTO_TEST_CASE(qc_info_logger_dplil)
+TEST_CASE("qc_info_logger_dplil")
 {
-  AliceO2::InfoLogger::InfoLogger dplInfoLogger;
+  // QcInfoLogger::init() stores the pointers globally, so these must outlive the test case (deliberately leaked),
+  // otherwise any test running afterwards in the same process would use a dangling logger.
+  auto dplInfoLogger = new AliceO2::InfoLogger::InfoLogger();
   auto dplContext = new AliceO2::InfoLogger::InfoLoggerContext();
   dplContext->setField(infoContext::FieldName::Facility, "dplfacility");
   dplContext->setField(infoContext::FieldName::System, "dplsystem");
-  QcInfoLogger::init("facility", { false, 21, "" }, &dplInfoLogger, dplContext);
+  QcInfoLogger::init("facility", { false, 21, "" }, dplInfoLogger, dplContext);
 }
 
 } // namespace o2::quality_control::core

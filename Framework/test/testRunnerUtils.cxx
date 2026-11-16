@@ -16,25 +16,21 @@
 
 #include "QualityControl/runnerUtils.h"
 
-#define BOOST_TEST_MODULE RunnerUtils test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/DataProcessorSpec.h>
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace o2::quality_control::core;
 using namespace std;
 
-BOOST_AUTO_TEST_CASE(test_computeActivity)
+TEST_CASE("test_computeActivity")
 {
   string runType;
-  BOOST_CHECK_EQUAL(translateIntegerRunType("0"), "NONE");
-  BOOST_CHECK_EQUAL(translateIntegerRunType("1"), "PHYSICS");
-  BOOST_CHECK_EQUAL(translateIntegerRunType("18"), "CALIBRATION_VRESETD");
-  BOOST_CHECK_EQUAL(translateIntegerRunType("34"), "NONE");   // unknown
-  BOOST_CHECK_EQUAL(translateIntegerRunType("-134"), "-134"); // not a uint
-  BOOST_CHECK_EQUAL(translateIntegerRunType("NONE"), "NONE");
-  BOOST_CHECK_EQUAL(translateIntegerRunType("bla"), "bla");
+  CHECK(translateIntegerRunType("0") == "NONE");
+  CHECK(translateIntegerRunType("1") == "PHYSICS");
+  CHECK(translateIntegerRunType("18") == "CALIBRATION_VRESETD");
+  CHECK(translateIntegerRunType("34") == "NONE");   // unknown
+  CHECK(translateIntegerRunType("-134") == "-134"); // not a uint
+  CHECK(translateIntegerRunType("NONE") == "NONE");
+  CHECK(translateIntegerRunType("bla") == "bla");
 }
