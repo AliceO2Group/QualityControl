@@ -31,17 +31,9 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/Daq
 
 # ---- Tests ----
 
-set(TEST_SRCS test/testQcDaq.cxx)
-
-foreach(test ${TEST_SRCS})
-  get_filename_component(test_name ${test} NAME)
-  string(REGEX REPLACE ".cxx" "" test_name ${test_name})
-
-  add_executable(${test_name} ${test})
-  target_link_libraries(${test_name}
-                        PRIVATE O2QcDaq Boost::unit_test_framework)
-  add_test(NAME ${test_name} COMMAND ${test_name})
-  set_property(TARGET ${test_name}
-    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
-endforeach()
+add_executable(o2-qc-test-daq test/testQcDaq.cxx)
+target_link_libraries(o2-qc-test-daq PRIVATE O2QcDaq O2::Catch2)
+set_property(TARGET o2-qc-test-daq
+             PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+add_test(NAME o2-qc-test-daq COMMAND o2-qc-test-daq)
+set_tests_properties(o2-qc-test-daq PROPERTIES TIMEOUT 20)

@@ -17,20 +17,16 @@
 #include "QualityControl/ObjectMetadataKeys.h"
 #include "QualityControl/Triggers.h"
 
-#define BOOST_TEST_MODULE Triggers test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/RepoPathUtils.h"
 
 #include <CCDB/CcdbApi.h>
-#include <boost/test/unit_test.hpp>
 #include <TH1F.h>
 #include <cstdlib>
 #include <chrono>
+#include <catch_amalgamated.hpp>
 using namespace std::chrono;
 
 using namespace o2::quality_control::postprocessing;
@@ -45,47 +41,47 @@ const std::string CCDB_ENDPOINT = [] {
   return std::string((host && *host) ? host : "ccdb-test.cern.ch:8080");
 }();
 
-BOOST_AUTO_TEST_CASE(test_casting_triggers)
+TEST_CASE("test_casting_triggers")
 {
   auto once = triggers::Once();
 
   // confirm that enum values works
-  BOOST_CHECK_EQUAL(once(), TriggerType::Once);
-  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  CHECK(once() == TriggerType::Once);
+  CHECK(once() == TriggerType::No);
 
   // confirm that casting to booleans works
-  BOOST_CHECK_EQUAL(once(), false);
-  BOOST_CHECK(!once());
+  CHECK(once() == false);
+  CHECK(!once());
   once = triggers::Once();
-  BOOST_CHECK_EQUAL(once(), true);
+  CHECK(once() == true);
   once = triggers::Once();
-  BOOST_CHECK(once());
+  CHECK(once());
 }
 
-BOOST_AUTO_TEST_CASE(test_timestamps_triggers)
+TEST_CASE("test_timestamps_triggers")
 {
   Trigger t1(TriggerType::Once, false, 123);
-  BOOST_CHECK_EQUAL(t1.triggerType, TriggerType::Once);
-  BOOST_CHECK_EQUAL(t1.timestamp, 123);
+  CHECK(t1.triggerType == TriggerType::Once);
+  CHECK(t1.timestamp == 123);
 
   auto nowMs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   Trigger t2(TriggerType::Once);
-  BOOST_CHECK_EQUAL(t2.triggerType, TriggerType::Once);
-  BOOST_CHECK(std::abs(static_cast<long long>(t2.timestamp - nowMs)) < 100000); // 100 seconds of max. difference should be fine.
+  CHECK(t2.triggerType == TriggerType::Once);
+  CHECK(std::abs(static_cast<long long>(t2.timestamp - nowMs)) < 100000); // 100 seconds of max. difference should be fine.
 }
 
-BOOST_AUTO_TEST_CASE(test_trigger_once)
+TEST_CASE("test_trigger_once")
 {
   auto once = triggers::Once();
 
-  BOOST_CHECK_EQUAL(once(), TriggerType::Once);
-  BOOST_CHECK_EQUAL(once(), TriggerType::No);
-  BOOST_CHECK_EQUAL(once(), TriggerType::No);
-  BOOST_CHECK_EQUAL(once(), TriggerType::No);
-  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  CHECK(once() == TriggerType::Once);
+  CHECK(once() == TriggerType::No);
+  CHECK(once() == TriggerType::No);
+  CHECK(once() == TriggerType::No);
+  CHECK(once() == TriggerType::No);
 }
 
-BOOST_AUTO_TEST_CASE(test_trigger_new_object)
+TEST_CASE("test_trigger_new_object", "[ccdb]")
 {
   // Setup and initialise objects
   const std::string pid = std::to_string(getpid());
@@ -104,13 +100,13 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   // Clean up existing objects
   auto directDBAPI = std::make_shared<o2::ccdb::CcdbApi>();
   directDBAPI->init(CCDB_ENDPOINT);
-  BOOST_REQUIRE(directDBAPI->isHostReachable());
+  REQUIRE(directDBAPI->isHostReachable());
   directDBAPI->truncate(fullObjectPath);
 
   // Check before update - no objects expected
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  CHECK(newObjectTrigger() == TriggerType::No);
+  CHECK(newObjectTrigger() == TriggerType::No);
+  CHECK(newObjectTrigger() == TriggerType::No);
 
   // Send the object
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
@@ -120,9 +116,9 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   repository->storeMO(mo);
 
   // Check after sending
-  BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  CHECK(newObjectTrigger() == Trigger(TriggerType::NewObject, currentTimestamp));
+  CHECK(newObjectTrigger() == TriggerType::No);
+  CHECK(newObjectTrigger() == TriggerType::No);
 
   // Update the object
   obj->Fill(10);
@@ -131,15 +127,15 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   repository->storeMO(mo);
 
   // Check after the update
-  BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
-  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  CHECK(newObjectTrigger() == Trigger(TriggerType::NewObject, currentTimestamp));
+  CHECK(newObjectTrigger() == TriggerType::No);
+  CHECK(newObjectTrigger() == TriggerType::No);
 
   // Clean up remaining objects
   directDBAPI->truncate(fullObjectPath);
 }
 
-BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
+TEST_CASE("test_trigger_for_each_object", "[ccdb]")
 {
   // Setup and initialise objects
   const std::string pid = std::to_string(getpid());
@@ -156,7 +152,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
   // Clean up existing objects
   auto directDBAPI = std::make_shared<o2::ccdb::CcdbApi>();
   directDBAPI->init(CCDB_ENDPOINT);
-  BOOST_REQUIRE(directDBAPI->isHostReachable());
+  REQUIRE(directDBAPI->isHostReachable());
   directDBAPI->truncate(fullObjectPath);
 
   // Send three objects with different metadata
@@ -176,14 +172,14 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
     auto trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 0);
 
     trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 0);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
 
   {
@@ -191,15 +187,15 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
     auto trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 0);
 
     trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 1);
-    BOOST_CHECK_EQUAL(trigger.metadata.at(metadata_keys::cycleNumber), "42");
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 1);
+    CHECK(trigger.metadata.at(metadata_keys::cycleNumber) == "42");
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
 
   {
@@ -207,33 +203,33 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_object)
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
     auto trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 0);
 
     trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 0);
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 0);
 
     trigger = forEachObjectTrigger();
-    BOOST_CHECK_EQUAL(trigger, TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(trigger.metadata.size(), 1);
-    BOOST_CHECK_EQUAL(trigger.metadata.at(metadata_keys::cycleNumber), "42");
+    CHECK(trigger == TriggerType::ForEachObject);
+    CHECK(trigger.metadata.size() == 1);
+    CHECK(trigger.metadata.at(metadata_keys::cycleNumber) == "42");
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
 
   {
     const Activity activityTimeRestriction{ 0, "NONE", "", "", "qc", { static_cast<validity_time_t>(currentTimestamp), static_cast<validity_time_t>(currentTimestamp + 5) } };
     auto forEachObjectTrigger = triggers::ForEachObject(CCDB_ENDPOINT, "qcdb", objectPath, activityTimeRestriction);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachObject);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachObject);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
   // Clean up remaining objects
   directDBAPI->truncate(fullObjectPath);
 }
 
-BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
+TEST_CASE("test_trigger_for_each_latest", "[ccdb]")
 {
   // Setup and initialise objects
   const std::string pid = std::to_string(getpid());
@@ -250,7 +246,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
   // Clean up existing objects
   auto directDBAPI = std::make_shared<o2::ccdb::CcdbApi>();
   directDBAPI->init(CCDB_ENDPOINT);
-  BOOST_REQUIRE(directDBAPI->isHostReachable());
+  REQUIRE(directDBAPI->isHostReachable());
   directDBAPI->truncate(fullObjectPath);
 
   // Send three objects with different metadata
@@ -271,28 +267,28 @@ BOOST_AUTO_TEST_CASE(test_trigger_for_each_latest)
     const Activity activityAllRunsPass1{ 0, "TECHNICAL", "FCC42x", "tpass1", "qc" };
     auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityAllRunsPass1);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
 
   {
     const Activity activityRun100AllPasses{ 100, "TECHNICAL", "FCC42x", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityRun100AllPasses);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
 
   {
     const Activity activityAll{ 0, "NONE", "", "", "qc" };
     auto forEachObjectTrigger = triggers::ForEachLatest(CCDB_ENDPOINT, "qcdb", objectPath, activityAll);
 
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::ForEachLatest);
-    BOOST_CHECK_EQUAL(forEachObjectTrigger(), TriggerType::No);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::ForEachLatest);
+    CHECK(forEachObjectTrigger() == TriggerType::No);
   }
 
   // Clean up remaining objects

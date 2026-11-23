@@ -17,65 +17,60 @@
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QualityObject.h"
-#include "QualityControl/testUtils.h"
+#include <Common/Exceptions.h>
 #include <TH1F.h>
-
-#define BOOST_TEST_MODULE RepoPathUtils test
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include <catch_amalgamated.hpp>
 
 using namespace std;
-using namespace o2::quality_control::test;
 using namespace o2::quality_control::core;
 
-BOOST_AUTO_TEST_CASE(qopath)
+TEST_CASE("RepoPathUtils_qopath")
 {
   // no policy
   QualityObject qo(Quality::Null, "xyzCheck", "DET");
   string path = RepoPathUtils::getQoPath(&qo);
-  BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
+  CHECK(path == "qc/DET/QO/xyzCheck");
   path = RepoPathUtils::getQoPath("DET", "xyzCheck");
-  BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
+  CHECK(path == "qc/DET/QO/xyzCheck");
 
   // provenance
   qo.getActivity().mProvenance = "qc_mc";
   path = RepoPathUtils::getQoPath(&qo);
-  BOOST_CHECK_EQUAL(path, "qc_mc/DET/QO/xyzCheck");
+  CHECK(path == "qc_mc/DET/QO/xyzCheck");
 
   // a policy which is not OnEachSeparately
   QualityObject qo2(Quality::Null, "xyzCheck", "DET", "OnAnyNonZero");
   string path2 = RepoPathUtils::getQoPath(&qo2);
-  BOOST_CHECK_EQUAL(path2, "qc/DET/QO/xyzCheck");
+  CHECK(path2 == "qc/DET/QO/xyzCheck");
   path2 = RepoPathUtils::getQoPath("DET", "xyzCheck", "OnAnyNonZero");
-  BOOST_CHECK_EQUAL(path2, "qc/DET/QO/xyzCheck");
+  CHECK(path2 == "qc/DET/QO/xyzCheck");
 
   // policy is OnEachSeparately
   QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, { "objectABC" });
   string path3 = RepoPathUtils::getQoPath(&qo3);
-  BOOST_CHECK_EQUAL(path3, "qc/DET/QO/xyzCheck/objectABC");
+  CHECK(path3 == "qc/DET/QO/xyzCheck/objectABC");
   path2 = RepoPathUtils::getQoPath("DET", "xyzCheck", "OnEachSeparately", { "objectABC" });
-  BOOST_CHECK_EQUAL(path3, "qc/DET/QO/xyzCheck/objectABC");
+  CHECK(path3 == "qc/DET/QO/xyzCheck/objectABC");
 
   // policy is OnEachSeparately and the vector is empty
   QualityObject qo4(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {});
-  BOOST_CHECK_EXCEPTION(RepoPathUtils::getQoPath(&qo4), AliceO2::Common::FatalException, do_nothing);
-  BOOST_CHECK_EXCEPTION(RepoPathUtils::getQoPath("DET", "xyzCheck", "OnEachSeparately", {}), AliceO2::Common::FatalException, do_nothing);
+  CHECK_THROWS_AS(RepoPathUtils::getQoPath(&qo4), AliceO2::Common::FatalException);
+  CHECK_THROWS_AS(RepoPathUtils::getQoPath("DET", "xyzCheck", "OnEachSeparately", {}), AliceO2::Common::FatalException);
 }
 
-BOOST_AUTO_TEST_CASE(mopath)
+TEST_CASE("RepoPathUtils_mopath")
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
   o2::quality_control::core::MonitorObject obj(&h, "task", "class", "DET");
   obj.setIsOwner(false);
   string path = RepoPathUtils::getMoPath(&obj);
-  BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
+  CHECK(path == "qc/DET/MO/task/asdf");
   path = RepoPathUtils::getMoPath("DET", "task", "asdf");
-  BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
+  CHECK(path == "qc/DET/MO/task/asdf");
 
   // provenance
   obj.getActivity().mProvenance = "qc_mc";
   path = RepoPathUtils::getMoPath(&obj);
-  BOOST_CHECK_EQUAL(path, "qc_mc/DET/MO/task/asdf");
+  CHECK(path == "qc_mc/DET/MO/task/asdf");
 }
