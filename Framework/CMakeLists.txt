@@ -18,6 +18,7 @@ target_include_directories(O2QualityControlInfoLogger
 target_link_libraries(O2QualityControlInfoLogger
   PUBLIC
   AliceO2::InfoLogger
+  O2::Framework
 )
 
 # ---- Library for the types ----
