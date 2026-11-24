@@ -16,6 +16,8 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include <boost/property_tree/ptree.hpp>
+#include <Framework/DefaultsHelpers.h>
+#include <Framework/DataTakingContext.h>
 
 namespace o2::quality_control::core
 {
@@ -92,6 +94,14 @@ void QcInfoLogger::init(const std::string& facility,
   if (!discardParameters.file.empty()) {
     ILOG_INST.filterDiscardSetFile(discardParameters.file.c_str(), discardParameters.rotateMaxBytes, discardParameters.rotateMaxFiles, 0, !discardParameters.debugInDiscardFile /*Do not store Debug messages in file*/);
   }
+
+  // On the grid make sure that we use stdout and not the local infologger daemon even if it is there.
+  auto deploymentMode = o2::framework::DefaultsHelpers::deploymentMode();
+  if (deploymentMode == o2::framework::DeploymentMode::Grid) {
+    setenv("O2_INFOLOGGER_MODE", "stdout", 1);
+    ILOG(Debug, Support) << "Running on the Grid -> output goes to stdout." << ENDM;
+  }
+
   ILOG(Debug, Support) << "QC infologger initialized : " << discardParameters.debug << " ; " << discardParameters.fromLevel << ENDM;
   ILOG(Debug, Devel) << "   Discard debug ? " << discardParameters.debug << " / Discard from level ? " << discardParameters.fromLevel << " / Discard to file ? " << (!discardParameters.file.empty() ? discardParameters.file : "No") << " / Discard max bytes and files ? " << discardParameters.rotateMaxBytes << " = " << discardParameters.rotateMaxFiles << " / Put discarded debug messages in file ? " << discardParameters.debugInDiscardFile << ENDM;
 
