@@ -17,10 +17,9 @@
 #ifndef QUALITYCONTROL_TRENDINGTASKCONFIG_H
 #define QUALITYCONTROL_TRENDINGTASKCONFIG_H
 
-#include <vector>
 #include <string>
-#include "CustomParameters.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/TrendingMachineConfig.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -32,68 +31,11 @@ struct TrendingTaskConfig : PostProcessingConfig {
   TrendingTaskConfig(std::string name, const boost::property_tree::ptree& config);
   ~TrendingTaskConfig() = default;
 
-  // graph style configuration
-  // colors as defined by ROOT TColor class:
-  // https://root.cern/doc/master/classTColor.html
-  // marker colors and styles are as defined by ROOT TAttMarker class
-  // https://root.cern/doc/master/classTAttMarker.html
-  // line styles are as defined by ROOT TAttLine class
-  // https://root.cern/doc/master/classTAttLine.html
-  // WARNING: Any parameters in this struct will override colliding parameters in option
-  struct GraphStyle {
-    int lineColor = -1;
-    int lineStyle = -1;
-    int lineWidth = -1;
-    int markerColor = -1;
-    int markerStyle = -1;
-    float markerSize = -1.f;
-    int fillColor = -1;
-    int fillStyle = -1;
-  };
-
-  // this corresponds to one TTree::Draw() call, i.e. one graph or histogram drawing
-  struct Graph {
-    std::string name;
-    std::string title;
-    std::string varexp;
-    std::string selection;
-    std::string option; // the list of possible options are documented in TGraphPainter and THistPainter
-    std::string errors;
-    GraphStyle style;
-  };
-
-  // legend configuration
-  struct LegendConfig {
-    int nColumns{ 1 };
-    float x1{ -1.f }, y1{ -1.f }, x2{ -1.f }, y2{ -1.f }; // NDC coords
-  };
-
-  // this corresponds to one canvas which can include multiple graphs
-  struct Plot {
-    std::string name;
-    std::string title;
-    std::string graphAxisLabel;
-    std::string graphYRange;
-    int colorPalette = 0;
-    LegendConfig legend;
-    std::vector<Graph> graphs;
-  };
-
-  struct DataSource {
-    std::string type;
-    std::string path;
-    std::string name;
-    std::string reductorName;
-    core::CustomParameters reductorParameters;
-    std::string moduleName;
-  };
-
   bool producePlotsOnUpdate{};
   bool resumeTrend{};
   bool trendIfAllInputs{ false };
   std::string trendingTimestamp;
-  std::vector<Plot> plots;
-  std::vector<DataSource> dataSources;
+  TrendingMachineConfig machine;
 };
 
 } // namespace o2::quality_control::postprocessing
