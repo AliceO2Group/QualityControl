@@ -22,6 +22,7 @@
 #include <boost/property_tree/ptree_fwd.hpp>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace o2::ccdb
 {
@@ -75,12 +76,12 @@ class CcdbDatabase : public DatabaseInterface
                     std::map<std::string, std::string>* headers = nullptr,
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
-  // retrieval - MO - deprecated
+  // retrieval - MO
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName,
                                                                        long timestamp = Timestamp::Current,
                                                                        const core::Activity& activity = {},
                                                                        const std::map<std::string, std::string>& metadata = {}) override;
-  // retrieval - QO - deprecated
+  // retrieval - QO
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current,
                                                                        const core::Activity& activity = {},
                                                                        const std::map<std::string, std::string>& metadata = {}) override;
@@ -162,6 +163,22 @@ class CcdbDatabase : public DatabaseInterface
    * @param className
    */
   static void addFrameworkMetadata(std::map<std::string, std::string>& fullMetadata, std::string detectorName, std::string className);
+
+  /**
+   * Retrieve a QC object (MO or QO payload) given its path without the provenance prefix.
+   * The provenance prefix is taken from the activity, and the activity is converted into metadata filters
+   * and merged with the additional metadata.
+   * @param pathWithoutProvenance the path of the object, without the provenance prefix
+   * @param timestamp the timestamp to query the object
+   * @param activity activity used to build the full path and the metadata filters
+   * @param extraMetadata additional metadata to filter objects during retrieval
+   * @param headers populated with the headers received from the database
+   * @return the full path of the object (with provenance) and the retrieved object, or nullptr if not found
+   */
+  std::pair<std::string, TObject*> retrieveQcObject(const std::string& pathWithoutProvenance, long timestamp,
+                                                    const core::Activity& activity,
+                                                    const std::map<std::string, std::string>& extraMetadata,
+                                                    std::map<std::string, std::string>& headers);
 
   std::unique_ptr<o2::ccdb::CcdbApi> ccdbApi;
   std::string mUrl;

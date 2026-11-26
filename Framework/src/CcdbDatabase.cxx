@@ -311,21 +311,28 @@ void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, cons
   return object;
 }
 
+std::pair<std::string, TObject*> CcdbDatabase::retrieveQcObject(const std::string& pathWithoutProvenance, long timestamp,
+                                                                const core::Activity& activity,
+                                                                const std::map<std::string, std::string>& extraMetadata,
+                                                                std::map<std::string, std::string>& headers)
+{
+  string fullPath = activity.mProvenance + "/" + pathWithoutProvenance;
+  map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
+  metadata.insert(extraMetadata.begin(), extraMetadata.end());
+  TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
+  if (obj == nullptr && headers.count("Error") > 0) {
+    ILOG(Error, Support) << headers["Error"] << ENDM;
+  }
+  return { fullPath, obj };
+}
+
 std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName,
                                                                                    long timestamp, const core::Activity& activity,
                                                                                    const std::map<std::string, std::string>& metadataToRetrieve)
 {
-  string fullPath = activity.mProvenance + "/" + objectPath + "/" + objectName;
   map<string, string> headers;
-  map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
-  metadata.insert(metadataToRetrieve.begin(), metadataToRetrieve.end());
-  TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
-
-  // no object found
+  auto [fullPath, obj] = retrieveQcObject(objectPath + "/" + objectName, timestamp, activity, metadataToRetrieve, headers);
   if (obj == nullptr) {
-    if (headers.count("Error") > 0) {
-      ILOG(Error, Support) << headers["Error"] << ENDM;
-    }
     return nullptr;
   }
 
@@ -360,10 +367,7 @@ std::shared_ptr<o2::quality_control::core::QualityObject> CcdbDatabase::retrieve
                                                                                    const std::map<std::string, std::string>& metadataToRetrieve)
 {
   map<string, string> headers;
-  map<string, string> metadata = activity_helpers::asDatabaseMetadata(activity, false);
-  metadata.insert(metadataToRetrieve.begin(), metadataToRetrieve.end());
-  auto fullPath = activity.mProvenance + "/" + qoPath;
-  TObject* obj = retrieveTObject(fullPath, metadata, timestamp, &headers);
+  auto [fullPath, obj] = retrieveQcObject(qoPath, timestamp, activity, metadataToRetrieve, headers);
   if (obj == nullptr) {
     return nullptr;
   }

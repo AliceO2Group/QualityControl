@@ -134,7 +134,6 @@ class DatabaseInterface
    * @param timestamp Timestamp of the object in ms since epoch
    * @param activity Activity of the object
    * @param metadata additional metadata to filter objects during retrieval
-   * @deprecated
    */
   virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName,
                                                                                long timestamp = Timestamp::Current, const core::Activity& activity = {},
@@ -146,7 +145,6 @@ class DatabaseInterface
    * @param timestamp Timestamp of the object in ms since epoch
    * @param activity Activity of the object
    * @param metadata additional metadata to filter objects during retrieval
-   * @deprecated
    */
   virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current,
                                                                                const core::Activity& activity = {},
