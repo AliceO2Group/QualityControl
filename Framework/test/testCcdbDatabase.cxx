@@ -216,7 +216,7 @@ TEST_CASE("ccdb_store_for_future_tests", "[ccdb]")
 TEST_CASE("ccdb_retrieve_mo", "[ccdb]")
 {
   test_fixture f;
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("quarantine"), "quarantine");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoPath("quarantine", "", false));
   REQUIRE(mo != nullptr);
   CHECK(mo->getName() == "quarantine");
   CHECK(mo->getActivity().mId == 1234);
@@ -229,7 +229,7 @@ TEST_CASE("ccdb_retrieve_timestamps", "[ccdb]")
 {
   test_fixture f;
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("short"), "short", 15000);
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoPath("short", "", false), 15000);
   REQUIRE(mo != nullptr);
   CHECK(mo->getName() == "short");
 
@@ -246,7 +246,7 @@ TEST_CASE("ccdb_retrieve_inexisting_mo", "[ccdb]")
 {
   test_fixture f;
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("non/existing", "object");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("non/existing/object");
   CHECK(mo == nullptr);
 }
 
@@ -254,13 +254,13 @@ TEST_CASE("ccdb_retrieve_mo_with_cycle", "[ccdb]")
 {
   test_fixture f;
   std::shared_ptr<MonitorObject> mo{};
-  mo = f.backend->retrieveMO(f.getMoFolder("cycle"), "cycle",
+  mo = f.backend->retrieveMO(f.getMoPath("cycle", "", false),
                              15000, Activity{}, { { metadata_keys::cycleNumber, "1" } });
   REQUIRE(mo.get() != nullptr);
   REQUIRE_NOTHROW(mo->getMetadata(metadata_keys::cycleNumber));
   REQUIRE(mo->getMetadata(metadata_keys::cycleNumber) == "1");
 
-  mo = f.backend->retrieveMO(f.getMoFolder("cycle"), "cycle",
+  mo = f.backend->retrieveMO(f.getMoPath("cycle", "", false),
                              15000, Activity{}, { { metadata_keys::cycleNumber, "2" } });
   REQUIRE(mo.get() != nullptr);
   REQUIRE_NOTHROW(mo->getMetadata(metadata_keys::cycleNumber));
@@ -295,7 +295,7 @@ TEST_CASE("ccdb_provenance", "[ccdb]")
   REQUIRE(qo != nullptr);
   CHECK(qo->getActivity().mProvenance == "qc_hello");
 
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance"), "provenance", -1, { 0, "NONE", "", "", "qc_hello" });
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoPath("provenance", "", false), -1, { 0, "NONE", "", "", "qc_hello" });
   REQUIRE(mo != nullptr);
   CHECK(mo->getActivity().mProvenance == "qc_hello");
 }
@@ -423,9 +423,8 @@ TEST_CASE("ccdb_metadata", "[ccdb]")
   CHECK(headers2.count("my_meta") == 1);
   CHECK(headers2.at("my_meta") == "is_good");
 
-  // get the path without the objectName because of the interface retrieveMO
-  auto obj1a = f.backend->retrieveMO(f.getMoFolder("quarantine"), "quarantine");
-  auto obj2a = f.backend->retrieveMO(f.getQoFolder(""), "metadata");
+  auto obj1a = f.backend->retrieveMO(f.getMoPath("quarantine", "", false));
+  auto obj2a = f.backend->retrieveMO(f.getQoFolder("") + "/metadata");
   REQUIRE(obj1a != nullptr);
   REQUIRE(obj2a != nullptr);
   CHECK(obj1a->getMetadataMap().size() > 0);
@@ -485,7 +484,7 @@ TEST_CASE("ccdb_store_retrieve_latest", "[ccdb]")
   mo1->setValidity({ 10, 30 });
   f.backend->storeMO(mo1);
 
-  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoFolder("latest_test"), "latest_test", DatabaseInterface::Timestamp::Latest, { 1234, "NONE", "LHC66", "passName1", "qc" });
+  std::shared_ptr<MonitorObject> moBack = f.backend->retrieveMO(f.getMoPath("latest_test", "", false), DatabaseInterface::Timestamp::Latest, { 1234, "NONE", "LHC66", "passName1", "qc" });
   REQUIRE(moBack != nullptr);
   auto h1Back = dynamic_cast<TH1F*>(moBack->getObject());
   REQUIRE(h1Back != nullptr);

@@ -62,7 +62,7 @@ void TrendingTask::initializeTrend(o2::quality_control::repository::DatabaseInte
   if (mConfig.resumeTrend) {
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
-    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
+    auto mo = qcdb.retrieveMO(path + "/" + PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {

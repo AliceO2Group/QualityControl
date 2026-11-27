@@ -80,12 +80,11 @@ static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(DatabaseInterface& 
     return { nullptr, false };
   }
 
-  auto [success, path, name] = o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath);
-  if (!success) {
+  if (fullPath.find('/') == std::string::npos) {
     return { nullptr, false };
   }
   // retrieve QO from CCDB
-  auto qo = qcdb.retrieveMO(path, name, objectTimestamp, trigger.activity);
+  auto qo = qcdb.retrieveMO(fullPath, objectTimestamp, trigger.activity);
   if (!qo) {
     return { nullptr, false };
   }

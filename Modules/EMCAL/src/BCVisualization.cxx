@@ -70,8 +70,8 @@ void BCVisualization::update(Trigger t, framework::ServiceRegistryRef services)
 {
   constexpr unsigned int LHC_MAX_BC = o2::constants::lhc::LHCMaxBunches;
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
-  auto moBCEMC = qcdb.retrieveMO(mDataPath, "BCEMCALReadout", t.timestamp, t.activity),
-       moBCCTP = qcdb.retrieveMO(mDataPath, "BCCTPEMCALAny", t.timestamp, t.activity);
+  auto moBCEMC = qcdb.retrieveMO(mDataPath + "/BCEMCALReadout", t.timestamp, t.activity),
+       moBCCTP = qcdb.retrieveMO(mDataPath + "/BCCTPEMCALAny", t.timestamp, t.activity);
 
   if (moBCCTP == nullptr || moBCEMC == nullptr) {
     ILOG(Error, Support) << "at least one of the expected objects (BCEMCALReadout and BCCTPEMCALAny) could not be "

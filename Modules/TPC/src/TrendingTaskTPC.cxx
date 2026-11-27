@@ -58,7 +58,7 @@ void TrendingTaskTPC::initialize(Trigger, framework::ServiceRegistryRef services
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
-    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), -1, mConfig.activity);
+    auto mo = qcdb.retrieveMO(path + "/" + PostProcessingInterface::getName(), -1, mConfig.activity);
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {
@@ -159,7 +159,7 @@ void TrendingTaskTPC::trendValues(const Trigger& t,
     mNumberPads[dataSource.name] = 0;
     if (dataSource.type == "repository") {
       mSources[dataSource.name]->clear(); // reset
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+      auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
       TObject* obj = mo ? mo->getObject() : nullptr;
 
       mAxisDivision[dataSource.name] = dataSource.axisDivision;

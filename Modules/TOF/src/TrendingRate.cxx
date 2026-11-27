@@ -180,7 +180,7 @@ void TrendingRate::computeTOFRates(TH2F* h, std::vector<int>& bcInt, std::vector
       sumw += rate;
       pilup += mu / prob * rate;
       ratetot += rate;
-      //ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
+      // ILOG(Info, Support) << "interaction prob = " << mu << ", rate=" << rate << " Hz, mu=" << mu / prob << ENDM;
       delete hb;
       delete hs;
     }
@@ -251,7 +251,7 @@ void TrendingRate::trendValues(const Trigger& t, repository::DatabaseInterface& 
   bool foundVsBC = false;
 
   for (auto& dataSource : mConfig.dataSources) {
-    auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+    auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
     TObject* obj = mo ? mo->getObject() : nullptr;
     if (!obj) {
       ILOG(Error, Support) << "No MO retrieved from qcdb, name: " << dataSource.name << " - path:" << dataSource.path << " - timestamp" << t.timestamp << ENDM;

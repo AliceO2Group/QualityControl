@@ -130,7 +130,7 @@ void SliceTrendingTask::initialize(Trigger t, framework::ServiceRegistryRef serv
     ILOG(Info, Support) << "Trying to retrieve an existing TTree for this task to continue the trend." << ENDM;
     auto& qcdb = services.get<repository::DatabaseInterface>();
     auto path = RepoPathUtils::getMoPath(mConfig.detectorName, PostProcessingInterface::getName(), "", "", false);
-    auto mo = qcdb.retrieveMO(path, PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
+    auto mo = qcdb.retrieveMO(path + "/" + PostProcessingInterface::getName(), repository::DatabaseInterface::Timestamp::Latest);
     if (mo && mo->getObject()) {
       auto tree = dynamic_cast<TTree*>(mo->getObject());
       if (tree) {
@@ -225,7 +225,7 @@ void SliceTrendingTask::trendValues(const Trigger& t,
     mNumberPads[dataSource.name] = 0;
     mSources[dataSource.name]->clear();
     if (dataSource.type == "repository") {
-      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity, t.metadata);
+      auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity, t.metadata);
       TObject* obj = mo ? mo->getObject() : nullptr;
 
       mAxisDivision[dataSource.name] = dataSource.axisDivision;

@@ -54,7 +54,7 @@ static std::pair<std::shared_ptr<MonitorObject>, bool> getMO(repository::Databas
   }
 
   // retrieve MO from CCDB
-  auto mo = qcdb.retrieveMO(path, name, ts, t.activity);
+  auto mo = qcdb.retrieveMO(path + "/" + name, ts, t.activity);
   if (!mo) {
     return { nullptr, false };
   }

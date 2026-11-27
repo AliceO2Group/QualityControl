@@ -129,14 +129,12 @@ class DatabaseInterface
   /**
    * \brief Look up a monitor object and return it.
    * Look up a monitor object and return it if found or nullptr if not.
-   * @param objectPath Path to the object without the provenance prefix
-   * @param objectName Name of the object
+   * @param objectPath Full path to the object (including the object name) without the provenance prefix
    * @param timestamp Timestamp of the object in ms since epoch
    * @param activity Activity of the object
    * @param metadata additional metadata to filter objects during retrieval
-   * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName,
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath,
                                                                                long timestamp = Timestamp::Current, const core::Activity& activity = {},
                                                                                const std::map<std::string, std::string>& metadata = {}) = 0;
   /**
@@ -146,7 +144,6 @@ class DatabaseInterface
    * @param timestamp Timestamp of the object in ms since epoch
    * @param activity Activity of the object
    * @param metadata additional metadata to filter objects during retrieval
-   * @deprecated
    */
   virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current,
                                                                                const core::Activity& activity = {},

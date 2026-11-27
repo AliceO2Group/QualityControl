@@ -118,8 +118,8 @@ void TrendingTaskITSFhr::trendValues(const Trigger& t, repository::DatabaseInter
 
     if (dataSource.type == "repository") {
 
-      // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
-      auto mo = qcdb.retrieveMO(dataSource.path, "", timestamp, t.activity);
+      // auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name);
+      auto mo = qcdb.retrieveMO(dataSource.path, timestamp, t.activity);
       if (mo == nullptr) {
         continue;
       }

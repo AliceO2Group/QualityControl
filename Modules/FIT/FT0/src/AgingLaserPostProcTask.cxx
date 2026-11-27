@@ -151,9 +151,9 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
   /* ---- fetch source histogram ---- */
   auto& qcdb = srv.get<quality_control::repository::DatabaseInterface>();
 
-  auto moAmpPerChannel = qcdb.retrieveMO(mAgingLaserPath, "AmpPerChannel", t.timestamp, t.activity);
-  auto moAmpPerChannelPeak1ADC0 = qcdb.retrieveMO(mAgingLaserPath, "AmpPerChannelPeak1ADC0", t.timestamp, t.activity);
-  auto moAmpPerChannelPeak1ADC1 = qcdb.retrieveMO(mAgingLaserPath, "AmpPerChannelPeak1ADC1", t.timestamp, t.activity);
+  auto moAmpPerChannel = qcdb.retrieveMO(mAgingLaserPath + "/AmpPerChannel", t.timestamp, t.activity);
+  auto moAmpPerChannelPeak1ADC0 = qcdb.retrieveMO(mAgingLaserPath + "/AmpPerChannelPeak1ADC0", t.timestamp, t.activity);
+  auto moAmpPerChannelPeak1ADC1 = qcdb.retrieveMO(mAgingLaserPath + "/AmpPerChannelPeak1ADC1", t.timestamp, t.activity);
 
   TH2* h2AmpPerChannel = moAmpPerChannel ? dynamic_cast<TH2*>(moAmpPerChannel->getObject()) : nullptr;
   TH2* h2AmpPerChannelPeak1ADC0 = moAmpPerChannelPeak1ADC0 ? dynamic_cast<TH2*>(moAmpPerChannelPeak1ADC0->getObject()) : nullptr;
@@ -191,7 +191,7 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
     ILOG(Info, Support) << "Retrieving normalization histograms from timestamp " << timestamp << ENDM;
 
     auto moAmpPerChannelNormWeightedMeanAfterLastCorrA = qcdb.retrieveMO(
-      mAgingLaserPostProcPath, "AmpPerChannelNormWeightedMeanAfterLastCorrectionA", timestamp);
+      mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionA", timestamp);
     if (!moAmpPerChannelNormWeightedMeanAfterLastCorrA) {
       ILOG(Fatal) << "Failed to retrieve histogram " << mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionA"
                   << " for timestamp " << timestamp << "! This is not a 'resetting' run and this histogram is therefore needed." << ENDM;
@@ -201,7 +201,7 @@ void AgingLaserPostProcTask::update(Trigger t, framework::ServiceRegistryRef srv
     }
 
     auto moAmpPerChannelNormWeightedMeanAfterLastCorrC = qcdb.retrieveMO(
-      mAgingLaserPostProcPath, "AmpPerChannelNormWeightedMeanAfterLastCorrectionC", timestamp);
+      mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionC", timestamp);
     if (!moAmpPerChannelNormWeightedMeanAfterLastCorrC) {
       ILOG(Fatal) << "Failed to retrieve histogram " << mAgingLaserPostProcPath + "/AmpPerChannelNormWeightedMeanAfterLastCorrectionC"
                   << " for timestamp " << timestamp << "! This is not a 'resetting' run and this histogram is therefore needed."

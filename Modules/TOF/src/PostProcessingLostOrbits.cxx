@@ -79,7 +79,7 @@ void PostProcessingLostOrbits::update(Trigger t, framework::ServiceRegistryRef)
     tempPerCrateHisto[i] = nullptr;
   }
 
-  auto mo = mDatabase->retrieveMO(mCCDBPath, mMOName, t.timestamp, t.activity);
+  auto mo = mDatabase->retrieveMO(mCCDBPath + "/" + mMOName, t.timestamp, t.activity);
   TH2F* moH = static_cast<TH2F*>(mo ? mo->getObject() : nullptr);
   if (moH) {
     ILOG(Info, Support) << "Found MO " << mMOName << " in path " << mCCDBPath << ENDM;

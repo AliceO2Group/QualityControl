@@ -71,7 +71,7 @@ TEST_CASE("ccdb_retrieve_all", "[ccdb][.manual]")
   test_fixture f;
   for (auto const& [task, object] : Objects) {
     ILOG(Info, Support) << "[RETRIEVE]: " << task << object << ENDM;
-    auto mo = f.backend->retrieveMO(task, object);
+    auto mo = f.backend->retrieveMO(task + "/" + object);
     if (mo == nullptr) {
       ILOG(Info, Support) << "No object found (" << task << object << ")" << ENDM;
       continue;
@@ -106,21 +106,21 @@ TEST_CASE("ccdb_retrieve_former_versions", "[ccdb][.manual]")
   f.backend->storeMO(mo1);
 
   // Retrieve old object stored at timestampStorage
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf", oldTimestamp);
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("TST/MO/my/task/asdf/asdf", oldTimestamp);
   CHECK(mo);
   TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
   CHECK(old != nullptr);
   CHECK(old->GetEntries() == 10000);
 
   // Retrieve latest object with timestamp
-  std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
+  std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("TST/MO/my/task/asdf/asdf", CcdbDatabase::getCurrentTimestamp());
   CHECK(mo2);
   TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
   CHECK(latest != nullptr);
   CHECK(latest->GetEntries() == 10001);
 
   // Retrieve latest object without timetsamp
-  std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("TST/MO/my/task", "asdf/asdf");
+  std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("TST/MO/my/task/asdf/asdf");
   CHECK(mo3);
   TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
   CHECK(latest2 != nullptr);
