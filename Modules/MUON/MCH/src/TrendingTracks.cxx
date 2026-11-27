@@ -118,7 +118,7 @@ void TrendingTracks::trendValues(const Trigger& t, repository::DatabaseInterface
   std::shared_ptr<o2::quality_control::core::MonitorObject> moClusPerChamber = nullptr;
 
   for (auto& dataSource : mConfig.dataSources) {
-    auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+    auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
     if (!mo) {
       continue;
     }

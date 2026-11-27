@@ -800,7 +800,7 @@ void CcdbObjectHelper::setStartIme()
 
 bool CcdbObjectHelper::update(repository::DatabaseInterface* qcdb, long timeStamp, const core::Activity& activity)
 {
-  mObject = qcdb->retrieveMO(mPath, mName, timeStamp, activity);
+  mObject = qcdb->retrieveMO(mPath + "/" + mName, timeStamp, activity);
   if (!mObject) {
     return false;
   }

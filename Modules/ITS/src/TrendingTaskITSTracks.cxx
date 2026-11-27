@@ -98,8 +98,8 @@ void TrendingTaskITSTracks::trendValues(const Trigger& t, repository::DatabaseIn
     //  todo: make it agnostic to MOs, QOs or other objects. Let the reductor
     //  cast to whatever it needs.
     if (dataSource.type == "repository") {
-      // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
-      auto mo = qcdb.retrieveMO(dataSource.path, "", t.timestamp, t.activity);
+      // auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name);
+      auto mo = qcdb.retrieveMO(dataSource.path, t.timestamp, t.activity);
       if (mo == nullptr) {
         continue;
       }

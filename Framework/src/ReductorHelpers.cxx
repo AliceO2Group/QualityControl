@@ -35,7 +35,7 @@ bool updateReductorImpl(Reductor* r, const Trigger& t, const std::string& path, 
   }
 
   if (type == "repository") {
-    auto mo = qcdb.retrieveMO(path, name, t.timestamp, t.activity, t.metadata);
+    auto mo = qcdb.retrieveMO(path + "/" + name, t.timestamp, t.activity, t.metadata);
     TObject* obj = mo ? mo->getObject() : nullptr;
     auto reductorTObject = dynamic_cast<ReductorTObject*>(r);
     if (obj && reductorTObject) {

@@ -77,12 +77,13 @@ class CcdbDatabase : public DatabaseInterface
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
   // retrieval - MO
-  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath, std::string objectName,
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string objectPath,
                                                                        long timestamp = Timestamp::Current,
                                                                        const core::Activity& activity = {},
                                                                        const std::map<std::string, std::string>& metadata = {}) override;
   // retrieval - QO
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = Timestamp::Current,
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath,
+                                                                       long timestamp = Timestamp::Current,
                                                                        const core::Activity& activity = {},
                                                                        const std::map<std::string, std::string>& metadata = {}) override;
 

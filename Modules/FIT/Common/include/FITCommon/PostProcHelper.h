@@ -83,7 +83,7 @@ class PostProcHelper
   template <typename ObjType>
   auto getObject(const std::string& moName) const -> std::unique_ptr<ObjType>
   {
-    auto mo = mDatabase->retrieveMO(mPathInputQcTask, moName, mCurrTrigger.timestamp, mCurrTrigger.activity);
+    auto mo = mDatabase->retrieveMO(mPathInputQcTask + "/" + moName, mCurrTrigger.timestamp, mCurrTrigger.activity);
     ObjType* obj = mo ? dynamic_cast<ObjType*>(mo->getObject()) : nullptr;
     if (!obj) {
       ILOG(Error) << "MO " << moName << " is NOT retrieved!" << ENDM;
@@ -93,7 +93,7 @@ class PostProcHelper
 
   void getMetadata()
   {
-    const auto moMetadata = mDatabase->retrieveMO(mPathInputQcTask, mMetaAnchorInput, mCurrTrigger.timestamp, mCurrTrigger.activity);
+    const auto moMetadata = mDatabase->retrieveMO(mPathInputQcTask + "/" + mMetaAnchorInput, mCurrTrigger.timestamp, mCurrTrigger.activity);
     const auto hMetadata = moMetadata ? dynamic_cast<TH1*>(moMetadata->getObject()) : nullptr;
     // Getting sample length
     if (hMetadata) {

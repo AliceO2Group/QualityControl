@@ -326,12 +326,12 @@ std::pair<std::string, TObject*> CcdbDatabase::retrieveQcObject(const std::strin
   return { fullPath, obj };
 }
 
-std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath, std::string objectName,
+std::shared_ptr<o2::quality_control::core::MonitorObject> CcdbDatabase::retrieveMO(std::string objectPath,
                                                                                    long timestamp, const core::Activity& activity,
                                                                                    const std::map<std::string, std::string>& metadataToRetrieve)
 {
   map<string, string> headers;
-  auto [fullPath, obj] = retrieveQcObject(objectPath + "/" + objectName, timestamp, activity, metadataToRetrieve, headers);
+  auto [fullPath, obj] = retrieveQcObject(objectPath, timestamp, activity, metadataToRetrieve, headers);
   if (obj == nullptr) {
     return nullptr;
   }

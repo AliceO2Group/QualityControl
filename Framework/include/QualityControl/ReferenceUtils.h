@@ -38,11 +38,10 @@ namespace o2::quality_control::checker
 static std::shared_ptr<quality_control::core::MonitorObject> getReferencePlot(quality_control::repository::DatabaseInterface* qcdb, std::string& fullPath,
                                                                               core::Activity referenceActivity)
 {
-  auto [success, path, name] = o2::quality_control::core::RepoPathUtils::splitObjectPath(fullPath);
-  if (!success) {
+  if (fullPath.find('/') == std::string::npos) {
     return nullptr;
   }
-  return qcdb->retrieveMO(path, name, repository::DatabaseInterface::Timestamp::Latest, referenceActivity);
+  return qcdb->retrieveMO(fullPath, repository::DatabaseInterface::Timestamp::Latest, referenceActivity);
 }
 
 //_________________________________________________________________________________________

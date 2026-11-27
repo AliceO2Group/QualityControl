@@ -70,7 +70,7 @@ void FECRateVisualization::update(Trigger t, framework::ServiceRegistryRef servi
   const std::array<SMType, 20> smtypes{ { FULL, FULL, FULL, FULL, FULL, FULL, FULL, FULL, FULL, FULL, SMALL_A, SMALL_C, DCAL, DCAL, DCAL, DCAL, DCAL, DCAL, SMALL_C, SMALL_A } };
 
   auto& qcdb = services.get<quality_control::repository::DatabaseInterface>();
-  auto mo = qcdb.retrieveMO("EMC/MO/CellTrendingDetailEMCAL", "CellTrendingDetailEMCAL", t.timestamp, t.activity);
+  auto mo = qcdb.retrieveMO("EMC/MO/CellTrendingDetailEMCAL/CellTrendingDetailEMCAL", t.timestamp, t.activity);
   TTree* datatree = mo ? static_cast<TTree*>(mo->getObject()) : nullptr;
   if (!datatree) {
     ILOG(Error, Support) << "Tree not found" << ENDM;

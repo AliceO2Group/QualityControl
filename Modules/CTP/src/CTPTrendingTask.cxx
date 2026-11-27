@@ -157,7 +157,7 @@ void CTPTrendingTask::trendValues(const Trigger& t, repository::DatabaseInterfac
   bool inputMissing = false;
 
   for (auto& dataSource : mConfig.dataSources) {
-    auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, t.timestamp, t.activity);
+    auto mo = qcdb.retrieveMO(dataSource.path + "/" + dataSource.name, t.timestamp, t.activity);
     if (!mo) {
       ILOG(Info, Support) << "no MO object" << ENDM;
       continue;

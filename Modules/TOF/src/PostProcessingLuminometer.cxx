@@ -86,10 +86,10 @@ void PostProcessingLuminometer::update(Trigger t, framework::ServiceRegistryRef)
     tempPerCrateHisto[i] = nullptr;
   }
 
-  auto moEfficiency = mDatabase->retrieveMO(mCCDBPath, mMOEfficiency, t.timestamp, t.activity);
-  auto moActiveChannels = mDatabase->retrieveMO(mCCDBPath, mMOActiveChannels, t.timestamp, t.activity);
-  auto moMultiplicity = mDatabase->retrieveMO(mCCDBPath, mMOMultiplicity, t.timestamp, t.activity);
-  auto moDecodingErrors = mDatabase->retrieveMO(mCCDBPath, mMOdecodingErrors, t.timestamp, t.activity);
+  auto moEfficiency = mDatabase->retrieveMO(mCCDBPath + "/" + mMOEfficiency, t.timestamp, t.activity);
+  auto moActiveChannels = mDatabase->retrieveMO(mCCDBPath + "/" + mMOActiveChannels, t.timestamp, t.activity);
+  auto moMultiplicity = mDatabase->retrieveMO(mCCDBPath + "/" + mMOMultiplicity, t.timestamp, t.activity);
+  auto moDecodingErrors = mDatabase->retrieveMO(mCCDBPath + "/" + mMOdecodingErrors, t.timestamp, t.activity);
 
   float ROeff = 1.;
   float hitMult = 0.;

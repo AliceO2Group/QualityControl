@@ -314,7 +314,7 @@ void PostProcTask::initialize(Trigger, framework::ServiceRegistryRef services)
 
 void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
 {
-  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersCorrelation", t.timestamp, t.activity);
+  auto mo = mDatabase->retrieveMO(mPathDigitQcTask + "/TriggersCorrelation", t.timestamp, t.activity);
   auto hTrgCorr = mo ? dynamic_cast<TH2F*>(mo->getObject()) : nullptr;
   mHistTriggers->Reset();
   auto getBinContent2Ddiag = [](TH2* hist, const std::string& binName) {
@@ -333,12 +333,12 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     mHistChDataNegBits->SetEntries(totalStat);
   }
 
-  auto moChDataBits = mDatabase->retrieveMO(mPathDigitQcTask, "ChannelDataBits", t.timestamp, t.activity);
+  auto moChDataBits = mDatabase->retrieveMO(mPathDigitQcTask + "/ChannelDataBits", t.timestamp, t.activity);
   auto hChDataBits = moChDataBits ? dynamic_cast<TH2F*>(moChDataBits->getObject()) : nullptr;
   if (!hChDataBits) {
     ILOG(Error) << "MO \"ChannelDataBits\" NOT retrieved!!!" << ENDM;
   }
-  auto moStatChannelID = mDatabase->retrieveMO(mPathDigitQcTask, "StatChannelID", t.timestamp, t.activity);
+  auto moStatChannelID = mDatabase->retrieveMO(mPathDigitQcTask + "/StatChannelID", t.timestamp, t.activity);
   auto hStatChannelID = moStatChannelID ? dynamic_cast<TH1F*>(moStatChannelID->getObject()) : nullptr;
   if (!hStatChannelID) {
     ILOG(Error) << "MO \"StatChannelID\" NOT retrieved!!!" << ENDM;
@@ -358,7 +358,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     mHistChDataNegBits->SetEntries(totalStat);
   }
 
-  auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName, t.timestamp, t.activity);
+  auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask + "/" + mCycleDurationMoName, t.timestamp, t.activity);
   auto hCycleDuration = mo2 ? dynamic_cast<TH1D*>(mo2->getObject()) : nullptr;
   if (!hCycleDuration) {
     ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
@@ -410,7 +410,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     */
   }
 
-  auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel", t.timestamp, t.activity);
+  auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask + "/AmpPerChannel", t.timestamp, t.activity);
   auto hAmpPerChannel = mo3 ? dynamic_cast<TH2F*>(mo3->getObject()) : nullptr;
   if (!hAmpPerChannel) {
     ILOG(Error) << "MO \"AmpPerChannel\" NOT retrieved!!!"
@@ -420,7 +420,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     std::unique_ptr<TH1D> projDen(hAmpPerChannel->ProjectionX("projDen"));
     mHistCFDEff->Divide(projNom.get(), projDen.get());
   }
-  auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel", t.timestamp, t.activity);
+  auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask + "/TimePerChannel", t.timestamp, t.activity);
   auto hTimePerChannel = mo4 ? dynamic_cast<TH2F*>(mo4->getObject()) : nullptr;
   if (!hTimePerChannel) {
     ILOG(Error) << "MO \"TimePerChannel\" NOT retrieved!!!"
@@ -450,7 +450,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   // Download BCvsTriggers
-  auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsTriggers", t.timestamp, t.activity);
+  auto moBCvsTriggers = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsTriggers", t.timestamp, t.activity);
   auto hBcVsTrg = moBCvsTriggers ? dynamic_cast<TH2F*>(moBCvsTriggers->getObject()) : nullptr;
   if (!hBcVsTrg) {
     ILOG(Error, Support) << "MO \"BCvsTriggers\" NOT retrieved!!!" << ENDM;
@@ -502,7 +502,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   auto bcPattern = lhcIf->getBunchFilling();
 
   // Download histogram BCvsFEEmodules from database
-  auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodules", t.timestamp, t.activity);
+  auto moBcVsFeeModules = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsFEEmodules", t.timestamp, t.activity);
   auto hBcVsFeeModules = moBcVsFeeModules ? dynamic_cast<TH2F*>(moBcVsFeeModules->getObject()) : nullptr;
 
   // Create histogram with bc pattern for FEE modules
@@ -540,7 +540,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   // Download histogram BCvsFEEmodulesForOrATrg from database
-  auto moBcVsFeeModulesForOrATrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForOrATrg", t.timestamp, t.activity);
+  auto moBcVsFeeModulesForOrATrg = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsFEEmodulesForOrATrg", t.timestamp, t.activity);
   auto hBcVsFeeModulesForOrATrg = moBcVsFeeModulesForOrATrg ? dynamic_cast<TH2F*>(moBcVsFeeModulesForOrATrg->getObject()) : nullptr;
 
   if (!hBcVsFeeModulesForOrATrg) {
@@ -570,7 +570,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   // Download histogram BCvsFEEmodulesForOrAOutTrg from database
-  auto moBCvsFEEmodulesForOrAOutTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForOrAOutTrg", t.timestamp, t.activity);
+  auto moBCvsFEEmodulesForOrAOutTrg = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsFEEmodulesForOrAOutTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForOrAOutTrg = moBCvsFEEmodulesForOrAOutTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForOrAOutTrg->getObject()) : nullptr;
 
   if (!hBCvsFEEmodulesForOrAOutTrg) {
@@ -599,7 +599,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   // Download histogram BCvsFEEmodulesForNChanTrg from database
-  auto moBCvsFEEmodulesForNChanTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForNChanTrg", t.timestamp, t.activity);
+  auto moBCvsFEEmodulesForNChanTrg = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsFEEmodulesForNChanTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForNChanTrg = moBCvsFEEmodulesForNChanTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForNChanTrg->getObject()) : nullptr;
 
   if (!hBCvsFEEmodulesForNChanTrg) {
@@ -628,7 +628,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   // Download histogram BCvsFEEmodulesForChargeTrg from database
-  auto moBCvsFEEmodulesForChargeTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForChargeTrg", t.timestamp, t.activity);
+  auto moBCvsFEEmodulesForChargeTrg = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsFEEmodulesForChargeTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForChargeTrg = moBCvsFEEmodulesForChargeTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForChargeTrg->getObject()) : nullptr;
 
   if (!hBCvsFEEmodulesForChargeTrg) {
@@ -657,7 +657,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
   }
 
   // Download histogram BCvsFEEmodulesForOrAInTrg from database
-  auto moBCvsFEEmodulesForOrAInTrg = mDatabase->retrieveMO(mPathDigitQcTask, "BCvsFEEmodulesForOrAInTrg", t.timestamp, t.activity);
+  auto moBCvsFEEmodulesForOrAInTrg = mDatabase->retrieveMO(mPathDigitQcTask + "/BCvsFEEmodulesForOrAInTrg", t.timestamp, t.activity);
   auto hBCvsFEEmodulesForOrAInTrg = moBCvsFEEmodulesForOrAInTrg ? dynamic_cast<TH2F*>(moBCvsFEEmodulesForOrAInTrg->getObject()) : nullptr;
 
   if (!hBCvsFEEmodulesForOrAInTrg) {
@@ -711,7 +711,7 @@ void PostProcTask::update(Trigger t, framework::ServiceRegistryRef)
     ILOG(Info, Support) << metadataKey << ":" << metadataValue << ENDM;
   }
 
-  auto moTriggersSoftwareVsTCM = mDatabase->retrieveMO(mPathDigitQcTask, "TriggersSoftwareVsTCM", t.timestamp, t.activity);
+  auto moTriggersSoftwareVsTCM = mDatabase->retrieveMO(mPathDigitQcTask + "/TriggersSoftwareVsTCM", t.timestamp, t.activity);
   auto hTriggersSoftwareVsTCM = moTriggersSoftwareVsTCM ? dynamic_cast<TH2F*>(moTriggersSoftwareVsTCM->getObject()) : nullptr;
   if (hTriggersSoftwareVsTCM != nullptr) {
     std::unique_ptr<TH1D> projOnlyHWorSW(hTriggersSoftwareVsTCM->ProjectionX("projOnlyHWorSW", 1, 2));
@@ -730,7 +730,7 @@ void PostProcTask::decomposeHists(Trigger trg)
     auto insertedMap = mMapHistsToDecompose.insert({ histName, {} });
     auto& mapHists = insertedMap.first->second;
 
-    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, histName, trg.timestamp, trg.activity);
+    auto mo = mDatabase->retrieveMO(mPathDigitQcTask + "/" + histName, trg.timestamp, trg.activity);
     auto histSrcPtr = mo ? dynamic_cast<TH2F*>(mo->getObject()) : nullptr;
 
     if (histSrcPtr == nullptr) {
